@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Allcalor Control</title>
+<title>ALLCALOR CONTROL</title>
+
 <style>
 
 body {
@@ -10,7 +11,6 @@ font-family: Arial, sans-serif;
 background-color: #0f172a;
 color: white;
 margin: 0;
-padding: 0;
 }
 
 header {
@@ -19,6 +19,16 @@ padding: 20px;
 text-align: center;
 font-size: 24px;
 font-weight: bold;
+}
+
+nav {
+background-color: #111827;
+padding: 10px;
+text-align: center;
+}
+
+nav button {
+margin: 5px;
 }
 
 .container {
@@ -45,35 +55,174 @@ button:hover {
 background-color: #1d4ed8;
 }
 
+input, textarea {
+width: 100%;
+padding: 8px;
+margin: 5px 0 15px 0;
+border-radius: 5px;
+border: none;
+}
+
+.hidden {
+display: none;
+}
+
 </style>
 </head>
+
 <body>
 
 <header>
 ALLCALOR CONTROL
 </header>
 
+<nav>
+<button onclick="mostrarInicio()">Inicio</button>
+<button onclick="mostrarInstalaciones()">Instalaciones</button>
+<button onclick="mostrarClientes()">Clientes</button>
+<button onclick="mostrarPresupuestos()">Presupuestos</button>
+</nav>
+
 <div class="container">
 
+<!-- INICIO -->
+<div id="inicio">
 <div class="card">
-<h2>Instalaciones</h2>
-<p>Gestión de proyectos activos</p>
-<button>Entrar</button>
+<h2>Panel Principal</h2>
+<p>Sistema profesional de gestión Allcalor</p>
+</div>
+</div>
+
+<!-- INSTALACIONES -->
+<div id="instalaciones" class="hidden">
+<div class="card">
+<h2>Nueva Instalación</h2>
+<label>Cliente</label>
+<input type="text" id="instCliente">
+
+<label>Dirección</label>
+<input type="text" id="instDireccion">
+
+<label>Tipo de instalación</label>
+<input type="text" id="instTipo">
+
+<button onclick="guardarInstalacion()">Guardar</button>
 </div>
 
 <div class="card">
-<h2>Clientes</h2>
-<p>Base de datos de clientes</p>
-<button>Entrar</button>
+<h2>Listado de instalaciones</h2>
+<ul id="listaInstalaciones"></ul>
+</div>
+</div>
+
+<!-- CLIENTES -->
+<div id="clientes" class="hidden">
+<div class="card">
+<h2>Nuevo Cliente</h2>
+<label>Nombre</label>
+<input type="text" id="cliNombre">
+
+<label>Teléfono</label>
+<input type="text" id="cliTelefono">
+
+<button onclick="guardarCliente()">Guardar</button>
 </div>
 
 <div class="card">
-<h2>Presupuestos</h2>
-<p>Generador profesional</p>
-<button>Entrar</button>
+<h2>Listado de clientes</h2>
+<ul id="listaClientes"></ul>
+</div>
+</div>
+
+<!-- PRESUPUESTOS -->
+<div id="presupuestos" class="hidden">
+<div class="card">
+<h2>Generador de Presupuesto</h2>
+<label>Cliente</label>
+<input type="text" id="preCliente">
+
+<label>Concepto</label>
+<textarea id="preConcepto"></textarea>
+
+<label>Importe (€)</label>
+<input type="number" id="preImporte">
+
+<button onclick="generarPresupuesto()">Generar</button>
+</div>
+
+<div class="card">
+<h2>Resultado</h2>
+<div id="resultadoPresupuesto"></div>
+</div>
 </div>
 
 </div>
+
+<script>
+
+function ocultarTodo() {
+document.getElementById("inicio").classList.add("hidden");
+document.getElementById("instalaciones").classList.add("hidden");
+document.getElementById("clientes").classList.add("hidden");
+document.getElementById("presupuestos").classList.add("hidden");
+}
+
+function mostrarInicio() {
+ocultarTodo();
+document.getElementById("inicio").classList.remove("hidden");
+}
+
+function mostrarInstalaciones() {
+ocultarTodo();
+document.getElementById("instalaciones").classList.remove("hidden");
+}
+
+function mostrarClientes() {
+ocultarTodo();
+document.getElementById("clientes").classList.remove("hidden");
+}
+
+function mostrarPresupuestos() {
+ocultarTodo();
+document.getElementById("presupuestos").classList.remove("hidden");
+}
+
+function guardarInstalacion() {
+var cliente = document.getElementById("instCliente").value;
+var direccion = document.getElementById("instDireccion").value;
+var tipo = document.getElementById("instTipo").value;
+
+var lista = document.getElementById("listaInstalaciones");
+var item = document.createElement("li");
+item.textContent = cliente + " - " + direccion + " - " + tipo;
+lista.appendChild(item);
+}
+
+function guardarCliente() {
+var nombre = document.getElementById("cliNombre").value;
+var telefono = document.getElementById("cliTelefono").value;
+
+var lista = document.getElementById("listaClientes");
+var item = document.createElement("li");
+item.textContent = nombre + " - " + telefono;
+lista.appendChild(item);
+}
+
+function generarPresupuesto() {
+var cliente = document.getElementById("preCliente").value;
+var concepto = document.getElementById("preConcepto").value;
+var importe = document.getElementById("preImporte").value;
+
+var resultado = document.getElementById("resultadoPresupuesto");
+
+resultado.innerHTML =
+"<strong>Presupuesto Allcalor</strong><br><br>" +
+"Cliente: " + cliente + "<br>" +
+"Concepto: " + concepto + "<br>" +
+"Importe total: " + importe + " €";
+}
+
+</script>
 
 </body>
 </html>
