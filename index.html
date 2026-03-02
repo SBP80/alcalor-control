@@ -5,47 +5,47 @@
 <title>ALLCALOR - Plano Suelo Radiante</title>
 
 <style>
-body {
-font-family: Arial;
-background:#0f172a;
-color:white;
-margin:0;
+body{
+    font-family: Arial;
+    background:#0f172a;
+    color:white;
+    margin:0;
 }
 
 header{
-background:#1e293b;
-padding:15px;
-text-align:center;
-font-weight:bold;
+    background:#1e293b;
+    padding:15px;
+    text-align:center;
+    font-weight:bold;
 }
 
 .container{
-padding:20px;
-max-width:1000px;
-margin:auto;
+    padding:20px;
+    max-width:1000px;
+    margin:auto;
 }
 
 input, select{
-width:100%;
-padding:8px;
-margin:6px 0 12px 0;
-border-radius:5px;
-border:none;
+    width:100%;
+    padding:8px;
+    margin:6px 0 12px 0;
+    border-radius:5px;
+    border:none;
 }
 
 button{
-background:#2563eb;
-color:white;
-border:none;
-padding:10px 20px;
-border-radius:5px;
-cursor:pointer;
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:5px;
+    cursor:pointer;
 }
 
 canvas{
-background:white;
-margin-top:20px;
-border-radius:8px;
+    background:white;
+    margin-top:20px;
+    border-radius:8px;
 }
 </style>
 </head>
@@ -71,15 +71,64 @@ ALLCALOR - GENERADOR DE PLANO SUELO RADIANTE
 <option value="20">20 cm</option>
 </select>
 
-<label>Tipo de trazado</label>
-<select id="tipo">
-<option value="serpentina">Serpentina</option>
-<option value="espiral">Espiral</option>
-<option value="espina">Espina de pez</option>
-</select>
-
 <button onclick="generarPlano()">Generar plano</button>
 
 <canvas id="plano" width="800" height="600"></canvas>
 
 </div>
+
+<script>
+function generarPlano(){
+
+    const largo = parseFloat(document.getElementById("largo").value);
+    const ancho = parseFloat(document.getElementById("ancho").value);
+    const paso = parseFloat(document.getElementById("paso").value);
+
+    if(!largo || !ancho){
+        alert("Introduce largo y ancho");
+        return;
+    }
+
+    const canvas = document.getElementById("plano");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const margen = 50;
+
+    const escalaX = (canvas.width - margen*2) / largo;
+    const escalaY = (canvas.height - margen*2) / ancho;
+    const escala = Math.min(escalaX, escalaY);
+
+    const largoPx = largo * escala;
+    const anchoPx = ancho * escala;
+    const pasoPx = (paso/100) * escala;
+
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 2;
+
+    let y = margen;
+    let direccion = 1;
+
+    ctx.beginPath();
+
+    while(y <= margen + anchoPx){
+
+        if(direccion === 1){
+            ctx.moveTo(margen, y);
+            ctx.lineTo(margen + largoPx, y);
+        }else{
+            ctx.moveTo(margen + largoPx, y);
+            ctx.lineTo(margen, y);
+        }
+
+        direccion *= -1;
+        y += pasoPx;
+    }
+
+    ctx.stroke();
+}
+</script>
+
+</body>
+</html>
