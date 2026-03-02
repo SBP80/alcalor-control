@@ -107,23 +107,30 @@ function generarPlano(){
     ctx.strokeStyle = "red";
     ctx.lineWidth = 2;
 
+    let x = margen;
     let y = margen;
     let direccion = 1;
 
     ctx.beginPath();
+    ctx.moveTo(x, y);
 
     while(y <= margen + anchoPx){
 
         if(direccion === 1){
-            ctx.moveTo(margen, y);
-            ctx.lineTo(margen + largoPx, y);
+            x = margen + largoPx;
         }else{
-            ctx.moveTo(margen + largoPx, y);
-            ctx.lineTo(margen, y);
+            x = margen;
+        }
+
+        ctx.lineTo(x, y);
+
+        y += pasoPx;
+
+        if(y <= margen + anchoPx){
+            ctx.lineTo(x, y);
         }
 
         direccion *= -1;
-        y += pasoPx;
     }
 
     ctx.stroke();
