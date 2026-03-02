@@ -47,6 +47,12 @@ canvas{
     margin-top:20px;
     border-radius:8px;
 }
+
+.resultado{
+    margin-top:15px;
+    font-size:18px;
+    font-weight:bold;
+}
 </style>
 </head>
 
@@ -75,6 +81,8 @@ ALLCALOR - GENERADOR DE PLANO SUELO RADIANTE
 
 <canvas id="plano" width="800" height="600"></canvas>
 
+<div class="resultado" id="metros"></div>
+
 </div>
 
 <script>
@@ -91,7 +99,6 @@ function generarPlano(){
 
     const canvas = document.getElementById("plano");
     const ctx = canvas.getContext("2d");
-
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     const margen = 50;
@@ -114,6 +121,9 @@ function generarPlano(){
     ctx.beginPath();
     ctx.moveTo(x, y);
 
+    let metrosTotales = 0;
+    let numeroPasadas = Math.floor(ancho / (paso/100));
+
     while(y <= margen + anchoPx){
 
         if(direccion === 1){
@@ -123,19 +133,29 @@ function generarPlano(){
         }
 
         ctx.lineTo(x, y);
+        metrosTotales += largo;
 
         y += pasoPx;
 
         if(y <= margen + anchoPx){
             ctx.lineTo(x, y);
+            metrosTotales += (paso/100);
         }
 
         direccion *= -1;
     }
 
     ctx.stroke();
+
+    metrosTotales += 2; // margen ida y vuelta colector estimado
+
+    document.getElementById("metros").innerHTML =
+        "Longitud estimada de tubo: " + metrosTotales.toFixed(1) + " m" +
+        (metrosTotales > 100 ? " ⚠️ SUPERA 100m" : "");
 }
 </script>
 
 </body>
 </html>
+
+
