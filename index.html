@@ -111,19 +111,27 @@ function generarPlano(){
     const anchoPx = ancho * escala;
     const pasoPx = (paso/100) * escala;
 
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
+    const maxCircuito = 100;
+
+    let metrosTotales = 0;
+    let metrosCircuito = 0;
+    let circuitoActual = 1;
+
+    const colores = ["red","blue","green","orange","purple","brown"];
 
     let x = margen;
     let y = margen;
     let direccion = 1;
 
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-
-    let metrosTotales = 0;
+    ctx.moveTo(x,y);
+    ctx.strokeStyle = colores[0];
 
     while(y <= margen + anchoPx){
+
+        let tramoHorizontal = largo;
+        let tramoVertical = paso/100;
 
         if(direccion === 1){
             x = margen + largoPx;
@@ -131,14 +139,35 @@ function generarPlano(){
             x = margen;
         }
 
-        ctx.lineTo(x, y);
-        metrosTotales += largo;
+        if(metrosCircuito + tramoHorizontal > maxCircuito){
+            ctx.stroke();
+            circuitoActual++;
+            ctx.beginPath();
+            ctx.strokeStyle = colores[(circuitoActual-1)%colores.length];
+            ctx.moveTo(x,y);
+            metrosCircuito = 0;
+        }
+
+        ctx.lineTo(x,y);
+        metrosTotales += tramoHorizontal;
+        metrosCircuito += tramoHorizontal;
 
         y += pasoPx;
 
         if(y <= margen + anchoPx){
-            ctx.lineTo(x, y);
-            metrosTotales += (paso/100);
+
+            if(metrosCircuito + tramoVertical > maxCircuito){
+                ctx.stroke();
+                circuitoActual++;
+                ctx.beginPath();
+                ctx.strokeStyle = colores[(circuitoActual-1)%colores.length];
+                ctx.moveTo(x,y);
+                metrosCircuito = 0;
+            }
+
+            ctx.lineTo(x,y);
+            metrosTotales += tramoVertical;
+            metrosCircuito += tramoVertical;
         }
 
         direccion *= -1;
@@ -146,19 +175,16 @@ function generarPlano(){
 
     ctx.stroke();
 
-    metrosTotales += 2; // estimación ida/vuelta colector
-
-    const maxCircuito = 100;
-
-    const numeroCircuitos = Math.ceil(metrosTotales / maxCircuito);
-    const metrosPorCircuito = metrosTotales / numeroCircuitos;
+    metrosTotales += 2;
 
     document.getElementById("resultado").innerHTML =
         "Longitud total: " + metrosTotales.toFixed(1) + " m<br>" +
-        "Número de circuitos: " + numeroCircuitos + "<br>" +
-        "Metros por circuito: " + metrosPorCircuito.toFixed(1) + " m";
+        "Número de circuitos: " + circuitoActual + "<br>" +
+        "Máx 100m por circuito";
 }
 </script>
 
 </body>
 </html>
+
+
