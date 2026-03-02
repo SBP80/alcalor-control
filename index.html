@@ -79,7 +79,7 @@ ALLCALOR - GENERADOR DE PLANO SUELO RADIANTE
 
 <button onclick="generarPlano()">Generar plano</button>
 
-<canvas id="plano" width="800" height="600"></canvas>
+<canvas id="plano" width="900" height="650"></canvas>
 
 <div class="resultado" id="resultado"></div>
 
@@ -101,7 +101,7 @@ function generarPlano(){
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    const margen = 50;
+    const margen = 80;
 
     const escalaX = (canvas.width - margen*2) / largo;
     const escalaY = (canvas.height - margen*2) / ancho;
@@ -119,14 +119,31 @@ function generarPlano(){
 
     const colores = ["red","blue","green","orange","purple","brown"];
 
-    let x = margen;
-    let y = margen;
-    let direccion = 1;
+    // Decisión automática colector
+    const colectorEnIzquierda = largo >= ancho;
+
+    let colectorX = colectorEnIzquierda ? margen - 40 : margen + largoPx + 40;
+    let colectorYInicio = margen;
+    let colectorYFin = margen + anchoPx;
+
+    // Dibujar colector
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(colectorX, colectorYInicio);
+    ctx.lineTo(colectorX, colectorYFin);
+    ctx.stroke();
 
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x,y);
+
+    let x = colectorEnIzquierda ? margen : margen + largoPx;
+    let y = margen;
+    let direccion = colectorEnIzquierda ? 1 : -1;
+
     ctx.strokeStyle = colores[0];
+    ctx.beginPath();
+    ctx.moveTo(colectorX, y);
+    ctx.lineTo(x, y);
 
     while(y <= margen + anchoPx){
 
@@ -144,11 +161,12 @@ function generarPlano(){
             circuitoActual++;
             ctx.beginPath();
             ctx.strokeStyle = colores[(circuitoActual-1)%colores.length];
-            ctx.moveTo(x,y);
+            ctx.moveTo(colectorX, y);
+            ctx.lineTo(x, y);
             metrosCircuito = 0;
         }
 
-        ctx.lineTo(x,y);
+        ctx.lineTo(x, y);
         metrosTotales += tramoHorizontal;
         metrosCircuito += tramoHorizontal;
 
@@ -161,11 +179,12 @@ function generarPlano(){
                 circuitoActual++;
                 ctx.beginPath();
                 ctx.strokeStyle = colores[(circuitoActual-1)%colores.length];
-                ctx.moveTo(x,y);
+                ctx.moveTo(colectorX, y);
+                ctx.lineTo(x, y);
                 metrosCircuito = 0;
             }
 
-            ctx.lineTo(x,y);
+            ctx.lineTo(x, y);
             metrosTotales += tramoVertical;
             metrosCircuito += tramoVertical;
         }
@@ -180,11 +199,9 @@ function generarPlano(){
     document.getElementById("resultado").innerHTML =
         "Longitud total: " + metrosTotales.toFixed(1) + " m<br>" +
         "Número de circuitos: " + circuitoActual + "<br>" +
-        "Máx 100m por circuito";
+        "Colector automático: " + (colectorEnIzquierda ? "Izquierda" : "Derecha");
 }
 </script>
 
 </body>
 </html>
-
-
