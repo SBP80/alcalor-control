@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR - Plano Profesional</title>
+<title>ALLCALOR - Plano Profesional Real</title>
 
 <style>
 body{
@@ -72,9 +72,9 @@ ALLCALOR - GENERADOR PROFESIONAL SUELO RADIANTE
 
 <label>Separación (cm)</label>
 <select id="paso">
-<option value="10">10 cm</option>
-<option value="15">15 cm</option>
-<option value="20">20 cm</option>
+<option value="10">10</option>
+<option value="15">15</option>
+<option value="20">20</option>
 </select>
 
 <button onclick="generarPlano()">Generar plano</button>
@@ -90,12 +90,9 @@ function generarPlano(){
 
     const largo = parseFloat(document.getElementById("largo").value);
     const ancho = parseFloat(document.getElementById("ancho").value);
-    const paso = parseFloat(document.getElementById("paso").value);
+    const paso = parseFloat(document.getElementById("paso").value)/100;
 
-    if(!largo || !ancho){
-        alert("Introduce largo y ancho");
-        return;
-    }
+    if(!largo || !ancho) return;
 
     const canvas = document.getElementById("plano");
     const ctx = canvas.getContext("2d");
@@ -110,80 +107,92 @@ function generarPlano(){
 
     const largoPx = largo * escala;
     const anchoPx = ancho * escala;
-    const pasoPx = (paso/100) * escala;
+    const pasoPx = paso * escala;
 
     const maxCircuito = 100;
 
-    let metrosTotales = 0;
+    let metrosCircuito = 0;
+    let totalMetros = 0;
     let circuito = 1;
 
     const colores = ["red","blue","green","orange","purple","brown"];
 
-    // Colector pequeño realista
-    const colectorX = margen - 30;
-    const colectorY = margen + anchoPx/2;
+    // Colector pequeño lateral
+    const colectorX = margen - 25;
+    const colectorY = margen + 40;
 
     ctx.strokeStyle="black";
-    ctx.lineWidth=4;
+    ctx.lineWidth=3;
     ctx.beginPath();
-    ctx.moveTo(colectorX, colectorY-40);
-    ctx.lineTo(colectorX, colectorY+40);
+    ctx.moveTo(colectorX, colectorY);
+    ctx.lineTo(colectorX, colectorY + 120);
     ctx.stroke();
 
     ctx.lineWidth=2;
 
-    let x1 = margen;
-    let y1 = margen;
-    let x2 = margen + largoPx;
-    let y2 = margen + anchoPx;
+    let xMin = margen;
+    let yMin = margen;
+    let xMax = margen + largoPx;
+    let yMax = margen + anchoPx;
 
-    let actualX = x1;
-    let actualY = y1;
+    let x = xMin;
+    let y = yMin;
 
     ctx.strokeStyle = colores[0];
     ctx.beginPath();
+
+    // Entrada real desde colector (horizontal pegado pared)
     ctx.moveTo(colectorX, colectorY);
-    ctx.lineTo(actualX, actualY);
+    ctx.lineTo(xMin, yMin);
 
-    while((x2-x1) > pasoPx && (y2-y1) > pasoPx){
+    while(xMax - xMin > pasoPx && yMax - yMin > pasoPx){
 
-        // Arriba →
-        ctx.lineTo(x2, y1);
-        metrosTotales += largo;
+        // → arriba
+        ctx.lineTo(xMax, yMin);
+        metrosCircuito += largo;
+        totalMetros += largo;
 
-        y1 += pasoPx;
+        if(metrosCircuito > maxCircuito){
+            ctx.stroke();
+            circuito++;
+            ctx.beginPath();
+            ctx.strokeStyle = colores[(circuito-1)%colores.length];
+            metrosCircuito = 0;
+        }
 
-        // Derecha ↓
-        ctx.lineTo(x2, y2);
-        metrosTotales += ancho;
+        yMin += pasoPx;
 
-        x2 -= pasoPx;
+        // ↓ derecha
+        ctx.lineTo(xMax, yMax);
+        metrosCircuito += ancho;
+        totalMetros += ancho;
 
-        // Abajo ←
-        ctx.lineTo(x1, y2);
-        metrosTotales += largo;
+        xMax -= pasoPx;
 
-        y2 -= pasoPx;
+        // ← abajo
+        ctx.lineTo(xMin, yMax);
+        metrosCircuito += largo;
+        totalMetros += largo;
 
-        // Izquierda ↑
-        ctx.lineTo(x1, y1);
-        metrosTotales += ancho;
+        yMax -= pasoPx;
 
-        x1 += pasoPx;
+        // ↑ izquierda
+        ctx.lineTo(xMin, yMin);
+        metrosCircuito += ancho;
+        totalMetros += ancho;
+
+        xMin += pasoPx;
     }
 
-    // Retorno al colector
+    // Retorno recto al colector
     ctx.lineTo(colectorX, colectorY);
 
     ctx.stroke();
 
-    metrosTotales += 2;
-
-    let numCircuitos = Math.ceil(metrosTotales/maxCircuito);
-
     document.getElementById("resultado").innerHTML =
-        "Longitud total: " + metrosTotales.toFixed(1) + " m<br>" +
-        "Circuitos necesarios (≤100m): " + numCircuitos;
+        "Longitud total aproximada: " + totalMetros.toFixed(1) + " m<br>" +
+        "Circuitos generados: " + circuito + "<br>" +
+        "Máx 100m por circuito";
 }
 </script>
 
