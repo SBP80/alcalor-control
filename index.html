@@ -2,65 +2,21 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR - Plano Profesional Real</title>
+<title>ALLCALOR - Profesional Real</title>
 
 <style>
-body{
-    font-family: Arial;
-    background:#0f172a;
-    color:white;
-    margin:0;
-}
-
-header{
-    background:#1e293b;
-    padding:15px;
-    text-align:center;
-    font-weight:bold;
-}
-
-.container{
-    padding:20px;
-    max-width:1000px;
-    margin:auto;
-}
-
-input, select{
-    width:100%;
-    padding:8px;
-    margin:6px 0 12px 0;
-    border-radius:5px;
-    border:none;
-}
-
-button{
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:5px;
-    cursor:pointer;
-}
-
-canvas{
-    background:white;
-    margin-top:20px;
-    border-radius:8px;
-}
-
-.resultado{
-    margin-top:15px;
-    font-size:18px;
-    font-weight:bold;
-}
+body{font-family:Arial;background:#0f172a;color:white;margin:0;}
+header{background:#1e293b;padding:15px;text-align:center;font-weight:bold;}
+.container{padding:20px;max-width:1000px;margin:auto;}
+input,select{width:100%;padding:8px;margin:6px 0 12px 0;border-radius:5px;border:none;}
+button{background:#2563eb;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;}
+canvas{background:white;margin-top:20px;border-radius:8px;}
+.resultado{margin-top:15px;font-size:18px;font-weight:bold;}
 </style>
 </head>
-
 <body>
 
-<header>
-ALLCALOR - GENERADOR PROFESIONAL SUELO RADIANTE
-</header>
+<header>ALLCALOR - GENERADOR PROFESIONAL SUELO RADIANTE</header>
 
 <div class="container">
 
@@ -80,7 +36,6 @@ ALLCALOR - GENERADOR PROFESIONAL SUELO RADIANTE
 <button onclick="generarPlano()">Generar plano</button>
 
 <canvas id="plano" width="900" height="650"></canvas>
-
 <div class="resultado" id="resultado"></div>
 
 </div>
@@ -88,111 +43,77 @@ ALLCALOR - GENERADOR PROFESIONAL SUELO RADIANTE
 <script>
 function generarPlano(){
 
-    const largo = parseFloat(document.getElementById("largo").value);
-    const ancho = parseFloat(document.getElementById("ancho").value);
-    const paso = parseFloat(document.getElementById("paso").value)/100;
+const largo = parseFloat(document.getElementById("largo").value);
+const ancho = parseFloat(document.getElementById("ancho").value);
+const paso = parseFloat(document.getElementById("paso").value)/100;
 
-    if(!largo || !ancho) return;
+if(!largo || !ancho) return;
 
-    const canvas = document.getElementById("plano");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+const canvas = document.getElementById("plano");
+const ctx = canvas.getContext("2d");
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    const margen = 80;
+const margen = 80;
+const escala = Math.min((canvas.width-margen*2)/largo,(canvas.height-margen*2)/ancho);
 
-    const escala = Math.min(
-        (canvas.width - margen*2)/largo,
-        (canvas.height - margen*2)/ancho
-    );
+const largoPx = largo*escala;
+const anchoPx = ancho*escala;
+const pasoPx = paso*escala;
 
-    const largoPx = largo * escala;
-    const anchoPx = ancho * escala;
-    const pasoPx = paso * escala;
+const maxCircuito = 100;
 
-    const maxCircuito = 100;
+// cálculo estimado total
+const superficie = largo*ancho;
+const metrosEstimados = superficie*(1/paso)*1.05;
+const circuitos = Math.ceil(metrosEstimados/maxCircuito);
 
-    let metrosCircuito = 0;
-    let totalMetros = 0;
-    let circuito = 1;
+const colores=["red","blue","green","orange","purple","brown"];
 
-    const colores = ["red","blue","green","orange","purple","brown"];
+const zonaAncho = anchoPx/circuitos;
 
-    // Colector pequeño lateral
-    const colectorX = margen - 25;
-    const colectorY = margen + 40;
+for(let c=0;c<circuitos;c++){
 
-    ctx.strokeStyle="black";
-    ctx.lineWidth=3;
-    ctx.beginPath();
-    ctx.moveTo(colectorX, colectorY);
-    ctx.lineTo(colectorX, colectorY + 120);
-    ctx.stroke();
+let xMin = margen;
+let xMax = margen + largoPx;
+let yMin = margen + c*zonaAncho;
+let yMax = margen + (c+1)*zonaAncho;
 
-    ctx.lineWidth=2;
+ctx.strokeStyle = colores[c%colores.length];
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(xMin,yMin);
 
-    let xMin = margen;
-    let yMin = margen;
-    let xMax = margen + largoPx;
-    let yMax = margen + anchoPx;
+while((xMax-xMin)>pasoPx && (yMax-yMin)>pasoPx){
 
-    let x = xMin;
-    let y = yMin;
+ctx.lineTo(xMax,yMin);
+yMin+=pasoPx;
 
-    ctx.strokeStyle = colores[0];
-    ctx.beginPath();
+ctx.lineTo(xMax,yMax);
+xMax-=pasoPx;
 
-    // Entrada real desde colector (horizontal pegado pared)
-    ctx.moveTo(colectorX, colectorY);
-    ctx.lineTo(xMin, yMin);
+ctx.lineTo(xMin,yMax);
+yMax-=pasoPx;
 
-    while(xMax - xMin > pasoPx && yMax - yMin > pasoPx){
+ctx.lineTo(xMin,yMin);
+xMin+=pasoPx;
 
-        // → arriba
-        ctx.lineTo(xMax, yMin);
-        metrosCircuito += largo;
-        totalMetros += largo;
+}
 
-        if(metrosCircuito > maxCircuito){
-            ctx.stroke();
-            circuito++;
-            ctx.beginPath();
-            ctx.strokeStyle = colores[(circuito-1)%colores.length];
-            metrosCircuito = 0;
-        }
+ctx.stroke();
+}
 
-        yMin += pasoPx;
+// colector lateral
+ctx.strokeStyle="black";
+ctx.lineWidth=4;
+ctx.beginPath();
+ctx.moveTo(margen-30,margen);
+ctx.lineTo(margen-30,margen+anchoPx);
+ctx.stroke();
 
-        // ↓ derecha
-        ctx.lineTo(xMax, yMax);
-        metrosCircuito += ancho;
-        totalMetros += ancho;
-
-        xMax -= pasoPx;
-
-        // ← abajo
-        ctx.lineTo(xMin, yMax);
-        metrosCircuito += largo;
-        totalMetros += largo;
-
-        yMax -= pasoPx;
-
-        // ↑ izquierda
-        ctx.lineTo(xMin, yMin);
-        metrosCircuito += ancho;
-        totalMetros += ancho;
-
-        xMin += pasoPx;
-    }
-
-    // Retorno recto al colector
-    ctx.lineTo(colectorX, colectorY);
-
-    ctx.stroke();
-
-    document.getElementById("resultado").innerHTML =
-        "Longitud total aproximada: " + totalMetros.toFixed(1) + " m<br>" +
-        "Circuitos generados: " + circuito + "<br>" +
-        "Máx 100m por circuito";
+document.getElementById("resultado").innerHTML=
+"Superficie: "+superficie.toFixed(1)+" m²<br>"+
+"Circuitos generados: "+circuitos+"<br>"+
+"Máx 100m por circuito";
 }
 </script>
 
