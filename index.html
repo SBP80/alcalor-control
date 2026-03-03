@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR PRO - Motor Hidráulico Real 3.0</title>
+<title>ALLCALOR PRO - Motor Hidráulico Real 4.0</title>
 
 <style>
 body{
@@ -45,7 +45,7 @@ canvas{
 
 <body>
 
-<h1>ALLCALOR PRO – Motor Hidráulico Real 3.0</h1>
+<h1>ALLCALOR PRO – Motor Hidráulico Real 4.0</h1>
 
 <div class="panel">
 
@@ -107,7 +107,7 @@ class Core {
 }
 
 // ===============================
-// MOTOR DE DIBUJO SIMPLE
+// GENERADOR PRINCIPAL
 // ===============================
 
 function generar(){
@@ -154,22 +154,28 @@ function generar(){
     }
     ctx.stroke();
 
-    // Generar caracoles reales simples por circuito
-    let offset = 0;
+    // ===============================
+    // GENERACIÓN REAL POR FRANJAS
+    // ===============================
+
     const pasoPx = paso * escala;
+    const anchoCircuito = largoPx / circuitos;
 
     for(let c=0;c<circuitos;c++){
 
-        ctx.strokeStyle = `hsl(${c*60},70%,50%)`;
+        const inicioX = margin + (c * anchoCircuito);
+        const finX = inicioX + anchoCircuito;
+
+        let x1 = inicioX;
+        let y1 = margin;
+        let x2 = finX;
+        let y2 = margin + anchoPx;
+
+        ctx.strokeStyle = `hsl(${c*90},70%,50%)`;
         ctx.lineWidth=2;
         ctx.beginPath();
 
-        let x1 = margin + offset;
-        let y1 = margin + offset;
-        let x2 = margin + largoPx - offset;
-        let y2 = margin + anchoPx - offset;
-
-        while(x1<x2 && y1<y2){
+        while(x1 < x2 && y1 < y2){
 
             ctx.moveTo(x1,y1);
             ctx.lineTo(x2,y1);
@@ -183,8 +189,6 @@ function generar(){
         }
 
         ctx.stroke();
-
-        offset += pasoPx*2;
     }
 
     // RESULTADOS
