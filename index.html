@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR PRO - Motor Hidráulico Real 4.0</title>
+<title>ALLCALOR PRO - Motor Hidráulico Real 5.0</title>
 
 <style>
 body{
@@ -12,9 +12,7 @@ body{
     margin:0;
     padding:20px;
 }
-h1{
-    text-align:center;
-}
+h1{text-align:center;}
 .panel{
     background:#1e293b;
     padding:20px;
@@ -37,18 +35,15 @@ canvas{
     background:white;
     border-radius:8px;
 }
-.resultado{
-    margin-top:20px;
-}
+.resultado{margin-top:20px;}
 </style>
 </head>
 
 <body>
 
-<h1>ALLCALOR PRO – Motor Hidráulico Real 4.0</h1>
+<h1>ALLCALOR PRO – Motor Hidráulico Real 5.0</h1>
 
 <div class="panel">
-
 <label>Largo estancia (m)</label>
 <input type="number" id="largo" value="5">
 
@@ -73,135 +68,110 @@ canvas{
 </select>
 
 <button onclick="generar()">Generar plano</button>
-
 </div>
 
 <canvas id="plano" width="900" height="600"></canvas>
-
 <div class="resultado" id="resultado"></div>
 
 <script>
 
-// ===============================
-// CORE MATEMÁTICO
-// ===============================
-
 class Core {
 
-    static superficie(largo, ancho){
-        return largo * ancho;
-    }
-
-    static longitudTotal(superficie, paso){
-        return superficie / paso;
-    }
-
-    static circuitos(longitudTotal, maxMetro){
-        return Math.ceil(longitudTotal / maxMetro);
-    }
-
-    static colectores(circuitos){
-        return Math.ceil(circuitos / 12);
-    }
+static superficie(l,a){return l*a;}
+static longitudTotal(s,p){return s/p;}
+static circuitos(lt,max){return Math.ceil(lt/max);}
 
 }
-
-// ===============================
-// GENERADOR PRINCIPAL
-// ===============================
 
 function generar(){
 
-    const largo = parseFloat(document.getElementById("largo").value);
-    const ancho = parseFloat(document.getElementById("ancho").value);
-    const paso = parseFloat(document.getElementById("paso").value);
-    const maxMetro = parseFloat(document.getElementById("maxMetro").value);
-    const pared = document.getElementById("pared").value;
+const largo=parseFloat(largo.value);
+const ancho=parseFloat(ancho.value);
+const paso=parseFloat(paso.value);
+const maxMetro=parseFloat(maxMetro.value);
+const pared=pared.value;
 
-    const superficie = Core.superficie(largo, ancho);
-    const longitudTotal = Core.longitudTotal(superficie, paso);
-    const circuitos = Core.circuitos(longitudTotal, maxMetro);
-    const colectores = Core.colectores(circuitos);
+const superficie=Core.superficie(largo,ancho);
+const longitudTotal=Core.longitudTotal(superficie,paso);
+const circuitos=Core.circuitos(longitudTotal,maxMetro);
 
-    const canvas = document.getElementById("plano");
-    const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("plano");
+const ctx=canvas.getContext("2d");
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+const margin=60;
+const escala=Math.min((canvas.width-200)/largo,(canvas.height-200)/ancho);
 
-    const margin = 60;
-    const escala = Math.min(
-        (canvas.width-200)/largo,
-        (canvas.height-200)/ancho
-    );
+const largoPx=largo*escala;
+const anchoPx=ancho*escala;
 
-    const largoPx = largo * escala;
-    const anchoPx = ancho * escala;
+ctx.lineWidth=3;
+ctx.strokeStyle="black";
+ctx.strokeRect(margin,margin,largoPx,anchoPx);
 
-    // Dibujar estancia
-    ctx.lineWidth=3;
-    ctx.strokeStyle="black";
-    ctx.strokeRect(margin,margin,largoPx,anchoPx);
+// Colector
+const colectorX=pared==="izquierda"?margin-30:margin+largoPx+30;
+ctx.lineWidth=6;
+ctx.beginPath();
+ctx.moveTo(colectorX,margin);
+ctx.lineTo(colectorX,margin+anchoPx);
+ctx.stroke();
 
-    // Dibujar colector
-    ctx.lineWidth=6;
-    ctx.beginPath();
-    if(pared==="izquierda"){
-        ctx.moveTo(margin-30,margin);
-        ctx.lineTo(margin-30,margin+anchoPx);
-    }else{
-        ctx.moveTo(margin+largoPx+30,margin);
-        ctx.lineTo(margin+largoPx+30,margin+anchoPx);
-    }
-    ctx.stroke();
+const pasoPx=paso*escala;
+const anchoCircuito=largoPx/circuitos;
 
-    // ===============================
-    // GENERACIÓN REAL POR FRANJAS
-    // ===============================
+let html="";
+html+="Superficie: "+superficie.toFixed(1)+" m²<br>";
+html+="Longitud total estimada: "+longitudTotal.toFixed(1)+" m<br>";
+html+="Circuitos: "+circuitos+"<br><br>";
 
-    const pasoPx = paso * escala;
-    const anchoCircuito = largoPx / circuitos;
+for(let c=0;c<circuitos;c++){
 
-    for(let c=0;c<circuitos;c++){
+const inicioX=margin+(c*anchoCircuito);
+const finX=inicioX+anchoCircuito;
 
-        const inicioX = margin + (c * anchoCircuito);
-        const finX = inicioX + anchoCircuito;
+let x1=inicioX;
+let y1=margin;
+let x2=finX;
+let y2=margin+anchoPx;
 
-        let x1 = inicioX;
-        let y1 = margin;
-        let x2 = finX;
-        let y2 = margin + anchoPx;
+ctx.strokeStyle=`hsl(${c*90},70%,50%)`;
+ctx.lineWidth=2;
+ctx.beginPath();
 
-        ctx.strokeStyle = `hsl(${c*90},70%,50%)`;
-        ctx.lineWidth=2;
-        ctx.beginPath();
+let longitudCircuito=0;
 
-        while(x1 < x2 && y1 < y2){
+while(x1<x2 && y1<y2){
 
-            ctx.moveTo(x1,y1);
-            ctx.lineTo(x2,y1);
-            ctx.lineTo(x2,y2);
-            ctx.lineTo(x1,y2);
+ctx.moveTo(x1,y1);
+ctx.lineTo(x2,y1);
+ctx.lineTo(x2,y2);
+ctx.lineTo(x1,y2);
 
-            x1 += pasoPx;
-            y1 += pasoPx;
-            x2 -= pasoPx;
-            y2 -= pasoPx;
-        }
+longitudCircuito+=((x2-x1)+(y2-y1))*2/escala;
 
-        ctx.stroke();
-    }
+x1+=pasoPx;
+y1+=pasoPx;
+x2-=pasoPx;
+y2-=pasoPx;
+}
 
-    // RESULTADOS
-    let html="";
-    html+="Superficie: "+superficie.toFixed(1)+" m²<br>";
-    html+="Longitud total estimada: "+longitudTotal.toFixed(1)+" m<br>";
-    html+="Circuitos: "+circuitos+"<br>";
-    html+="Colectores necesarios: "+colectores+"<br>";
+ctx.stroke();
 
-    document.getElementById("resultado").innerHTML=html;
+// conexión al colector
+ctx.beginPath();
+ctx.moveTo(colectorX,margin+(c*20));
+ctx.lineTo(inicioX,margin);
+ctx.stroke();
+
+html+="Circuito "+(c+1)+": "+longitudCircuito.toFixed(1)+" m<br>";
+
+}
+
+document.getElementById("resultado").innerHTML=html;
+
 }
 
 </script>
-
 </body>
 </html>
