@@ -1,36 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR PRO - Motor Hidráulico 2.0</title>
+<title>ALLCALOR PRO - Motor Hidráulico Real 3.0</title>
+
 <style>
-body{font-family:Arial;background:#0f172a;color:white;margin:0}
-header{background:#1e293b;padding:15px;text-align:center;font-weight:bold}
-.container{padding:20px;max-width:1100px;margin:auto}
-input,select{width:100%;padding:8px;margin:6px 0 12px 0;border-radius:5px;border:none}
-button{background:#2563eb;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer}
-canvas{background:white;margin-top:20px;border-radius:8px}
-.resultado{margin-top:15px;font-size:16px;font-weight:bold}
+body{
+    font-family:Arial;
+    background:#0f172a;
+    color:white;
+    margin:0;
+    padding:20px;
+}
+h1{
+    text-align:center;
+}
+.panel{
+    background:#1e293b;
+    padding:20px;
+    border-radius:8px;
+    margin-bottom:20px;
+}
+input, select{
+    width:100%;
+    padding:8px;
+    margin-bottom:10px;
+}
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:10px;
+    cursor:pointer;
+}
+canvas{
+    background:white;
+    border-radius:8px;
+}
+.resultado{
+    margin-top:20px;
+}
 </style>
 </head>
+
 <body>
 
-<header>ALLCALOR - MOTOR HIDRÁULICO REAL 2.0</header>
+<h1>ALLCALOR PRO – Motor Hidráulico Real 3.0</h1>
 
-<div class="container">
+<div class="panel">
 
 <label>Largo estancia (m)</label>
-<input type="number" id="largo" value="5" step="0.1">
+<input type="number" id="largo" value="5">
 
 <label>Ancho estancia (m)</label>
-<input type="number" id="ancho" value="6" step="0.1">
+<input type="number" id="ancho" value="6">
 
 <label>Separación (cm)</label>
 <select id="paso">
-<option value="5">5</option>
-<option value="10" selected>10</option>
-<option value="15">15</option>
-<option value="20">20</option>
+<option value="0.10">10</option>
+<option value="0.15">15</option>
+<option value="0.20">20</option>
+<option value="0.05">5 (Baños)</option>
 </select>
 
 <label>Máx metros por circuito</label>
@@ -38,131 +68,134 @@ canvas{background:white;margin-top:20px;border-radius:8px}
 
 <label>Pared colector</label>
 <select id="pared">
-<option value="izquierda" selected>Izquierda</option>
+<option value="izquierda">Izquierda</option>
 <option value="derecha">Derecha</option>
 </select>
 
 <button onclick="generar()">Generar plano</button>
 
-<canvas id="plano" width="1000" height="700"></canvas>
-<div class="resultado" id="resultado"></div>
-
 </div>
+
+<canvas id="plano" width="900" height="600"></canvas>
+
+<div class="resultado" id="resultado"></div>
 
 <script>
 
+// ===============================
+// CORE MATEMÁTICO
+// ===============================
+
+class Core {
+
+    static superficie(largo, ancho){
+        return largo * ancho;
+    }
+
+    static longitudTotal(superficie, paso){
+        return superficie / paso;
+    }
+
+    static circuitos(longitudTotal, maxMetro){
+        return Math.ceil(longitudTotal / maxMetro);
+    }
+
+    static colectores(circuitos){
+        return Math.ceil(circuitos / 12);
+    }
+
+}
+
+// ===============================
+// MOTOR DE DIBUJO SIMPLE
+// ===============================
+
 function generar(){
 
-const largo=parseFloat(largoInput.value);
-const ancho=parseFloat(anchoInput.value);
-const paso=parseFloat(pasoSelect.value)/100;
-const maxMetro=parseFloat(maxMetroInput.value);
-const pared=paredSelect.value;
+    const largo = parseFloat(document.getElementById("largo").value);
+    const ancho = parseFloat(document.getElementById("ancho").value);
+    const paso = parseFloat(document.getElementById("paso").value);
+    const maxMetro = parseFloat(document.getElementById("maxMetro").value);
+    const pared = document.getElementById("pared").value;
 
-if(!largo||!ancho) return;
+    const superficie = Core.superficie(largo, ancho);
+    const longitudTotal = Core.longitudTotal(superficie, paso);
+    const circuitos = Core.circuitos(longitudTotal, maxMetro);
+    const colectores = Core.colectores(circuitos);
 
-const canvas=document.getElementById("plano");
-const ctx=canvas.getContext("2d");
-ctx.clearRect(0,0,canvas.width,canvas.height);
+    const canvas = document.getElementById("plano");
+    const ctx = canvas.getContext("2d");
 
-const margen=80;
-const escala=Math.min((canvas.width-margen*2)/largo,(canvas.height-margen*2)/ancho);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-const largoPx=largo*escala;
-const anchoPx=ancho*escala;
-const pasoPx=paso*escala;
+    const margin = 60;
+    const escala = Math.min(
+        (canvas.width-200)/largo,
+        (canvas.height-200)/ancho
+    );
 
-const superficie=largo*ancho;
-const estimadoTotal=superficie/paso;
-const circuitos=Math.ceil(estimadoTotal/maxMetro);
-const anchoZona=largo/circuitos;
+    const largoPx = largo * escala;
+    const anchoPx = ancho * escala;
 
-let resultadosHTML="Superficie: "+superficie.toFixed(1)+" m²<br>";
-resultadosHTML+="Circuitos: "+circuitos+"<br><br>";
+    // Dibujar estancia
+    ctx.lineWidth=3;
+    ctx.strokeStyle="black";
+    ctx.strokeRect(margin,margin,largoPx,anchoPx);
 
-const colores=["red","blue","green","orange","purple","brown"];
+    // Dibujar colector
+    ctx.lineWidth=6;
+    ctx.beginPath();
+    if(pared==="izquierda"){
+        ctx.moveTo(margin-30,margin);
+        ctx.lineTo(margin-30,margin+anchoPx);
+    }else{
+        ctx.moveTo(margin+largoPx+30,margin);
+        ctx.lineTo(margin+largoPx+30,margin+anchoPx);
+    }
+    ctx.stroke();
 
-for(let c=0;c<circuitos;c++){
+    // Generar caracoles reales simples por circuito
+    let offset = 0;
+    const pasoPx = paso * escala;
 
-let xInicio=c*anchoZona;
-let xFin=(c+1)*anchoZona;
+    for(let c=0;c<circuitos;c++){
 
-let puntos=[];
-let xMin=xInicio;
-let xMax=xFin;
-let yMin=0;
-let yMax=ancho;
+        ctx.strokeStyle = `hsl(${c*60},70%,50%)`;
+        ctx.lineWidth=2;
+        ctx.beginPath();
 
-while((xMax-xMin)>paso && (yMax-yMin)>paso){
+        let x1 = margin + offset;
+        let y1 = margin + offset;
+        let x2 = margin + largoPx - offset;
+        let y2 = margin + anchoPx - offset;
 
-puntos.push([xMin,yMin]);
-puntos.push([xMax,yMin]);
-puntos.push([xMax,yMax]);
-puntos.push([xMin,yMax]);
+        while(x1<x2 && y1<y2){
 
-xMin+=paso;
-yMin+=paso;
-xMax-=paso;
-yMax-=paso;
+            ctx.moveTo(x1,y1);
+            ctx.lineTo(x2,y1);
+            ctx.lineTo(x2,y2);
+            ctx.lineTo(x1,y2);
+
+            x1 += pasoPx;
+            y1 += pasoPx;
+            x2 -= pasoPx;
+            y2 -= pasoPx;
+        }
+
+        ctx.stroke();
+
+        offset += pasoPx*2;
+    }
+
+    // RESULTADOS
+    let html="";
+    html+="Superficie: "+superficie.toFixed(1)+" m²<br>";
+    html+="Longitud total estimada: "+longitudTotal.toFixed(1)+" m<br>";
+    html+="Circuitos: "+circuitos+"<br>";
+    html+="Colectores necesarios: "+colectores+"<br>";
+
+    document.getElementById("resultado").innerHTML=html;
 }
-
-function longitud(lista){
-let total=0;
-for(let i=1;i<lista.length;i++){
-let dx=lista[i][0]-lista[i-1][0];
-let dy=lista[i][1]-lista[i-1][1];
-total+=Math.sqrt(dx*dx+dy*dy);
-}
-return total;
-}
-
-let metros=longitud(puntos);
-
-ctx.beginPath();
-ctx.strokeStyle=colores[c%colores.length];
-ctx.lineWidth=2;
-
-let colectorX=(pared==="izquierda")? -0.3 : largo+0.3;
-let colectorY=ancho/(circuitos+1)*(c+1);
-
-ctx.moveTo(margen+colectorX*escala,margen+colectorY*escala);
-ctx.lineTo(margen+puntos[0][0]*escala,margen+puntos[0][1]*escala);
-
-for(let i=0;i<puntos.length;i++){
-let px=margen+puntos[i][0]*escala;
-let py=margen+puntos[i][1]*escala;
-ctx.lineTo(px,py);
-}
-
-ctx.lineTo(margen+colectorX*escala,margen+colectorY*escala);
-ctx.stroke();
-
-resultadosHTML+="Circuito "+(c+1)+": "+metros.toFixed(1)+" m<br>";
-}
-
-// colector visual
-ctx.strokeStyle="black";
-ctx.lineWidth=4;
-ctx.beginPath();
-
-if(pared==="izquierda"){
-ctx.moveTo(margen-40,margen);
-ctx.lineTo(margen-40,margen+anchoPx);
-}else{
-ctx.moveTo(margen+largoPx+40,margen);
-ctx.lineTo(margen+largoPx+40,margen+anchoPx);
-}
-ctx.stroke();
-
-document.getElementById("resultado").innerHTML=resultadosHTML;
-
-}
-
-const largoInput=document.getElementById("largo");
-const anchoInput=document.getElementById("ancho");
-const pasoSelect=document.getElementById("paso");
-const maxMetroInput=document.getElementById("maxMetro");
-const paredSelect=document.getElementById("pared");
 
 </script>
 
