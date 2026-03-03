@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR PRO - Motor Hidráulico Real 5.0</title>
+<title>ALLCALOR PRO - Motor Hidráulico Real 5.1</title>
 
 <style>
 body{
@@ -41,17 +41,17 @@ canvas{
 
 <body>
 
-<h1>ALLCALOR PRO – Motor Hidráulico Real 5.0</h1>
+<h1>ALLCALOR PRO – Motor Hidráulico Real 5.1</h1>
 
 <div class="panel">
 <label>Largo estancia (m)</label>
-<input type="number" id="largo" value="5">
+<input type="number" id="inputLargo" value="5">
 
 <label>Ancho estancia (m)</label>
-<input type="number" id="ancho" value="6">
+<input type="number" id="inputAncho" value="6">
 
 <label>Separación (cm)</label>
-<select id="paso">
+<select id="inputPaso">
 <option value="0.10">10</option>
 <option value="0.15">15</option>
 <option value="0.20">20</option>
@@ -59,10 +59,10 @@ canvas{
 </select>
 
 <label>Máx metros por circuito</label>
-<input type="number" id="maxMetro" value="100">
+<input type="number" id="inputMaxMetro" value="100">
 
 <label>Pared colector</label>
-<select id="pared">
+<select id="inputPared">
 <option value="izquierda">Izquierda</option>
 <option value="derecha">Derecha</option>
 </select>
@@ -75,25 +75,17 @@ canvas{
 
 <script>
 
-class Core {
-
-static superficie(l,a){return l*a;}
-static longitudTotal(s,p){return s/p;}
-static circuitos(lt,max){return Math.ceil(lt/max);}
-
-}
-
 function generar(){
 
-const largo=parseFloat(largo.value);
-const ancho=parseFloat(ancho.value);
-const paso=parseFloat(paso.value);
-const maxMetro=parseFloat(maxMetro.value);
-const pared=pared.value;
+const largo=parseFloat(document.getElementById("inputLargo").value);
+const ancho=parseFloat(document.getElementById("inputAncho").value);
+const paso=parseFloat(document.getElementById("inputPaso").value);
+const maxMetro=parseFloat(document.getElementById("inputMaxMetro").value);
+const pared=document.getElementById("inputPared").value;
 
-const superficie=Core.superficie(largo,ancho);
-const longitudTotal=Core.longitudTotal(superficie,paso);
-const circuitos=Core.circuitos(longitudTotal,maxMetro);
+const superficie=largo*ancho;
+const longitudTotal=superficie/paso;
+const circuitos=Math.ceil(longitudTotal/maxMetro);
 
 const canvas=document.getElementById("plano");
 const ctx=canvas.getContext("2d");
@@ -109,7 +101,7 @@ ctx.lineWidth=3;
 ctx.strokeStyle="black";
 ctx.strokeRect(margin,margin,largoPx,anchoPx);
 
-// Colector
+// colector
 const colectorX=pared==="izquierda"?margin-30:margin+largoPx+30;
 ctx.lineWidth=6;
 ctx.beginPath();
@@ -135,7 +127,7 @@ let y1=margin;
 let x2=finX;
 let y2=margin+anchoPx;
 
-ctx.strokeStyle=`hsl(${c*90},70%,50%)`;
+ctx.strokeStyle=`hsl(${c*100},70%,50%)`;
 ctx.lineWidth=2;
 ctx.beginPath();
 
@@ -158,7 +150,7 @@ y2-=pasoPx;
 
 ctx.stroke();
 
-// conexión al colector
+// conexión colector
 ctx.beginPath();
 ctx.moveTo(colectorX,margin+(c*20));
 ctx.lineTo(inicioX,margin);
