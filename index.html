@@ -4,125 +4,225 @@
 <meta charset="UTF-8">
 <title>ALLCALOR PRO</title>
 <style>
-body{font-family:Arial;background:#0f172a;color:white;margin:0;}
-header{background:#1e293b;padding:15px;text-align:center;font-weight:bold;}
-.container{padding:20px;max-width:1000px;margin:auto;}
-input,select{width:100%;padding:8px;margin:6px 0 12px 0;border-radius:5px;border:none;}
-button{background:#2563eb;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;}
-canvas{background:white;margin-top:20px;border-radius:8px;}
-.resultado{margin-top:15px;font-size:18px;font-weight:bold;}
+body{font-family:Arial;background:#0f172a;color:white;margin:0}
+header{background:#1e293b;padding:15px;text-align:center;font-weight:bold}
+.container{padding:20px;max-width:1100px;margin:auto}
+input,select{width:100%;padding:8px;margin:6px 0 12px 0;border-radius:5px;border:none}
+button{background:#2563eb;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer}
+canvas{background:white;margin-top:20px;border-radius:8px}
+.resultado{margin-top:15px;font-size:16px;font-weight:bold}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 </style>
 </head>
 <body>
 
-<header>ALLCALOR - GENERADOR PROFESIONAL REAL</header>
+<header>ALLCALOR - GENERADOR PROFESIONAL</header>
 
 <div class="container">
 
+<div class="row">
+<div>
 <label>Largo estancia (m)</label>
-<input type="number" id="largo" step="0.1">
+<input type="number" id="largo" step="0.1" value="5">
 
 <label>Ancho estancia (m)</label>
-<input type="number" id="ancho" step="0.1">
+<input type="number" id="ancho" step="0.1" value="6">
 
 <label>Separación (cm)</label>
 <select id="paso">
-<option value="10">10</option>
+<option value="5">5</option>
+<option value="10" selected>10</option>
 <option value="15">15</option>
 <option value="20">20</option>
 </select>
 
+<label>Máx metros por circuito</label>
+<input type="number" id="maxMetro" value="100">
+
+</div>
+
+<div>
+<label>Excluir plato ducha</label>
+<select id="excluirDucha">
+<option value="no">No</option>
+<option value="si">Sí</option>
+</select>
+
+<label>Largo plato (m)</label>
+<input type="number" id="duchaLargo" value="0.9">
+
+<label>Ancho plato (m)</label>
+<input type="number" id="duchaAncho" value="0.9">
+</div>
+</div>
+
 <button onclick="generarPlano()">Generar plano</button>
 
-<canvas id="plano" width="900" height="650"></canvas>
+<canvas id="plano" width="1000" height="700"></canvas>
 <div class="resultado" id="resultado"></div>
 
 </div>
 
 <script>
+
 function generarPlano(){
 
-const largo = parseFloat(document.getElementById("largo").value);
-const ancho = parseFloat(document.getElementById("ancho").value);
-const paso = parseFloat(document.getElementById("paso").value)/100;
+const largo = parseFloat(largoInput.value);
+const ancho = parseFloat(anchoInput.value);
+const paso = parseFloat(pasoInput.value)/100;
+const maxMetro = parseFloat(maxMetroInput.value);
+
+const excluir = excluirDucha.value==="si";
+const duchaL = parseFloat(duchaLargo.value);
+const duchaA = parseFloat(duchaAncho.value);
 
 if(!largo || !ancho) return;
 
-const canvas = document.getElementById("plano");
+const canvas = plano;
 const ctx = canvas.getContext("2d");
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
-const margen=80;
-const escala=Math.min((canvas.width-margen*2)/largo,(canvas.height-margen*2)/ancho);
+const margen = 80;
+const escala = Math.min((canvas.width-margen*2)/largo,(canvas.height-margen*2)/ancho);
 
-const largoPx=largo*escala;
-const anchoPx=ancho*escala;
-const pasoPx=paso*escala;
+const largoPx = largo*escala;
+const anchoPx = ancho*escala;
+const pasoPx = paso*escala;
 
-const maxCircuito=100;
-const superficie=largo*ancho;
-const metrosEstimados=superficie*(1/paso);
-const circuitos=Math.ceil(metrosEstimados/maxCircuito);
+const duchaRect = excluir ? {
+x:(largo/2 - duchaL/2),
+y:(ancho/2 - duchaA/2),
+w:duchaL,
+h:duchaA
+}:null;
+
+// ---- GENERAR ESPIRAL COMPLETA COMO ARRAY DE PUNTOS ----
+
+function generarCaracolZona(x0,y0,w,h){
+
+let puntos=[];
+let xMin=x0;
+let xMax=x0+w;
+let yMin=y0;
+let yMax=y0+h;
+
+while((xMax-xMin)>paso && (yMax-yMin)>paso){
+
+puntos.push([xMin,yMin]);
+puntos.push([xMax,yMin]);
+puntos.push([xMax,yMax]);
+puntos.push([xMin,yMax]);
+
+xMin+=paso;
+yMin+=paso;
+xMax-=paso;
+yMax-=paso;
+}
+
+return puntos;
+}
+
+// ---- CALCULAR LONGITUD REAL ----
+
+function calcularLongitud(puntos){
+let metros=0;
+for(let i=1;i<puntos.length;i++){
+let dx=puntos[i][0]-puntos[i-1][0];
+let dy=puntos[i][1]-puntos[i-1][1];
+metros+=Math.sqrt(dx*dx+dy*dy);
+}
+return metros;
+}
+
+// ---- GENERAR CIRCUITOS EQUILIBRADOS ----
+
+let zonaCompleta = generarCaracolZona(0,0,largo,ancho);
+let longitudTotal = calcularLongitud(zonaCompleta);
+
+let circuitos = Math.ceil(longitudTotal/maxMetro);
+let longitudObjetivo = longitudTotal/circuitos;
+
+let circuitosPuntos=[];
+let actual=[];
+let acumulado=0;
+
+for(let i=1;i<zonaCompleta.length;i++){
+
+actual.push(zonaCompleta[i-1]);
+
+let dx=zonaCompleta[i][0]-zonaCompleta[i-1][0];
+let dy=zonaCompleta[i][1]-zonaCompleta[i-1][1];
+let tramo=Math.sqrt(dx*dx+dy*dy);
+
+if(acumulado+tramo>longitudObjetivo && circuitosPuntos.length<circuitos-1){
+circuitosPuntos.push(actual);
+actual=[];
+acumulado=0;
+}else{
+acumulado+=tramo;
+}
+}
+actual.push(zonaCompleta[zonaCompleta.length-1]);
+circuitosPuntos.push(actual);
+
+// ---- DIBUJAR ----
 
 const colores=["red","blue","green","orange","purple","brown"];
 
-const zonaAltura=anchoPx/circuitos;
+for(let c=0;c<circuitosPuntos.length;c++){
 
-let resultadoHTML="Superficie: "+superficie.toFixed(1)+" m²<br>";
-resultadoHTML+="Circuitos: "+circuitos+"<br><br>";
-
-for(let c=0;c<circuitos;c++){
-
-let xMin=margen;
-let xMax=margen+largoPx;
-let yMin=margen+c*zonaAltura;
-let yMax=margen+(c+1)*zonaAltura;
-
-let metros=0;
-
+ctx.beginPath();
 ctx.strokeStyle=colores[c%colores.length];
 ctx.lineWidth=2;
-ctx.beginPath();
 
-// salida horizontal desde colector
-ctx.moveTo(margen-30,yMin+10);
-ctx.lineTo(xMin,yMin+10);
+let puntos=circuitosPuntos[c];
 
-while((xMax-xMin)>pasoPx*2 && (yMax-yMin)>pasoPx*2){
+for(let i=0;i<puntos.length;i++){
 
-// ida →
-ctx.lineTo(xMax,yMin);
-metros+=largo;
+let px=margen+puntos[i][0]*escala;
+let py=margen+puntos[i][1]*escala;
 
-// bajar
-yMin+=pasoPx;
-
-// retorno ←
-ctx.lineTo(xMin,yMin);
-metros+=largo;
-
-// bajar
-yMin+=pasoPx;
+if(i===0) ctx.moveTo(px,py);
+else ctx.lineTo(px,py);
 }
-
-// retorno al colector
-ctx.lineTo(margen-30,yMin);
 
 ctx.stroke();
-
-resultadoHTML+="Circuito "+(c+1)+": "+metros.toFixed(1)+" m<br>";
 }
 
-// colector
-ctx.strokeStyle="black";
-ctx.lineWidth=4;
-ctx.beginPath();
-ctx.moveTo(margen-30,margen);
-ctx.lineTo(margen-30,margen+anchoPx);
-ctx.stroke();
+// ---- DIBUJAR DUCHA ----
 
-document.getElementById("resultado").innerHTML=resultadoHTML;
+if(duchaRect){
+
+ctx.fillStyle="rgba(0,0,0,0.2)";
+ctx.fillRect(
+margen+duchaRect.x*escala,
+margen+duchaRect.y*escala,
+duchaRect.w*escala,
+duchaRect.h*escala
+);
 }
+
+// ---- RESULTADO ----
+
+let html="Superficie: "+(largo*ancho).toFixed(1)+" m²<br>";
+html+="Longitud total: "+longitudTotal.toFixed(1)+" m<br>";
+html+="Circuitos: "+circuitos+"<br><br>";
+
+for(let i=0;i<circuitosPuntos.length;i++){
+html+="Circuito "+(i+1)+": "+
+calcularLongitud(circuitosPuntos[i]).toFixed(1)+" m<br>";
+}
+
+resultado.innerHTML=html;
+
+}
+
+// referencias
+const largoInput=largo;
+const anchoInput=ancho;
+const pasoInput=paso;
+const maxMetroInput=maxMetro;
+
 </script>
 
 </body>
