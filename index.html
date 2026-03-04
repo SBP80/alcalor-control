@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 
 <meta charset="UTF-8">
@@ -36,7 +37,7 @@ margin-right:8px;
 }
 
 canvas{
-background:#efe9dd;
+background:#f4f1e8;
 border-radius:8px;
 display:block;
 margin:auto;
@@ -58,7 +59,7 @@ width:120px;
 <div class="panel">
 
 Nombre estancia
-<input id="nombreEstancia" value="Estancia">
+<input id="nombreEstancia" value="habitacion 1">
 
 <br><br>
 
@@ -75,10 +76,10 @@ Separación tubo (cm)
 <button onclick="cerrarPoligono()">Cerrar estancia</button>
 <button onclick="deshacer()">Deshacer</button>
 <button onclick="reiniciar()">Reiniciar</button>
-<button onclick="generarSistema()">Generar circuito</button>
+<button onclick="generarCircuito()">Generar circuito</button>
 <button onclick="modoColector()">Colocar colector</button>
 
-<div id="datosEstancia"></div>
+<div id="datos"></div>
 
 </div>
 
@@ -94,14 +95,16 @@ let cerrado=false
 
 let mouse={x:0,y:0}
 
-let previewLong=0
-let previewAng=null
+let arrastrando=null
+let arrastrandoColector=false
+
+let colector=null
+let modo_col=false
+
+let circuito=[]
 
 let shift=false
 let alt=false
-
-let modo_col=false
-let colector=null
 
 document.addEventListener("keydown",e=>{
 if(e.key==="Shift")shift=true
@@ -113,20 +116,86 @@ if(e.key==="Shift")shift=false
 if(e.key==="Alt")alt=false
 })
 
-canvas.addEventListener("mousemove",function(e){
+canvas.addEventListener("mousedown",e=>{
+
+const rect=canvas.getBoundingClientRect()
+
+let x=e.clientX-rect.left
+let y=e.clientY-rect.top
+
+if(colector){
+
+let d=Math.hypot(x-colector.x,y-colector.y)
+
+if(d<10){
+
+arrastrandoColector=true
+return
+
+}
+
+}
+
+for(let i=0;i<puntos.length;i++){
+
+let p=puntos[i]
+
+let d=Math.hypot(x-p.x,y-p.y)
+
+if(d<10){
+
+arrastrando=i
+return
+
+}
+
+}
+
+})
+
+canvas.addEventListener("mouseup",()=>{
+
+arrastrando=null
+arrastrandoColector=false
+
+})
+
+canvas.addEventListener("mousemove",e=>{
 
 const rect=canvas.getBoundingClientRect()
 
 mouse.x=e.clientX-rect.left
 mouse.y=e.clientY-rect.top
 
-calcularPreview()
+if(arrastrando!==null){
+
+puntos[arrastrando].x=mouse.x
+puntos[arrastrando].y=mouse.y
+
+calcularDatos()
+
+dibujar()
+
+return
+
+}
+
+if(arrastrandoColector){
+
+colector.x=mouse.x
+colector.y=mouse.y
+
+dibujar()
+
+return
+
+}
 
 dibujar()
 
 })
 
-canvas.addEventListener("click",function(e){
+canvas.addEventListener("click",e=>{
 
 const rect=canvas.getBoundingClientRect()
 
@@ -178,56 +247,21 @@ dibujar()
 
 })
 
+function getEscala(){
+
+return parseFloat(document.getElementById("escalaInput").value)
+
+}
+
+function getPaso(){
+
+return (parseFloat(document.getElementById("pasoInput").value)/100)*getEscala()
+
+}
+
 function modoColector(){
 
 modo_col=true
-
-}
-
-function calcularPreview(){
-
-if(puntos.length===0)return
-
-let ultimo=puntos[puntos.length-1]
-
-let dx=mouse.x-ultimo.x
-let dy=mouse.y-ultimo.y
-
-let ang=Math.atan2(dy,dx)
-
-if(shift){
-
-ang=Math.round(ang/(Math.PI/2))*(Math.PI/2)
-
-}
-
-if(alt){
-
-ang=Math.round(ang/(Math.PI/4))*(Math.PI/4)
-
-}
-
-let dist=Math.hypot(dx,dy)
-
-mouseSnap={
-x:ultimo.x+Math.cos(ang)*dist,
-y:ultimo.y+Math.sin(ang)*dist
-}
-
-previewLong=dist/getEscala()
-
-if(puntos.length>=2){
-
-let p0=puntos[puntos.length-2]
-let p1=puntos[puntos.length-1]
-
-previewAng=calcularAngulo(p0,p1,mouseSnap)
-
-}else{
-
-previewAng=null
-
-}
 
 }
 
@@ -237,7 +271,7 @@ if(puntos.length<3)return
 
 cerrado=true
 
-calcularDatosEstancia()
+calcularDatos()
 
 dibujar()
 
@@ -256,18 +290,74 @@ dibujar()
 function reiniciar(){
 
 puntos=[]
-cerrado=false
+circuito=[]
 colector=null
+cerrado=false
 
-document.getElementById("datosEstancia").innerHTML=""
+document.getElementById("datos").innerHTML=""
 
 dibujar()
+
+}
+
+function dibujarCuadricula(){
+
+let escala=getEscala()
+
+let fino=escala/10
+let metro=escala
+
+for(let x=0;x<canvas.width;x+=fino){
+
+ctx.beginPath()
+
+if(x%metro===0){
+
+ctx.strokeStyle="#cfcfcf"
+ctx.lineWidth=1.2
+
+}else{
+
+ctx.strokeStyle="#e7e7e7"
+ctx.lineWidth=0.6
+
+}
+
+ctx.moveTo(x,0)
+ctx.lineTo(x,canvas.height)
+ctx.stroke()
+
+}
+
+for(let y=0;y<canvas.height;y+=fino){
+
+ctx.beginPath()
+
+if(y%metro===0){
+
+ctx.strokeStyle="#cfcfcf"
+ctx.lineWidth=1.2
+
+}else{
+
+ctx.strokeStyle="#e7e7e7"
+ctx.lineWidth=0.6
+
+}
+
+ctx.moveTo(0,y)
+ctx.lineTo(canvas.width,y)
+ctx.stroke()
+
+}
 
 }
 
 function dibujar(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
+
+dibujarCuadricula()
 
 if(puntos.length===0)return
 
@@ -279,8 +369,10 @@ for(let i=1;i<puntos.length;i++){
 ctx.lineTo(puntos[i].x,puntos[i].y)
 }
 
-if(!cerrado){
-ctx.lineTo(mouse.x,mouse.y)
+if(cerrado){
+ctx.closePath()
+ctx.fillStyle="rgba(0,120,255,0.15)"
+ctx.fill()
 }
 
 ctx.strokeStyle="#2b83ff"
@@ -296,8 +388,6 @@ ctx.fill()
 
 }
 
-dibujarMedidasCursor()
-
 if(colector){
 
 ctx.beginPath()
@@ -310,97 +400,112 @@ ctx.fillText("Colector",colector.x+10,colector.y)
 
 }
 
+if(circuito.length>1){
+
+ctx.beginPath()
+ctx.moveTo(circuito[0].x,circuito[0].y)
+
+for(let p of circuito){
+ctx.lineTo(p.x,p.y)
 }
 
-function dibujarMedidasCursor(){
-
-if(puntos.length===0)return
-
-ctx.fillStyle="black"
-ctx.font="14px Arial"
-
-let texto=previewLong.toFixed(2)+" m"
-
-if(previewAng!==null){
-texto+=" | "+previewAng.toFixed(1)+"°"
-}
-
-ctx.fillText(texto,mouse.x+15,mouse.y-10)
+ctx.strokeStyle="green"
+ctx.lineWidth=2
+ctx.stroke()
 
 }
 
-function calcularAngulo(a,b,c){
+}
 
-let abx=a.x-b.x
-let aby=a.y-b.y
+function generarCircuito(){
 
-let cbx=c.x-b.x
-let cby=c.y-b.y
+if(!cerrado)return
 
-let dot=abx*cbx+aby*cby
+circuito=[]
 
-let mag1=Math.hypot(abx,aby)
-let mag2=Math.hypot(cbx,cby)
+let paso=getPaso()
 
-let ang=Math.acos(dot/(mag1*mag2))
+let minX=Infinity
+let maxX=-Infinity
+let minY=Infinity
+let maxY=-Infinity
 
-return ang*180/Math.PI
+for(let p of puntos){
+
+if(p.x<minX)minX=p.x
+if(p.x>maxX)maxX=p.x
+if(p.y<minY)minY=p.y
+if(p.y>maxY)maxY=p.y
 
 }
 
-function calcularDatosEstancia(){
+for(let y=minY;y<=maxY;y+=paso){
 
-let area=areaPoligono(puntos)
-let perimetro=perimetroPoligono(puntos)
+for(let x=minX;x<=maxX;x+=paso){
 
-let nombre=document.getElementById("nombreEstancia").value
-
-document.getElementById("datosEstancia").innerHTML=
-
-nombre+"<br>"+
-"Área: "+area.toFixed(2)+" m²<br>"+
-"Perímetro: "+perimetro.toFixed(2)+" m"
+if(puntoDentro(x,y)){
+circuito.push({x,y})
+}
 
 }
 
-function areaPoligono(poly){
+}
+
+dibujar()
+
+}
+
+function puntoDentro(x,y){
+
+let dentro=false
+
+for(let i=0,j=puntos.length-1;i<puntos.length;j=i++){
+
+let xi=puntos[i].x
+let yi=puntos[i].y
+let xj=puntos[j].x
+let yj=puntos[j].y
+
+let intersect=((yi>y)!=(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi)+xi)
+
+if(intersect)dentro=!dentro
+
+}
+
+return dentro
+
+}
+
+function calcularDatos(){
 
 let area=0
+let per=0
 
-for(let i=0;i<poly.length;i++){
+for(let i=0;i<puntos.length;i++){
 
-let j=(i+1)%poly.length
+let j=(i+1)%puntos.length
 
-area+=poly[i].x*poly[j].y-poly[j].x*poly[i].y
+area+=puntos[i].x*puntos[j].y-puntos[j].x*puntos[i].y
 
-}
+let dx=puntos[i].x-puntos[j].x
+let dy=puntos[i].y-puntos[j].y
 
-return Math.abs(area/2)/(getEscala()*getEscala())
-
-}
-
-function perimetroPoligono(poly){
-
-let p=0
-
-for(let i=0;i<poly.length;i++){
-
-let j=(i+1)%poly.length
-
-let dx=poly[i].x-poly[j].x
-let dy=poly[i].y-poly[j].y
-
-p+=Math.hypot(dx,dy)/getEscala()
+per+=Math.hypot(dx,dy)
 
 }
 
-return p
+area=Math.abs(area/2)/(getEscala()*getEscala())
+per=per/getEscala()
+
+document.getElementById("datos").innerHTML=
+
+document.getElementById("nombreEstancia").value+
+"<br>Área: "+area.toFixed(2)+" m²"+
+"<br>Perímetro: "+per.toFixed(2)+" m"
 
 }
 
-function getEscala(){
-return parseFloat(document.getElementById("escalaInput").value)
-}
+dibujar()
 
 </script>
 
