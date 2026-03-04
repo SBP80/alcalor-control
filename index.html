@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 
 <meta charset="UTF-8">
@@ -77,6 +76,7 @@ Separación tubo (cm)
 <button onclick="deshacer()">Deshacer</button>
 <button onclick="reiniciar()">Reiniciar</button>
 <button onclick="generarSistema()">Generar circuito</button>
+<button onclick="modoColector()">Colocar colector</button>
 
 <div id="datosEstancia"></div>
 
@@ -92,26 +92,26 @@ const ctx=canvas.getContext("2d")
 let puntos=[]
 let cerrado=false
 
-let anillos=[]
-let tubo=[]
-
 let mouse={x:0,y:0}
 
 let previewLong=0
 let previewAng=null
 
-function getEscala(){
-return parseFloat(document.getElementById("escalaInput").value)
-}
+let shift=false
+let alt=false
 
-function getPaso(){
-let cm=parseFloat(document.getElementById("pasoInput").value)
-return (cm/100)*getEscala()
-}
+let modo_col=false
+let colector=null
 
-function getOffsetInicial(){
-return (10/100)*getEscala()
-}
+document.addEventListener("keydown",e=>{
+if(e.key==="Shift")shift=true
+if(e.key==="Alt")alt=true
+})
+
+document.addEventListener("keyup",e=>{
+if(e.key==="Shift")shift=false
+if(e.key==="Alt")alt=false
+})
 
 canvas.addEventListener("mousemove",function(e){
 
@@ -128,18 +128,61 @@ dibujar()
 
 canvas.addEventListener("click",function(e){
 
-if(cerrado)return
-
 const rect=canvas.getBoundingClientRect()
 
-const x=e.clientX-rect.left
-const y=e.clientY-rect.top
+let x=e.clientX-rect.left
+let y=e.clientY-rect.top
+
+if(modo_col){
+
+colector={x,y}
+modo_col=false
+dibujar()
+return
+
+}
+
+if(cerrado)return
+
+if(puntos.length>0){
+
+let p=puntos[puntos.length-1]
+
+let dx=x-p.x
+let dy=y-p.y
+
+let ang=Math.atan2(dy,dx)
+
+if(shift){
+
+ang=Math.round(ang/(Math.PI/2))*(Math.PI/2)
+
+}
+
+if(alt){
+
+ang=Math.round(ang/(Math.PI/4))*(Math.PI/4)
+
+}
+
+let dist=Math.hypot(dx,dy)
+
+x=p.x+Math.cos(ang)*dist
+y=p.y+Math.sin(ang)*dist
+
+}
 
 puntos.push({x,y})
 
 dibujar()
 
 })
+
+function modoColector(){
+
+modo_col=true
+
+}
 
 function calcularPreview(){
 
@@ -150,15 +193,35 @@ let ultimo=puntos[puntos.length-1]
 let dx=mouse.x-ultimo.x
 let dy=mouse.y-ultimo.y
 
-previewLong=Math.hypot(dx,dy)/getEscala()
+let ang=Math.atan2(dy,dx)
+
+if(shift){
+
+ang=Math.round(ang/(Math.PI/2))*(Math.PI/2)
+
+}
+
+if(alt){
+
+ang=Math.round(ang/(Math.PI/4))*(Math.PI/4)
+
+}
+
+let dist=Math.hypot(dx,dy)
+
+mouseSnap={
+x:ultimo.x+Math.cos(ang)*dist,
+y:ultimo.y+Math.sin(ang)*dist
+}
+
+previewLong=dist/getEscala()
 
 if(puntos.length>=2){
 
 let p0=puntos[puntos.length-2]
 let p1=puntos[puntos.length-1]
-let p2=mouse
 
-previewAng=calcularAngulo(p0,p1,p2)
+previewAng=calcularAngulo(p0,p1,mouseSnap)
 
 }else{
 
@@ -193,16 +256,12 @@ dibujar()
 function reiniciar(){
 
 puntos=[]
-anillos=[]
-tubo=[]
 cerrado=false
-
-previewAng=null
-previewLong=0
+colector=null
 
 document.getElementById("datosEstancia").innerHTML=""
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+dibujar()
 
 }
 
@@ -224,15 +283,6 @@ if(!cerrado){
 ctx.lineTo(mouse.x,mouse.y)
 }
 
-if(cerrado){
-
-ctx.closePath()
-
-ctx.fillStyle="rgba(43,131,255,0.2)"
-ctx.fill()
-
-}
-
 ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
@@ -248,19 +298,15 @@ ctx.fill()
 
 dibujarMedidasCursor()
 
-if(tubo.length>1){
+if(colector){
 
 ctx.beginPath()
+ctx.arc(colector.x,colector.y,6,0,Math.PI*2)
+ctx.fillStyle="orange"
+ctx.fill()
 
-ctx.moveTo(tubo[0].x,tubo[0].y)
-
-for(let p of tubo){
-ctx.lineTo(p.x,p.y)
-}
-
-ctx.strokeStyle="green"
-ctx.lineWidth=2
-ctx.stroke()
+ctx.fillStyle="black"
+ctx.fillText("Colector",colector.x+10,colector.y)
 
 }
 
@@ -317,86 +363,6 @@ nombre+"<br>"+
 
 }
 
-function generarSistema(){
-
-if(!cerrado)return
-
-anillos=[]
-tubo=[]
-
-let actual=offsetPoligono(puntos,getOffsetInicial())
-
-if(actual.length<3)return
-
-anillos.push(actual)
-
-let paso=getPaso()
-
-let minX=Infinity
-let maxX=-Infinity
-let minY=Infinity
-let maxY=-Infinity
-
-for(let p of puntos){
-
-if(p.x<minX)minX=p.x
-if(p.x>maxX)maxX=p.x
-if(p.y<minY)minY=p.y
-if(p.y>maxY)maxY=p.y
-
-}
-
-let ancho=maxX-minX
-let alto=maxY-minY
-
-let ladoMenor=Math.min(ancho,alto)
-
-let maxAnillos=Math.floor((ladoMenor/2)/paso)
-
-for(let i=0;i<maxAnillos;i++){
-
-let nuevo=offsetPoligono(actual,paso)
-
-if(nuevo.length<3)break
-
-anillos.push(nuevo)
-
-actual=nuevo
-
-}
-
-generarCaracol()
-
-dibujar()
-
-}
-
-function generarCaracol(){
-
-tubo=[]
-
-for(let i=0;i<anillos.length;i++){
-
-let ring=anillos[i]
-
-if(i%2===0){
-
-for(let p of ring){
-tubo.push(p)
-}
-
-}else{
-
-for(let j=ring.length-1;j>=0;j--){
-tubo.push(ring[j])
-}
-
-}
-
-}
-
-}
-
 function areaPoligono(poly){
 
 let area=0
@@ -432,73 +398,8 @@ return p
 
 }
 
-function offsetPoligono(poligono,dist){
-
-let lineas=[]
-let n=poligono.length
-
-for(let i=0;i<n;i++){
-
-let p0=poligono[i]
-let p1=poligono[(i+1)%n]
-
-let dx=p1.x-p0.x
-let dy=p1.y-p0.y
-
-let len=Math.hypot(dx,dy)
-
-dx/=len
-dy/=len
-
-let nx=-dy
-let ny=dx
-
-lineas.push({
-
-x1:p0.x+nx*dist,
-y1:p0.y+ny*dist,
-x2:p1.x+nx*dist,
-y2:p1.y+ny*dist
-
-})
-
-}
-
-let nuevo=[]
-
-for(let i=0;i<n;i++){
-
-let p=interseccion(lineas[i],lineas[(i+1)%n])
-
-if(p)nuevo.push(p)
-
-}
-
-return nuevo
-
-}
-
-function interseccion(a,b){
-
-let x1=a.x1
-let y1=a.y1
-let x2=a.x2
-let y2=a.y2
-
-let x3=b.x1
-let y3=b.y1
-let x4=b.x2
-let y4=b.y2
-
-let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
-
-if(den==0)return null
-
-let px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den
-let py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den
-
-return{x:px,y:py}
-
+function getEscala(){
+return parseFloat(document.getElementById("escalaInput").value)
 }
 
 </script>
