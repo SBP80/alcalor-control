@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Define que usamos HTML5 -->
+<!-- Documento HTML5 -->
 
 <html lang="es">
 <!-- Idioma del documento -->
@@ -10,59 +10,54 @@
 <!-- Permite caracteres especiales -->
 
 <title>ALLCALOR PRO</title>
-<!-- Título de la pestaña -->
+<!-- Título del programa -->
 
 <style>
 
-/* Estilo general del documento */
+/* Estilo general */
 body{
-    font-family:Arial;
-    background:#0f2b44;
-    color:white;
-    margin:0;
-    padding:20px;
+font-family:Arial;
+background:#0f2b44;
+color:white;
+margin:0;
+padding:20px;
 }
 
-/* Título centrado */
+/* Título */
 h1{
-    text-align:center;
+text-align:center;
 }
 
 /* Panel de controles */
 .panel{
-    background:#12314a;
-    padding:15px;
-    border-radius:8px;
-    margin-bottom:15px;
+background:#12314a;
+padding:15px;
+border-radius:8px;
+margin-bottom:15px;
 }
 
 /* Botones */
 button{
-    background:#2b83ff;
-    color:white;
-    border:none;
-    padding:8px 12px;
-    cursor:pointer;
-    margin-right:8px;
+background:#2b83ff;
+color:white;
+border:none;
+padding:8px 12px;
+cursor:pointer;
+margin-right:8px;
 }
 
-/* Canvas de dibujo */
+/* Área de dibujo */
 canvas{
-    background:#efe9dd;
-    border-radius:8px;
-    display:block;
-    margin:auto;
-}
-
-/* Texto de información */
-.info{
-    margin-top:10px;
+background:#efe9dd;
+border-radius:8px;
+display:block;
+margin:auto;
 }
 
 /* Inputs */
 input{
-    padding:6px;
-    width:80px;
+padding:6px;
+width:80px;
 }
 
 </style>
@@ -75,7 +70,7 @@ input{
 
 <div class="panel">
 
-Escala: 1 metro =
+Escala: 1m =
 <input type="number" id="escalaInput" value="50">
 px
 
@@ -92,7 +87,7 @@ Separación tubo (cm):
 
 <button onclick="generarAnillos()">Generar anillos</button>
 
-<div class="info" id="info"></div>
+<div id="info"></div>
 
 </div>
 
@@ -100,323 +95,272 @@ Separación tubo (cm):
 
 <script>
 
-/* Referencia al canvas */
-const canvas = document.getElementById("canvas");
+/* Referencia canvas */
+const canvas=document.getElementById("canvas");
 
-/* Contexto de dibujo 2D */
-const ctx = canvas.getContext("2d");
+/* Contexto dibujo */
+const ctx=canvas.getContext("2d");
 
-/* Array que guarda vértices de la estancia */
-let puntos = [];
+/* Lista de vértices */
+let puntos=[];
 
 /* Indica si el polígono está cerrado */
-let cerrado = false;
+let cerrado=false;
 
-/* Array que almacenará todos los anillos */
-let anillos = [];
+/* Anillos generados */
+let anillos=[];
 
-/* Obtiene escala px por metro */
+/* Obtiene escala */
 function getEscala(){
-    return parseFloat(document.getElementById("escalaInput").value);
+return parseFloat(document.getElementById("escalaInput").value);
 }
 
-/* Convierte separación del tubo en píxeles */
+/* Convierte separación a píxeles */
 function getPaso(){
 
-    let cm = parseFloat(document.getElementById("pasoInput").value);
+let cm=parseFloat(document.getElementById("pasoInput").value);
 
-    return (cm/100) * getEscala();
+return (cm/100)*getEscala();
 
 }
 
-/* Evento clic sobre el canvas */
-canvas.addEventListener("click", function(e){
+/* Offset inicial desde muro (10 cm) */
+function getOffsetInicial(){
 
-    /* Si el polígono está cerrado no añadimos más puntos */
-    if(cerrado) return;
+return (10/100)*getEscala();
 
-    /* Posición del canvas */
-    const rect = canvas.getBoundingClientRect();
+}
 
-    /* Coordenadas del clic */
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+/* Evento clic */
+canvas.addEventListener("click",function(e){
 
-    /* Guardamos punto */
-    puntos.push({x,y});
+if(cerrado)return;
 
-    /* Redibujamos */
-    dibujar();
+const rect=canvas.getBoundingClientRect();
+
+const x=e.clientX-rect.left;
+const y=e.clientY-rect.top;
+
+puntos.push({x,y});
+
+dibujar();
 
 });
 
-/* Cierra el polígono */
+/* Cerrar polígono */
 function cerrarPoligono(){
 
-    /* Necesitamos mínimo 3 puntos */
-    if(puntos.length < 3) return;
+if(puntos.length<3)return;
 
-    /* Detectamos si hay cruces */
-    if(tieneInterseccion()){
+cerrado=true;
 
-        alert("El polígono tiene líneas cruzadas");
-
-        return;
-
-    }
-
-    cerrado = true;
-
-    dibujar();
+dibujar();
 
 }
 
-/* Deshacer último punto */
+/* Deshacer */
 function deshacer(){
 
-    if(cerrado) return;
+if(cerrado)return;
 
-    puntos.pop();
+puntos.pop();
 
-    dibujar();
+dibujar();
 
 }
 
-/* Reiniciar editor */
+/* Reiniciar */
 function reiniciar(){
 
-    puntos = [];
-    anillos = [];
-    cerrado = false;
+puntos=[];
+anillos=[];
+cerrado=false;
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    document.getElementById("info").innerHTML="";
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
 }
 
-/* Dibuja todo el sistema */
+/* Dibujar escena */
 function dibujar(){
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    if(puntos.length===0) return;
+if(puntos.length===0)return;
 
-    /* Dibujar polígono principal */
+/* Dibujar polígono */
+ctx.beginPath();
 
-    ctx.beginPath();
-    ctx.moveTo(puntos[0].x,puntos[0].y);
+ctx.moveTo(puntos[0].x,puntos[0].y);
 
-    for(let i=1;i<puntos.length;i++){
-        ctx.lineTo(puntos[i].x,puntos[i].y);
-    }
+for(let i=1;i<puntos.length;i++){
 
-    if(cerrado){
-
-        ctx.closePath();
-
-        ctx.fillStyle="rgba(43,131,255,0.2)";
-        ctx.fill();
-
-    }
-
-    ctx.strokeStyle="#2b83ff";
-    ctx.lineWidth=2;
-    ctx.stroke();
-
-    /* Dibujar vértices */
-
-    for(let p of puntos){
-
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,4,0,Math.PI*2);
-        ctx.fillStyle="#ff4444";
-        ctx.fill();
-
-    }
-
-    /* Dibujar anillos interiores */
-
-    for(let anillo of anillos){
-
-        ctx.beginPath();
-        ctx.moveTo(anillo[0].x,anillo[0].y);
-
-        for(let i=1;i<anillo.length;i++){
-            ctx.lineTo(anillo[i].x,anillo[i].y);
-        }
-
-        ctx.closePath();
-
-        ctx.strokeStyle="green";
-        ctx.lineWidth=2;
-        ctx.stroke();
-
-    }
-
-    mostrarDatos();
+ctx.lineTo(puntos[i].x,puntos[i].y);
 
 }
 
-/* Genera múltiples anillos interiores */
+if(cerrado){
+
+ctx.closePath();
+
+ctx.fillStyle="rgba(43,131,255,0.2)";
+ctx.fill();
+
+}
+
+ctx.strokeStyle="#2b83ff";
+ctx.lineWidth=2;
+ctx.stroke();
+
+/* Dibujar vértices */
+for(let p of puntos){
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,4,0,Math.PI*2);
+ctx.fillStyle="red";
+ctx.fill();
+
+}
+
+/* Dibujar anillos */
+for(let a of anillos){
+
+ctx.beginPath();
+
+ctx.moveTo(a[0].x,a[0].y);
+
+for(let i=1;i<a.length;i++){
+
+ctx.lineTo(a[i].x,a[i].y);
+
+}
+
+ctx.closePath();
+
+ctx.strokeStyle="green";
+ctx.lineWidth=2;
+ctx.stroke();
+
+}
+
+}
+
+/* Generar anillos */
 function generarAnillos(){
 
-    if(!cerrado) return;
+if(!cerrado)return;
 
-    anillos = [];
+anillos=[];
 
-    let actual = puntos;
+/* primer offset desde muro */
+let actual=offsetPoligono(puntos,getOffsetInicial());
 
-    const paso = getPaso();
+if(actual.length<3)return;
 
-    while(true){
+anillos.push(actual);
 
-        let nuevo = generarOffset(actual,paso);
+/* offsets siguientes */
+const paso=getPaso();
 
-        if(nuevo.length < 3) break;
+while(true){
 
-        anillos.push(nuevo);
+let nuevo=offsetPoligono(actual,paso);
 
-        actual = nuevo;
+if(nuevo.length<3)break;
 
-        if(anillos.length > 100) break;
+anillos.push(nuevo);
 
-    }
+actual=nuevo;
 
-    dibujar();
-
-}
-
-/* Genera offset interior */
-function generarOffset(poligono,dist){
-
-    let nuevo=[];
-
-    for(let i=0;i<poligono.length;i++){
-
-        let p0 = poligono[(i-1+poligono.length)%poligono.length];
-        let p1 = poligono[i];
-        let p2 = poligono[(i+1)%poligono.length];
-
-        let v1x=p1.x-p0.x;
-        let v1y=p1.y-p0.y;
-
-        let v2x=p2.x-p1.x;
-        let v2y=p2.y-p1.y;
-
-        let l1=Math.hypot(v1x,v1y);
-        let l2=Math.hypot(v2x,v2y);
-
-        v1x/=l1;
-        v1y/=l1;
-
-        v2x/=l2;
-        v2y/=l2;
-
-        let nx=v1y-v2y;
-        let ny=-(v1x-v2x);
-
-        let len=Math.hypot(nx,ny);
-
-        if(len===0) continue;
-
-        nx/=len;
-        ny/=len;
-
-        nuevo.push({
-
-            x:p1.x+nx*dist,
-            y:p1.y+ny*dist
-
-        });
-
-    }
-
-    return nuevo;
+if(anillos.length>200)break;
 
 }
 
-/* Calcula área del polígono */
-function calcularArea(){
-
-    let area=0;
-
-    for(let i=0;i<puntos.length;i++){
-
-        let j=(i+1)%puntos.length;
-
-        area+=puntos[i].x*puntos[j].y;
-        area-=puntos[j].x*puntos[i].y;
-
-    }
-
-    return Math.abs(area/2);
+dibujar();
 
 }
 
-/* Calcula perímetro */
-function calcularPerimetro(){
+/* Offset robusto por paralelas */
+function offsetPoligono(poligono,dist){
 
-    let p=0;
+let resultado=[];
 
-    for(let i=0;i<puntos.length;i++){
+let n=poligono.length;
 
-        let j=(i+1)%puntos.length;
+for(let i=0;i<n;i++){
 
-        let dx=puntos[j].x-puntos[i].x;
-        let dy=puntos[j].y-puntos[i].y;
+let p0=poligono[i];
+let p1=poligono[(i+1)%n];
 
-        p+=Math.hypot(dx,dy);
+/* vector lado */
+let dx=p1.x-p0.x;
+let dy=p1.y-p0.y;
 
-    }
+/* longitud */
+let len=Math.hypot(dx,dy);
 
-    return p;
+dx/=len;
+dy/=len;
 
-}
+/* normal interior */
+let nx=-dy;
+let ny=dx;
 
-/* Muestra datos técnicos */
-function mostrarDatos(){
+/* línea paralela desplazada */
+let x1=p0.x+nx*dist;
+let y1=p0.y+ny*dist;
 
-    if(puntos.length<3) return;
+let x2=p1.x+nx*dist;
+let y2=p1.y+ny*dist;
 
-    const escala=getEscala();
-
-    let areaM=calcularArea()/(escala*escala);
-
-    let perM=calcularPerimetro()/escala;
-
-    document.getElementById("info").innerHTML=
-    "Área: "+areaM.toFixed(2)+" m² | Perímetro: "+perM.toFixed(2)+" m";
-
-}
-
-/* Detecta intersecciones */
-function tieneInterseccion(){
-
-    for(let i=0;i<puntos.length-1;i++){
-
-        for(let j=i+2;j<puntos.length-1;j++){
-
-            if(intersectan(puntos[i],puntos[i+1],puntos[j],puntos[j+1]))
-                return true;
-
-        }
-
-    }
-
-    return false;
+resultado.push({
+x1:x1,
+y1:y1,
+x2:x2,
+y2:y2
+});
 
 }
 
-/* Algoritmo geométrico */
-function intersectan(p1,p2,p3,p4){
+/* intersecciones */
+let nuevo=[];
 
-    function ccw(a,b,c){
-        return (c.y-a.y)*(b.x-a.x) > (b.y-a.y)*(c.x-a.x);
-    }
+for(let i=0;i<resultado.length;i++){
 
-    return (ccw(p1,p3,p4)!=ccw(p2,p3,p4)) &&
-           (ccw(p1,p2,p3)!=ccw(p1,p2,p4));
+let a=resultado[i];
+let b=resultado[(i+1)%resultado.length];
+
+let p=interseccionLineas(a,b);
+
+if(p)nuevo.push(p);
+
+}
+
+return nuevo;
+
+}
+
+/* Intersección de dos rectas */
+function interseccionLineas(l1,l2){
+
+let x1=l1.x1;
+let y1=l1.y1;
+let x2=l1.x2;
+let y2=l1.y2;
+
+let x3=l2.x1;
+let y3=l2.y1;
+let x4=l2.x2;
+let y4=l2.y2;
+
+let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+
+if(den==0)return null;
+
+let px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den;
+
+let py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den;
+
+return{x:px,y:py};
 
 }
 
