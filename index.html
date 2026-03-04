@@ -46,7 +46,7 @@ cursor:pointer;
 margin-right:8px;
 }
 
-/* Área de dibujo */
+/* Canvas de dibujo */
 canvas{
 background:#efe9dd;
 border-radius:8px;
@@ -85,7 +85,7 @@ Separación tubo (cm):
 
 <button onclick="reiniciar()">Reiniciar</button>
 
-<button onclick="generarAnillos()">Generar anillos</button>
+<button onclick="generarSistema()">Generar circuito</button>
 
 <div id="info"></div>
 
@@ -95,27 +95,30 @@ Separación tubo (cm):
 
 <script>
 
-/* Referencia canvas */
+/* referencia canvas */
 const canvas=document.getElementById("canvas");
 
-/* Contexto dibujo */
+/* contexto dibujo */
 const ctx=canvas.getContext("2d");
 
-/* Lista de vértices */
+/* vértices estancia */
 let puntos=[];
 
-/* Indica si el polígono está cerrado */
+/* indica si está cerrada */
 let cerrado=false;
 
-/* Anillos generados */
+/* anillos generados */
 let anillos=[];
 
-/* Obtiene escala */
+/* trayectoria final del tubo */
+let tubo=[];
+
+/* escala px por metro */
 function getEscala(){
 return parseFloat(document.getElementById("escalaInput").value);
 }
 
-/* Convierte separación a píxeles */
+/* paso entre tubos */
 function getPaso(){
 
 let cm=parseFloat(document.getElementById("pasoInput").value);
@@ -124,14 +127,14 @@ return (cm/100)*getEscala();
 
 }
 
-/* Offset inicial desde muro (10 cm) */
+/* separación inicial del muro */
 function getOffsetInicial(){
 
 return (10/100)*getEscala();
 
 }
 
-/* Evento clic */
+/* clic en canvas */
 canvas.addEventListener("click",function(e){
 
 if(cerrado)return;
@@ -147,7 +150,7 @@ dibujar();
 
 });
 
-/* Cerrar polígono */
+/* cerrar estancia */
 function cerrarPoligono(){
 
 if(puntos.length<3)return;
@@ -158,7 +161,7 @@ dibujar();
 
 }
 
-/* Deshacer */
+/* deshacer punto */
 function deshacer(){
 
 if(cerrado)return;
@@ -169,33 +172,31 @@ dibujar();
 
 }
 
-/* Reiniciar */
+/* reiniciar editor */
 function reiniciar(){
 
 puntos=[];
 anillos=[];
+tubo=[];
 cerrado=false;
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
 }
 
-/* Dibujar escena */
+/* dibuja escena */
 function dibujar(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
 if(puntos.length===0)return;
 
-/* Dibujar polígono */
+/* dibujar estancia */
 ctx.beginPath();
-
 ctx.moveTo(puntos[0].x,puntos[0].y);
 
 for(let i=1;i<puntos.length;i++){
-
 ctx.lineTo(puntos[i].x,puntos[i].y);
-
 }
 
 if(cerrado){
@@ -211,7 +212,7 @@ ctx.strokeStyle="#2b83ff";
 ctx.lineWidth=2;
 ctx.stroke();
 
-/* Dibujar vértices */
+/* dibujar vértices */
 for(let p of puntos){
 
 ctx.beginPath();
@@ -221,20 +222,18 @@ ctx.fill();
 
 }
 
-/* Dibujar anillos */
-for(let a of anillos){
+/* dibujar circuito */
+if(tubo.length>1){
 
 ctx.beginPath();
 
-ctx.moveTo(a[0].x,a[0].y);
+ctx.moveTo(tubo[0].x,tubo[0].y);
 
-for(let i=1;i<a.length;i++){
+for(let p of tubo){
 
-ctx.lineTo(a[i].x,a[i].y);
+ctx.lineTo(p.x,p.y);
 
 }
-
-ctx.closePath();
 
 ctx.strokeStyle="green";
 ctx.lineWidth=2;
@@ -244,23 +243,24 @@ ctx.stroke();
 
 }
 
-/* Generar anillos */
-function generarAnillos(){
+/* genera todo el sistema */
+function generarSistema(){
 
 if(!cerrado)return;
 
 anillos=[];
+tubo=[];
 
-/* primer offset desde muro */
+/* primer offset */
 let actual=offsetPoligono(puntos,getOffsetInicial());
 
 if(actual.length<3)return;
 
 anillos.push(actual);
 
-/* offsets siguientes */
 const paso=getPaso();
 
+/* generar offsets */
 while(true){
 
 let nuevo=offsetPoligono(actual,paso);
@@ -275,14 +275,68 @@ if(anillos.length>200)break;
 
 }
 
+/* crear trayectoria */
+generarCaracol();
+
+/* calcular metros */
+calcularLongitud();
+
 dibujar();
 
 }
 
-/* Offset robusto por paralelas */
+/* genera caracol continuo */
+function generarCaracol(){
+
+tubo=[];
+
+for(let i=0;i<anillos.length;i++){
+
+let ring=anillos[i];
+
+if(i%2==0){
+
+for(let p of ring){
+tubo.push(p);
+}
+
+}else{
+
+for(let j=ring.length-1;j>=0;j--){
+tubo.push(ring[j]);
+}
+
+}
+
+}
+
+}
+
+/* calcula longitud tubo */
+function calcularLongitud(){
+
+let total=0;
+
+for(let i=1;i<tubo.length;i++){
+
+let dx=tubo[i].x-tubo[i-1].x;
+let dy=tubo[i].y-tubo[i-1].y;
+
+total+=Math.hypot(dx,dy);
+
+}
+
+let metros=total/getEscala();
+
+document.getElementById("info").innerHTML=
+"Longitud tubo aproximada: "+metros.toFixed(1)+" m";
+
+}
+
+/* offset robusto */
 function offsetPoligono(poligono,dist){
 
-let resultado=[];
+let lineas=[];
 
 let n=poligono.length;
 
@@ -291,45 +345,33 @@ for(let i=0;i<n;i++){
 let p0=poligono[i];
 let p1=poligono[(i+1)%n];
 
-/* vector lado */
 let dx=p1.x-p0.x;
 let dy=p1.y-p0.y;
 
-/* longitud */
 let len=Math.hypot(dx,dy);
 
 dx/=len;
 dy/=len;
 
-/* normal interior */
 let nx=-dy;
 let ny=dx;
 
-/* línea paralela desplazada */
-let x1=p0.x+nx*dist;
-let y1=p0.y+ny*dist;
+lineas.push({
 
-let x2=p1.x+nx*dist;
-let y2=p1.y+ny*dist;
+x1:p0.x+nx*dist,
+y1:p0.y+ny*dist,
+x2:p1.x+nx*dist,
+y2:p1.y+ny*dist
 
-resultado.push({
-x1:x1,
-y1:y1,
-x2:x2,
-y2:y2
 });
 
 }
 
-/* intersecciones */
 let nuevo=[];
 
-for(let i=0;i<resultado.length;i++){
+for(let i=0;i<n;i++){
 
-let a=resultado[i];
-let b=resultado[(i+1)%resultado.length];
-
-let p=interseccionLineas(a,b);
+let p=interseccion(lineas[i],lineas[(i+1)%n]);
 
 if(p)nuevo.push(p);
 
@@ -339,18 +381,18 @@ return nuevo;
 
 }
 
-/* Intersección de dos rectas */
-function interseccionLineas(l1,l2){
+/* intersección de rectas */
+function interseccion(a,b){
 
-let x1=l1.x1;
-let y1=l1.y1;
-let x2=l1.x2;
-let y2=l1.y2;
+let x1=a.x1;
+let y1=a.y1;
+let x2=a.x2;
+let y2=a.y2;
 
-let x3=l2.x1;
-let y3=l2.y1;
-let x4=l2.x2;
-let y4=l2.y2;
+let x3=b.x1;
+let y3=b.y1;
+let x4=b.x2;
+let y4=b.y2;
 
 let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
 
