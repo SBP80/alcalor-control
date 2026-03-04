@@ -64,18 +64,16 @@ font-size:14px;
 <div class="panel">
 
 Nombre estancia
-
 <input id="nombreEstancia" value="Estancia">
 
 <br><br>
 
 Escala: 1m =
-<input type="number" id="escalaInput" value="50">
+<input type="number" id="escalaInput" value="100">
 
 px
 
 Separación tubo (cm)
-
 <input type="number" id="pasoInput" value="10">
 
 <br><br>
@@ -86,7 +84,7 @@ Separación tubo (cm)
 <button onclick="generarSistema()">Generar circuito</button>
 
 <div class="info" id="medidaActual"></div>
-
+<div class="info" id="anguloPreview"></div>
 <div class="info" id="datosEstancia"></div>
 
 </div>
@@ -111,11 +109,8 @@ return parseFloat(document.getElementById("escalaInput").value)
 }
 
 function getPaso(){
-
 let cm=parseFloat(document.getElementById("pasoInput").value)
-
 return (cm/100)*getEscala()
-
 }
 
 function getOffsetInicial(){
@@ -128,6 +123,8 @@ const rect=canvas.getBoundingClientRect()
 
 mouse.x=e.clientX-rect.left
 mouse.y=e.clientY-rect.top
+
+mostrarPreview()
 
 dibujar()
 
@@ -147,6 +144,39 @@ puntos.push({x,y})
 dibujar()
 
 })
+
+function mostrarPreview(){
+
+if(puntos.length===0)return
+
+let ultimo=puntos[puntos.length-1]
+
+let dx=mouse.x-ultimo.x
+let dy=mouse.y-ultimo.y
+
+let dist=Math.hypot(dx,dy)/getEscala()
+
+document.getElementById("medidaActual").innerHTML=
+"Longitud pared actual: "+dist.toFixed(2)+" m"
+
+if(puntos.length>=2){
+
+let p0=puntos[puntos.length-2]
+let p1=puntos[puntos.length-1]
+let p2=mouse
+
+let ang=calcularAngulo(p0,p1,p2)
+
+document.getElementById("anguloPreview").innerHTML=
+"Ángulo esquina: "+ang.toFixed(1)+"°"
+
+}else{
+
+document.getElementById("anguloPreview").innerHTML=""
+
+}
+
+}
 
 function cerrarPoligono(){
 
@@ -178,6 +208,8 @@ tubo=[]
 cerrado=false
 
 document.getElementById("datosEstancia").innerHTML=""
+document.getElementById("anguloPreview").innerHTML=""
+document.getElementById("medidaActual").innerHTML=""
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
@@ -214,37 +246,12 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-for(let i=0;i<puntos.length;i++){
-
-let p=puntos[i]
+for(let p of puntos){
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,4,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
-
-if(i>0 && i<puntos.length-1){
-
-let angulo=calcularAngulo(puntos[i-1],puntos[i],puntos[i+1])
-
-ctx.fillStyle="black"
-ctx.fillText(angulo.toFixed(1)+"°",p.x+8,p.y-8)
-
-}
-
-}
-
-if(!cerrado && puntos.length>0){
-
-let ultimo=puntos[puntos.length-1]
-
-let dx=mouse.x-ultimo.x
-let dy=mouse.y-ultimo.y
-
-let dist=Math.hypot(dx,dy)/getEscala()
-
-document.getElementById("medidaActual").innerHTML=
-"Longitud pared actual: "+dist.toFixed(2)+" m"
 
 }
 
