@@ -45,7 +45,12 @@ margin:auto;
 
 input{
 padding:6px;
-width:80px;
+width:120px;
+}
+
+.info{
+margin-top:10px;
+font-size:14px;
 }
 
 </style>
@@ -58,12 +63,18 @@ width:80px;
 
 <div class="panel">
 
+Nombre estancia
+
+<input id="nombreEstancia" value="Estancia">
+
+<br><br>
+
 Escala: 1m =
 <input type="number" id="escalaInput" value="50">
 
 px
 
-Separación tubo (cm):
+Separación tubo (cm)
 
 <input type="number" id="pasoInput" value="10">
 
@@ -74,7 +85,9 @@ Separación tubo (cm):
 <button onclick="reiniciar()">Reiniciar</button>
 <button onclick="generarSistema()">Generar circuito</button>
 
-<div id="info"></div>
+<div class="info" id="medidaActual"></div>
+
+<div class="info" id="datosEstancia"></div>
 
 </div>
 
@@ -82,282 +95,319 @@ Separación tubo (cm):
 
 <script>
 
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
 
-let puntos=[];
-let cerrado=false;
+let puntos=[]
+let cerrado=false
 
-let anillos=[];
-let tubo=[];
+let anillos=[]
+let tubo=[]
+
+let mouse={x:0,y:0}
 
 function getEscala(){
-return parseFloat(document.getElementById("escalaInput").value);
+return parseFloat(document.getElementById("escalaInput").value)
 }
 
 function getPaso(){
 
-let cm=parseFloat(document.getElementById("pasoInput").value);
+let cm=parseFloat(document.getElementById("pasoInput").value)
 
-return (cm/100)*getEscala();
+return (cm/100)*getEscala()
 
 }
 
 function getOffsetInicial(){
-
-return (10/100)*getEscala();
-
+return (10/100)*getEscala()
 }
+
+canvas.addEventListener("mousemove",function(e){
+
+const rect=canvas.getBoundingClientRect()
+
+mouse.x=e.clientX-rect.left
+mouse.y=e.clientY-rect.top
+
+dibujar()
+
+})
 
 canvas.addEventListener("click",function(e){
 
-if(cerrado)return;
+if(cerrado)return
 
-const rect=canvas.getBoundingClientRect();
+const rect=canvas.getBoundingClientRect()
 
-const x=e.clientX-rect.left;
-const y=e.clientY-rect.top;
+const x=e.clientX-rect.left
+const y=e.clientY-rect.top
 
-puntos.push({x,y});
+puntos.push({x,y})
 
-dibujar();
+dibujar()
 
-});
+})
 
 function cerrarPoligono(){
 
-if(puntos.length<3)return;
+if(puntos.length<3)return
 
-cerrado=true;
+cerrado=true
 
-dibujar();
+calcularDatosEstancia()
+
+dibujar()
 
 }
 
 function deshacer(){
 
-if(cerrado)return;
+if(cerrado)return
 
-puntos.pop();
+puntos.pop()
 
-dibujar();
+dibujar()
 
 }
 
 function reiniciar(){
 
-puntos=[];
-anillos=[];
-tubo=[];
-cerrado=false;
+puntos=[]
+anillos=[]
+tubo=[]
+cerrado=false
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
+document.getElementById("datosEstancia").innerHTML=""
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
 
 }
 
 function dibujar(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.clearRect(0,0,canvas.width,canvas.height)
 
-if(puntos.length===0)return;
+if(puntos.length===0)return
 
-ctx.beginPath();
+ctx.beginPath()
 
-ctx.moveTo(puntos[0].x,puntos[0].y);
+ctx.moveTo(puntos[0].x,puntos[0].y)
 
 for(let i=1;i<puntos.length;i++){
-ctx.lineTo(puntos[i].x,puntos[i].y);
+ctx.lineTo(puntos[i].x,puntos[i].y)
+}
+
+if(!cerrado){
+
+ctx.lineTo(mouse.x,mouse.y)
+
 }
 
 if(cerrado){
 
-ctx.closePath();
+ctx.closePath()
 
-ctx.fillStyle="rgba(43,131,255,0.2)";
-ctx.fill();
+ctx.fillStyle="rgba(43,131,255,0.2)"
+ctx.fill()
 
 }
 
-ctx.strokeStyle="#2b83ff";
-ctx.lineWidth=2;
-ctx.stroke();
+ctx.strokeStyle="#2b83ff"
+ctx.lineWidth=2
+ctx.stroke()
 
 for(let p of puntos){
 
-ctx.beginPath();
-ctx.arc(p.x,p.y,4,0,Math.PI*2);
-ctx.fillStyle="red";
-ctx.fill();
+ctx.beginPath()
+ctx.arc(p.x,p.y,4,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+if(!cerrado && puntos.length>0){
+
+let ultimo=puntos[puntos.length-1]
+
+let dx=mouse.x-ultimo.x
+let dy=mouse.y-ultimo.y
+
+let dist=Math.hypot(dx,dy)/getEscala()
+
+document.getElementById("medidaActual").innerHTML=
+"Longitud pared actual: "+dist.toFixed(2)+" m"
 
 }
 
 if(tubo.length>1){
 
-ctx.beginPath();
+ctx.beginPath()
 
-ctx.moveTo(tubo[0].x,tubo[0].y);
+ctx.moveTo(tubo[0].x,tubo[0].y)
 
 for(let p of tubo){
-ctx.lineTo(p.x,p.y);
+ctx.lineTo(p.x,p.y)
 }
 
-ctx.strokeStyle="green";
-ctx.lineWidth=2;
-ctx.stroke();
+ctx.strokeStyle="green"
+ctx.lineWidth=2
+ctx.stroke()
 
 }
+
+}
+
+function calcularDatosEstancia(){
+
+let area=areaPoligono(puntos)
+
+let perimetro=perimetroPoligono(puntos)
+
+let nombre=document.getElementById("nombreEstancia").value
+
+document.getElementById("datosEstancia").innerHTML=
+
+nombre+"<br>"+
+"Área: "+area.toFixed(2)+" m²<br>"+
+"Perímetro: "+perimetro.toFixed(2)+" m"
 
 }
 
 function generarSistema(){
 
-if(!cerrado)return;
+if(!cerrado)return
 
-anillos=[];
-tubo=[];
+anillos=[]
+tubo=[]
 
-let actual=offsetPoligono(puntos,getOffsetInicial());
+let actual=offsetPoligono(puntos,getOffsetInicial())
 
-if(actual.length<3)return;
+if(actual.length<3)return
 
-anillos.push(actual);
+anillos.push(actual)
 
-let area=areaPoligono(puntos);
+let paso=getPaso()
 
-let pasoMetros=getPaso()/getEscala();
+let minX=Infinity
+let maxX=-Infinity
+let minY=Infinity
+let maxY=-Infinity
 
-/* consumo real aproximado */
-let longitudObjetivo=area*6.5;
+for(let p of puntos){
 
-let acumulado=0;
-
-while(acumulado<longitudObjetivo){
-
-let nuevo=offsetPoligono(actual,getPaso());
-
-if(nuevo.length<3)break;
-
-anillos.push(nuevo);
-
-actual=nuevo;
-
-let perimetro=perimetroPoligono(nuevo);
-
-acumulado+=perimetro;
-
-if(anillos.length>200)break;
+if(p.x<minX)minX=p.x
+if(p.x>maxX)maxX=p.x
+if(p.y<minY)minY=p.y
+if(p.y>maxY)maxY=p.y
 
 }
 
-generarCaracol();
+let ancho=maxX-minX
+let alto=maxY-minY
 
-calcularLongitud();
+let ladoMenor=Math.min(ancho,alto)
 
-dibujar();
+let maxAnillos=Math.floor((ladoMenor/2)/paso)
+
+for(let i=0;i<maxAnillos;i++){
+
+let nuevo=offsetPoligono(actual,paso)
+
+if(nuevo.length<3)break
+
+anillos.push(nuevo)
+
+actual=nuevo
+
+}
+
+generarCaracol()
+
+dibujar()
 
 }
 
 function generarCaracol(){
 
-tubo=[];
+tubo=[]
 
 for(let i=0;i<anillos.length;i++){
 
-let ring=anillos[i];
+let ring=anillos[i]
 
 if(i%2===0){
 
 for(let p of ring){
-tubo.push(p);
+tubo.push(p)
 }
 
 }else{
 
 for(let j=ring.length-1;j>=0;j--){
-tubo.push(ring[j]);
+tubo.push(ring[j])
 }
 
 }
 
 }
-
-}
-
-function calcularLongitud(){
-
-let total=0;
-
-for(let i=1;i<tubo.length;i++){
-
-let dx=tubo[i].x-tubo[i-1].x;
-let dy=tubo[i].y-tubo[i-1].y;
-
-total+=Math.hypot(dx,dy);
-
-}
-
-let metros=total/getEscala();
-
-document.getElementById("info").innerHTML=
-"Longitud tubo aproximada: "+metros.toFixed(1)+" m";
 
 }
 
 function areaPoligono(poly){
 
-let area=0;
+let area=0
 
 for(let i=0;i<poly.length;i++){
 
-let j=(i+1)%poly.length;
+let j=(i+1)%poly.length
 
-area+=poly[i].x*poly[j].y-poly[j].x*poly[i].y;
+area+=poly[i].x*poly[j].y-poly[j].x*poly[i].y
 
 }
 
-return Math.abs(area/2)/(getEscala()*getEscala());
+return Math.abs(area/2)/(getEscala()*getEscala())
 
 }
 
 function perimetroPoligono(poly){
 
-let p=0;
+let p=0
 
 for(let i=0;i<poly.length;i++){
 
-let j=(i+1)%poly.length;
+let j=(i+1)%poly.length
 
-let dx=poly[i].x-poly[j].x;
-let dy=poly[i].y-poly[j].y;
+let dx=poly[i].x-poly[j].x
+let dy=poly[i].y-poly[j].y
 
-p+=Math.hypot(dx,dy)/getEscala();
+p+=Math.hypot(dx,dy)/getEscala()
 
 }
 
-return p;
+return p
 
 }
 
 function offsetPoligono(poligono,dist){
 
-let lineas=[];
-let n=poligono.length;
+let lineas=[]
+let n=poligono.length
 
 for(let i=0;i<n;i++){
 
-let p0=poligono[i];
-let p1=poligono[(i+1)%n];
+let p0=poligono[i]
+let p1=poligono[(i+1)%n]
 
-let dx=p1.x-p0.x;
-let dy=p1.y-p0.y;
+let dx=p1.x-p0.x
+let dy=p1.y-p0.y
 
-let len=Math.hypot(dx,dy);
+let len=Math.hypot(dx,dy)
 
-dx/=len;
-dy/=len;
+dx/=len
+dy/=len
 
-let nx=-dy;
-let ny=dx;
+let nx=-dy
+let ny=dx
 
 lineas.push({
 
@@ -366,45 +416,45 @@ y1:p0.y+ny*dist,
 x2:p1.x+nx*dist,
 y2:p1.y+ny*dist
 
-});
+})
 
 }
 
-let nuevo=[];
+let nuevo=[]
 
 for(let i=0;i<n;i++){
 
-let p=interseccion(lineas[i],lineas[(i+1)%n]);
+let p=interseccion(lineas[i],lineas[(i+1)%n])
 
-if(p)nuevo.push(p);
+if(p)nuevo.push(p)
 
 }
 
-return nuevo;
+return nuevo
 
 }
 
 function interseccion(a,b){
 
-let x1=a.x1;
-let y1=a.y1;
-let x2=a.x2;
-let y2=a.y2;
+let x1=a.x1
+let y1=a.y1
+let x2=a.x2
+let y2=a.y2
 
-let x3=b.x1;
-let y3=b.y1;
-let x4=b.x2;
-let y4=b.y2;
+let x3=b.x1
+let y3=b.y1
+let x4=b.x2
+let y4=b.y2
 
-let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
 
-if(den==0)return null;
+if(den==0)return null
 
-let px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den;
+let px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den
 
-let py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den;
+let py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den
 
-return{x:px,y:py};
+return{x:px,y:py}
 
 }
 
