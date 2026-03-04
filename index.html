@@ -1,397 +1,426 @@
-<!doctype html>
+<!DOCTYPE html>
+<!-- Define que usamos HTML5 -->
+
 <html lang="es">
+<!-- Idioma del documento -->
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ALLCALOR PRO - Generador Suelo Radiante (espiral)</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+
+<meta charset="UTF-8">
+<!-- Permite caracteres especiales -->
+
+<title>ALLCALOR PRO</title>
+<!-- Título de la pestaña -->
+
 <style>
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:#0f2b44;color:#fff;margin:0}
-  .container{max-width:1100px;margin:20px auto;padding:0 20px}
-  header{padding:18px 0;text-align:center}
-  h1{margin:0;font-size:26px;letter-spacing:1px}
-  .controls{background:linear-gradient(#12314a,#0a2740);padding:18px;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
-  label{display:block;margin:10px 0 6px;font-weight:600}
-  input[type="number"], select, input[type="text"]{width:100%;padding:10px;border-radius:4px;border:1px solid #234856;background:#fff;color:#111}
-  .row{display:flex;gap:12px}
-  .col{flex:1}
-  .btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#2b83ff;color:#fff;border-radius:6px;border:none;cursor:pointer}
-  .canvas-wrap{margin-top:18px;background:#efe9dd;padding:20px;border-radius:12px}
-  #planCanvas{display:block;background:#efe9dd;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.2)}
-  .results{background:#12314a;padding:14px;border-radius:8px;margin-top:14px;color:#fff}
-  .muted{color:#d0e7ff;font-weight:500}
-  .small{font-size:13px;color:#e6eef9}
-  .inline{display:inline-block;vertical-align:middle}
-  .flex{display:flex;gap:12px;align-items:center}
-  .checkbox-row{display:flex;gap:12px;align-items:center;margin-top:6px}
-  @media(max-width:720px){.row{flex-direction:column}}
+
+/* Estilo general del documento */
+body{
+    font-family:Arial;
+    background:#0f2b44;
+    color:white;
+    margin:0;
+    padding:20px;
+}
+
+/* Título centrado */
+h1{
+    text-align:center;
+}
+
+/* Panel de controles */
+.panel{
+    background:#12314a;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+
+/* Botones */
+button{
+    background:#2b83ff;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    cursor:pointer;
+    margin-right:8px;
+}
+
+/* Canvas de dibujo */
+canvas{
+    background:#efe9dd;
+    border-radius:8px;
+    display:block;
+    margin:auto;
+}
+
+/* Texto de información */
+.info{
+    margin-top:10px;
+}
+
+/* Inputs */
+input{
+    padding:6px;
+    width:80px;
+}
+
 </style>
+
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <h1>ALLCALOR PRO - Generador Suelo Radiante (espiral)</h1>
-    </header>
 
-    <div class="controls" id="controls">
-      <div class="row">
-        <div class="col">
-          <label for="largo">Largo estancia (m)</label>
-          <input id="largo" type="number" min="0.5" step="0.1" value="5">
-        </div>
-        <div class="col">
-          <label for="ancho">Ancho estancia (m)</label>
-          <input id="ancho" type="number" min="0.5" step="0.1" value="6">
-        </div>
-      </div>
+<h1>ALLCALOR PRO - Motor Geométrico</h1>
 
-      <div class="row">
-        <div class="col">
-          <label for="separacion">Separación (cm)</label>
-          <select id="separacion">
-            <option value="5">5 cm (baños/aseos)</option>
-            <option value="7.5">7.5 cm</option>
-            <option value="10" selected>10 cm</option>
-            <option value="12.5">12.5 cm</option>
-            <option value="15">15 cm</option>
-          </select>
-        </div>
+<div class="panel">
 
-        <div class="col">
-          <label for="maxMetro">Máx metros por circuito (m)</label>
-          <input id="maxMetro" type="number" min="50" max="120" step="1" value="90">
-        </div>
-      </div>
+Escala: 1 metro =
+<input type="number" id="escalaInput" value="50">
+px
 
-      <div class="row">
-        <div class="col">
-          <label for="pared">Pared colector</label>
-          <select id="pared"><option value="izquierda">Izquierda</option><option value="derecha">Derecha</option></select>
-        </div>
+Separación tubo (cm):
+<input type="number" id="pasoInput" value="10">
 
-        <div class="col">
-          <label>Excluir plato ducha</label>
-          <div class="checkbox-row">
-            <label class="small inline"> <input type="checkbox" id="excluirDucha"> Excluir plato ducha</label>
-            <div style="flex:1">
-              <input id="duchaL" placeholder="Largo plato (m)" type="number" step="0.01" value="0.9">
-              <input id="duchaA" placeholder="Ancho plato (m)" type="number" step="0.01" value="0.9" style="margin-top:6px">
-            </div>
-          </div>
-        </div>
-      </div>
+<br><br>
 
-      <div style="margin-top:8px">
-        <button class="btn" id="generar">Generar plano</button>
-        <span class="small muted" style="margin-left:12px">Máximo 12 circuitos por colector; se divide automáticamente en circuitos equilibrados.</span>
-      </div>
-    </div>
+<button onclick="cerrarPoligono()">Cerrar estancia</button>
 
-    <div class="canvas-wrap">
-      <canvas id="planCanvas" width="1000" height="520"></canvas>
-      <div class="results" id="resultado" aria-live="polite"></div>
-    </div>
-  </div>
+<button onclick="deshacer()">Deshacer</button>
+
+<button onclick="reiniciar()">Reiniciar</button>
+
+<button onclick="generarAnillos()">Generar anillos</button>
+
+<div class="info" id="info"></div>
+
+</div>
+
+<canvas id="canvas" width="1000" height="600"></canvas>
 
 <script>
-/*
-  Algoritmo:
-  - Genera un espiral rectangular contínuo (tipo "caracol de rectángulos") en coordenadas de planta.
-  - Excluye un rectángulo interior si se solicita plato de ducha.
-  - Convierte el trazado en una polilínea y calcula longitud real (m).
-  - Parte la polilínea en segmentos para formar circuitos cuya longitud <= maxMetro (excepto último).
-  - Limita a 12 circuitos por colector; si hay más, sugiere aumentar maxMetro o usar más colectores.
-  - Dibuja cada circuito con color diferenciado y líneas de conexión al colector.
-*/
 
-const canvas = document.getElementById('planCanvas');
-const ctx = canvas.getContext('2d');
+/* Referencia al canvas */
+const canvas = document.getElementById("canvas");
 
-const colors = ['#d94b4b','#4ba05a','#3a93d9','#e38b3a','#9b59b6','#2ecc71','#e74c3c','#3498db','#f39c12','#8e44ad','#16a085','#c0392b'];
+/* Contexto de dibujo 2D */
+const ctx = canvas.getContext("2d");
 
-function mmx(m){return m;} // keep meters for logic; mapping to pixels later
+/* Array que guarda vértices de la estancia */
+let puntos = [];
 
-function meterToPxScale(largo, ancho){
-  // We want margin and fit into canvas size
-  const pad = 120;
-  const availW = canvas.width - pad*2;
-  const availH = canvas.height - pad*2;
-  const scale = Math.min(availW / largo, availH / ancho);
-  return {scale, pad};
+/* Indica si el polígono está cerrado */
+let cerrado = false;
+
+/* Array que almacenará todos los anillos */
+let anillos = [];
+
+/* Obtiene escala px por metro */
+function getEscala(){
+    return parseFloat(document.getElementById("escalaInput").value);
 }
 
-function buildRectSpiral(largo, ancho, paso){
-  // Build spiral as continuous polyline in plant meters coordinate system.
-  // Start at outer top-left and go clockwise inward (rect angular spiral).
-  let left = 0 + paso/2;
-  let top = 0 + paso/2;
-  let right = largo - paso/2;
-  let bottom = ancho - paso/2;
-  let path = [];
-  // Start point:
-  let x = left, y = top;
-  path.push([x,y]);
-  let dir = 0; // 0:right,1:down,2:left,3:up
-  while (left < right && top < bottom){
-    if (dir===0){ x = right; path.push([x,y]); top += paso; y = top; path.push([x,y]); dir=1; }
-    else if (dir===1){ y = bottom; path.push([x,y]); right -= paso; x = right; path.push([x,y]); dir=2; }
-    else if (dir===2){ x = left; path.push([x,y]); bottom -= paso; y = bottom; path.push([x,y]); dir=3; }
-    else { y = top; path.push([x,y]); left += paso; x = left; path.push([x,y]); dir=0; }
-    // safety
-    if (path.length>20000) break;
-  }
-  // The built path may include duplicates; compress sequential duplicates
-  let compressed = [path[0]];
-  for(let i=1;i<path.length;i++){
-    let a = compressed[compressed.length-1];
-    let b = path[i];
-    if (Math.abs(a[0]-b[0])>1e-6 || Math.abs(a[1]-b[1])>1e-6) compressed.push(b);
-  }
-  return compressed;
+/* Convierte separación del tubo en píxeles */
+function getPaso(){
+
+    let cm = parseFloat(document.getElementById("pasoInput").value);
+
+    return (cm/100) * getEscala();
+
 }
 
-function lengthOfPolyline(poly){
-  let L=0;
-  for(let i=1;i<poly.length;i++){
-    let dx=poly[i][0]-poly[i-1][0];
-    let dy=poly[i][1]-poly[i-1][1];
-    L += Math.hypot(dx,dy);
-  }
-  return L;
-}
+/* Evento clic sobre el canvas */
+canvas.addEventListener("click", function(e){
 
-function samplePolyline(poly, desiredSegmentMeters=0.01){
-  // Return array of points sampled along polyline at approx desiredSegmentMeters spacing
-  const points = [];
-  for(let i=1;i<poly.length;i++){
-    let x0=poly[i-1][0], y0=poly[i-1][1];
-    let x1=poly[i][0], y1=poly[i][1];
-    let segLen = Math.hypot(x1-x0,y1-y0);
-    if (segLen===0) continue;
-    let n = Math.max(1, Math.ceil(segLen/desiredSegmentMeters));
-    for(let k=0;k<n;k++){
-      let t = k/n;
-      points.push([x0 + (x1-x0)*t, y0 + (y1-y0)*t]);
-    }
-  }
-  // push last point
-  points.push(poly[poly.length-1]);
-  return points;
-}
+    /* Si el polígono está cerrado no añadimos más puntos */
+    if(cerrado) return;
 
-function splitIntoCircuits(pointsMeters, maxPerCircuit){
-  // pointsMeters: sampled points along continuous spiral (meters).
-  // Create circuits by walking along and accumulating length until maxPerCircuit -> cut there.
-  const circuits = [];
-  let current = [];
-  let acc = 0;
-  for(let i=1;i<pointsMeters.length;i++){
-    let a = pointsMeters[i-1], b = pointsMeters[i];
-    let seg = Math.hypot(b[0]-a[0], b[1]-a[1]);
-    if (acc + seg > maxPerCircuit && current.length>0){
-      // cut: close current circuit, start new
-      circuits.push(current.slice());
-      current = [pointsMeters[i-1]];
-      acc = 0;
-    }
-    current.push(pointsMeters[i]);
-    acc += seg;
-  }
-  if (current.length>0) circuits.push(current);
-  return circuits;
-}
+    /* Posición del canvas */
+    const rect = canvas.getBoundingClientRect();
 
-function draw(allCircuits, options){
-  // options: scale,pad,pared (izq/der)
-  const {scale,pad,pared} = options;
-  // clear
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  // background panel (already visual, but draw border)
-  ctx.fillStyle = '#efe9dd';
-  ctx.roundRect = function(x,y,w,h,r){
-    this.beginPath();
-    this.moveTo(x+r,y);
-    this.arcTo(x+w,y,x+w,y+h,r);
-    this.arcTo(x+w,y+h,x,y+h,r);
-    this.arcTo(x,y+h,x,y,r);
-    this.arcTo(x,y,x+w,y,r);
-    this.closePath();
-  };
-  ctx.save();
-  ctx.translate(0,0);
-  // Draw circuits as colored polylines
-  for(let ci=0; ci<allCircuits.length; ci++){
-    const poly = allCircuits[ci];
-    ctx.beginPath();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = colors[ci % colors.length];
-    for(let i=0;i<poly.length;i++){
-      const [mx,my] = poly[i];
-      const px = pad + mx*scale;
-      const py = pad + my*scale;
-      if (i===0) ctx.moveTo(px,py);
-      else ctx.lineTo(px,py);
-    }
-    ctx.stroke();
-    // draw small circle at start and end
-    const s = poly[0], e = poly[poly.length-1];
-    ctx.fillStyle = colors[ci % colors.length];
-    ctx.beginPath(); ctx.arc(pad+s[0]*scale, pad+s[1]*scale, 3,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(pad+e[0]*scale, pad+e[1]*scale, 3,0,Math.PI*2); ctx.fill();
-  }
+    /* Coordenadas del clic */
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-  // Draw collector vertical bar
-  ctx.lineWidth = 8;
-  ctx.strokeStyle = '#111';
-  let cx = (pared==='izquierda') ? pad-20 : canvas.width - pad + 20;
-  ctx.beginPath();
-  ctx.moveTo(cx, pad-10);
-  ctx.lineTo(cx, canvas.height - pad + 10);
-  ctx.stroke();
+    /* Guardamos punto */
+    puntos.push({x,y});
 
-  // Draw connector lines from circuit starts/ends to collector
-  ctx.lineWidth = 2;
-  for(let ci=0; ci<allCircuits.length; ci++){
-    const poly = allCircuits[ci];
-    const start = poly[0];
-    const end = poly[poly.length-1];
-    // connect nearest end to collector with a polyline (horizontal then vertical)
-    const sx = pad + start[0]*scale, sy = pad + start[1]*scale;
-    const ex = pad + end[0]*scale, ey = pad + end[1]*scale;
-    const colx = cx;
-    // entry from start (supply): draw a short connection angled towards collector
-    ctx.strokeStyle = colors[ci % colors.length];
-    ctx.beginPath();
-    ctx.moveTo(sx,sy);
-    ctx.lineTo((sx+colx)/2, sy);
-    ctx.lineTo(colx, sy);
-    ctx.stroke();
-    // return from end (return): different small path
-    ctx.beginPath();
-    ctx.moveTo(ex,ey);
-    ctx.lineTo((ex+colx)/2, ey);
-    ctx.lineTo(colx, ey);
-    ctx.stroke();
-  }
+    /* Redibujamos */
+    dibujar();
 
-  ctx.restore();
-}
-
-function metersToString(m){ return m.toFixed(1) + ' m'; }
-
-document.getElementById('generar').addEventListener('click', ()=> {
-  // read inputs
-  let largo = parseFloat(document.getElementById('largo').value) || 0;
-  let ancho = parseFloat(document.getElementById('ancho').value) || 0;
-  let separacionCm = parseFloat(document.getElementById('separacion').value) || 10;
-  let maxMetro = parseFloat(document.getElementById('maxMetro').value) || 90;
-  const pared = document.getElementById('pared').value;
-  const excluir = document.getElementById('excluirDucha').checked;
-  const duchaL = parseFloat(document.getElementById('duchaL').value) || 0.9;
-  const duchaA = parseFloat(document.getElementById('duchaA').value) || 0.9;
-
-  // basic validation
-  if (largo <= 0 || ancho <=0){
-    alert('Dimensiones inválidas');
-    return;
-  }
-  if (maxMetro < 50) maxMetro = 50;
-
-  // set paso en metros
-  const paso = separacionCm/100;
-
-  // create spiral polyline in meters
-  const spiralRaw = buildRectSpiral(largo, ancho, paso);
-
-  // If excluding shower: we'll remove points inside the shower rectangle located near the collector wall.
-  let spiralFiltered = spiralRaw.slice();
-  if (excluir){
-    // choose shower position: assume near collector (si colector a izquierda, ducha en esquina izquierda superior)
-    let showerRect;
-    if (pared==='izquierda'){
-      showerRect = {x:0, y:0, w:duchaL, h:duchaA}; // top-left
-    } else {
-      // top-right corner
-      showerRect = {x: largo - duchaL, y:0, w:duchaL, h:duchaA};
-    }
-    // remove points that lie strictly inside shower rect by snapping them to rectangle border
-    spiralFiltered = [];
-    for(let p of spiralRaw){
-      let x=p[0], y=p[1];
-      if (x > showerRect.x && x < showerRect.x + showerRect.w && y > showerRect.y && y < showerRect.y + showerRect.h){
-        // snap this point to nearest edge of shower rect to create opening around shower
-        // push a point on the boundary instead of inside (so spiral goes around it)
-        let nx = Math.min(Math.max(x, showerRect.x), showerRect.x+showerRect.w);
-        let ny = Math.min(Math.max(y, showerRect.y), showerRect.y+showerRect.h);
-        // push a point just outside
-        if (nx - showerRect.x < 0.0001) nx = showerRect.x - paso/2;
-        else if (showerRect.x + showerRect.w - nx < 0.0001) nx = showerRect.x + showerRect.w + paso/2;
-        if (ny - showerRect.y < 0.0001) ny = showerRect.y - paso/2;
-        else if (showerRect.y + showerRect.h - ny < 0.0001) ny = showerRect.y + showerRect.h + paso/2;
-        spiralFiltered.push([nx,ny]);
-      } else spiralFiltered.push([x,y]);
-    }
-  }
-
-  // sample the spiral polyline into points every ~0.01m for smooth division
-  const sampled = samplePolyline(spiralFiltered, 0.02);
-
-  // split into circuits by length
-  const circuits = splitIntoCircuits(sampled, maxMetro);
-
-  // If circuits > 12, we need to decide: allow multiple collectors or increase max length.
-  const maxCircuitsPerCollector = 12;
-  const neededCollectors = Math.ceil(circuits.length / maxCircuitsPerCollector);
-
-  // If too many circuits per collector, we still draw everything but show warning
-  // Prepare for drawing: scale
-  const {scale,pad} = meterToPxScale(largo, ancho);
-
-  // For drawing, we want separate arrays per circuit, but each circuit is in meters coordinates
-  // Draw
-  draw(circuits, {scale,pad,pared});
-
-  // compute lengths per circuit
-  const circuitLengths = circuits.map(c => lengthOfPolyline(c));
-
-  // outputs
-  const totalLength = circuitLengths.reduce((a,b)=>a+b,0);
-  const resultado = document.getElementById('resultado');
-  let html = '';
-  html += `<div class="small">Superficie: <strong>${(largo*ancho).toFixed(1)} m²</strong></div>`;
-  html += `<div class="small">Longitud total estimada: <strong>${totalLength.toFixed(1)} m</strong></div>`;
-  html += `<div class="small">Circuitos generados: <strong>${circuits.length}</strong></div>`;
-  html += `<div class="small">Colectores necesarios (máx ${maxCircuitsPerCollector} por colector): <strong>${neededCollectors}</strong></div>`;
-  html += `<br>`;
-  html += `<div class="small"><strong>Detalle por circuito:</strong></div>`;
-  html += `<ul>`;
-  for(let i=0;i<circuitLengths.length;i++){
-    let m = circuitLengths[i];
-    html += `<li class="small">Circuito ${i+1}: <strong>${m.toFixed(1)} m</strong></li>`;
-  }
-  html += `</ul>`;
-  if (circuits.length > maxCircuitsPerCollector) {
-    html += `<div style="color:#ffdb4d;font-weight:700;margin-top:8px">AVISO: Se han generado ${circuits.length} circuitos. Límite por colector ${maxCircuitsPerCollector}. Considera: aumentar la longitud máxima por circuito, o asignar varios colectores.</div>`;
-  }
-  resultado.innerHTML = html;
 });
 
+/* Cierra el polígono */
+function cerrarPoligono(){
 
-// small helpers: rounded rect polyfill
-(function(ctxProto){
-  if(!ctxProto.roundRect){
-    ctxProto.roundRect = function(x,y,w,h,r){
-      this.beginPath();
-      this.moveTo(x+r,y);
-      this.arcTo(x+w,y,x+w,y+h,r);
-      this.arcTo(x+w,y+h,x,y+h,r);
-      this.arcTo(x,y+h,x,y,r);
-      this.arcTo(x,y,x+w,y,r);
-      this.closePath();
-    };
-  }
-})(CanvasRenderingContext2D.prototype);
+    /* Necesitamos mínimo 3 puntos */
+    if(puntos.length < 3) return;
+
+    /* Detectamos si hay cruces */
+    if(tieneInterseccion()){
+
+        alert("El polígono tiene líneas cruzadas");
+
+        return;
+
+    }
+
+    cerrado = true;
+
+    dibujar();
+
+}
+
+/* Deshacer último punto */
+function deshacer(){
+
+    if(cerrado) return;
+
+    puntos.pop();
+
+    dibujar();
+
+}
+
+/* Reiniciar editor */
+function reiniciar(){
+
+    puntos = [];
+    anillos = [];
+    cerrado = false;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    document.getElementById("info").innerHTML="";
+
+}
+
+/* Dibuja todo el sistema */
+function dibujar(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    if(puntos.length===0) return;
+
+    /* Dibujar polígono principal */
+
+    ctx.beginPath();
+    ctx.moveTo(puntos[0].x,puntos[0].y);
+
+    for(let i=1;i<puntos.length;i++){
+        ctx.lineTo(puntos[i].x,puntos[i].y);
+    }
+
+    if(cerrado){
+
+        ctx.closePath();
+
+        ctx.fillStyle="rgba(43,131,255,0.2)";
+        ctx.fill();
+
+    }
+
+    ctx.strokeStyle="#2b83ff";
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+    /* Dibujar vértices */
+
+    for(let p of puntos){
+
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,4,0,Math.PI*2);
+        ctx.fillStyle="#ff4444";
+        ctx.fill();
+
+    }
+
+    /* Dibujar anillos interiores */
+
+    for(let anillo of anillos){
+
+        ctx.beginPath();
+        ctx.moveTo(anillo[0].x,anillo[0].y);
+
+        for(let i=1;i<anillo.length;i++){
+            ctx.lineTo(anillo[i].x,anillo[i].y);
+        }
+
+        ctx.closePath();
+
+        ctx.strokeStyle="green";
+        ctx.lineWidth=2;
+        ctx.stroke();
+
+    }
+
+    mostrarDatos();
+
+}
+
+/* Genera múltiples anillos interiores */
+function generarAnillos(){
+
+    if(!cerrado) return;
+
+    anillos = [];
+
+    let actual = puntos;
+
+    const paso = getPaso();
+
+    while(true){
+
+        let nuevo = generarOffset(actual,paso);
+
+        if(nuevo.length < 3) break;
+
+        anillos.push(nuevo);
+
+        actual = nuevo;
+
+        if(anillos.length > 100) break;
+
+    }
+
+    dibujar();
+
+}
+
+/* Genera offset interior */
+function generarOffset(poligono,dist){
+
+    let nuevo=[];
+
+    for(let i=0;i<poligono.length;i++){
+
+        let p0 = poligono[(i-1+poligono.length)%poligono.length];
+        let p1 = poligono[i];
+        let p2 = poligono[(i+1)%poligono.length];
+
+        let v1x=p1.x-p0.x;
+        let v1y=p1.y-p0.y;
+
+        let v2x=p2.x-p1.x;
+        let v2y=p2.y-p1.y;
+
+        let l1=Math.hypot(v1x,v1y);
+        let l2=Math.hypot(v2x,v2y);
+
+        v1x/=l1;
+        v1y/=l1;
+
+        v2x/=l2;
+        v2y/=l2;
+
+        let nx=v1y-v2y;
+        let ny=-(v1x-v2x);
+
+        let len=Math.hypot(nx,ny);
+
+        if(len===0) continue;
+
+        nx/=len;
+        ny/=len;
+
+        nuevo.push({
+
+            x:p1.x+nx*dist,
+            y:p1.y+ny*dist
+
+        });
+
+    }
+
+    return nuevo;
+
+}
+
+/* Calcula área del polígono */
+function calcularArea(){
+
+    let area=0;
+
+    for(let i=0;i<puntos.length;i++){
+
+        let j=(i+1)%puntos.length;
+
+        area+=puntos[i].x*puntos[j].y;
+        area-=puntos[j].x*puntos[i].y;
+
+    }
+
+    return Math.abs(area/2);
+
+}
+
+/* Calcula perímetro */
+function calcularPerimetro(){
+
+    let p=0;
+
+    for(let i=0;i<puntos.length;i++){
+
+        let j=(i+1)%puntos.length;
+
+        let dx=puntos[j].x-puntos[i].x;
+        let dy=puntos[j].y-puntos[i].y;
+
+        p+=Math.hypot(dx,dy);
+
+    }
+
+    return p;
+
+}
+
+/* Muestra datos técnicos */
+function mostrarDatos(){
+
+    if(puntos.length<3) return;
+
+    const escala=getEscala();
+
+    let areaM=calcularArea()/(escala*escala);
+
+    let perM=calcularPerimetro()/escala;
+
+    document.getElementById("info").innerHTML=
+    "Área: "+areaM.toFixed(2)+" m² | Perímetro: "+perM.toFixed(2)+" m";
+
+}
+
+/* Detecta intersecciones */
+function tieneInterseccion(){
+
+    for(let i=0;i<puntos.length-1;i++){
+
+        for(let j=i+2;j<puntos.length-1;j++){
+
+            if(intersectan(puntos[i],puntos[i+1],puntos[j],puntos[j+1]))
+                return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+/* Algoritmo geométrico */
+function intersectan(p1,p2,p3,p4){
+
+    function ccw(a,b,c){
+        return (c.y-a.y)*(b.x-a.x) > (b.y-a.y)*(c.x-a.x);
+    }
+
+    return (ccw(p1,p3,p4)!=ccw(p2,p3,p4)) &&
+           (ccw(p1,p2,p3)!=ccw(p1,p2,p4));
+
+}
 
 </script>
+
 </body>
 </html>
