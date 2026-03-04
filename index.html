@@ -48,11 +48,6 @@ padding:6px;
 width:120px;
 }
 
-.info{
-margin-top:10px;
-font-size:14px;
-}
-
 </style>
 
 </head>
@@ -83,9 +78,7 @@ Separación tubo (cm)
 <button onclick="reiniciar()">Reiniciar</button>
 <button onclick="generarSistema()">Generar circuito</button>
 
-<div class="info" id="medidaActual"></div>
-<div class="info" id="anguloPreview"></div>
-<div class="info" id="datosEstancia"></div>
+<div id="datosEstancia"></div>
 
 </div>
 
@@ -103,6 +96,9 @@ let anillos=[]
 let tubo=[]
 
 let mouse={x:0,y:0}
+
+let previewLong=0
+let previewAng=null
 
 function getEscala(){
 return parseFloat(document.getElementById("escalaInput").value)
@@ -124,7 +120,7 @@ const rect=canvas.getBoundingClientRect()
 mouse.x=e.clientX-rect.left
 mouse.y=e.clientY-rect.top
 
-mostrarPreview()
+calcularPreview()
 
 dibujar()
 
@@ -145,7 +141,7 @@ dibujar()
 
 })
 
-function mostrarPreview(){
+function calcularPreview(){
 
 if(puntos.length===0)return
 
@@ -154,10 +150,7 @@ let ultimo=puntos[puntos.length-1]
 let dx=mouse.x-ultimo.x
 let dy=mouse.y-ultimo.y
 
-let dist=Math.hypot(dx,dy)/getEscala()
-
-document.getElementById("medidaActual").innerHTML=
-"Longitud pared actual: "+dist.toFixed(2)+" m"
+previewLong=Math.hypot(dx,dy)/getEscala()
 
 if(puntos.length>=2){
 
@@ -165,14 +158,11 @@ let p0=puntos[puntos.length-2]
 let p1=puntos[puntos.length-1]
 let p2=mouse
 
-let ang=calcularAngulo(p0,p1,p2)
-
-document.getElementById("anguloPreview").innerHTML=
-"Ángulo esquina: "+ang.toFixed(1)+"°"
+previewAng=calcularAngulo(p0,p1,p2)
 
 }else{
 
-document.getElementById("anguloPreview").innerHTML=""
+previewAng=null
 
 }
 
@@ -207,9 +197,10 @@ anillos=[]
 tubo=[]
 cerrado=false
 
+previewAng=null
+previewLong=0
+
 document.getElementById("datosEstancia").innerHTML=""
-document.getElementById("anguloPreview").innerHTML=""
-document.getElementById("medidaActual").innerHTML=""
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
@@ -255,6 +246,8 @@ ctx.fill()
 
 }
 
+dibujarMedidasCursor()
+
 if(tubo.length>1){
 
 ctx.beginPath()
@@ -270,6 +263,23 @@ ctx.lineWidth=2
 ctx.stroke()
 
 }
+
+}
+
+function dibujarMedidasCursor(){
+
+if(puntos.length===0)return
+
+ctx.fillStyle="black"
+ctx.font="14px Arial"
+
+let texto=previewLong.toFixed(2)+" m"
+
+if(previewAng!==null){
+texto+=" | "+previewAng.toFixed(1)+"°"
+}
+
+ctx.fillText(texto,mouse.x+15,mouse.y-10)
 
 }
 
@@ -295,7 +305,6 @@ return ang*180/Math.PI
 function calcularDatosEstancia(){
 
 let area=areaPoligono(puntos)
-
 let perimetro=perimetroPoligono(puntos)
 
 let nombre=document.getElementById("nombreEstancia").value
@@ -486,7 +495,6 @@ let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
 if(den==0)return null
 
 let px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den
-
 let py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den
 
 return{x:px,y:py}
