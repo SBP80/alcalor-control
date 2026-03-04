@@ -198,9 +198,7 @@ ctx.lineTo(puntos[i].x,puntos[i].y)
 }
 
 if(!cerrado){
-
 ctx.lineTo(mouse.x,mouse.y)
-
 }
 
 if(cerrado){
@@ -216,12 +214,23 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-for(let p of puntos){
+for(let i=0;i<puntos.length;i++){
+
+let p=puntos[i]
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,4,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
+
+if(i>0 && i<puntos.length-1){
+
+let angulo=calcularAngulo(puntos[i-1],puntos[i],puntos[i+1])
+
+ctx.fillStyle="black"
+ctx.fillText(angulo.toFixed(1)+"°",p.x+8,p.y-8)
+
+}
 
 }
 
@@ -254,6 +263,25 @@ ctx.lineWidth=2
 ctx.stroke()
 
 }
+
+}
+
+function calcularAngulo(a,b,c){
+
+let abx=a.x-b.x
+let aby=a.y-b.y
+
+let cbx=c.x-b.x
+let cby=c.y-b.y
+
+let dot=abx*cbx+aby*cby
+
+let mag1=Math.hypot(abx,aby)
+let mag2=Math.hypot(cbx,cby)
+
+let ang=Math.acos(dot/(mag1*mag2))
+
+return ang*180/Math.PI
 
 }
 
