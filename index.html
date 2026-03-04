@@ -1,20 +1,15 @@
 <!DOCTYPE html>
-<!-- Documento HTML5 -->
-
 <html lang="es">
-<!-- Idioma del documento -->
 
 <head>
 
 <meta charset="UTF-8">
-<!-- Permite caracteres especiales -->
 
 <title>ALLCALOR PRO</title>
-<!-- Título del programa -->
 
 <style>
 
-/* Estilo general */
+/* estilo general */
 body{
 font-family:Arial;
 background:#0f2b44;
@@ -23,12 +18,12 @@ margin:0;
 padding:20px;
 }
 
-/* Título */
+/* titulo */
 h1{
 text-align:center;
 }
 
-/* Panel de controles */
+/* panel */
 .panel{
 background:#12314a;
 padding:15px;
@@ -36,7 +31,7 @@ border-radius:8px;
 margin-bottom:15px;
 }
 
-/* Botones */
+/* botones */
 button{
 background:#2b83ff;
 color:white;
@@ -46,7 +41,7 @@ cursor:pointer;
 margin-right:8px;
 }
 
-/* Canvas de dibujo */
+/* canvas */
 canvas{
 background:#efe9dd;
 border-radius:8px;
@@ -54,7 +49,7 @@ display:block;
 margin:auto;
 }
 
-/* Inputs */
+/* inputs */
 input{
 padding:6px;
 width:80px;
@@ -72,9 +67,11 @@ width:80px;
 
 Escala: 1m =
 <input type="number" id="escalaInput" value="50">
+
 px
 
 Separación tubo (cm):
+
 <input type="number" id="pasoInput" value="10">
 
 <br><br>
@@ -95,30 +92,32 @@ Separación tubo (cm):
 
 <script>
 
-/* referencia canvas */
+/* canvas */
 const canvas=document.getElementById("canvas");
 
 /* contexto dibujo */
 const ctx=canvas.getContext("2d");
 
-/* vértices estancia */
+/* puntos de la estancia */
 let puntos=[];
 
-/* indica si está cerrada */
+/* indica si esta cerrado */
 let cerrado=false;
 
 /* anillos generados */
 let anillos=[];
 
-/* trayectoria final del tubo */
+/* recorrido del tubo */
 let tubo=[];
 
-/* escala px por metro */
+
+/* obtener escala */
 function getEscala(){
 return parseFloat(document.getElementById("escalaInput").value);
 }
 
-/* paso entre tubos */
+
+/* obtener paso tubo */
 function getPaso(){
 
 let cm=parseFloat(document.getElementById("pasoInput").value);
@@ -127,14 +126,16 @@ return (cm/100)*getEscala();
 
 }
 
-/* separación inicial del muro */
+
+/* distancia inicial del muro */
 function getOffsetInicial(){
 
 return (10/100)*getEscala();
 
 }
 
-/* clic en canvas */
+
+/* clic para dibujar estancia */
 canvas.addEventListener("click",function(e){
 
 if(cerrado)return;
@@ -150,6 +151,7 @@ dibujar();
 
 });
 
+
 /* cerrar estancia */
 function cerrarPoligono(){
 
@@ -160,6 +162,7 @@ cerrado=true;
 dibujar();
 
 }
+
 
 /* deshacer punto */
 function deshacer(){
@@ -172,7 +175,8 @@ dibujar();
 
 }
 
-/* reiniciar editor */
+
+/* reiniciar todo */
 function reiniciar(){
 
 puntos=[];
@@ -184,19 +188,24 @@ ctx.clearRect(0,0,canvas.width,canvas.height);
 
 }
 
-/* dibuja escena */
+
+/* dibujar escena */
 function dibujar(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
 if(puntos.length===0)return;
 
-/* dibujar estancia */
+
+/* dibujar poligono */
 ctx.beginPath();
+
 ctx.moveTo(puntos[0].x,puntos[0].y);
 
 for(let i=1;i<puntos.length;i++){
+
 ctx.lineTo(puntos[i].x,puntos[i].y);
+
 }
 
 if(cerrado){
@@ -204,25 +213,33 @@ if(cerrado){
 ctx.closePath();
 
 ctx.fillStyle="rgba(43,131,255,0.2)";
+
 ctx.fill();
 
 }
 
 ctx.strokeStyle="#2b83ff";
+
 ctx.lineWidth=2;
+
 ctx.stroke();
 
-/* dibujar vértices */
+
+/* dibujar vertices */
 for(let p of puntos){
 
 ctx.beginPath();
+
 ctx.arc(p.x,p.y,4,0,Math.PI*2);
+
 ctx.fillStyle="red";
+
 ctx.fill();
 
 }
 
-/* dibujar circuito */
+
+/* dibujar tubo */
 if(tubo.length>1){
 
 ctx.beginPath();
@@ -236,20 +253,24 @@ ctx.lineTo(p.x,p.y);
 }
 
 ctx.strokeStyle="green";
+
 ctx.lineWidth=2;
+
 ctx.stroke();
 
 }
 
 }
 
-/* genera todo el sistema */
+
+/* generar sistema */
 function generarSistema(){
 
 if(!cerrado)return;
 
 anillos=[];
 tubo=[];
+
 
 /* primer offset */
 let actual=offsetPoligono(puntos,getOffsetInicial());
@@ -258,12 +279,27 @@ if(actual.length<3)return;
 
 anillos.push(actual);
 
-const paso=getPaso();
 
-/* generar offsets */
-while(true){
+/* calcular area */
+let area=areaPoligono(puntos);
 
-let nuevo=offsetPoligono(actual,paso);
+
+/* paso en metros */
+let paso=getPaso()/getEscala();
+
+
+/* longitud teorica */
+let maxLong=area/paso;
+
+
+/* acumulador */
+let acumulado=0;
+
+
+/* generar anillos */
+while(acumulado<maxLong){
+
+let nuevo=offsetPoligono(actual,getPaso());
 
 if(nuevo.length<3)break;
 
@@ -271,21 +307,37 @@ anillos.push(nuevo);
 
 actual=nuevo;
 
+
+/* estimar longitud */
+for(let i=1;i<nuevo.length;i++){
+
+let dx=nuevo[i].x-nuevo[i-1].x;
+
+let dy=nuevo[i].y-nuevo[i-1].y;
+
+acumulado+=Math.hypot(dx,dy)/getEscala();
+
+}
+
 if(anillos.length>200)break;
 
 }
 
-/* crear trayectoria */
+
+/* crear circuito continuo */
 generarCaracol();
+
 
 /* calcular metros */
 calcularLongitud();
+
 
 dibujar();
 
 }
 
-/* genera caracol continuo */
+
+/* crear recorrido */
 function generarCaracol(){
 
 tubo=[];
@@ -294,17 +346,19 @@ for(let i=0;i<anillos.length;i++){
 
 let ring=anillos[i];
 
-if(i%2==0){
+if(i%2===0){
 
 for(let p of ring){
+
 tubo.push(p);
+
 }
 
 }else{
 
 for(let j=ring.length-1;j>=0;j--){
+
 tubo.push(ring[j]);
-}
 
 }
 
@@ -312,7 +366,10 @@ tubo.push(ring[j]);
 
 }
 
-/* calcula longitud tubo */
+}
+
+
+/* calcular longitud */
 function calcularLongitud(){
 
 let total=0;
@@ -320,6 +377,7 @@ let total=0;
 for(let i=1;i<tubo.length;i++){
 
 let dx=tubo[i].x-tubo[i-1].x;
+
 let dy=tubo[i].y-tubo[i-1].y;
 
 total+=Math.hypot(dx,dy);
@@ -333,27 +391,51 @@ document.getElementById("info").innerHTML=
 
 }
 
-/* offset robusto */
+
+/* calcular area poligono */
+function areaPoligono(poly){
+
+let area=0;
+
+for(let i=0;i<poly.length;i++){
+
+let j=(i+1)%poly.length;
+
+area+=poly[i].x*poly[j].y-poly[j].x*poly[i].y;
+
+}
+
+return Math.abs(area/2)/(getEscala()*getEscala());
+
+}
+
+
+/* offset del poligono */
 function offsetPoligono(poligono,dist){
 
 let lineas=[];
 
 let n=poligono.length;
 
+
 for(let i=0;i<n;i++){
 
 let p0=poligono[i];
+
 let p1=poligono[(i+1)%n];
 
 let dx=p1.x-p0.x;
+
 let dy=p1.y-p0.y;
 
 let len=Math.hypot(dx,dy);
 
 dx/=len;
+
 dy/=len;
 
 let nx=-dy;
+
 let ny=dx;
 
 lineas.push({
@@ -366,6 +448,7 @@ y2:p1.y+ny*dist
 });
 
 }
+
 
 let nuevo=[];
 
@@ -381,18 +464,22 @@ return nuevo;
 
 }
 
-/* intersección de rectas */
+
+/* interseccion de rectas */
 function interseccion(a,b){
 
 let x1=a.x1;
 let y1=a.y1;
+
 let x2=a.x2;
 let y2=a.y2;
 
 let x3=b.x1;
 let y3=b.y1;
+
 let x4=b.x2;
 let y4=b.y2;
+
 
 let den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
 
