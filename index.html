@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
 <title>ALLCALOR PRO</title>
 
@@ -15,9 +14,7 @@ margin:0;
 padding:20px;
 }
 
-h1{
-text-align:center;
-}
+h1{text-align:center;}
 
 .panel{
 background:#12314a;
@@ -48,7 +45,6 @@ width:120px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -75,7 +71,6 @@ Separación tubo (cm)
 <button onclick="cerrarPoligono()">Cerrar estancia</button>
 <button onclick="deshacer()">Deshacer</button>
 <button onclick="reiniciar()">Reiniciar</button>
-<button onclick="generarCircuito()">Generar circuito</button>
 <button onclick="modoColector()">Colocar colector</button>
 <button onclick="modoPuerta()">Colocar puerta</button>
 
@@ -96,25 +91,35 @@ let cerrado=false
 let mouse={x:0,y:0}
 
 let arrastrandoPunto=null
-let arrastrandoColector=false
 let arrastrandoPuerta=null
+let arrastrandoColector=false
+
+let puertaSeleccionada=null
 
 let colector=null
 let modo_col=false
 
-let puertas=[]
 let modo_puerta=false
 
-let circuito=[]
-
-let puertaSeleccionada=null
+let puertas=[]
 
 document.addEventListener("keydown",e=>{
 
-if(e.key==="r" && puertaSeleccionada!==null){
+if(puertaSeleccionada!=null){
 
-puertas[puertaSeleccionada].orientacion+=Math.PI/2
+if(e.key==="r"){
+
+puertas[puertaSeleccionada].rot+=Math.PI/2
 dibujar()
+
+}
+
+if(e.key==="f"){
+
+puertas[puertaSeleccionada].lado*=-1
+dibujar()
+
+}
 
 }
 
@@ -122,16 +127,54 @@ dibujar()
 
 canvas.addEventListener("wheel",e=>{
 
-if(puertaSeleccionada!==null){
+if(puertaSeleccionada!=null){
 
 puertas[puertaSeleccionada].ancho+=e.deltaY>0?-5:5
 
-if(puertas[puertaSeleccionada].ancho<20)
-puertas[puertaSeleccionada].ancho=20
+if(puertas[puertaSeleccionada].ancho<30)
+puertas[puertaSeleccionada].ancho=30
 
 dibujar()
 
 }
+
+})
+
+canvas.addEventListener("mousemove",e=>{
+
+const rect=canvas.getBoundingClientRect()
+
+mouse.x=e.clientX-rect.left
+mouse.y=e.clientY-rect.top
+
+if(arrastrandoPunto!=null){
+
+puntos[arrastrandoPunto].x=mouse.x
+puntos[arrastrandoPunto].y=mouse.y
+
+dibujar()
+return
+}
+
+if(arrastrandoColector){
+
+colector.x=mouse.x
+colector.y=mouse.y
+
+dibujar()
+return
+}
+
+if(arrastrandoPuerta!=null){
+
+puertas[arrastrandoPuerta].x=mouse.x
+puertas[arrastrandoPuerta].y=mouse.y
+
+dibujar()
+return
+}
+
+dibujar()
 
 })
 
@@ -144,9 +187,7 @@ let y=e.clientY-rect.top
 
 for(let i=0;i<puntos.length;i++){
 
-let p=puntos[i]
-
-if(Math.hypot(x-p.x,y-p.y)<8){
+if(Math.hypot(x-puntos[i].x,y-puntos[i].y)<8){
 
 arrastrandoPunto=i
 return
@@ -157,7 +198,8 @@ return
 
 if(colector){
 
-if(Math.hypot(x-colector.x,y-colector.y)<10){
+if(x>colector.x && x<colector.x+colector.w &&
+   y>colector.y && y<colector.y+colector.h){
 
 arrastrandoColector=true
 return
@@ -168,9 +210,7 @@ return
 
 for(let i=0;i<puertas.length;i++){
 
-let p=puertas[i]
-
-if(Math.hypot(x-p.x,y-p.y)<10){
+if(Math.hypot(x-puertas[i].x,y-puertas[i].y)<10){
 
 arrastrandoPuerta=i
 puertaSeleccionada=i
@@ -185,49 +225,8 @@ return
 canvas.addEventListener("mouseup",()=>{
 
 arrastrandoPunto=null
-arrastrandoColector=false
 arrastrandoPuerta=null
-
-})
-
-canvas.addEventListener("mousemove",e=>{
-
-const rect=canvas.getBoundingClientRect()
-
-mouse.x=e.clientX-rect.left
-mouse.y=e.clientY-rect.top
-
-if(arrastrandoPunto!==null){
-
-puntos[arrastrandoPunto].x=mouse.x
-puntos[arrastrandoPunto].y=mouse.y
-
-dibujar()
-return
-
-}
-
-if(arrastrandoColector){
-
-colector.x=mouse.x
-colector.y=mouse.y
-
-dibujar()
-return
-
-}
-
-if(arrastrandoPuerta!==null){
-
-puertas[arrastrandoPuerta].x=mouse.x
-puertas[arrastrandoPuerta].y=mouse.y
-
-dibujar()
-return
-
-}
-
-dibujar()
+arrastrandoColector=false
 
 })
 
@@ -240,7 +239,7 @@ let y=e.clientY-rect.top
 
 if(modo_col){
 
-colector={x,y}
+colector={x,y,w:80,h:40}
 modo_col=false
 dibujar()
 return
@@ -250,10 +249,10 @@ return
 if(modo_puerta){
 
 puertas.push({
-x,
-y,
-ancho:90,
-orientacion:0
+x,y,
+ancho:80,
+rot:0,
+lado:1
 })
 
 modo_puerta=false
@@ -309,7 +308,6 @@ function reiniciar(){
 puntos=[]
 puertas=[]
 colector=null
-circuito=[]
 cerrado=false
 
 document.getElementById("datos").innerHTML=""
@@ -334,9 +332,7 @@ let metro=escala
 for(let x=0;x<canvas.width;x+=fino){
 
 ctx.beginPath()
-
-ctx.strokeStyle=(x%metro===0)?"#cfcfcf":"#e7e7e7"
-
+ctx.strokeStyle=(x%metro==0)?"#cfcfcf":"#e7e7e7"
 ctx.moveTo(x,0)
 ctx.lineTo(x,canvas.height)
 ctx.stroke()
@@ -346,9 +342,7 @@ ctx.stroke()
 for(let y=0;y<canvas.height;y+=fino){
 
 ctx.beginPath()
-
-ctx.strokeStyle=(y%metro===0)?"#cfcfcf":"#e7e7e7"
-
+ctx.strokeStyle=(y%metro==0)?"#cfcfcf":"#e7e7e7"
 ctx.moveTo(0,y)
 ctx.lineTo(canvas.width,y)
 ctx.stroke()
@@ -372,9 +366,11 @@ for(let i=1;i<puntos.length;i++)
 ctx.lineTo(puntos[i].x,puntos[i].y)
 
 if(cerrado){
+
 ctx.closePath()
 ctx.fillStyle="rgba(0,120,255,0.15)"
 ctx.fill()
+
 }
 
 ctx.strokeStyle="#2b83ff"
@@ -415,101 +411,40 @@ ctx.fillText(dist.toFixed(2)+" m",mouse.x+10,mouse.y-10)
 
 for(let puerta of puertas){
 
+let dx=Math.cos(puerta.rot)*puerta.ancho/2
+let dy=Math.sin(puerta.rot)*puerta.ancho/2
+
 ctx.strokeStyle="brown"
 ctx.lineWidth=4
 
 ctx.beginPath()
-
-let dx=Math.cos(puerta.orientacion)*puerta.ancho/2
-let dy=Math.sin(puerta.orientacion)*puerta.ancho/2
-
 ctx.moveTo(puerta.x-dx,puerta.y-dy)
 ctx.lineTo(puerta.x+dx,puerta.y+dy)
-
 ctx.stroke()
 
 ctx.beginPath()
+ctx.arc(
+puerta.x,
+puerta.y,
+puerta.ancho,
+puerta.rot,
+puerta.rot+puerta.lado*Math.PI/2
+)
 
-ctx.arc(puerta.x,puerta.y,puerta.ancho,puerta.orientacion,puerta.orientacion+Math.PI/2)
-
-ctx.strokeStyle="rgba(150,150,150,0.6)"
+ctx.strokeStyle="#888"
 ctx.stroke()
 
 }
 
 if(colector){
 
-ctx.beginPath()
-ctx.arc(colector.x,colector.y,7,0,Math.PI*2)
 ctx.fillStyle="orange"
-ctx.fill()
+ctx.fillRect(colector.x,colector.y,colector.w,colector.h)
 
 ctx.fillStyle="black"
-ctx.fillText("Colector",colector.x+10,colector.y)
+ctx.fillText("Colector",colector.x,colector.y-5)
 
 }
-
-if(circuito.length){
-
-ctx.beginPath()
-ctx.moveTo(circuito[0].x,circuito[0].y)
-
-for(let p of circuito)
-ctx.lineTo(p.x,p.y)
-
-ctx.strokeStyle="green"
-ctx.stroke()
-
-}
-
-}
-
-function generarCircuito(){
-
-if(!cerrado)return
-
-circuito=[]
-
-let paso=(parseFloat(document.getElementById("pasoInput").value)/100)*getEscala()
-
-let minX=Math.min(...puntos.map(p=>p.x))
-let maxX=Math.max(...puntos.map(p=>p.x))
-let minY=Math.min(...puntos.map(p=>p.y))
-let maxY=Math.max(...puntos.map(p=>p.y))
-
-for(let y=minY;y<maxY;y+=paso){
-
-for(let x=minX;x<maxX;x+=paso){
-
-if(puntoDentro(x,y))
-circuito.push({x,y})
-
-}
-
-}
-
-dibujar()
-
-}
-
-function puntoDentro(x,y){
-
-let dentro=false
-
-for(let i=0,j=puntos.length-1;i<puntos.length;j=i++){
-
-let xi=puntos[i].x
-let yi=puntos[i].y
-let xj=puntos[j].x
-let yj=puntos[j].y
-
-let intersect=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
-
-if(intersect)dentro=!dentro
-
-}
-
-return dentro
 
 }
 
@@ -535,6 +470,7 @@ area=Math.abs(area/2)/(getEscala()*getEscala())
 per=per/getEscala()
 
 document.getElementById("datos").innerHTML=
+
 document.getElementById("nombreEstancia").value+
 "<br>Área: "+area.toFixed(2)+" m²"+
 "<br>Perímetro: "+per.toFixed(2)+" m"
