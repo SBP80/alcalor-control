@@ -78,6 +78,7 @@ Separación tubo (cm)
 <button onclick="reiniciar()">Reiniciar</button>
 <button onclick="generarCircuito()">Generar circuito</button>
 <button onclick="modoColector()">Colocar colector</button>
+<button onclick="modoPuerta()">Colocar puerta</button>
 
 <div id="datos"></div>
 
@@ -101,6 +102,9 @@ let arrastrandoColector=false
 let colector=null
 let modo_col=false
 
+let puertas=[]
+let modo_puerta=false
+
 let circuito=[]
 
 let previewLong=0
@@ -117,6 +121,17 @@ if(e.key==="Alt")alt=true
 document.addEventListener("keyup",e=>{
 if(e.key==="Shift")shift=false
 if(e.key==="Alt")alt=false
+})
+
+canvas.addEventListener("mousemove",e=>{
+
+const rect=canvas.getBoundingClientRect()
+
+mouse.x=e.clientX-rect.left
+mouse.y=e.clientY-rect.top
+
+dibujar()
+
 })
 
 canvas.addEventListener("mousedown",e=>{
@@ -163,41 +178,6 @@ arrastrandoColector=false
 
 })
 
-canvas.addEventListener("mousemove",e=>{
-
-const rect=canvas.getBoundingClientRect()
-
-mouse.x=e.clientX-rect.left
-mouse.y=e.clientY-rect.top
-
-if(arrastrando!==null){
-
-puntos[arrastrando].x=mouse.x
-puntos[arrastrando].y=mouse.y
-
-calcularDatos()
-
-dibujar()
-
-return
-
-}
-
-if(arrastrandoColector){
-
-colector.x=mouse.x
-colector.y=mouse.y
-
-dibujar()
-
-return
-
-}
-
-dibujar()
-
-})
-
 canvas.addEventListener("click",e=>{
 
 const rect=canvas.getBoundingClientRect()
@@ -209,6 +189,15 @@ if(modo_col){
 
 colector={x,y}
 modo_col=false
+dibujar()
+return
+
+}
+
+if(modo_puerta){
+
+crearPuerta(x,y)
+modo_puerta=false
 dibujar()
 return
 
@@ -245,6 +234,20 @@ puntos.push({x,y})
 dibujar()
 
 })
+
+function modoPuerta(){
+
+modo_puerta=true
+
+}
+
+function crearPuerta(x,y){
+
+let ancho=0.9*getEscala()
+
+puertas.push({x,y,ancho})
+
+}
 
 function getEscala(){
 
@@ -291,6 +294,7 @@ function reiniciar(){
 puntos=[]
 circuito=[]
 colector=null
+puertas=[]
 cerrado=false
 
 document.getElementById("datos").innerHTML=""
@@ -352,57 +356,6 @@ ctx.stroke()
 
 }
 
-function calcularPreview(){
-
-if(puntos.length===0)return
-
-let ultimo=puntos[puntos.length-1]
-
-let dx=mouse.x-ultimo.x
-let dy=mouse.y-ultimo.y
-
-let ang=Math.atan2(dy,dx)
-
-if(shift){
-ang=Math.round(ang/(Math.PI/2))*(Math.PI/2)
-}
-
-if(alt){
-ang=Math.round(ang/(Math.PI/4))*(Math.PI/4)
-}
-
-let dist=Math.hypot(dx,dy)
-
-previewLong=dist/getEscala()
-
-if(puntos.length>=2){
-
-let p0=puntos[puntos.length-2]
-let p1=puntos[puntos.length-1]
-
-let abx=p0.x-p1.x
-let aby=p0.y-p1.y
-
-let cbx=mouse.x-p1.x
-let cby=mouse.y-p1.y
-
-let dot=abx*cbx+aby*cby
-
-let mag1=Math.hypot(abx,aby)
-let mag2=Math.hypot(cbx,cby)
-
-let angulo=Math.acos(dot/(mag1*mag2))
-
-previewAng=angulo*180/Math.PI
-
-}else{
-
-previewAng=null
-
-}
-
-}
-
 function dibujar(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -438,6 +391,23 @@ ctx.fill()
 
 }
 
+for(let puerta of puertas){
+
+ctx.strokeStyle="brown"
+ctx.lineWidth=4
+
+ctx.beginPath()
+
+ctx.moveTo(puerta.x-puerta.ancho/2,puerta.y)
+ctx.lineTo(puerta.x+puerta.ancho/2,puerta.y)
+
+ctx.stroke()
+
+ctx.fillStyle="black"
+ctx.fillText("Puerta",puerta.x-20,puerta.y-10)
+
+}
+
 if(colector){
 
 ctx.beginPath()
@@ -462,23 +432,6 @@ ctx.lineTo(p.x,p.y)
 ctx.strokeStyle="green"
 ctx.lineWidth=2
 ctx.stroke()
-
-}
-
-if(!cerrado && puntos.length>0){
-
-calcularPreview()
-
-ctx.fillStyle="black"
-ctx.font="14px Arial"
-
-let texto=previewLong.toFixed(2)+" m"
-
-if(previewAng!==null){
-texto+=" | "+previewAng.toFixed(1)+"°"
-}
-
-ctx.fillText(texto,mouse.x+15,mouse.y-10)
 
 }
 
