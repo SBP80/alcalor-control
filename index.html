@@ -16,14 +16,13 @@ padding:10px;
 
 h1{
 text-align:center;
-margin:10px;
 }
 
 .panel{
 background:#12314a;
 padding:10px;
 border-radius:8px;
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 button{
@@ -38,15 +37,7 @@ cursor:pointer;
 canvas{
 background:#f4f1e8;
 border-radius:8px;
-display:block;
-margin:auto;
 touch-action:none;
-}
-
-#hud{
-font-size:18px;
-font-weight:bold;
-margin-top:6px;
 }
 
 #layout{
@@ -55,16 +46,16 @@ gap:10px;
 }
 
 #lista{
-width:220px;
+width:230px;
 background:#12314a;
 padding:10px;
 border-radius:8px;
 }
 
-.roomItem{
+.room{
 margin-bottom:8px;
-padding-bottom:6px;
 border-bottom:1px solid rgba(255,255,255,0.2);
+padding-bottom:5px;
 }
 
 </style>
@@ -84,7 +75,7 @@ Escala px/m
 <button onclick="deshacer()">Deshacer</button>
 <button onclick="reiniciar()">Reiniciar</button>
 
-<div id="hud">
+<div id="info">
 Longitud: 0 m | Ángulo: 0°
 </div>
 
@@ -98,7 +89,6 @@ Longitud: 0 m | Ángulo: 0°
 <div id="rooms"></div>
 
 <hr>
-
 <div id="total"></div>
 
 </div>
@@ -120,13 +110,10 @@ let zoom=1
 let offsetX=0
 let offsetY=0
 
-let draggingVertex=null
-let draggingRoom=null
-
 let mouse={x:0,y:0}
 
-let pinchStartDist=0
-let pinchStartZoom=1
+let dragVertex=null
+let dragRoom=null
 
 function escala(){
 return parseFloat(document.getElementById("escala").value)
@@ -164,17 +151,20 @@ e.clientY-r.top)
 
 }
 
-canvas.addEventListener("mousedown",mouseDown)
-canvas.addEventListener("mousemove",mouseMove)
-canvas.addEventListener("mouseup",mouseUp)
+canvas.onmousedown=e=>start(e)
+canvas.onmousemove=e=>move(e)
+canvas.onmouseup=e=>end()
 
-canvas.addEventListener("touchstart",touchStart,{passive:false})
-canvas.addEventListener("touchmove",touchMove,{passive:false})
-canvas.addEventListener("touchend",mouseUp)
+canvas.ontouchstart=e=>start(e)
+canvas.ontouchmove=e=>move(e)
+canvas.ontouchend=e=>end()
 
-canvas.addEventListener("wheel",wheelZoom)
+canvas.onwheel=e=>{
+zoom*=e.deltaY<0?1.1:0.9
+draw()
+}
 
-function mouseDown(e){
+function start(e){
 
 let p=pos(e)
 mouse=p
@@ -182,35 +172,18 @@ mouse=p
 if(drawing){
 
 current.push(p)
-dibujar()
+draw()
 return
 
 }
 
-for(let room of rooms){
+for(let r of rooms){
 
-for(let v of room.vertices){
+for(let v of r.vertices){
 
-if(Math.hypot(p.x-v.x,p.y-v.y)<10/zoom){
+if(Math.hypot(v.x-p.x,v.y-p.y)<10/zoom){
 
-draggingVertex=v
-return
-
-}
-
-}
-
-}
-
-for(let room of rooms){
-
-if(pointInPolygon(p,room.vertices)){
-
-draggingRoom={
-room:room,
-start:p
-}
-
+dragVertex=v
 return
 
 }
@@ -219,26 +192,40 @@ return
 
 }
 
-function mouseMove(e){
+for(let r of rooms){
+
+if(pointInside(p,r.vertices)){
+
+dragRoom={room:r,start:p}
+return
+
+}
+
+}
+
+}
+
+function move(e){
 
 let p=pos(e)
 mouse=p
 
-if(draggingVertex){
+if(dragVertex){
 
-draggingVertex.x=p.x
-draggingVertex.y=p.y
+dragVertex.x=p.x
+dragVertex.y=p.y
+updateList()
 
 }
 
-if(draggingRoom){
+if(dragRoom){
 
-let dx=p.x-draggingRoom.start.x
-let dy=p.y-draggingRoom.start.y
+let dx=p.x-dragRoom.start.x
+let dy=p.y-dragRoom.start.y
 
-draggingRoom.start=p
+dragRoom.start=p
 
-for(let v of draggingRoom.room.vertices){
+for(let v of dragRoom.room.vertices){
 
 v.x+=dx
 v.y+=dy
@@ -247,53 +234,14 @@ v.y+=dy
 
 }
 
-dibujar()
+draw()
 
 }
 
-function mouseUp(){
+function end(){
 
-draggingVertex=null
-draggingRoom=null
-
-}
-
-function wheelZoom(e){
-
-let factor=e.deltaY<0?1.1:0.9
-zoom*=factor
-dibujar()
-
-}
-
-function touchStart(e){
-
-if(e.touches.length==2){
-
-let dx=e.touches[0].clientX-e.touches[1].clientX
-let dy=e.touches[0].clientY-e.touches[1].clientY
-
-pinchStartDist=Math.hypot(dx,dy)
-pinchStartZoom=zoom
-
-}
-
-}
-
-function touchMove(e){
-
-if(e.touches.length==2){
-
-let dx=e.touches[0].clientX-e.touches[1].clientX
-let dy=e.touches[0].clientY-e.touches[1].clientY
-
-let dist=Math.hypot(dx,dy)
-
-zoom=pinchStartZoom*(dist/pinchStartDist)
-
-dibujar()
-
-}
+dragVertex=null
+dragRoom=null
 
 }
 
@@ -308,25 +256,25 @@ function cerrar(){
 
 if(current.length<3)return
 
-let nombre=prompt("Nombre estancia")
+let name=prompt("Nombre estancia")
 
 rooms.push({
-name:nombre||"estancia",
+name:name||"estancia",
 vertices:[...current]
 })
 
 drawing=false
 current=[]
 
-actualizarLista()
-dibujar()
+updateList()
+draw()
 
 }
 
 function deshacer(){
 
 current.pop()
-dibujar()
+draw()
 
 }
 
@@ -335,22 +283,21 @@ function reiniciar(){
 rooms=[]
 current=[]
 drawing=true
-
-actualizarLista()
-dibujar()
+updateList()
+draw()
 
 }
 
-function area(vertices){
+function area(poly){
 
 let sum=0
 
-for(let i=0;i<vertices.length;i++){
+for(let i=0;i<poly.length;i++){
 
-let j=(i+1)%vertices.length
+let j=(i+1)%poly.length
 
-sum+=vertices[i].x*vertices[j].y
-sum-=vertices[j].x*vertices[i].y
+sum+=poly[i].x*poly[j].y
+sum-=poly[j].x*poly[i].y
 
 }
 
@@ -358,18 +305,17 @@ return Math.abs(sum/2)/(escala()*escala())
 
 }
 
-function perimetro(vertices){
+function perimeter(poly){
 
 let p=0
 
-for(let i=0;i<vertices.length;i++){
+for(let i=0;i<poly.length;i++){
 
-let j=(i+1)%vertices.length
+let j=(i+1)%poly.length
 
 p+=Math.hypot(
-vertices[j].x-vertices[i].x,
-vertices[j].y-vertices[i].y
-)
+poly[j].x-poly[i].x,
+poly[j].y-poly[i].y)
 
 }
 
@@ -377,7 +323,7 @@ return p/escala()
 
 }
 
-function actualizarLista(){
+function updateList(){
 
 let html=""
 let total=0
@@ -385,12 +331,12 @@ let total=0
 for(let r of rooms){
 
 let a=area(r.vertices)
-let p=perimetro(r.vertices)
+let p=perimeter(r.vertices)
 
 total+=a
 
 html+=`
-<div class="roomItem">
+<div class="room">
 <b>${r.name}</b><br>
 Área: ${a.toFixed(2)} m²<br>
 Perímetro: ${p.toFixed(2)} m
@@ -402,47 +348,7 @@ Perímetro: ${p.toFixed(2)} m
 document.getElementById("rooms").innerHTML=html
 
 document.getElementById("total").innerHTML=
-"<b>Total m²:</b> "+total.toFixed(2)
-
-}
-
-function puntoCentral(vertices){
-
-let x=0
-let y=0
-
-for(let v of vertices){
-
-x+=v.x
-y+=v.y
-
-}
-
-return{
-x:x/vertices.length,
-y:y/vertices.length
-}
-
-}
-
-function pointInPolygon(point,vs){
-
-let x=point.x,y=point.y
-let inside=false
-
-for(let i=0,j=vs.length-1;i<vs.length;j=i++){
-
-let xi=vs[i].x,yi=vs[i].y
-let xj=vs[j].x,yj=vs[j].y
-
-let intersect=((yi>y)!=(yj>y)) &&
-(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
+"<b>Total:</b> "+total.toFixed(2)+" m²"
 
 }
 
@@ -459,22 +365,90 @@ return ang
 
 }
 
-function dibujar(){
+function pointInside(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
+
+}
+
+return inside
+
+}
+
+function center(poly){
+
+let x=0,y=0
+
+for(let v of poly){
+
+x+=v.x
+y+=v.y
+
+}
+
+return{
+x:x/poly.length,
+y:y/poly.length
+}
+
+}
+
+function grid(){
+
+let step=escala()
+
+ctx.strokeStyle="#ddd"
+
+for(let x=-2000;x<2000;x+=step){
+
+let s=worldToScreen(x,0).x
+
+ctx.beginPath()
+ctx.moveTo(s,0)
+ctx.lineTo(s,canvas.height)
+ctx.stroke()
+
+}
+
+for(let y=-2000;y<2000;y+=step){
+
+let s=worldToScreen(0,y).y
+
+ctx.beginPath()
+ctx.moveTo(0,s)
+ctx.lineTo(canvas.width,s)
+ctx.stroke()
+
+}
+
+}
+
+function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
 grid()
 
-for(let room of rooms){
+for(let r of rooms){
 
 ctx.beginPath()
 
-let s=worldToScreen(room.vertices[0].x,room.vertices[0].y)
+let s=worldToScreen(r.vertices[0].x,r.vertices[0].y)
 ctx.moveTo(s.x,s.y)
 
-for(let i=1;i<room.vertices.length;i++){
+for(let i=1;i<r.vertices.length;i++){
 
-let p=worldToScreen(room.vertices[i].x,room.vertices[i].y)
+let p=worldToScreen(r.vertices[i].x,r.vertices[i].y)
 ctx.lineTo(p.x,p.y)
 
 }
@@ -487,7 +461,7 @@ ctx.fill()
 ctx.strokeStyle="#2b83ff"
 ctx.stroke()
 
-for(let v of room.vertices){
+for(let v of r.vertices){
 
 let p=worldToScreen(v.x,v.y)
 
@@ -498,11 +472,11 @@ ctx.fill()
 
 }
 
-let c=puntoCentral(room.vertices)
+let c=center(r.vertices)
 let sc=worldToScreen(c.x,c.y)
 
 ctx.fillStyle="black"
-ctx.fillText(room.name,sc.x,sc.y)
+ctx.fillText(r.name,sc.x,sc.y)
 
 }
 
@@ -539,13 +513,13 @@ let s1=worldToScreen(last.x,last.y)
 let s2=worldToScreen(mouse.x,mouse.y)
 
 ctx.beginPath()
+ctx.setLineDash([6,6])
 ctx.moveTo(s1.x,s1.y)
 ctx.lineTo(s2.x,s2.y)
-ctx.setLineDash([5,5])
 ctx.stroke()
 ctx.setLineDash([])
 
-let d=Math.hypot(mouse.x-last.x,mouse.y-last.y)/escala()
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/escala()
 
 let ang=0
 
@@ -556,47 +530,17 @@ ang=angulo(prev,last,mouse)
 
 }
 
-document.getElementById("hud").innerHTML=
-"Longitud: "+d.toFixed(2)+" m | Ángulo: "+ang.toFixed(1)+"°"
+document.getElementById("info").innerHTML=
+"Longitud: "+dist.toFixed(2)+" m | Ángulo: "+ang.toFixed(1)+"°"
 
 ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",s2.x+10,s2.y)
+ctx.fillText(dist.toFixed(2)+" m",s2.x+10,s2.y)
 
 }
 
 }
 
-function grid(){
-
-let step=escala()
-
-ctx.strokeStyle="#ddd"
-
-for(let x=-2000;x<2000;x+=step){
-
-let s=worldToScreen(x,0).x
-
-ctx.beginPath()
-ctx.moveTo(s,0)
-ctx.lineTo(s,canvas.height)
-ctx.stroke()
-
-}
-
-for(let y=-2000;y<2000;y+=step){
-
-let s=worldToScreen(0,y).y
-
-ctx.beginPath()
-ctx.moveTo(0,s)
-ctx.lineTo(canvas.width,s)
-ctx.stroke()
-
-}
-
-}
-
-dibujar()
+draw()
 
 </script>
 
