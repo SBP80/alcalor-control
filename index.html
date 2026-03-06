@@ -46,16 +46,22 @@ gap:10px;
 }
 
 #lista{
-width:240px;
+width:220px;
 background:#12314a;
 padding:10px;
 border-radius:8px;
 }
 
 .room{
-margin-bottom:8px;
+margin-bottom:10px;
 border-bottom:1px solid rgba(255,255,255,0.2);
 padding-bottom:6px;
+}
+
+#info{
+font-size:20px;
+font-weight:bold;
+margin-top:6px;
 }
 
 </style>
@@ -84,13 +90,10 @@ Longitud: 0 m | Ángulo: 0°
 <div id="layout">
 
 <div id="lista">
-
 <b>ESTANCIAS</b>
 <div id="rooms"></div>
-
 <hr>
 <div id="total"></div>
-
 </div>
 
 <canvas id="canvas" width="1100" height="650"></canvas>
@@ -104,6 +107,7 @@ const ctx=canvas.getContext("2d")
 
 let rooms=[]
 let current=[]
+
 let drawing=true
 
 let zoom=1
@@ -161,11 +165,6 @@ canvas.addEventListener("mouseup",end)
 canvas.addEventListener("touchstart",touchStart,{passive:false})
 canvas.addEventListener("touchmove",touchMove,{passive:false})
 canvas.addEventListener("touchend",end)
-
-canvas.addEventListener("wheel",e=>{
-zoom*=e.deltaY<0?1.1:0.9
-draw()
-})
 
 function start(e){
 
@@ -234,6 +233,8 @@ v.x+=dx
 v.y+=dy
 
 }
+
+updateList()
 
 }
 
@@ -517,6 +518,17 @@ ctx.fillText(r.name,sc.x,sc.y)
 
 if(current.length){
 
+for(let v of current){
+
+let p=worldToScreen(v.x,v.y)
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
 let last=current[current.length-1]
 
 let s1=worldToScreen(last.x,last.y)
@@ -542,9 +554,6 @@ ang=angle(prev,last,mouse)
 
 document.getElementById("info").innerHTML=
 "Longitud: "+dist.toFixed(2)+" m | Ángulo: "+ang.toFixed(1)+"°"
-
-ctx.fillStyle="black"
-ctx.fillText(dist.toFixed(2)+" m",s2.x+10,s2.y)
 
 }
 
