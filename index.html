@@ -16,6 +16,7 @@ padding:10px;
 
 h1{
 text-align:center;
+margin-bottom:10px;
 }
 
 .panel{
@@ -26,13 +27,18 @@ margin-bottom:10px;
 }
 
 button{
-background:#2b83ff;
-color:white;
 border:none;
-padding:6px 10px;
+padding:8px 12px;
 margin-right:6px;
 cursor:pointer;
+font-weight:bold;
+border-radius:4px;
 }
+
+.btnNew{background:#28a745;color:white;}
+.btnClose{background:#2b83ff;color:white;}
+.btnUndo{background:#ff9800;color:white;}
+.btnReset{background:#e53935;color:white;}
 
 canvas{
 background:#f4f1e8;
@@ -58,11 +64,20 @@ border-bottom:1px solid rgba(255,255,255,0.2);
 padding-bottom:6px;
 }
 
-#info{
+#hud{
+position:absolute;
+top:120px;
+left:50%;
+transform:translateX(-50%);
+background:rgba(0,0,0,0.6);
+padding:8px 14px;
+border-radius:6px;
 font-size:20px;
 font-weight:bold;
-margin-top:6px;
 }
+
+.len{color:#00e676;}
+.ang{color:#ff9800;}
 
 </style>
 </head>
@@ -73,17 +88,13 @@ margin-top:6px;
 
 <div class="panel">
 
-Escala px/m
+Escala del plano (px por metro)
 <input id="escala" type="number" value="100">
 
-<button onclick="nuevaEstancia()">Nueva estancia</button>
-<button onclick="cerrar()">Cerrar estancia</button>
-<button onclick="deshacer()">Deshacer</button>
-<button onclick="reiniciar()">Reiniciar</button>
-
-<div id="info">
-Longitud: 0 m | Ángulo: 0°
-</div>
+<button class="btnNew" onclick="nuevaEstancia()">Nueva estancia</button>
+<button class="btnClose" onclick="cerrar()">Cerrar estancia</button>
+<button class="btnUndo" onclick="deshacer()">Deshacer</button>
+<button class="btnReset" onclick="reiniciar()">Reiniciar</button>
 
 </div>
 
@@ -96,7 +107,14 @@ Longitud: 0 m | Ángulo: 0°
 <div id="total"></div>
 </div>
 
+<div style="position:relative">
+<div id="hud">
+<span class="len">0 m</span> |
+<span class="ang">0°</span>
+</div>
+
 <canvas id="canvas" width="1100" height="650"></canvas>
+</div>
 
 </div>
 
@@ -107,7 +125,6 @@ const ctx=canvas.getContext("2d")
 
 let rooms=[]
 let current=[]
-
 let drawing=true
 
 let zoom=1
@@ -243,10 +260,8 @@ draw()
 }
 
 function end(){
-
 dragVertex=null
 dragRoom=null
-
 }
 
 function touchStart(e){
@@ -374,8 +389,8 @@ total+=a
 html+=`
 <div class="room">
 <b>${r.name}</b><br>
-Área: ${a.toFixed(2)} m²<br>
-Perímetro: ${p.toFixed(2)} m
+Área: <span style="color:#00e676">${a.toFixed(2)} m²</span><br>
+Perímetro: <span style="color:#4fc3f7">${p.toFixed(2)} m</span>
 </div>
 `
 
@@ -384,7 +399,7 @@ Perímetro: ${p.toFixed(2)} m
 document.getElementById("rooms").innerHTML=html
 
 document.getElementById("total").innerHTML=
-"<b>Total:</b> "+total.toFixed(2)+" m²"
+"<b style='color:#ff9800'>Total: "+total.toFixed(2)+" m²</b>"
 
 }
 
@@ -393,9 +408,9 @@ function angle(a,b,c){
 let ang=Math.atan2(c.y-b.y,c.x-b.x)-
 Math.atan2(a.y-b.y,a.x-b.x)
 
-ang=ang*180/Math.PI
+ang=Math.abs(ang*180/Math.PI)
 
-if(ang<0)ang+=360
+if(ang>180)ang=360-ang
 
 return ang
 
@@ -426,10 +441,8 @@ function center(poly){
 let x=0,y=0
 
 for(let v of poly){
-
 x+=v.x
 y+=v.y
-
 }
 
 return{
@@ -495,6 +508,7 @@ ctx.fillStyle="rgba(0,120,255,0.15)"
 ctx.fill()
 
 ctx.strokeStyle="#2b83ff"
+ctx.lineWidth=2
 ctx.stroke()
 
 for(let v of r.vertices){
@@ -538,6 +552,8 @@ ctx.beginPath()
 ctx.setLineDash([6,6])
 ctx.moveTo(s1.x,s1.y)
 ctx.lineTo(s2.x,s2.y)
+ctx.strokeStyle="#2b83ff"
+ctx.lineWidth=2
 ctx.stroke()
 ctx.setLineDash([])
 
@@ -552,8 +568,8 @@ ang=angle(prev,last,mouse)
 
 }
 
-document.getElementById("info").innerHTML=
-"Longitud: "+dist.toFixed(2)+" m | Ángulo: "+ang.toFixed(1)+"°"
+document.querySelector(".len").innerText=dist.toFixed(2)+" m"
+document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
 
 }
 
