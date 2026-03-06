@@ -11,16 +11,19 @@ font-family:Arial;
 background:#0f2b44;
 color:white;
 margin:0;
-padding:15px;
+padding:10px;
 }
 
-h1{text-align:center}
+h1{
+text-align:center;
+margin:10px;
+}
 
 .panel{
 background:#12314a;
 padding:10px;
 border-radius:8px;
-margin-bottom:10px;
+margin-bottom:8px;
 }
 
 button{
@@ -41,12 +44,30 @@ touch-action:none;
 }
 
 #hud{
-margin-top:6px;
+font-size:18px;
 font-weight:bold;
+margin-top:6px;
+}
+
+#layout{
+display:flex;
+gap:10px;
+}
+
+#lista{
+width:220px;
+background:#12314a;
+padding:10px;
+border-radius:8px;
+}
+
+.roomItem{
+margin-bottom:8px;
+padding-bottom:6px;
+border-bottom:1px solid rgba(255,255,255,0.2);
 }
 
 </style>
-
 </head>
 
 <body>
@@ -69,7 +90,22 @@ Longitud: 0 m | Ángulo: 0°
 
 </div>
 
-<canvas id="canvas" width="1200" height="650"></canvas>
+<div id="layout">
+
+<div id="lista">
+
+<b>ESTANCIAS</b>
+<div id="rooms"></div>
+
+<hr>
+
+<div id="total"></div>
+
+</div>
+
+<canvas id="canvas" width="1100" height="650"></canvas>
+
+</div>
 
 <script>
 
@@ -96,17 +132,17 @@ function escala(){
 return parseFloat(document.getElementById("escala").value)
 }
 
-function screenToWorld(x,y){
-return{
-x:(x-offsetX)/zoom,
-y:(y-offsetY)/zoom
-}
-}
-
 function worldToScreen(x,y){
 return{
 x:x*zoom+offsetX,
 y:y*zoom+offsetY
+}
+}
+
+function screenToWorld(x,y){
+return{
+x:(x-offsetX)/zoom,
+y:(y-offsetY)/zoom
 }
 }
 
@@ -115,9 +151,11 @@ function pos(e){
 const r=canvas.getBoundingClientRect()
 
 if(e.touches){
+
 return screenToWorld(
 e.touches[0].clientX-r.left,
 e.touches[0].clientY-r.top)
+
 }
 
 return screenToWorld(
@@ -155,7 +193,7 @@ for(let v of room.vertices){
 
 if(Math.hypot(p.x-v.x,p.y-v.y)<10/zoom){
 
-draggingVertex={vertex:v}
+draggingVertex=v
 return
 
 }
@@ -188,8 +226,8 @@ mouse=p
 
 if(draggingVertex){
 
-draggingVertex.vertex.x=p.x
-draggingVertex.vertex.y=p.y
+draggingVertex.x=p.x
+draggingVertex.y=p.y
 
 }
 
@@ -280,6 +318,7 @@ vertices:[...current]
 drawing=false
 current=[]
 
+actualizarLista()
 dibujar()
 
 }
@@ -296,7 +335,74 @@ function reiniciar(){
 rooms=[]
 current=[]
 drawing=true
+
+actualizarLista()
 dibujar()
+
+}
+
+function area(vertices){
+
+let sum=0
+
+for(let i=0;i<vertices.length;i++){
+
+let j=(i+1)%vertices.length
+
+sum+=vertices[i].x*vertices[j].y
+sum-=vertices[j].x*vertices[i].y
+
+}
+
+return Math.abs(sum/2)/(escala()*escala())
+
+}
+
+function perimetro(vertices){
+
+let p=0
+
+for(let i=0;i<vertices.length;i++){
+
+let j=(i+1)%vertices.length
+
+p+=Math.hypot(
+vertices[j].x-vertices[i].x,
+vertices[j].y-vertices[i].y
+)
+
+}
+
+return p/escala()
+
+}
+
+function actualizarLista(){
+
+let html=""
+let total=0
+
+for(let r of rooms){
+
+let a=area(r.vertices)
+let p=perimetro(r.vertices)
+
+total+=a
+
+html+=`
+<div class="roomItem">
+<b>${r.name}</b><br>
+Área: ${a.toFixed(2)} m²<br>
+Perímetro: ${p.toFixed(2)} m
+</div>
+`
+
+}
+
+document.getElementById("rooms").innerHTML=html
+
+document.getElementById("total").innerHTML=
+"<b>Total m²:</b> "+total.toFixed(2)
 
 }
 
@@ -357,7 +463,7 @@ function dibujar(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-dibujarGrid()
+grid()
 
 for(let room of rooms){
 
@@ -428,13 +534,13 @@ ctx.fill()
 }
 
 let last=current[current.length-1]
+
 let s1=worldToScreen(last.x,last.y)
 let s2=worldToScreen(mouse.x,mouse.y)
 
 ctx.beginPath()
 ctx.moveTo(s1.x,s1.y)
 ctx.lineTo(s2.x,s2.y)
-ctx.strokeStyle="black"
 ctx.setLineDash([5,5])
 ctx.stroke()
 ctx.setLineDash([])
@@ -453,17 +559,20 @@ ang=angulo(prev,last,mouse)
 document.getElementById("hud").innerHTML=
 "Longitud: "+d.toFixed(2)+" m | Ángulo: "+ang.toFixed(1)+"°"
 
-}
+ctx.fillStyle="black"
+ctx.fillText(d.toFixed(2)+" m",s2.x+10,s2.y)
 
 }
 
-function dibujarGrid(){
+}
 
-let paso=escala()
+function grid(){
+
+let step=escala()
 
 ctx.strokeStyle="#ddd"
 
-for(let x=-2000;x<2000;x+=paso){
+for(let x=-2000;x<2000;x+=step){
 
 let s=worldToScreen(x,0).x
 
@@ -474,7 +583,7 @@ ctx.stroke()
 
 }
 
-for(let y=-2000;y<2000;y+=paso){
+for(let y=-2000;y<2000;y+=step){
 
 let s=worldToScreen(0,y).y
 
