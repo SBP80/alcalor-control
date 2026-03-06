@@ -11,8 +11,9 @@ font-family:Arial;
 background:#0f2b44;
 color:white;
 margin:0;
-padding:20px;
+padding:15px;
 user-select:none;
+-webkit-user-select:none;
 }
 
 h1{
@@ -21,9 +22,9 @@ text-align:center;
 
 .panel{
 background:#12314a;
-padding:15px;
+padding:12px;
 border-radius:8px;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 button{
@@ -31,8 +32,8 @@ background:#2b83ff;
 color:white;
 border:none;
 padding:8px 12px;
+margin-right:6px;
 cursor:pointer;
-margin-right:8px;
 }
 
 canvas{
@@ -41,6 +42,11 @@ border-radius:8px;
 display:block;
 margin:auto;
 touch-action:none;
+}
+
+#hud{
+margin-top:6px;
+font-weight:bold;
 }
 
 </style>
@@ -56,36 +62,57 @@ touch-action:none;
 Escala px/m
 <input id="escala" type="number" value="100">
 
+<button onclick="nuevaEstancia()">Nueva estancia</button>
 <button onclick="cerrar()">Cerrar estancia</button>
 <button onclick="deshacer()">Deshacer</button>
 <button onclick="reiniciar()">Reiniciar</button>
+
+<div id="hud">
+Longitud: 0 m | Ángulo: 0°
+</div>
 
 <div id="datos"></div>
 
 </div>
 
-<canvas id="canvas" width="1100" height="650"></canvas>
+<canvas id="canvas" width="1200" height="650"></canvas>
 
 <script>
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
-let puntos=[]
+let rooms=[]
+let current=[]
 let cerrado=false
-let arrastrando=null
+
+let dragging=null
 
 let mouse={x:0,y:0}
+
+let zoom=1
+let offsetX=0
+let offsetY=0
 
 function escala(){
 return parseFloat(document.getElementById("escala").value)
 }
 
-function snap(v){
+function screenToWorld(x,y){
 
-let g=escala()/10
+return{
+x:(x-offsetX)/zoom,
+y:(y-offsetY)/zoom
+}
 
-return Math.round(v/g)*g
+}
+
+function worldToScreen(x,y){
+
+return{
+x:x*zoom+offsetX,
+y:y*zoom+offsetY
+}
 
 }
 
@@ -94,27 +121,30 @@ function pos(e){
 const r=canvas.getBoundingClientRect()
 
 if(e.touches){
-return{
-x:snap(e.touches[0].clientX-r.left),
-y:snap(e.touches[0].clientY-r.top)
-}
+
+return screenToWorld(
+e.touches[0].clientX-r.left,
+e.touches[0].clientY-r.top
+)
+
 }
 
-return{
-x:snap(e.clientX-r.left),
-y:snap(e.clientY-r.top)
-}
+return screenToWorld(
+e.clientX-r.left,
+e.clientY-r.top
+)
 
 }
 
 canvas.addEventListener("mousedown",inicio)
-canvas.addEventListener("touchstart",inicio)
-
 canvas.addEventListener("mousemove",mover)
-canvas.addEventListener("touchmove",mover)
-
 canvas.addEventListener("mouseup",fin)
+
+canvas.addEventListener("touchstart",inicio,{passive:false})
+canvas.addEventListener("touchmove",mover,{passive:false})
 canvas.addEventListener("touchend",fin)
+
+canvas.addEventListener("wheel",zoomRueda)
 
 canvas.addEventListener("dblclick",insertarVertice)
 
@@ -122,22 +152,22 @@ function inicio(e){
 
 let p=pos(e)
 
-for(let i=0;i<puntos.length;i++){
+for(let i=0;i<current.length;i++){
 
-if(Math.hypot(p.x-puntos[i].x,p.y-puntos[i].y)<10){
+if(Math.hypot(p.x-current[i].x,p.y-current[i].y)<10/zoom){
 
-arrastrando=i
+dragging=i
 return
 
 }
 
 }
 
-if(cerrado)return
+if(!cerrado){
 
-puntos.push(p)
+current.push(p)
 
-dibujar()
+}
 
 }
 
@@ -147,25 +177,9 @@ let p=pos(e)
 
 mouse=p
 
-if(arrastrando!=null){
+if(dragging!=null){
 
-if(e.shiftKey){
-
-let prev=puntos[(arrastrando-1+puntos.length)%puntos.length]
-
-let dx=p.x-prev.x
-let dy=p.y-prev.y
-
-if(Math.abs(dx)>Math.abs(dy))dy=0
-else dx=0
-
-puntos[arrastrando]={x:prev.x+dx,y:prev.y+dy}
-
-}else{
-
-puntos[arrastrando]=p
-
-}
+current[dragging]=p
 
 }
 
@@ -175,27 +189,84 @@ dibujar()
 
 function fin(){
 
-arrastrando=null
+dragging=null
+
+}
+
+function zoomRueda(e){
+
+let factor=e.deltaY<0?1.1:0.9
+
+zoom*=factor
+
+dibujar()
+
+}
+
+function nuevaEstancia(){
+
+if(current.length>2){
+
+rooms.push([...current])
+
+}
+
+current=[]
+
+cerrado=false
+
+dibujar()
+
+}
+
+function cerrar(){
+
+if(current.length<3)return
+
+cerrado=true
+
+rooms.push([...current])
+
+calcularDatos()
+
+dibujar()
+
+}
+
+function deshacer(){
+
+current.pop()
+
+dibujar()
+
+}
+
+function reiniciar(){
+
+rooms=[]
+current=[]
+cerrado=false
+
+document.getElementById("datos").innerHTML=""
+
+dibujar()
 
 }
 
 function insertarVertice(e){
 
-if(puntos.length<2)return
+if(current.length<2)return
 
 let p=pos(e)
 
-let mejor=999999
-let index=null
+let mejor=99999
+let index=0
 
-for(let i=0;i<puntos.length;i++){
+for(let i=0;i<current.length;i++){
 
-let j=(i+1)%puntos.length
+let j=(i+1)%current.length
 
-let a=puntos[i]
-let b=puntos[j]
-
-let d=distanciaPuntoSegmento(p,a,b)
+let d=distanciaSegmento(p,current[i],current[j])
 
 if(d<mejor){
 
@@ -206,21 +277,19 @@ index=j
 
 }
 
-if(mejor<15){
+if(mejor<20/zoom){
 
-puntos.splice(index,0,p)
+current.splice(index,0,p)
+
+}
 
 dibujar()
 
 }
 
-}
-
-function distanciaPuntoSegmento(p,a,b){
+function distanciaSegmento(p,a,b){
 
 let l2=(b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y)
-
-if(l2===0)return Math.hypot(p.x-a.x,p.y-a.y)
 
 let t=((p.x-a.x)*(b.x-a.x)+(p.y-a.y)*(b.y-a.y))/l2
 
@@ -230,40 +299,6 @@ let x=a.x+t*(b.x-a.x)
 let y=a.y+t*(b.y-a.y)
 
 return Math.hypot(p.x-x,p.y-y)
-
-}
-
-function cerrar(){
-
-if(puntos.length<3)return
-
-cerrado=true
-
-calcularDatos()
-
-dibujar()
-
-}
-
-function deshacer(){
-
-if(cerrado)return
-
-puntos.pop()
-
-dibujar()
-
-}
-
-function reiniciar(){
-
-puntos=[]
-cerrado=false
-arrastrando=null
-
-document.getElementById("datos").innerHTML=""
-
-dibujar()
 
 }
 
@@ -281,25 +316,28 @@ return ang
 
 function cuadricula(){
 
-let metro=escala()
-let fino=metro/10
+let paso=escala()
 
-for(let x=0;x<canvas.width;x+=fino){
+ctx.strokeStyle="#ddd"
+
+for(let x=-2000;x<2000;x+=paso){
+
+let s=worldToScreen(x,0).x
 
 ctx.beginPath()
-ctx.strokeStyle=(x%metro==0)?"#cfcfcf":"#e6e6e6"
-ctx.moveTo(x,0)
-ctx.lineTo(x,canvas.height)
+ctx.moveTo(s,0)
+ctx.lineTo(s,canvas.height)
 ctx.stroke()
 
 }
 
-for(let y=0;y<canvas.height;y+=fino){
+for(let y=-2000;y<2000;y+=paso){
+
+let s=worldToScreen(0,y).y
 
 ctx.beginPath()
-ctx.strokeStyle=(y%metro==0)?"#cfcfcf":"#e6e6e6"
-ctx.moveTo(0,y)
-ctx.lineTo(canvas.width,y)
+ctx.moveTo(0,s)
+ctx.lineTo(canvas.width,s)
 ctx.stroke()
 
 }
@@ -312,76 +350,71 @@ ctx.clearRect(0,0,canvas.width,canvas.height)
 
 cuadricula()
 
-if(puntos.length){
+for(let room of rooms){
 
 ctx.beginPath()
 
-ctx.moveTo(puntos[0].x,puntos[0].y)
+let s=worldToScreen(room[0].x,room[0].y)
 
-for(let i=1;i<puntos.length;i++){
+ctx.moveTo(s.x,s.y)
 
-ctx.lineTo(puntos[i].x,puntos[i].y)
+for(let i=1;i<room.length;i++){
+
+let p=worldToScreen(room[i].x,room[i].y)
+
+ctx.lineTo(p.x,p.y)
 
 }
-
-if(cerrado){
 
 ctx.closePath()
 
 ctx.fillStyle="rgba(0,120,255,0.15)"
-
 ctx.fill()
 
-}
-
 ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2
 ctx.stroke()
 
 }
 
-for(let p of puntos){
+if(current.length){
 
 ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
+
+let s=worldToScreen(current[0].x,current[0].y)
+
+ctx.moveTo(s.x,s.y)
+
+for(let i=1;i<current.length;i++){
+
+let p=worldToScreen(current[i].x,current[i].y)
+
+ctx.lineTo(p.x,p.y)
+
+}
+
+ctx.stroke()
+
+}
+
+for(let p of current){
+
+let s=worldToScreen(p.x,p.y)
+
+ctx.beginPath()
+ctx.arc(s.x,s.y,5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
 }
 
-if(puntos.length && !cerrado){
+if(current.length){
 
-let p=puntos[puntos.length-1]
-
-ctx.beginPath()
-ctx.moveTo(p.x,p.y)
-ctx.lineTo(mouse.x,mouse.y)
-ctx.setLineDash([5,5])
-ctx.stroke()
-ctx.setLineDash([])
+let p=current[current.length-1]
 
 let d=Math.hypot(mouse.x-p.x,mouse.y-p.y)/escala()
 
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",mouse.x+10,mouse.y-10)
-
-}
-
-if(arrastrando!=null){
-
-let p=puntos[arrastrando]
-
-let prev=puntos[(arrastrando-1+puntos.length)%puntos.length]
-let next=puntos[(arrastrando+1)%puntos.length]
-
-if(prev && next){
-
-let ang=angulo(prev,p,next)
-
-ctx.fillStyle="black"
-ctx.fillText(ang.toFixed(1)+"°",p.x+10,p.y-10)
-
-}
+document.getElementById("hud").innerHTML=
+"Longitud: "+d.toFixed(2)+" m"
 
 }
 
@@ -392,15 +425,15 @@ function calcularDatos(){
 let area=0
 let per=0
 
-for(let i=0;i<puntos.length;i++){
+for(let i=0;i<current.length;i++){
 
-let j=(i+1)%puntos.length
+let j=(i+1)%current.length
 
-area+=puntos[i].x*puntos[j].y-puntos[j].x*puntos[i].y
+area+=current[i].x*current[j].y-current[j].x*current[i].y
 
 per+=Math.hypot(
-puntos[i].x-puntos[j].x,
-puntos[i].y-puntos[j].y
+current[i].x-current[j].x,
+current[i].y-current[j].y
 )
 
 }
