@@ -12,17 +12,13 @@ background:#0f2b44;
 color:white;
 margin:0;
 padding:15px;
-user-select:none;
--webkit-user-select:none;
 }
 
-h1{
-text-align:center;
-}
+h1{text-align:center}
 
 .panel{
 background:#12314a;
-padding:12px;
+padding:10px;
 border-radius:8px;
 margin-bottom:10px;
 }
@@ -31,7 +27,7 @@ button{
 background:#2b83ff;
 color:white;
 border:none;
-padding:8px 12px;
+padding:6px 10px;
 margin-right:6px;
 cursor:pointer;
 }
@@ -71,8 +67,6 @@ Escala px/m
 Longitud: 0 m | Ángulo: 0°
 </div>
 
-<div id="datos"></div>
-
 </div>
 
 <canvas id="canvas" width="1200" height="650"></canvas>
@@ -84,36 +78,36 @@ const ctx=canvas.getContext("2d")
 
 let rooms=[]
 let current=[]
-let cerrado=false
-
-let dragging=null
-
-let mouse={x:0,y:0}
+let drawing=true
 
 let zoom=1
 let offsetX=0
 let offsetY=0
+
+let draggingVertex=null
+let draggingRoom=null
+
+let mouse={x:0,y:0}
+
+let pinchStartDist=0
+let pinchStartZoom=1
 
 function escala(){
 return parseFloat(document.getElementById("escala").value)
 }
 
 function screenToWorld(x,y){
-
 return{
 x:(x-offsetX)/zoom,
 y:(y-offsetY)/zoom
 }
-
 }
 
 function worldToScreen(x,y){
-
 return{
 x:x*zoom+offsetX,
 y:y*zoom+offsetY
 }
-
 }
 
 function pos(e){
@@ -121,65 +115,97 @@ function pos(e){
 const r=canvas.getBoundingClientRect()
 
 if(e.touches){
-
 return screenToWorld(
 e.touches[0].clientX-r.left,
-e.touches[0].clientY-r.top
-)
-
+e.touches[0].clientY-r.top)
 }
 
 return screenToWorld(
 e.clientX-r.left,
-e.clientY-r.top
-)
+e.clientY-r.top)
 
 }
 
-canvas.addEventListener("mousedown",inicio)
-canvas.addEventListener("mousemove",mover)
-canvas.addEventListener("mouseup",fin)
+canvas.addEventListener("mousedown",mouseDown)
+canvas.addEventListener("mousemove",mouseMove)
+canvas.addEventListener("mouseup",mouseUp)
 
-canvas.addEventListener("touchstart",inicio,{passive:false})
-canvas.addEventListener("touchmove",mover,{passive:false})
-canvas.addEventListener("touchend",fin)
+canvas.addEventListener("touchstart",touchStart,{passive:false})
+canvas.addEventListener("touchmove",touchMove,{passive:false})
+canvas.addEventListener("touchend",mouseUp)
 
-canvas.addEventListener("wheel",zoomRueda)
+canvas.addEventListener("wheel",wheelZoom)
 
-canvas.addEventListener("dblclick",insertarVertice)
-
-function inicio(e){
+function mouseDown(e){
 
 let p=pos(e)
+mouse=p
 
-for(let i=0;i<current.length;i++){
+if(drawing){
 
-if(Math.hypot(p.x-current[i].x,p.y-current[i].y)<10/zoom){
+current.push(p)
+dibujar()
+return
 
-dragging=i
+}
+
+for(let room of rooms){
+
+for(let v of room.vertices){
+
+if(Math.hypot(p.x-v.x,p.y-v.y)<10/zoom){
+
+draggingVertex={vertex:v}
 return
 
 }
 
 }
 
-if(!cerrado){
+}
 
-current.push(p)
+for(let room of rooms){
+
+if(pointInPolygon(p,room.vertices)){
+
+draggingRoom={
+room:room,
+start:p
+}
+
+return
 
 }
 
 }
 
-function mover(e){
+}
+
+function mouseMove(e){
 
 let p=pos(e)
-
 mouse=p
 
-if(dragging!=null){
+if(draggingVertex){
 
-current[dragging]=p
+draggingVertex.vertex.x=p.x
+draggingVertex.vertex.y=p.y
+
+}
+
+if(draggingRoom){
+
+let dx=p.x-draggingRoom.start.x
+let dy=p.y-draggingRoom.start.y
+
+draggingRoom.start=p
+
+for(let v of draggingRoom.room.vertices){
+
+v.x+=dx
+v.y+=dy
+
+}
 
 }
 
@@ -187,35 +213,56 @@ dibujar()
 
 }
 
-function fin(){
+function mouseUp(){
 
-dragging=null
+draggingVertex=null
+draggingRoom=null
 
 }
 
-function zoomRueda(e){
+function wheelZoom(e){
 
 let factor=e.deltaY<0?1.1:0.9
-
 zoom*=factor
+dibujar()
+
+}
+
+function touchStart(e){
+
+if(e.touches.length==2){
+
+let dx=e.touches[0].clientX-e.touches[1].clientX
+let dy=e.touches[0].clientY-e.touches[1].clientY
+
+pinchStartDist=Math.hypot(dx,dy)
+pinchStartZoom=zoom
+
+}
+
+}
+
+function touchMove(e){
+
+if(e.touches.length==2){
+
+let dx=e.touches[0].clientX-e.touches[1].clientX
+let dy=e.touches[0].clientY-e.touches[1].clientY
+
+let dist=Math.hypot(dx,dy)
+
+zoom=pinchStartZoom*(dist/pinchStartDist)
 
 dibujar()
+
+}
 
 }
 
 function nuevaEstancia(){
 
-if(current.length>2){
-
-rooms.push([...current])
-
-}
-
+drawing=true
 current=[]
-
-cerrado=false
-
-dibujar()
 
 }
 
@@ -223,11 +270,15 @@ function cerrar(){
 
 if(current.length<3)return
 
-cerrado=true
+let nombre=prompt("Nombre estancia")
 
-rooms.push([...current])
+rooms.push({
+name:nombre||"estancia",
+vertices:[...current]
+})
 
-calcularDatos()
+drawing=false
+current=[]
 
 dibujar()
 
@@ -236,7 +287,6 @@ dibujar()
 function deshacer(){
 
 current.pop()
-
 dibujar()
 
 }
@@ -245,66 +295,55 @@ function reiniciar(){
 
 rooms=[]
 current=[]
-cerrado=false
-
-document.getElementById("datos").innerHTML=""
-
+drawing=true
 dibujar()
 
 }
 
-function insertarVertice(e){
+function puntoCentral(vertices){
 
-if(current.length<2)return
+let x=0
+let y=0
 
-let p=pos(e)
+for(let v of vertices){
 
-let mejor=99999
-let index=0
+x+=v.x
+y+=v.y
 
-for(let i=0;i<current.length;i++){
+}
 
-let j=(i+1)%current.length
-
-let d=distanciaSegmento(p,current[i],current[j])
-
-if(d<mejor){
-
-mejor=d
-index=j
-
+return{
+x:x/vertices.length,
+y:y/vertices.length
 }
 
 }
 
-if(mejor<20/zoom){
+function pointInPolygon(point,vs){
 
-current.splice(index,0,p)
+let x=point.x,y=point.y
+let inside=false
+
+for(let i=0,j=vs.length-1;i<vs.length;j=i++){
+
+let xi=vs[i].x,yi=vs[i].y
+let xj=vs[j].x,yj=vs[j].y
+
+let intersect=((yi>y)!=(yj>y)) &&
+(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
 
 }
 
-dibujar()
-
-}
-
-function distanciaSegmento(p,a,b){
-
-let l2=(b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y)
-
-let t=((p.x-a.x)*(b.x-a.x)+(p.y-a.y)*(b.y-a.y))/l2
-
-t=Math.max(0,Math.min(1,t))
-
-let x=a.x+t*(b.x-a.x)
-let y=a.y+t*(b.y-a.y)
-
-return Math.hypot(p.x-x,p.y-y)
+return inside
 
 }
 
 function angulo(a,b,c){
 
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-
+Math.atan2(a.y-b.y,a.x-b.x)
 
 ang=ang*180/Math.PI
 
@@ -314,7 +353,111 @@ return ang
 
 }
 
-function cuadricula(){
+function dibujar(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+dibujarGrid()
+
+for(let room of rooms){
+
+ctx.beginPath()
+
+let s=worldToScreen(room.vertices[0].x,room.vertices[0].y)
+ctx.moveTo(s.x,s.y)
+
+for(let i=1;i<room.vertices.length;i++){
+
+let p=worldToScreen(room.vertices[i].x,room.vertices[i].y)
+ctx.lineTo(p.x,p.y)
+
+}
+
+ctx.closePath()
+
+ctx.fillStyle="rgba(0,120,255,0.15)"
+ctx.fill()
+
+ctx.strokeStyle="#2b83ff"
+ctx.stroke()
+
+for(let v of room.vertices){
+
+let p=worldToScreen(v.x,v.y)
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+let c=puntoCentral(room.vertices)
+let sc=worldToScreen(c.x,c.y)
+
+ctx.fillStyle="black"
+ctx.fillText(room.name,sc.x,sc.y)
+
+}
+
+if(current.length){
+
+ctx.beginPath()
+
+let s=worldToScreen(current[0].x,current[0].y)
+ctx.moveTo(s.x,s.y)
+
+for(let i=1;i<current.length;i++){
+
+let p=worldToScreen(current[i].x,current[i].y)
+ctx.lineTo(p.x,p.y)
+
+}
+
+ctx.stroke()
+
+for(let v of current){
+
+let p=worldToScreen(v.x,v.y)
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+let last=current[current.length-1]
+let s1=worldToScreen(last.x,last.y)
+let s2=worldToScreen(mouse.x,mouse.y)
+
+ctx.beginPath()
+ctx.moveTo(s1.x,s1.y)
+ctx.lineTo(s2.x,s2.y)
+ctx.strokeStyle="black"
+ctx.setLineDash([5,5])
+ctx.stroke()
+ctx.setLineDash([])
+
+let d=Math.hypot(mouse.x-last.x,mouse.y-last.y)/escala()
+
+let ang=0
+
+if(current.length>1){
+
+let prev=current[current.length-2]
+ang=angulo(prev,last,mouse)
+
+}
+
+document.getElementById("hud").innerHTML=
+"Longitud: "+d.toFixed(2)+" m | Ángulo: "+ang.toFixed(1)+"°"
+
+}
+
+}
+
+function dibujarGrid(){
 
 let paso=escala()
 
@@ -341,108 +484,6 @@ ctx.lineTo(canvas.width,s)
 ctx.stroke()
 
 }
-
-}
-
-function dibujar(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-cuadricula()
-
-for(let room of rooms){
-
-ctx.beginPath()
-
-let s=worldToScreen(room[0].x,room[0].y)
-
-ctx.moveTo(s.x,s.y)
-
-for(let i=1;i<room.length;i++){
-
-let p=worldToScreen(room[i].x,room[i].y)
-
-ctx.lineTo(p.x,p.y)
-
-}
-
-ctx.closePath()
-
-ctx.fillStyle="rgba(0,120,255,0.15)"
-ctx.fill()
-
-ctx.strokeStyle="#2b83ff"
-ctx.stroke()
-
-}
-
-if(current.length){
-
-ctx.beginPath()
-
-let s=worldToScreen(current[0].x,current[0].y)
-
-ctx.moveTo(s.x,s.y)
-
-for(let i=1;i<current.length;i++){
-
-let p=worldToScreen(current[i].x,current[i].y)
-
-ctx.lineTo(p.x,p.y)
-
-}
-
-ctx.stroke()
-
-}
-
-for(let p of current){
-
-let s=worldToScreen(p.x,p.y)
-
-ctx.beginPath()
-ctx.arc(s.x,s.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-}
-
-if(current.length){
-
-let p=current[current.length-1]
-
-let d=Math.hypot(mouse.x-p.x,mouse.y-p.y)/escala()
-
-document.getElementById("hud").innerHTML=
-"Longitud: "+d.toFixed(2)+" m"
-
-}
-
-}
-
-function calcularDatos(){
-
-let area=0
-let per=0
-
-for(let i=0;i<current.length;i++){
-
-let j=(i+1)%current.length
-
-area+=current[i].x*current[j].y-current[j].x*current[i].y
-
-per+=Math.hypot(
-current[i].x-current[j].x,
-current[i].y-current[j].y
-)
-
-}
-
-area=Math.abs(area/2)/(escala()*escala())
-per=per/escala()
-
-document.getElementById("datos").innerHTML=
-"Área: "+area.toFixed(2)+" m²<br>Perímetro: "+per.toFixed(2)+" m"
 
 }
 
