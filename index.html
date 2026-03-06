@@ -158,32 +158,15 @@ return parseFloat(document.getElementById("scale").value)
 }
 
 function screenToWorld(x,y){
-
 return{
 x:(x-camera.x)/camera.zoom,
 y:(y-camera.y)/camera.zoom
 }
-
-}
-
-function worldToScreen(x,y){
-
-return{
-x:x*camera.zoom+camera.x,
-y:y*camera.zoom+camera.y
-}
-
 }
 
 function getMouse(e){
-
 const r=canvas.getBoundingClientRect()
-
-return screenToWorld(
-e.clientX-r.left,
-e.clientY-r.top
-)
-
+return screenToWorld(e.clientX-r.left,e.clientY-r.top)
 }
 
 canvas.onmousedown=e=>{
@@ -192,44 +175,30 @@ let p=getMouse(e)
 mouse=p
 
 if(moveMode){
-
 draggingCanvas=true
 return
-
 }
 
 if(drawing){
-
 current.push(p)
 draw()
 return
-
 }
 
 for(let r of rooms){
-
 for(let v of r.v){
-
 if(Math.hypot(v.x-p.x,v.y-p.y)<10/camera.zoom){
-
 dragVertex=v
 return
-
 }
-
 }
-
 }
 
 for(let r of rooms){
-
 if(pointInside(p,r.v)){
-
 dragRoom={room:r,start:p}
 return
-
 }
-
 }
 
 }
@@ -239,24 +208,20 @@ canvas.onmousemove=e=>{
 let p=getMouse(e)
 mouse=p
 
-updateCursor(e)
+updateHUD(e)
 
 if(draggingCanvas){
-
 camera.x+=e.movementX
 camera.y+=e.movementY
 draw()
 return
-
 }
 
 if(dragVertex){
-
 dragVertex.x=p.x
 dragVertex.y=p.y
 updateList()
 draw()
-
 }
 
 if(dragRoom){
@@ -267,10 +232,8 @@ let dy=p.y-dragRoom.start.y
 dragRoom.start=p
 
 for(let v of dragRoom.room.v){
-
 v.x+=dx
 v.y+=dy
-
 }
 
 updateList()
@@ -283,51 +246,32 @@ draw()
 }
 
 canvas.onmouseup=()=>{
-
 dragVertex=null
 dragRoom=null
 draggingCanvas=false
-
 }
 
 canvas.onwheel=e=>{
-
 e.preventDefault()
-
 let factor=e.deltaY>0?0.9:1.1
-
 zoom(factor)
-
 }
 
 function zoom(f){
-
-let wx=mouse.x
-let wy=mouse.y
-
 camera.zoom*=f
-
-camera.x=canvas.width/2-wx*camera.zoom
-camera.y=canvas.height/2-wy*camera.zoom
-
 draw()
-
 }
 
 function center(){
-
 camera.zoom=1
 camera.x=0
 camera.y=0
 draw()
-
 }
 
 function newRoom(){
-
 drawing=true
 current=[]
-
 }
 
 function closeRoom(){
@@ -347,20 +291,16 @@ draw()
 }
 
 function undo(){
-
 current.pop()
 draw()
-
 }
 
 function resetAll(){
-
 rooms=[]
 current=[]
 drawing=true
 updateList()
 draw()
-
 }
 
 function area(p){
@@ -368,12 +308,9 @@ function area(p){
 let a=0
 
 for(let i=0;i<p.length;i++){
-
 let j=(i+1)%p.length
-
 a+=p[i].x*p[j].y
 a-=p[j].x*p[i].y
-
 }
 
 return Math.abs(a/2)/(scale()*scale())
@@ -385,11 +322,8 @@ function per(p){
 let s=0
 
 for(let i=0;i<p.length;i++){
-
 let j=(i+1)%p.length
-
 s+=Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)
-
 }
 
 return s/scale()
@@ -423,8 +357,7 @@ document.getElementById("total").innerHTML="<b>Total: "+tot.toFixed(2)+" m²</b>
 
 function angle(a,b,c){
 
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-
-Math.atan2(a.y-b.y,a.x-b.x)
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
 
 ang=Math.abs(ang*180/Math.PI)
 
@@ -454,28 +387,38 @@ return inside
 
 }
 
-function updateCursor(e){
+function updateHUD(e){
 
-const box=document.getElementById("cursorHUD")
+const cursor=document.getElementById("cursorHUD")
 
-box.style.left=e.clientX+10+"px"
-box.style.top=e.clientY+10+"px"
+cursor.style.left=e.clientX+10+"px"
+cursor.style.top=e.clientY+10+"px"
 
-let last=current[current.length-1]
+let last=null
+let prev=null
+
+if(current.length>0){
+last=current[current.length-1]
+prev=current[current.length-2]
+}
+
+if(dragVertex){
+last=dragVertex
+}
 
 if(last){
 
 let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
 
 let ang=0
-
-if(current.length>1){
-
-ang=angle(current[current.length-2],last,mouse)
-
+if(prev){
+ang=angle(prev,last,mouse)
 }
 
-box.innerHTML=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+document.querySelector(".len").innerText=dist.toFixed(2)+" m"
+document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
+
+cursor.innerHTML=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 }
 
@@ -491,13 +434,10 @@ ctx.setTransform(camera.zoom,0,0,camera.zoom,camera.x,camera.y)
 for(let r of rooms){
 
 ctx.beginPath()
-
 ctx.moveTo(r.v[0].x,r.v[0].y)
 
 for(let i=1;i<r.v.length;i++){
-
 ctx.lineTo(r.v[i].x,r.v[i].y)
-
 }
 
 ctx.closePath()
@@ -541,19 +481,6 @@ ctx.lineTo(mouse.x,mouse.y)
 ctx.stroke()
 
 ctx.setLineDash([])
-
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
-
-let ang=0
-
-if(current.length>1){
-
-ang=angle(current[current.length-2],last,mouse)
-
-}
-
-document.querySelector(".len").innerText=dist.toFixed(2)+" m"
-document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
 
 }
 
