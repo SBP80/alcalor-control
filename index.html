@@ -7,31 +7,32 @@
 <style>
 
 body{
+margin:0;
 font-family:Arial;
 background:#0f2b44;
 color:white;
-margin:0;
-padding:10px;
 }
 
-h1{text-align:center}
+h1{
+text-align:center;
+margin:10px 0;
+}
 
 .panel{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
 background:#12314a;
 padding:10px;
 border-radius:8px;
-margin-bottom:10px;
-display:flex;
-gap:8px;
-align-items:center;
-flex-wrap:wrap;
+margin:10px;
 }
 
 button{
 border:none;
 padding:8px 12px;
-font-weight:bold;
 border-radius:4px;
+font-weight:bold;
 cursor:pointer;
 }
 
@@ -39,51 +40,52 @@ cursor:pointer;
 .close{background:#2b83ff}
 .undo{background:#ff9800}
 .reset{background:#e53935}
-
-.nav{background:#555}
+.nav{background:#444}
 
 #layout{
 display:flex;
 gap:10px;
+margin:10px;
 }
 
-#lista{
+#roomsPanel{
 width:220px;
 background:#12314a;
 padding:10px;
 border-radius:8px;
 }
 
+#canvasBox{
+position:relative;
+}
+
 canvas{
 background:#f4f1e8;
 border-radius:8px;
-touch-action:none;
+cursor:crosshair;
 }
-
-#canvasBox{position:relative}
 
 #hud{
 position:absolute;
-top:0;
+top:6px;
 left:50%;
 transform:translateX(-50%);
-background:rgba(0,0,0,0.6);
+background:rgba(0,0,0,0.7);
 padding:6px 14px;
 border-radius:6px;
-font-size:18px;
 font-weight:bold;
 }
 
 .len{color:#00e676}
 .ang{color:#ff9800}
 
-#cursor{
+#cursorHUD{
 position:absolute;
 pointer-events:none;
-background:rgba(0,0,0,0.6);
+background:rgba(0,0,0,0.7);
 padding:4px 8px;
 border-radius:4px;
-font-size:14px;
+font-size:13px;
 }
 
 </style>
@@ -96,23 +98,23 @@ font-size:14px;
 <div class="panel">
 
 Escala
-<input id="escala" type="number" value="100">
+<input id="scale" type="number" value="100">
 
 <button class="new" onclick="newRoom()">Nueva estancia</button>
 <button class="close" onclick="closeRoom()">Cerrar estancia</button>
 <button class="undo" onclick="undo()">Deshacer</button>
-<button class="reset" onclick="reset()">Reiniciar</button>
+<button class="reset" onclick="resetAll()">Reiniciar</button>
 
 <button class="nav" onclick="zoom(1.2)">+</button>
 <button class="nav" onclick="zoom(0.8)">−</button>
 <button class="nav" onclick="center()">⛶</button>
-<button class="nav" onclick="toggleMove()">🖐</button>
+<button class="nav" onclick="moveMode=!moveMode">🖐</button>
 
 </div>
 
 <div id="layout">
 
-<div id="lista">
+<div id="roomsPanel">
 <b>ESTANCIAS</b>
 <div id="rooms"></div>
 <hr>
@@ -126,12 +128,11 @@ Escala
 <span class="ang">0°</span>
 </div>
 
-<div id="cursor"></div>
+<div id="cursorHUD"></div>
 
 <canvas id="canvas" width="1100" height="650"></canvas>
 
 </div>
-
 </div>
 
 <script>
@@ -139,39 +140,42 @@ Escala
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
+let camera={x:0,y:0,zoom:1}
+
 let rooms=[]
 let current=[]
 let drawing=true
-
-let zoomLevel=1
-let offsetX=0
-let offsetY=0
 
 let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
 let moveMode=false
+let draggingCanvas=false
 
 function scale(){
-return parseFloat(document.getElementById("escala").value)
-}
-
-function worldToScreen(x,y){
-return{
-x:x*zoomLevel+offsetX,
-y:y*zoomLevel+offsetY
-}
+return parseFloat(document.getElementById("scale").value)
 }
 
 function screenToWorld(x,y){
+
 return{
-x:(x-offsetX)/zoomLevel,
-y:(y-offsetY)/zoomLevel
-}
+x:(x-camera.x)/camera.zoom,
+y:(y-camera.y)/camera.zoom
 }
 
-function getPos(e){
+}
+
+function worldToScreen(x,y){
+
+return{
+x:x*camera.zoom+camera.x,
+y:y*camera.zoom+camera.y
+}
+
+}
+
+function getMouse(e){
 
 const r=canvas.getBoundingClientRect()
 
@@ -182,26 +186,31 @@ e.clientY-r.top
 
 }
 
-canvas.onmousedown=e=>start(e)
-canvas.onmousemove=e=>move(e)
-canvas.onmouseup=end
+canvas.onmousedown=e=>{
 
-function start(e){
-
-let p=getPos(e)
+let p=getMouse(e)
 mouse=p
 
+if(moveMode){
+
+draggingCanvas=true
+return
+
+}
+
 if(drawing){
+
 current.push(p)
 draw()
 return
+
 }
 
 for(let r of rooms){
 
 for(let v of r.v){
 
-if(Math.hypot(v.x-p.x,v.y-p.y)<10/zoomLevel){
+if(Math.hypot(v.x-p.x,v.y-p.y)<10/camera.zoom){
 
 dragVertex=v
 return
@@ -225,18 +234,28 @@ return
 
 }
 
-function move(e){
+canvas.onmousemove=e=>{
 
-let p=getPos(e)
+let p=getMouse(e)
 mouse=p
 
 updateCursor(e)
+
+if(draggingCanvas){
+
+camera.x+=e.movementX
+camera.y+=e.movementY
+draw()
+return
+
+}
 
 if(dragVertex){
 
 dragVertex.x=p.x
 dragVertex.y=p.y
 updateList()
+draw()
 
 }
 
@@ -248,11 +267,14 @@ let dy=p.y-dragRoom.start.y
 dragRoom.start=p
 
 for(let v of dragRoom.room.v){
+
 v.x+=dx
 v.y+=dy
+
 }
 
 updateList()
+draw()
 
 }
 
@@ -260,39 +282,52 @@ draw()
 
 }
 
-function end(){
+canvas.onmouseup=()=>{
+
 dragVertex=null
 dragRoom=null
+draggingCanvas=false
+
+}
+
+canvas.onwheel=e=>{
+
+e.preventDefault()
+
+let factor=e.deltaY>0?0.9:1.1
+
+zoom(factor)
+
 }
 
 function zoom(f){
 
-let wx=(mouse.x)
-let wy=(mouse.y)
+let wx=mouse.x
+let wy=mouse.y
 
-zoomLevel*=f
+camera.zoom*=f
 
-offsetX=canvas.width/2-wx*zoomLevel
-offsetY=canvas.height/2-wy*zoomLevel
+camera.x=canvas.width/2-wx*camera.zoom
+camera.y=canvas.height/2-wy*camera.zoom
 
 draw()
 
 }
 
 function center(){
-zoomLevel=1
-offsetX=0
-offsetY=0
-draw()
-}
 
-function toggleMove(){
-moveMode=!moveMode
+camera.zoom=1
+camera.x=0
+camera.y=0
+draw()
+
 }
 
 function newRoom(){
+
 drawing=true
 current=[]
+
 }
 
 function closeRoom(){
@@ -312,16 +347,17 @@ draw()
 }
 
 function undo(){
+
 current.pop()
 draw()
+
 }
 
-function reset(){
+function resetAll(){
 
 rooms=[]
 current=[]
 drawing=true
-
 updateList()
 draw()
 
@@ -418,21 +454,49 @@ return inside
 
 }
 
+function updateCursor(e){
+
+const box=document.getElementById("cursorHUD")
+
+box.style.left=e.clientX+10+"px"
+box.style.top=e.clientY+10+"px"
+
+let last=current[current.length-1]
+
+if(last){
+
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
+
+let ang=0
+
+if(current.length>1){
+
+ang=angle(current[current.length-2],last,mouse)
+
+}
+
+box.innerHTML=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+
+}
+
+}
+
 function draw(){
 
+ctx.setTransform(1,0,0,1,0,0)
 ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.setTransform(camera.zoom,0,0,camera.zoom,camera.x,camera.y)
 
 for(let r of rooms){
 
 ctx.beginPath()
 
-let s=worldToScreen(r.v[0].x,r.v[0].y)
-ctx.moveTo(s.x,s.y)
+ctx.moveTo(r.v[0].x,r.v[0].y)
 
 for(let i=1;i<r.v.length;i++){
 
-let p=worldToScreen(r.v[i].x,r.v[i].y)
-ctx.lineTo(p.x,p.y)
+ctx.lineTo(r.v[i].x,r.v[i].y)
 
 }
 
@@ -442,15 +506,13 @@ ctx.fillStyle="rgba(0,120,255,0.15)"
 ctx.fill()
 
 ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2
+ctx.lineWidth=2/camera.zoom
 ctx.stroke()
 
 for(let v of r.v){
 
-let p=worldToScreen(v.x,v.y)
-
 ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.arc(v.x,v.y,5/camera.zoom,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
@@ -462,10 +524,8 @@ if(current.length){
 
 for(let v of current){
 
-let p=worldToScreen(v.x,v.y)
-
 ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.arc(v.x,v.y,5/camera.zoom,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
@@ -473,14 +533,13 @@ ctx.fill()
 
 let last=current[current.length-1]
 
-let s1=worldToScreen(last.x,last.y)
-let s2=worldToScreen(mouse.x,mouse.y)
+ctx.setLineDash([6/camera.zoom,6/camera.zoom])
 
-ctx.setLineDash([6,6])
 ctx.beginPath()
-ctx.moveTo(s1.x,s1.y)
-ctx.lineTo(s2.x,s2.y)
+ctx.moveTo(last.x,last.y)
+ctx.lineTo(mouse.x,mouse.y)
 ctx.stroke()
+
 ctx.setLineDash([])
 
 let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
@@ -488,27 +547,15 @@ let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
 let ang=0
 
 if(current.length>1){
+
 ang=angle(current[current.length-2],last,mouse)
+
 }
 
 document.querySelector(".len").innerText=dist.toFixed(2)+" m"
 document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
 
 }
-
-}
-
-function updateCursor(e){
-
-const c=document.getElementById("cursor")
-
-c.style.left=e.clientX+10+"px"
-c.style.top=e.clientY+10+"px"
-
-c.innerHTML=
-document.querySelector(".len").innerText+
-" | "+
-document.querySelector(".ang").innerText
 
 }
 
