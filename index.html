@@ -16,7 +16,6 @@ padding:10px;
 
 h1{
 text-align:center;
-margin-bottom:10px;
 }
 
 .panel{
@@ -24,12 +23,15 @@ background:#12314a;
 padding:10px;
 border-radius:8px;
 margin-bottom:10px;
+display:flex;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
 }
 
 button{
 border:none;
 padding:8px 12px;
-margin-right:6px;
 cursor:pointer;
 font-weight:bold;
 border-radius:4px;
@@ -40,11 +42,7 @@ border-radius:4px;
 .btnUndo{background:#ff9800;color:white;}
 .btnReset{background:#e53935;color:white;}
 
-canvas{
-background:#f4f1e8;
-border-radius:8px;
-touch-action:none;
-}
+.nav{background:#555;color:white}
 
 #layout{
 display:flex;
@@ -58,26 +56,40 @@ padding:10px;
 border-radius:8px;
 }
 
-.room{
-margin-bottom:10px;
-border-bottom:1px solid rgba(255,255,255,0.2);
-padding-bottom:6px;
+canvas{
+background:#f4f1e8;
+border-radius:8px;
+touch-action:none;
+}
+
+#canvasBox{
+position:relative;
 }
 
 #hud{
 position:absolute;
-top:120px;
+top:5px;
 left:50%;
 transform:translateX(-50%);
 background:rgba(0,0,0,0.6);
-padding:8px 14px;
+padding:6px 14px;
 border-radius:6px;
-font-size:20px;
+font-size:18px;
 font-weight:bold;
 }
 
-.len{color:#00e676;}
-.ang{color:#ff9800;}
+.len{color:#00e676}
+.ang{color:#ff9800}
+
+#cursorInfo{
+position:absolute;
+pointer-events:none;
+background:rgba(0,0,0,0.6);
+color:white;
+padding:4px 8px;
+border-radius:4px;
+font-size:14px;
+}
 
 </style>
 </head>
@@ -88,13 +100,17 @@ font-weight:bold;
 
 <div class="panel">
 
-Escala del plano (px por metro)
+Escala del plano
 <input id="escala" type="number" value="100">
 
 <button class="btnNew" onclick="nuevaEstancia()">Nueva estancia</button>
 <button class="btnClose" onclick="cerrar()">Cerrar estancia</button>
 <button class="btnUndo" onclick="deshacer()">Deshacer</button>
 <button class="btnReset" onclick="reiniciar()">Reiniciar</button>
+
+<button class="nav" onclick="zoomIn()">＋</button>
+<button class="nav" onclick="zoomOut()">－</button>
+<button class="nav" onclick="centerView()">⛶</button>
 
 </div>
 
@@ -107,13 +123,17 @@ Escala del plano (px por metro)
 <div id="total"></div>
 </div>
 
-<div style="position:relative">
+<div id="canvasBox">
+
 <div id="hud">
 <span class="len">0 m</span> |
 <span class="ang">0°</span>
 </div>
 
+<div id="cursorInfo"></div>
+
 <canvas id="canvas" width="1100" height="650"></canvas>
+
 </div>
 
 </div>
@@ -136,8 +156,7 @@ let mouse={x:0,y:0}
 let dragVertex=null
 let dragRoom=null
 
-let pinchStartDist=0
-let pinchStartZoom=1
+let drawingTouch=false
 
 function escala(){
 return parseFloat(document.getElementById("escala").value)
@@ -162,11 +181,9 @@ function pos(e){
 const r=canvas.getBoundingClientRect()
 
 if(e.touches){
-
 return screenToWorld(
 e.touches[0].clientX-r.left,
 e.touches[0].clientY-r.top)
-
 }
 
 return screenToWorld(
@@ -179,9 +196,9 @@ canvas.addEventListener("mousedown",start)
 canvas.addEventListener("mousemove",move)
 canvas.addEventListener("mouseup",end)
 
-canvas.addEventListener("touchstart",touchStart,{passive:false})
-canvas.addEventListener("touchmove",touchMove,{passive:false})
-canvas.addEventListener("touchend",end)
+canvas.addEventListener("touchstart",touchStart)
+canvas.addEventListener("touchmove",touchMove)
+canvas.addEventListener("touchend",touchEnd)
 
 function start(e){
 
@@ -211,17 +228,6 @@ return
 
 }
 
-for(let r of rooms){
-
-if(pointInside(p,r.vertices)){
-
-dragRoom={room:r,start:p}
-return
-
-}
-
-}
-
 }
 
 function move(e){
@@ -237,66 +243,63 @@ updateList()
 
 }
 
-if(dragRoom){
-
-let dx=p.x-dragRoom.start.x
-let dy=p.y-dragRoom.start.y
-
-dragRoom.start=p
-
-for(let v of dragRoom.room.vertices){
-
-v.x+=dx
-v.y+=dy
-
-}
-
-updateList()
-
-}
-
 draw()
+
+showCursorInfo(e)
 
 }
 
 function end(){
 dragVertex=null
-dragRoom=null
 }
 
 function touchStart(e){
 
-if(e.touches.length==2){
+let p=pos(e)
+mouse=p
 
-let dx=e.touches[0].clientX-e.touches[1].clientX
-let dy=e.touches[0].clientY-e.touches[1].clientY
+if(drawing){
 
-pinchStartDist=Math.hypot(dx,dy)
-pinchStartZoom=zoom
+drawingTouch=true
+current.push(p)
 
 }
-
-else start(e)
 
 }
 
 function touchMove(e){
 
-if(e.touches.length==2){
+if(!drawingTouch)return
 
-let dx=e.touches[0].clientX-e.touches[1].clientX
-let dy=e.touches[0].clientY-e.touches[1].clientY
-
-let dist=Math.hypot(dx,dy)
-
-zoom=pinchStartZoom*(dist/pinchStartDist)
+let p=pos(e)
+mouse=p
 
 draw()
 
 }
 
-else move(e)
+function touchEnd(e){
 
+drawingTouch=false
+draw()
+
+}
+
+function zoomIn(){
+zoom*=1.2
+draw()
+}
+
+function zoomOut(){
+zoom*=0.8
+draw()
+}
+
+function centerView(){
+offsetX=0
+offsetY=0
+zoom=1
+draw()
 }
 
 function nuevaEstancia(){
@@ -387,19 +390,17 @@ let p=perimeter(r.vertices)
 total+=a
 
 html+=`
-<div class="room">
+<div>
 <b>${r.name}</b><br>
-Área: <span style="color:#00e676">${a.toFixed(2)} m²</span><br>
-Perímetro: <span style="color:#4fc3f7">${p.toFixed(2)} m</span>
-</div>
+Área: ${a.toFixed(2)} m²<br>
+Perímetro: ${p.toFixed(2)} m
+</div><br>
 `
 
 }
 
 document.getElementById("rooms").innerHTML=html
-
-document.getElementById("total").innerHTML=
-"<b style='color:#ff9800'>Total: "+total.toFixed(2)+" m²</b>"
+document.getElementById("total").innerHTML="<b>Total: "+total.toFixed(2)+" m²</b>"
 
 }
 
@@ -416,77 +417,9 @@ return ang
 
 }
 
-function pointInside(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
-
-}
-
-function center(poly){
-
-let x=0,y=0
-
-for(let v of poly){
-x+=v.x
-y+=v.y
-}
-
-return{
-x:x/poly.length,
-y:y/poly.length
-}
-
-}
-
-function grid(){
-
-let step=escala()
-
-ctx.strokeStyle="#ddd"
-
-for(let x=-2000;x<2000;x+=step){
-
-let s=worldToScreen(x,0).x
-
-ctx.beginPath()
-ctx.moveTo(s,0)
-ctx.lineTo(s,canvas.height)
-ctx.stroke()
-
-}
-
-for(let y=-2000;y<2000;y+=step){
-
-let s=worldToScreen(0,y).y
-
-ctx.beginPath()
-ctx.moveTo(0,s)
-ctx.lineTo(canvas.width,s)
-ctx.stroke()
-
-}
-
-}
-
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
-
-grid()
 
 for(let r of rooms){
 
@@ -522,26 +455,9 @@ ctx.fill()
 
 }
 
-let c=center(r.vertices)
-let sc=worldToScreen(c.x,c.y)
-
-ctx.fillStyle="black"
-ctx.fillText(r.name,sc.x,sc.y)
-
 }
 
 if(current.length){
-
-for(let v of current){
-
-let p=worldToScreen(v.x,v.y)
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-}
 
 let last=current[current.length-1]
 
@@ -552,8 +468,6 @@ ctx.beginPath()
 ctx.setLineDash([6,6])
 ctx.moveTo(s1.x,s1.y)
 ctx.lineTo(s2.x,s2.y)
-ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2
 ctx.stroke()
 ctx.setLineDash([])
 
@@ -572,6 +486,22 @@ document.querySelector(".len").innerText=dist.toFixed(2)+" m"
 document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
 
 }
+
+}
+
+function showCursorInfo(e){
+
+const info=document.getElementById("cursorInfo")
+
+let r=canvas.getBoundingClientRect()
+
+info.style.left=(e.clientX-r.left+15)+"px"
+info.style.top=(e.clientY-r.top+15)+"px"
+
+info.innerHTML=
+document.querySelector(".len").innerText+
+" | "+
+document.querySelector(".ang").innerText
 
 }
 
