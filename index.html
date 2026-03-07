@@ -126,25 +126,24 @@ let dragVertex=null
 let dragRoom=null
 let dragStart=null
 
-let zoomLevel=1
-let offsetX=0
-let offsetY=0
-
 function scale(){
 return parseFloat(document.getElementById("scale").value)
-}
-
-function getMouse(e){
-const r=canvas.getBoundingClientRect()
-return{
-x:(e.clientX-r.left-offsetX)/(scale()*zoomLevel),
-y:(e.clientY-r.top-offsetY)/(scale()*zoomLevel)
-}
 }
 
 canvas.addEventListener("mousemove",move)
 canvas.addEventListener("mousedown",start)
 canvas.addEventListener("mouseup",end)
+
+function getMouse(e){
+
+const r=canvas.getBoundingClientRect()
+
+return{
+x:(e.clientX-r.left)/scale(),
+y:(e.clientY-r.top)/scale()
+}
+
+}
 
 function start(e){
 
@@ -152,9 +151,11 @@ let p=getMouse(e)
 mouse=p
 
 if(drawing){
+
 current.push({x:p.x,y:p.y})
 draw()
 return
+
 }
 
 for(let r of rooms){
@@ -196,9 +197,21 @@ let i=dragVertex.index
 r.v[i].x=p.x
 r.v[i].y=p.y
 
+let prev=r.v[(i-1+r.v.length)%r.v.length]
+let next=r.v[(i+1)%r.v.length]
+
+let d1=Math.hypot(prev.x-r.v[i].x,prev.y-r.v[i].y)
+let d2=Math.hypot(next.x-r.v[i].x,next.y-r.v[i].y)
+
+let ang=angle(prev,r.v[i],next)
+
+hud.innerText=
+d1.toFixed(2)+" m | "+
+d2.toFixed(2)+" m | "+
+ang.toFixed(1)+"°"
+
 draw()
 return
-
 }
 
 if(dragRoom){
@@ -212,7 +225,6 @@ v.y+=dy
 }
 
 dragStart=p
-
 draw()
 return
 
@@ -225,40 +237,6 @@ draw()
 function end(){
 dragVertex=null
 dragRoom=null
-}
-
-function pointInPolygon(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x
-let yi=poly[i].y
-let xj=poly[j].x
-let yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
-
-}
-
-function zoom(f){
-zoomLevel*=f
-draw()
-}
-
-function centerView(){
-zoomLevel=1
-offsetX=0
-offsetY=0
-draw()
 }
 
 function newRoom(){
@@ -293,14 +271,11 @@ draw()
 }
 
 function reset(){
-
 rooms=[]
 current=[]
 drawing=true
-
 updatePanel()
 draw()
-
 }
 
 function angle(a,b,c){
@@ -320,7 +295,7 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-/* ESTANCIAS */
+/* habitaciones */
 
 for(let r of rooms){
 
@@ -351,7 +326,47 @@ ctx.fill()
 
 }
 
+for(let i=0;i<poly.length;i++){
+
+let j=(i+1)%poly.length
+
+let dist=Math.hypot(
+poly[j].x-poly[i].x,
+poly[j].y-poly[i].y
+)
+
+let mx=(poly[i].x+poly[j].x)/2
+let my=(poly[i].y+poly[j].y)/2
+
+ctx.fillStyle="black"
+ctx.fillText(
+dist.toFixed(2)+" m",
+mx*scale(),
+my*scale()
+)
+
 }
+
+for(let i=0;i<poly.length;i++){
+
+let prev=poly[(i-1+poly.length)%poly.length]
+let cur=poly[i]
+let next=poly[(i+1)%poly.length]
+
+let ang=angle(prev,cur,next)
+
+ctx.fillStyle="orange"
+ctx.fillText(
+ang.toFixed(0)+"°",
+cur.x*scale()+6,
+cur.y*scale()-6
+)
+
+}
+
+}
+
+/* dibujo actual */
 
 if(current.length){
 
@@ -378,9 +393,33 @@ let prev=current[current.length-2]
 ang=angle(prev,last,mouse)
 }
 
-hud.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+hud.innerText=
+dist.toFixed(2)+" m | "+
+ang.toFixed(1)+"°"
 
 }
+
+}
+
+function pointInPolygon(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x
+let yi=poly[i].y
+let xj=poly[j].x
+let yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
+
+}
+
+return inside
 
 }
 
