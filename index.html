@@ -98,14 +98,10 @@ const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
 let scale=100
-
 let rooms=[]
 let drawing=false
 let points=[]
-
 let mouse={x:0,y:0}
-
-// ---------------- UTILIDADES ----------------
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -140,7 +136,18 @@ return{x:x/v.length,y:y/v.length}
 
 }
 
-// ---------------- MOUSE ----------------
+function angle(p1,p2,p3){
+
+let a=Math.atan2(p1.y-p2.y,p1.x-p2.x)
+let b=Math.atan2(p3.y-p2.y,p3.x-p2.x)
+
+let ang=(b-a)*180/Math.PI
+
+if(ang<0) ang+=360
+
+return ang
+
+}
 
 canvas.onclick=e=>{
 
@@ -148,12 +155,10 @@ if(!drawing) return
 
 const r=canvas.getBoundingClientRect()
 
-let p={
+points.push({
 x:e.clientX-r.left,
 y:e.clientY-r.top
-}
-
-points.push(p)
+})
 
 draw()
 
@@ -171,8 +176,6 @@ y:e.clientY-r.top
 draw()
 
 }
-
-// ---------------- ACCIONES ----------------
 
 function startRoom(){
 
@@ -204,10 +207,8 @@ draw()
 
 function undoPoint(){
 
-if(points.length>0){
 points.pop()
 draw()
-}
 
 }
 
@@ -221,8 +222,6 @@ updatePanel()
 draw()
 
 }
-
-// ---------------- DIBUJO ----------------
 
 function drawVertex(p){
 
@@ -252,18 +251,23 @@ ctx.stroke()
 
 for(let i=0;i<v.length;i++){
 
-let p1=v[i]
-let p2=v[(i+1)%v.length]
+let p=v[i]
+let prev=v[(i-1+v.length)%v.length]
+let next=v[(i+1)%v.length]
 
-drawVertex(p1)
+drawVertex(p)
 
-let midX=(p1.x+p2.x)/2
-let midY=(p1.y+p2.y)/2
+let ang=angle(prev,p,next)
 
-let d=dist(p1,p2)/scale
+ctx.fillStyle="orange"
+ctx.fillText(ang.toFixed(0)+"°",p.x+8,p.y-8)
+
+let midX=(p.x+next.x)/2
+let midY=(p.y+next.y)/2
+
+let d=dist(p,next)/scale
 
 ctx.fillStyle="black"
-ctx.textAlign="center"
 ctx.fillText(d.toFixed(2)+" m",midX,midY)
 
 }
@@ -322,8 +326,6 @@ drawPreview()
 
 }
 
-// ---------------- PANEL ----------------
-
 function updatePanel(){
 
 let html=""
@@ -332,7 +334,6 @@ let total=0
 for(let r of rooms){
 
 let area=polygonArea(r.v)/(scale*scale)
-
 total+=area
 
 html+=`
