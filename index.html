@@ -65,6 +65,11 @@ font-size:12px;
 pointer-events:none;
 }
 
+#snapIndicator{
+margin-left:20px;
+font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -85,6 +90,8 @@ Escala px/m
 <button class="yellow" onclick="zoomIn()">+</button>
 <button class="yellow" onclick="zoomOut()">−</button>
 <button class="yellow" onclick="centerView()">Centrar</button>
+
+<span id="snapIndicator">SNAP OFF</span>
 
 </div>
 
@@ -117,6 +124,7 @@ Total: <span id="totalArea">0</span> m²
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 const cursor=document.getElementById("cursor")
+const snapIndicator=document.getElementById("snapIndicator")
 
 let scale=100
 
@@ -134,6 +142,20 @@ let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
+
+let snapEnabled=false
+
+document.addEventListener("keydown",function(e){
+
+if(e.key==="s" || e.key==="S"){
+
+snapEnabled=!snapEnabled
+
+snapIndicator.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
+
+}
+
+})
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -216,19 +238,19 @@ return inside
 
 }
 
-/* SNAP INTELIGENTE */
-
 function snapPoint(point){
 
-let snapDistance = 15 / camera.zoom
+if(!snapEnabled) return point
+
+let snapDistance=15/camera.zoom
 
 for(let room of rooms){
 
 for(let v of room.v){
 
-if(dist(point,v) < snapDistance){
+if(dist(point,v)<snapDistance){
 
-return {x:v.x,y:v.y}
+return{x:v.x,y:v.y}
 
 }
 
@@ -265,26 +287,6 @@ let length=Math.sqrt(dx*dx+dy*dy)
 point={
 x:last.x+Math.cos(best)*length,
 y:last.y+Math.sin(best)*length
-}
-
-}
-
-for(let room of rooms){
-
-for(let v of room.v){
-
-if(Math.abs(point.x-v.x)<snapDistance){
-
-point.x=v.x
-
-}
-
-if(Math.abs(point.y-v.y)<snapDistance){
-
-point.y=v.y
-
-}
-
 }
 
 }
