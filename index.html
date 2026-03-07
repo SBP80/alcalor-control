@@ -270,8 +270,12 @@ function closeRoom(){
 
 if(drawingPoints.length<3) return
 
+let name=prompt("Nombre de la estancia","estancia")
+
+if(!name) name="estancia"
+
 rooms.push({
-name:"estancia",
+name:name,
 v:[...drawingPoints]
 })
 
@@ -332,14 +336,51 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-for(let p of v)
-drawVertex(p)
+for(let i=0;i<v.length;i++){
+
+let p1=v[i]
+let p2=v[(i+1)%v.length]
+
+drawVertex(p1)
+
+let midX=(p1.x+p2.x)/2
+let midY=(p1.y+p2.y)/2
+
+let d=dist(p1,p2)/scale
+
+ctx.fillStyle="black"
+ctx.textAlign="center"
+
+ctx.fillText(d.toFixed(2)+" m",midX,midY)
+
+}
+
+}
+
+function drawPreviewMeasure(){
+
+if(!drawing) return
+if(drawingPoints.length==0) return
+
+let last=drawingPoints[drawingPoints.length-1]
+
+let midX=(last.x+mouse.x)/2
+let midY=(last.y+mouse.y)/2
+
+let d=dist(last,mouse)/scale
+
+ctx.fillStyle="black"
+ctx.textAlign="center"
+
+ctx.fillText(d.toFixed(2)+" m",midX,midY)
 
 }
 
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
+
+scale=parseFloat(document.getElementById("scaleInput").value)
 
 for(let r of rooms){
 
@@ -377,6 +418,8 @@ for(let p of drawingPoints)
 drawVertex(p)
 
 }
+
+drawPreviewMeasure()
 
 }
 
