@@ -151,10 +151,12 @@ let aby=a.y-b.y
 let cbx=c.x-b.x
 let cby=c.y-b.y
 
-let dot=abx*cbx+aby*cby
-
 let mag1=Math.sqrt(abx*abx+aby*aby)
 let mag2=Math.sqrt(cbx*cbx+cby*cby)
+
+if(mag1===0 || mag2===0) return 0
+
+let dot=abx*cbx+aby*cby
 
 let ang=Math.acos(dot/(mag1*mag2))*180/Math.PI
 
@@ -279,10 +281,20 @@ if(!drawing) return
 
 const r=canvas.getBoundingClientRect()
 
-points.push({
+let newPoint={
 x:e.clientX-r.left,
 y:e.clientY-r.top
-})
+}
+
+if(points.length>0){
+
+let last=points[points.length-1]
+
+if(dist(last,newPoint)<5) return
+
+}
+
+points.push(newPoint)
 
 draw()
 
