@@ -100,15 +100,12 @@ const ctx=canvas.getContext("2d")
 let scale=100
 
 let rooms=[]
-let drawingPoints=[]
 let drawing=false
+let points=[]
 
 let mouse={x:0,y:0}
 
-let dragVertex=null
-let dragRoom=null
-
-// ---------- utilidades ----------
+// ---------------- UTILIDADES ----------------
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -143,74 +140,22 @@ return{x:x/v.length,y:y/v.length}
 
 }
 
-function pointInside(point,poly){
+// ---------------- MOUSE ----------------
 
-let inside=false
+canvas.onclick=e=>{
 
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>point.y)!=(yj>point.y)) &&
-(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
-
-if(intersect) inside=!inside
-
-}
-
-return inside
-
-}
-
-// ---------- mouse ----------
-
-canvas.onmousedown=e=>{
+if(!drawing) return
 
 const r=canvas.getBoundingClientRect()
 
-const p={
+let p={
 x:e.clientX-r.left,
 y:e.clientY-r.top
 }
 
-mouse=p
+points.push(p)
 
-if(drawing){
-
-drawingPoints.push({...p})
 draw()
-return
-
-}
-
-for(let room of rooms){
-
-for(let v of room.v){
-
-if(dist(v,p)<10){
-dragVertex=v
-return
-}
-
-}
-
-}
-
-for(let room of rooms){
-
-if(pointInside(p,room.v)){
-
-dragRoom={
-room:room,
-start:p
-}
-
-return
-
-}
-
-}
 
 }
 
@@ -223,52 +168,22 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 }
 
-if(dragVertex){
-
-dragVertex.x=mouse.x
-dragVertex.y=mouse.y
-
-}
-
-if(dragRoom){
-
-let dx=mouse.x-dragRoom.start.x
-let dy=mouse.y-dragRoom.start.y
-
-dragRoom.start=mouse
-
-for(let v of dragRoom.room.v){
-
-v.x+=dx
-v.y+=dy
-
-}
-
-}
-
 draw()
 
 }
 
-canvas.onmouseup=()=>{
-
-dragVertex=null
-dragRoom=null
-
-}
-
-// ---------- acciones ----------
+// ---------------- ACCIONES ----------------
 
 function startRoom(){
 
 drawing=true
-drawingPoints=[]
+points=[]
 
 }
 
 function closeRoom(){
 
-if(drawingPoints.length<3) return
+if(points.length<3) return
 
 let name=prompt("Nombre de la estancia","estancia")
 
@@ -276,11 +191,11 @@ if(!name) name="estancia"
 
 rooms.push({
 name:name,
-v:[...drawingPoints]
+v:[...points]
 })
 
+points=[]
 drawing=false
-drawingPoints=[]
 
 updatePanel()
 draw()
@@ -289,17 +204,17 @@ draw()
 
 function undoPoint(){
 
-if(drawingPoints.length)
-drawingPoints.pop()
-
+if(points.length>0){
+points.pop()
 draw()
+}
 
 }
 
 function resetAll(){
 
 rooms=[]
-drawingPoints=[]
+points=[]
 drawing=false
 
 updatePanel()
@@ -307,7 +222,7 @@ draw()
 
 }
 
-// ---------- dibujo ----------
+// ---------------- DIBUJO ----------------
 
 function drawVertex(p){
 
@@ -323,9 +238,8 @@ function drawPolygon(v){
 ctx.beginPath()
 ctx.moveTo(v[0].x,v[0].y)
 
-for(let i=1;i<v.length;i++){
+for(let i=1;i<v.length;i++)
 ctx.lineTo(v[i].x,v[i].y)
-}
 
 ctx.closePath()
 
@@ -350,19 +264,24 @@ let d=dist(p1,p2)/scale
 
 ctx.fillStyle="black"
 ctx.textAlign="center"
-
 ctx.fillText(d.toFixed(2)+" m",midX,midY)
 
 }
 
 }
 
-function drawPreviewMeasure(){
+function drawPreview(){
 
 if(!drawing) return
-if(drawingPoints.length==0) return
+if(points.length===0) return
 
-let last=drawingPoints[drawingPoints.length-1]
+let last=points[points.length-1]
+
+ctx.beginPath()
+ctx.moveTo(last.x,last.y)
+ctx.lineTo(mouse.x,mouse.y)
+ctx.strokeStyle="#2b83ff"
+ctx.stroke()
 
 let midX=(last.x+mouse.x)/2
 let midY=(last.y+mouse.y)/2
@@ -370,8 +289,6 @@ let midY=(last.y+mouse.y)/2
 let d=dist(last,mouse)/scale
 
 ctx.fillStyle="black"
-ctx.textAlign="center"
-
 ctx.fillText(d.toFixed(2)+" m",midX,midY)
 
 }
@@ -390,40 +307,22 @@ let c=centroid(r.v)
 let area=polygonArea(r.v)/(scale*scale)
 
 ctx.fillStyle="black"
-ctx.textAlign="center"
-
 ctx.fillText(area.toFixed(2)+" m²",c.x,c.y)
 
 }
 
 if(drawing){
 
-ctx.beginPath()
-
-if(drawingPoints.length){
-
-ctx.moveTo(drawingPoints[0].x,drawingPoints[0].y)
-
-for(let i=1;i<drawingPoints.length;i++)
-ctx.lineTo(drawingPoints[i].x,drawingPoints[i].y)
-
-ctx.lineTo(mouse.x,mouse.y)
-
-}
-
-ctx.strokeStyle="#2b83ff"
-ctx.stroke()
-
-for(let p of drawingPoints)
+for(let p of points)
 drawVertex(p)
 
-}
-
-drawPreviewMeasure()
+drawPreview()
 
 }
 
-// ---------- panel ----------
+}
+
+// ---------------- PANEL ----------------
 
 function updatePanel(){
 
@@ -433,6 +332,7 @@ let total=0
 for(let r of rooms){
 
 let area=polygonArea(r.v)/(scale*scale)
+
 total+=area
 
 html+=`
