@@ -40,6 +40,7 @@ font-weight:bold;
 .orange{background:#ff9800}
 .red{background:#e53935}
 .yellow{background:#ffc107;color:black}
+.purple{background:#7e57c2}
 
 #layout{
 display:flex;
@@ -65,11 +66,6 @@ font-size:12px;
 pointer-events:none;
 }
 
-#snapIndicator{
-margin-left:20px;
-font-weight:bold;
-}
-
 </style>
 </head>
 
@@ -91,7 +87,7 @@ Escala px/m
 <button class="yellow" onclick="zoomOut()">−</button>
 <button class="yellow" onclick="centerView()">Centrar</button>
 
-<span id="snapIndicator">SNAP OFF</span>
+<button id="snapButton" class="purple" onclick="toggleSnap()">SNAP OFF</button>
 
 </div>
 
@@ -124,7 +120,7 @@ Total: <span id="totalArea">0</span> m²
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 const cursor=document.getElementById("cursor")
-const snapIndicator=document.getElementById("snapIndicator")
+const snapButton=document.getElementById("snapButton")
 
 let scale=100
 
@@ -145,17 +141,15 @@ let dragRoom=null
 
 let snapEnabled=false
 
-document.addEventListener("keydown",function(e){
-
-if(e.key==="s" || e.key==="S"){
+function toggleSnap(){
 
 snapEnabled=!snapEnabled
 
-snapIndicator.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
+snapButton.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
 
 }
 
-})
+/* matemáticas */
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -238,6 +232,8 @@ return inside
 
 }
 
+/* SNAP */
+
 function snapPoint(point){
 
 if(!snapEnabled) return point
@@ -295,6 +291,8 @@ return point
 
 }
 
+/* cámara */
+
 function screenToWorld(p){
 
 return{
@@ -303,6 +301,8 @@ y:(p.y-camera.y)/camera.zoom
 }
 
 }
+
+/* eventos */
 
 canvas.onmousedown=e=>{
 
@@ -407,6 +407,8 @@ dragRoom=null
 
 }
 
+/* cursor */
+
 function updateCursor(){
 
 if(!drawing || current.length===0){
@@ -428,6 +430,8 @@ let d=dist(last,mouse)/scale
 cursor.innerText=d.toFixed(2)+" m"
 
 }
+
+/* controles */
 
 function newRoom(){
 
@@ -494,6 +498,8 @@ camera.y=canvas.height/2
 draw()
 
 }
+
+/* dibujo */
 
 function draw(){
 
@@ -609,6 +615,8 @@ ctx.setLineDash([])
 ctx.restore()
 
 }
+
+/* panel */
 
 function updateList(){
 
