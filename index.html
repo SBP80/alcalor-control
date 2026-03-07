@@ -40,7 +40,6 @@ font-weight:bold;
 .orange{background:#ff9800}
 .red{background:#e53935}
 .yellow{background:#ffc107;color:black}
-.purple{background:#7e57c2}
 
 #layout{
 display:flex;
@@ -78,8 +77,6 @@ Escala px/m
 <button class="yellow" onclick="zoomOut()">−</button>
 <button class="yellow" onclick="centerView()">Centrar</button>
 
-<button id="snapButton" class="purple" onclick="toggleSnap()">SNAP OFF</button>
-
 </div>
 
 <div id="layout">
@@ -104,7 +101,6 @@ Total: <span id="totalArea">0</span> m²
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-const snapButton=document.getElementById("snapButton")
 
 let scale=100
 let camera={x:0,y:0,zoom:1}
@@ -117,15 +113,6 @@ let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
-
-let snapEnabled=false
-
-function toggleSnap(){
-
-snapEnabled=!snapEnabled
-snapButton.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
-
-}
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -192,24 +179,6 @@ return inside
 
 }
 
-function snapPoint(p){
-
-if(!snapEnabled) return p
-
-for(let r of rooms){
-
-for(let v of r.v){
-
-if(dist(p,v)<15) return v
-
-}
-
-}
-
-return p
-
-}
-
 function screenToWorld(p){
 
 return{
@@ -227,8 +196,6 @@ let p=screenToWorld({
 x:e.clientX-r.left,
 y:e.clientY-r.top
 })
-
-p=snapPoint(p)
 
 mouse=p
 
@@ -281,7 +248,7 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 })
 
-mouse=snapPoint(p)
+mouse=p
 
 if(dragVertex){
 
@@ -473,8 +440,20 @@ ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
 
 if(current.length){
 
-let temp=[...current,mouse]
-drawPolygon(temp)
+ctx.beginPath()
+ctx.moveTo(current[0].x,current[0].y)
+
+for(let i=1;i<current.length;i++){
+
+ctx.lineTo(current[i].x,current[i].y)
+
+}
+
+ctx.lineTo(mouse.x,mouse.y)
+
+ctx.strokeStyle="#2b83ff"
+ctx.lineWidth=2
+ctx.stroke()
 
 }
 
