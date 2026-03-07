@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🔥 ALLCALOR PRO</title>
+<title>ALLCALOR PRO</title>
 
 <style>
 
@@ -69,7 +69,7 @@ Escala px/m
 
 <button class="green" onclick="startRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
-<button class="orange" onclick="undoPoint()">Deshacer</button>
+<button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
 </div>
@@ -101,29 +101,36 @@ let scale=100
 let rooms=[]
 let drawing=false
 let points=[]
-
 let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
 
-function dist(a,b){
+const MIN_DIST=10
+
+function distance(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
+}
+
+function normalizeAngle(a){
+a=a%360
+if(a<0)a+=360
+return a
 }
 
 function polygonArea(v){
 
-let sum=0
+let area=0
 
 for(let i=0;i<v.length;i++){
 
 let j=(i+1)%v.length
 
-sum+=v[i].x*v[j].y-v[j].x*v[i].y
+area+=v[i].x*v[j].y-v[j].x*v[i].y
 
 }
 
-return Math.abs(sum/2)
+return Math.abs(area/2)
 
 }
 
@@ -151,16 +158,16 @@ let aby=a.y-b.y
 let cbx=c.x-b.x
 let cby=c.y-b.y
 
-let mag1=Math.sqrt(abx*abx+aby*aby)
-let mag2=Math.sqrt(cbx*cbx+cby*cby)
-
-if(mag1===0 || mag2===0) return 0
-
 let dot=abx*cbx+aby*cby
+
+let mag1=Math.hypot(abx,aby)
+let mag2=Math.hypot(cbx,cby)
+
+if(mag1===0||mag2===0)return 0
 
 let ang=Math.acos(dot/(mag1*mag2))*180/Math.PI
 
-return ang
+return normalizeAngle(ang)
 
 }
 
@@ -170,13 +177,13 @@ let inside=false
 
 for(let i=0,j=poly.length-1;i<poly.length;j=i++){
 
-let xi=poly[i].x, yi=poly[i].y
-let xj=poly[j].x, yj=poly[j].y
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
 
 let intersect=((yi>y)!=(yj>y))
 &&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
 
-if(intersect) inside=!inside
+if(intersect)inside=!inside
 
 }
 
@@ -195,13 +202,11 @@ mouse={x,y}
 
 for(let ri=0;ri<rooms.length;ri++){
 
-let room=rooms[ri]
+for(let vi=0;vi<rooms[ri].v.length;vi++){
 
-for(let vi=0;vi<room.v.length;vi++){
+let p=rooms[ri].v[vi]
 
-let p=room.v[vi]
-
-if(dist(p,mouse)<10){
+if(distance(p,mouse)<10){
 
 dragVertex={room:ri,index:vi}
 return
@@ -246,10 +251,11 @@ mouse={x,y}
 
 if(dragVertex){
 
-rooms[dragVertex.room].v[dragVertex.index].x=x
-rooms[dragVertex.room].v[dragVertex.index].y=y
+let v=rooms[dragVertex.room].v
 
-updatePanel()
+v[dragVertex.index].x=x
+v[dragVertex.index].y=y
+
 draw()
 
 return
@@ -277,11 +283,11 @@ draw()
 
 canvas.onclick=e=>{
 
-if(!drawing) return
+if(!drawing)return
 
 const r=canvas.getBoundingClientRect()
 
-let newPoint={
+let p={
 x:e.clientX-r.left,
 y:e.clientY-r.top
 }
@@ -290,11 +296,11 @@ if(points.length>0){
 
 let last=points[points.length-1]
 
-if(dist(last,newPoint)<5) return
+if(distance(last,p)<MIN_DIST)return
 
 }
 
-points.push(newPoint)
+points.push(p)
 
 draw()
 
@@ -309,7 +315,7 @@ points=[]
 
 function closeRoom(){
 
-if(points.length<3) return
+if(points.length<3)return
 
 let name=prompt("Nombre estancia","estancia")
 
@@ -326,7 +332,7 @@ draw()
 
 }
 
-function undoPoint(){
+function undo(){
 
 points.pop()
 draw()
@@ -382,40 +388,17 @@ drawVertex(p)
 let ang=angle(prev,p,next)
 
 ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",p.x+8,p.y-8)
+ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
 
 let midX=(p.x+next.x)/2
 let midY=(p.y+next.y)/2
 
-let d=dist(p,next)/scale
+let d=distance(p,next)/scale
 
 ctx.fillStyle="black"
 ctx.fillText(d.toFixed(2)+" m",midX,midY)
 
 }
-
-}
-
-function drawPreview(){
-
-if(!drawing) return
-if(points.length===0) return
-
-let last=points[points.length-1]
-
-ctx.beginPath()
-ctx.moveTo(last.x,last.y)
-ctx.lineTo(mouse.x,mouse.y)
-ctx.strokeStyle="#2b83ff"
-ctx.stroke()
-
-let midX=(last.x+mouse.x)/2
-let midY=(last.y+mouse.y)/2
-
-let d=dist(last,mouse)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",midX,midY)
 
 }
 
@@ -442,7 +425,21 @@ if(drawing){
 for(let p of points)
 drawVertex(p)
 
-drawPreview()
+if(points.length>0){
+
+let last=points[points.length-1]
+
+ctx.beginPath()
+ctx.moveTo(last.x,last.y)
+ctx.lineTo(mouse.x,mouse.y)
+ctx.stroke()
+
+let d=distance(last,mouse)/scale
+
+ctx.fillStyle="black"
+ctx.fillText(d.toFixed(2)+" m",(last.x+mouse.x)/2,(last.y+mouse.y)/2)
+
+}
 
 }
 
@@ -456,6 +453,7 @@ let total=0
 for(let r of rooms){
 
 let area=polygonArea(r.v)/(scale*scale)
+
 total+=area
 
 html+=`
