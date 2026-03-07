@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🔥 ALLCALOR PRO</title>
+<title>ALLCALOR PRO</title>
 
 <style>
 
@@ -124,6 +124,7 @@ let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
+let dragStart=null
 
 let zoomLevel=1
 let offsetX=0
@@ -133,17 +134,11 @@ function scale(){
 return parseFloat(document.getElementById("scale").value)
 }
 
-function worldToScreen(x,y){
+function getMouse(e){
+const r=canvas.getBoundingClientRect()
 return{
-x:(x*scale()*zoomLevel)+offsetX,
-y:(y*scale()*zoomLevel)+offsetY
-}
-}
-
-function screenToWorld(x,y){
-return{
-x:(x-offsetX)/(scale()*zoomLevel),
-y:(y-offsetY)/(scale()*zoomLevel)
+x:(e.clientX-r.left-offsetX)/(scale()*zoomLevel),
+y:(e.clientY-r.top-offsetY)/(scale()*zoomLevel)
 }
 }
 
@@ -151,28 +146,15 @@ canvas.addEventListener("mousemove",move)
 canvas.addEventListener("mousedown",start)
 canvas.addEventListener("mouseup",end)
 
-function getMouse(e){
-
-const r=canvas.getBoundingClientRect()
-
-return screenToWorld(
-e.clientX-r.left,
-e.clientY-r.top
-)
-
-}
-
 function start(e){
 
 let p=getMouse(e)
 mouse=p
 
 if(drawing){
-
 current.push({x:p.x,y:p.y})
 draw()
 return
-
 }
 
 for(let r of rooms){
@@ -182,12 +164,16 @@ for(let i=0;i<r.v.length;i++){
 let v=r.v[i]
 
 if(Math.hypot(v.x-p.x,v.y-p.y)<0.1){
-
 dragVertex={room:r,index:i}
 return
+}
 
 }
 
+if(pointInPolygon(p,r.v)){
+dragRoom=r
+dragStart=p
+return
 }
 
 }
@@ -196,15 +182,11 @@ return
 
 function move(e){
 
-const rect=canvas.getBoundingClientRect()
-
 let p=getMouse(e)
 mouse=p
 
-hud.style.left=(e.clientX-rect.left+15)+"px"
-hud.style.top=(e.clientY-rect.top+15)+"px"
-
-/* RECTIFICAR VERTICE */
+hud.style.left=(e.clientX+15)+"px"
+hud.style.top=(e.clientY+15)+"px"
 
 if(dragVertex){
 
@@ -214,19 +196,22 @@ let i=dragVertex.index
 r.v[i].x=p.x
 r.v[i].y=p.y
 
-let prev=r.v[(i-1+r.v.length)%r.v.length]
-let next=r.v[(i+1)%r.v.length]
-let cur=r.v[i]
+draw()
+return
 
-let d1=Math.hypot(cur.x-prev.x,cur.y-prev.y)
-let d2=Math.hypot(next.x-cur.x,next.y-cur.y)
+}
 
-let ang=angle(prev,cur,next)
+if(dragRoom){
 
-hud.innerText=
-d1.toFixed(2)+" m | "+
-d2.toFixed(2)+" m | "+
-ang.toFixed(1)+"°"
+let dx=p.x-dragStart.x
+let dy=p.y-dragStart.y
+
+for(let v of dragRoom.v){
+v.x+=dx
+v.y+=dy
+}
+
+dragStart=p
 
 draw()
 return
@@ -239,6 +224,29 @@ draw()
 
 function end(){
 dragVertex=null
+dragRoom=null
+}
+
+function pointInPolygon(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x
+let yi=poly[i].y
+let xj=poly[j].x
+let yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
+
+}
+
+return inside
+
 }
 
 function zoom(f){
@@ -262,8 +270,12 @@ function closeRoom(){
 
 if(current.length<3)return
 
+let name=prompt("Nombre de la estancia")
+
+if(!name)name="Estancia"
+
 rooms.push({
-name:"h"+(rooms.length+1),
+name:name,
 v:[...current]
 })
 
@@ -316,15 +328,10 @@ let poly=r.v
 
 ctx.beginPath()
 
-let p=worldToScreen(poly[0].x,poly[0].y)
-ctx.moveTo(p.x,p.y)
+ctx.moveTo(poly[0].x*scale(),poly[0].y*scale())
 
-for(let i=1;i<poly.length;i++){
-
-let q=worldToScreen(poly[i].x,poly[i].y)
-ctx.lineTo(q.x,q.y)
-
-}
+for(let i=1;i<poly.length;i++)
+ctx.lineTo(poly[i].x*scale(),poly[i].y*scale())
 
 ctx.closePath()
 
@@ -335,92 +342,43 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-/* vertices */
-
 for(let v of poly){
 
-let p=worldToScreen(v.x,v.y)
-
 ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.arc(v.x*scale(),v.y*scale(),5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
 }
 
-/* medidas */
-
-ctx.fillStyle="black"
-ctx.font="12px Arial"
-
-for(let i=0;i<poly.length;i++){
-
-let j=(i+1)%poly.length
-
-let dx=poly[j].x-poly[i].x
-let dy=poly[j].y-poly[i].y
-
-let dist=Math.hypot(dx,dy)
-
-let mx=(poly[i].x+poly[j].x)/2
-let my=(poly[i].y+poly[j].y)/2
-
-let p=worldToScreen(mx,my)
-
-ctx.fillText(dist.toFixed(2)+" m",p.x,p.y)
-
 }
-
-/* angulos */
-
-ctx.fillStyle="orange"
-
-for(let i=0;i<poly.length;i++){
-
-let prev=poly[(i-1+poly.length)%poly.length]
-let cur=poly[i]
-let next=poly[(i+1)%poly.length]
-
-let ang=angle(prev,cur,next)
-
-let p=worldToScreen(cur.x,cur.y)
-
-ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
-
-}
-
-}
-
-/* dibujo en curso */
 
 if(current.length){
 
 let last=current[current.length-1]
 
-let p1=worldToScreen(last.x,last.y)
-let p2=worldToScreen(mouse.x,mouse.y)
-
 ctx.beginPath()
-ctx.moveTo(p1.x,p1.y)
-ctx.lineTo(p2.x,p2.y)
+ctx.moveTo(last.x*scale(),last.y*scale())
+ctx.lineTo(mouse.x*scale(),mouse.y*scale())
 ctx.setLineDash([6,6])
 ctx.stroke()
 ctx.setLineDash([])
+
+ctx.beginPath()
+ctx.arc(mouse.x*scale(),mouse.y*scale(),5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
 
 let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
 
 let ang=0
 
 if(current.length>1){
-
 let prev=current[current.length-2]
 ang=angle(prev,last,mouse)
-
 }
 
-hud.innerText=
-dist.toFixed(2)+" m | "+
-ang.toFixed(1)+"°"
+hud.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 }
 
@@ -437,10 +395,8 @@ let v=r.v
 let area=0
 
 for(let i=0;i<v.length;i++){
-
 let j=(i+1)%v.length
 area+=v[i].x*v[j].y-v[j].x*v[i].y
-
 }
 
 area=Math.abs(area/2)
@@ -448,10 +404,8 @@ area=Math.abs(area/2)
 let per=0
 
 for(let i=0;i<v.length;i++){
-
 let j=(i+1)%v.length
 per+=Math.hypot(v[j].x-v[i].x,v[j].y-v[i].y)
-
 }
 
 total+=area
