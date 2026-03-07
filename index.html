@@ -130,35 +130,12 @@ function screenToMeters(px){
 return px/scale()
 }
 
-function snapAngle(last,mouse){
-
-let dx=mouse.x-last.x
-let dy=mouse.y-last.y
-
-let ang=Math.atan2(dy,dx)
-
-let step=Math.PI/2
-
-ang=Math.round(ang/step)*step
-
-let dist=Math.sqrt(dx*dx+dy*dy)
-
-return{
-x:last.x+Math.cos(ang)*dist,
-y:last.y+Math.sin(ang)*dist
-}
-
-}
-
 canvas.addEventListener("mousemove",e=>{
 
 const rect=canvas.getBoundingClientRect()
 
-const x=e.clientX-rect.left
-const y=e.clientY-rect.top
-
-mouse.x=screenToMeters(x)
-mouse.y=screenToMeters(y)
+mouse.x=screenToMeters(e.clientX-rect.left)
+mouse.y=screenToMeters(e.clientY-rect.top)
 
 draw()
 
@@ -168,11 +145,8 @@ canvas.addEventListener("mousedown",e=>{
 
 const rect=canvas.getBoundingClientRect()
 
-const x=e.clientX-rect.left
-const y=e.clientY-rect.top
-
-const mx=screenToMeters(x)
-const my=screenToMeters(y)
+let mx=screenToMeters(e.clientX-rect.left)
+let my=screenToMeters(e.clientY-rect.top)
 
 if(drawing){
 
@@ -185,10 +159,8 @@ draw()
 })
 
 function newRoom(){
-
 drawing=true
 current=[]
-
 }
 
 function closeRoom(){
@@ -209,12 +181,10 @@ draw()
 }
 
 function undo(){
-
 if(current.length>0){
 current.pop()
 draw()
 }
-
 }
 
 function reset(){
@@ -298,20 +268,16 @@ for(let r of rooms){
 
 ctx.beginPath()
 
-let p0=r.v[0]
-
 ctx.moveTo(
-metersToScreen(p0.x),
-metersToScreen(p0.y)
+metersToScreen(r.v[0].x),
+metersToScreen(r.v[0].y)
 )
 
 for(let i=1;i<r.v.length;i++){
 
-let p=r.v[i]
-
 ctx.lineTo(
-metersToScreen(p.x),
-metersToScreen(p.y)
+metersToScreen(r.v[i].x),
+metersToScreen(r.v[i].y)
 )
 
 }
@@ -332,7 +298,6 @@ if(current.length){
 for(let p of current){
 
 ctx.beginPath()
-
 ctx.arc(
 metersToScreen(p.x),
 metersToScreen(p.y),
@@ -340,7 +305,6 @@ metersToScreen(p.y),
 0,
 Math.PI*2
 )
-
 ctx.fillStyle="red"
 ctx.fill()
 
@@ -348,18 +312,15 @@ ctx.fill()
 
 let last=current[current.length-1]
 
-let snapped=snapAngle(last,mouse)
-
 ctx.beginPath()
-
 ctx.moveTo(
 metersToScreen(last.x),
 metersToScreen(last.y)
 )
 
 ctx.lineTo(
-metersToScreen(snapped.x),
-metersToScreen(snapped.y)
+metersToScreen(mouse.x),
+metersToScreen(mouse.y)
 )
 
 ctx.setLineDash([6,6])
@@ -367,7 +328,7 @@ ctx.strokeStyle="#444"
 ctx.stroke()
 ctx.setLineDash([])
 
-let dist=Math.hypot(snapped.x-last.x,snapped.y-last.y)
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
 
 document.getElementById("hud").innerText=dist.toFixed(2)+" m"
 
