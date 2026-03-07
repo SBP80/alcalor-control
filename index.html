@@ -115,64 +115,148 @@ const ctx=canvas.getContext("2d")
 let rooms=[]
 let current=[]
 let drawing=true
+
 let mouse={x:0,y:0}
+
+let dragVertex=null
+let dragRoom=null
 
 function scale(){
 return parseFloat(document.getElementById("scale").value)
 }
 
-function metersToScreen(m){
-return m*scale()
+function toScreen(v){
+return v*scale()
 }
 
-function screenToMeters(px){
+function toMeters(px){
 return px/scale()
 }
 
-canvas.addEventListener("mousemove",e=>{
+canvas.addEventListener("mousemove",move)
+canvas.addEventListener("mousedown",start)
+canvas.addEventListener("mouseup",end)
 
-const rect=canvas.getBoundingClientRect()
+function getMouse(e){
 
-mouse.x=screenToMeters(e.clientX-rect.left)
-mouse.y=screenToMeters(e.clientY-rect.top)
+const r=canvas.getBoundingClientRect()
 
-draw()
+return{
+x:toMeters(e.clientX-r.left),
+y:toMeters(e.clientY-r.top)
+}
 
-})
+}
 
-canvas.addEventListener("mousedown",e=>{
+function start(e){
 
-const rect=canvas.getBoundingClientRect()
+let p=getMouse(e)
 
-let mx=screenToMeters(e.clientX-rect.left)
-let my=screenToMeters(e.clientY-rect.top)
+mouse=p
 
 if(drawing){
 
-current.push({x:mx,y:my})
+current.push({x:p.x,y:p.y})
+draw()
+return
+
+}
+
+for(let r of rooms){
+
+for(let v of r.v){
+
+if(Math.hypot(v.x-p.x,v.y-p.y)<0.1){
+
+dragVertex=v
+return
+
+}
+
+}
+
+}
+
+for(let r of rooms){
+
+if(pointInside(p,r.v)){
+
+dragRoom={room:r,start:p}
+return
+
+}
+
+}
+
+}
+
+function move(e){
+
+let p=getMouse(e)
+mouse=p
+
+if(dragVertex){
+
+dragVertex.x=p.x
+dragVertex.y=p.y
+
+updatePanel()
+draw()
+return
+
+}
+
+if(dragRoom){
+
+let dx=p.x-dragRoom.start.x
+let dy=p.y-dragRoom.start.y
+
+dragRoom.start=p
+
+for(let v of dragRoom.room.v){
+
+v.x+=dx
+v.y+=dy
+
+}
+
+updatePanel()
+draw()
+return
 
 }
 
 draw()
 
-})
+}
+
+function end(){
+
+dragVertex=null
+dragRoom=null
+
+}
 
 function newRoom(){
+
 drawing=true
 current=[]
+
 }
 
 function closeRoom(){
 
 if(current.length<3)return
 
+let name=prompt("Nombre estancia")
+
 rooms.push({
-name:"h"+(rooms.length+1),
+name:name||"estancia",
 v:[...current]
 })
 
-current=[]
 drawing=false
+current=[]
 
 updatePanel()
 draw()
@@ -180,10 +264,10 @@ draw()
 }
 
 function undo(){
-if(current.length>0){
+
 current.pop()
 draw()
-}
+
 }
 
 function reset(){
@@ -259,31 +343,36 @@ document.getElementById("total").innerHTML="Total: "+total.toFixed(2)+" m²"
 
 }
 
-function drawWalls(poly){
+function angle(a,b,c){
 
-ctx.font="14px Arial"
-ctx.fillStyle="black"
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-
+Math.atan2(a.y-b.y,a.x-b.x)
 
-for(let i=0;i<poly.length;i++){
+ang=Math.abs(ang*180/Math.PI)
 
-let j=(i+1)%poly.length
+if(ang>180)ang=360-ang
 
-let x1=metersToScreen(poly[i].x)
-let y1=metersToScreen(poly[i].y)
-
-let x2=metersToScreen(poly[j].x)
-let y2=metersToScreen(poly[j].y)
-
-let midX=(x1+x2)/2
-let midY=(y1+y2)/2
-
-let dist=Math.hypot(
-poly[j].x-poly[i].x,
-poly[j].y-poly[i].y)
-
-ctx.fillText(dist.toFixed(2)+" m",midX,midY)
+return ang
 
 }
+
+function pointInside(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
+
+}
+
+return inside
 
 }
 
@@ -296,15 +385,15 @@ for(let r of rooms){
 ctx.beginPath()
 
 ctx.moveTo(
-metersToScreen(r.v[0].x),
-metersToScreen(r.v[0].y)
+toScreen(r.v[0].x),
+toScreen(r.v[0].y)
 )
 
 for(let i=1;i<r.v.length;i++){
 
 ctx.lineTo(
-metersToScreen(r.v[i].x),
-metersToScreen(r.v[i].y)
+toScreen(r.v[i].x),
+toScreen(r.v[i].y)
 )
 
 }
@@ -318,22 +407,56 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-drawWalls(r.v)
+for(let v of r.v){
+
+ctx.beginPath()
+ctx.arc(toScreen(v.x),toScreen(v.y),5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+for(let i=0;i<r.v.length;i++){
+
+let j=(i+1)%r.v.length
+
+let mx=(r.v[i].x+r.v[j].x)/2
+let my=(r.v[i].y+r.v[j].y)/2
+
+let d=Math.hypot(
+r.v[j].x-r.v[i].x,
+r.v[j].y-r.v[i].y)
+
+ctx.fillStyle="black"
+ctx.fillText(d.toFixed(2)+" m",toScreen(mx),toScreen(my))
+
+}
+
+for(let i=0;i<r.v.length;i++){
+
+let prev=r.v[(i-1+r.v.length)%r.v.length]
+let cur=r.v[i]
+let next=r.v[(i+1)%r.v.length]
+
+let ang=angle(prev,cur,next)
+
+ctx.fillStyle="orange"
+ctx.fillText(
+ang.toFixed(0)+"°",
+toScreen(cur.x)+6,
+toScreen(cur.y)-6
+)
+
+}
 
 }
 
 if(current.length){
 
-for(let p of current){
+for(let v of current){
 
 ctx.beginPath()
-ctx.arc(
-metersToScreen(p.x),
-metersToScreen(p.y),
-4,
-0,
-Math.PI*2
-)
+ctx.arc(toScreen(v.x),toScreen(v.y),5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
@@ -342,15 +465,8 @@ ctx.fill()
 let last=current[current.length-1]
 
 ctx.beginPath()
-ctx.moveTo(
-metersToScreen(last.x),
-metersToScreen(last.y)
-)
-
-ctx.lineTo(
-metersToScreen(mouse.x),
-metersToScreen(mouse.y)
-)
+ctx.moveTo(toScreen(last.x),toScreen(last.y))
+ctx.lineTo(toScreen(mouse.x),toScreen(mouse.y))
 
 ctx.setLineDash([6,6])
 ctx.strokeStyle="#444"
