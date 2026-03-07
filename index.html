@@ -76,10 +76,6 @@ background:white;
 cursor:crosshair;
 }
 
-.point{
-fill:red;
-}
-
 </style>
 </head>
 
@@ -137,6 +133,7 @@ let offsetY=0
 let scale=1
 
 let isPanning=false
+let panStart=null
 
 let mouse={x:0,y:0}
 
@@ -161,6 +158,15 @@ const rect=canvas.getBoundingClientRect()
 mouse.x=e.clientX-rect.left
 mouse.y=e.clientY-rect.top
 
+if(isPanning && e.buttons===1){
+
+offsetX+=e.movementX
+offsetY+=e.movementY
+draw()
+return
+
+}
+
 if(drawing && currentRoom && currentRoom.length>0){
 
 const last=currentRoom[currentRoom.length-1]
@@ -183,15 +189,14 @@ draw()
 canvas.addEventListener("mousedown",e=>{
 
 if(isPanning){
-panStart={x:e.clientX,y:e.clientY}
 return
 }
 
 const w=world(mouse.x,mouse.y)
 
 if(drawing){
+
 currentRoom.push(w)
-}else{
 
 }
 
@@ -199,25 +204,39 @@ draw()
 
 })
 
-canvas.addEventListener("mouseup",e=>{
-
-})
-
 function newRoom(){
+
 drawing=true
 currentRoom=[]
 rooms.push(currentRoom)
+
 }
 
 function closeRoom(){
+
+if(!currentRoom) return
+
+if(currentRoom.length<3){
+alert("mínimo 3 puntos")
+return
+}
+
+currentRoom.push({...currentRoom[0]})
+
 drawing=false
 currentRoom=null
+
+draw()
+
 }
 
 function undo(){
 
-if(currentRoom && currentRoom.length>0)
+if(currentRoom && currentRoom.length>0){
+
 currentRoom.pop()
+
+}
 
 draw()
 
@@ -259,21 +278,7 @@ isPanning=!isPanning
 canvas.addEventListener("wheel",e=>{
 
 const delta=e.deltaY<0?1.1:0.9
-
 zoom(delta)
-
-})
-
-canvas.addEventListener("mousemove",e=>{
-
-if(isPanning && e.buttons===1){
-
-offsetX+=e.movementX
-offsetY+=e.movementY
-
-draw()
-
-}
 
 })
 
@@ -283,14 +288,19 @@ ctx.clearRect(0,0,canvas.width,canvas.height)
 
 for(let room of rooms){
 
+if(room.length<2) continue
+
 ctx.beginPath()
 
 for(let i=0;i<room.length;i++){
 
 const p=screen(room[i].x,room[i].y)
 
-if(i==0) ctx.moveTo(p.x,p.y)
-else ctx.lineTo(p.x,p.y)
+if(i===0){
+ctx.moveTo(p.x,p.y)
+}else{
+ctx.lineTo(p.x,p.y)
+}
 
 ctx.fillStyle="red"
 ctx.beginPath()
