@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
 <title>ALLCALOR PRO</title>
@@ -15,7 +16,7 @@ color:white;
 
 header{
 text-align:center;
-padding:14px;
+padding:15px;
 font-size:26px;
 font-weight:bold;
 }
@@ -83,17 +84,12 @@ font-weight:bold;
 
 <div id="toolbar">
 
-Escala <input type="number" value="100" id="scaleInput" style="width:70px">
+Escala <input type="number" value="100" style="width:70px">
 
-<button class="green" onclick="newRoom()">Nueva estancia</button>
+<button class="green" onclick="startRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
-
-<button onclick="zoom(1.2)">+</button>
-<button onclick="zoom(0.8)">-</button>
-<button onclick="resetView()">□</button>
-<button onclick="togglePan()">🖐</button>
 
 </div>
 
@@ -101,7 +97,6 @@ Escala <input type="number" value="100" id="scaleInput" style="width:70px">
 
 <div id="panel">
 <h3>ESTANCIAS</h3>
-<div id="roomsInfo"></div>
 </div>
 
 <div id="canvasContainer">
@@ -117,41 +112,15 @@ Escala <input type="number" value="100" id="scaleInput" style="width:70px">
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-
 const measure=document.getElementById("measure")
 
 canvas.width=window.innerWidth-200
 canvas.height=window.innerHeight-100
 
 let rooms=[]
-let currentRoom=null
-let drawing=false
+let current=null
 
 let mouse={x:0,y:0}
-
-let scale=1
-let offsetX=0
-let offsetY=0
-
-let pan=false
-
-function world(x,y){
-
-return{
-x:(x-offsetX)/scale,
-y:(y-offsetY)/scale
-}
-
-}
-
-function screen(x,y){
-
-return{
-x:x*scale+offsetX,
-y:y*scale+offsetY
-}
-
-}
 
 canvas.addEventListener("mousemove",e=>{
 
@@ -160,17 +129,15 @@ const rect=canvas.getBoundingClientRect()
 mouse.x=e.clientX-rect.left
 mouse.y=e.clientY-rect.top
 
-if(drawing && currentRoom && currentRoom.length>0){
+if(current && current.length>0){
 
-const last=currentRoom[currentRoom.length-1]
+let last=current[current.length-1]
 
-const w=world(mouse.x,mouse.y)
+let dx=mouse.x-last.x
+let dy=mouse.y-last.y
 
-const dx=w.x-last.x
-const dy=w.y-last.y
-
-const dist=Math.sqrt(dx*dx+dy*dy)/100
-const ang=Math.atan2(dy,dx)*180/Math.PI
+let dist=Math.sqrt(dx*dx+dy*dy)/100
+let ang=Math.atan2(dy,dx)*180/Math.PI
 
 measure.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
@@ -182,39 +149,33 @@ draw()
 
 canvas.addEventListener("mousedown",e=>{
 
-if(pan) return
+if(!current) return
 
-if(!drawing) return
-
-const w=world(mouse.x,mouse.y)
-
-currentRoom.push(w)
+current.push({x:mouse.x,y:mouse.y})
 
 draw()
 
 })
 
-function newRoom(){
+function startRoom(){
 
-currentRoom=[]
-rooms.push(currentRoom)
-drawing=true
+current=[]
+rooms.push(current)
 
 }
 
 function closeRoom(){
 
-if(!currentRoom) return
+if(!current) return
 
-if(currentRoom.length<3){
+if(current.length<3){
 alert("mínimo 3 puntos")
 return
 }
 
-currentRoom.push({...currentRoom[0]})
+current.push({...current[0]})
 
-drawing=false
-currentRoom=null
+current=null
 
 draw()
 
@@ -222,10 +183,9 @@ draw()
 
 function undo(){
 
-if(currentRoom && currentRoom.length>0){
+if(current && current.length>0){
 
-currentRoom.pop()
-
+current.pop()
 draw()
 
 }
@@ -235,33 +195,8 @@ draw()
 function resetAll(){
 
 rooms=[]
-currentRoom=null
-drawing=false
-
+current=null
 draw()
-
-}
-
-function zoom(f){
-
-scale*=f
-draw()
-
-}
-
-function resetView(){
-
-scale=1
-offsetX=0
-offsetY=0
-
-draw()
-
-}
-
-function togglePan(){
-
-pan=!pan
 
 }
 
@@ -269,26 +204,17 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-for(let room of rooms){
+for(let r of rooms){
 
-if(room.length<2) continue
+if(r.length<2) continue
 
 ctx.beginPath()
 
-for(let i=0;i<room.length;i++){
+ctx.moveTo(r[0].x,r[0].y)
 
-const p=screen(room[i].x,room[i].y)
+for(let i=1;i<r.length;i++){
 
-if(i==0){
-ctx.moveTo(p.x,p.y)
-}else{
-ctx.lineTo(p.x,p.y)
-}
-
-ctx.fillStyle="red"
-ctx.beginPath()
-ctx.arc(p.x,p.y,4,0,Math.PI*2)
-ctx.fill()
+ctx.lineTo(r[i].x,r[i].y)
 
 }
 
@@ -298,14 +224,25 @@ ctx.stroke()
 
 }
 
-if(drawing && currentRoom && currentRoom.length>0){
+for(let r of rooms){
 
-const last=currentRoom[currentRoom.length-1]
-
-const p=screen(last.x,last.y)
+for(let p of r){
 
 ctx.beginPath()
-ctx.moveTo(p.x,p.y)
+ctx.arc(p.x,p.y,4,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+}
+
+if(current && current.length>0){
+
+let last=current[current.length-1]
+
+ctx.beginPath()
+ctx.moveTo(last.x,last.y)
 ctx.lineTo(mouse.x,mouse.y)
 
 ctx.setLineDash([6,6])
