@@ -6,24 +6,19 @@
 
 <style>
 
-body{
-margin:0;
-font-family:Arial;
-background:#0f2b44;
-color:white;
-}
+body{margin:0;font-family:Arial;background:#0f2b44;color:white}
 
 header{
 background:#1b1b1b;
 padding:12px;
 text-align:center;
 font-size:24px;
-font-weight:bold;
+font-weight:bold
 }
 
 .toolbar{
 background:#173a5e;
-padding:10px;
+padding:10px
 }
 
 button{
@@ -32,7 +27,7 @@ padding:6px 12px;
 margin-right:6px;
 border-radius:4px;
 cursor:pointer;
-font-weight:bold;
+font-weight:bold
 }
 
 .green{background:#28a745}
@@ -41,19 +36,17 @@ font-weight:bold;
 .red{background:#e53935}
 .yellow{background:#ffc107;color:black}
 
-#layout{
-display:flex;
-}
+#layout{display:flex}
 
 #panel{
 width:220px;
 background:#1c3f63;
-padding:10px;
+padding:10px
 }
 
 canvas{
 background:#f4f1e8;
-cursor:crosshair;
+cursor:crosshair
 }
 
 </style>
@@ -82,15 +75,10 @@ Escala px/m
 <div id="layout">
 
 <div id="panel">
-
 <h3>Estancias</h3>
-
 <div id="rooms"></div>
-
 <hr>
-
 Total: <span id="totalArea">0</span> m²
-
 </div>
 
 <canvas id="canvas" width="1200" height="700"></canvas>
@@ -103,7 +91,6 @@ const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
 let scale=100
-let camera={x:0,y:0,zoom:1}
 
 let rooms=[]
 let current=[]
@@ -111,21 +98,8 @@ let drawing=false
 
 let mouse={x:0,y:0}
 
-let dragVertex=null
-let dragRoom=null
-
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
-}
-
-function angle(a,b,c){
-
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
-ang=Math.abs(ang*180/Math.PI)
-
-if(ang>180) ang=360-ang
-return ang
-
 }
 
 function polygonArea(v){
@@ -159,81 +133,19 @@ return{x:x/v.length,y:y/v.length}
 
 }
 
-function pointInside(point,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>point.y)!=(yj>point.y)) &&
-(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
-
-if(intersect) inside=!inside
-
-}
-
-return inside
-
-}
-
-function screenToWorld(p){
-
-return{
-x:(p.x-camera.x)/camera.zoom,
-y:(p.y-camera.y)/camera.zoom
-}
-
-}
-
 canvas.onmousedown=e=>{
 
-let r=canvas.getBoundingClientRect()
+const r=canvas.getBoundingClientRect()
 
-let p=screenToWorld({
+mouse={
 x:e.clientX-r.left,
 y:e.clientY-r.top
-})
-
-mouse=p
+}
 
 if(drawing){
 
-current.push(p)
+current.push({...mouse})
 draw()
-return
-
-}
-
-for(let room of rooms){
-
-for(let v of room.v){
-
-if(dist(v,p)<10){
-
-dragVertex=v
-return
-
-}
-
-}
-
-}
-
-for(let room of rooms){
-
-if(pointInside(p,room.v)){
-
-dragRoom={
-room:room,
-start:p
-}
-
-return
-
-}
 
 }
 
@@ -241,49 +153,14 @@ return
 
 canvas.onmousemove=e=>{
 
-let r=canvas.getBoundingClientRect()
+const r=canvas.getBoundingClientRect()
 
-let p=screenToWorld({
+mouse={
 x:e.clientX-r.left,
 y:e.clientY-r.top
-})
-
-mouse=p
-
-if(dragVertex){
-
-dragVertex.x=mouse.x
-dragVertex.y=mouse.y
-updateList()
-
-}
-
-if(dragRoom){
-
-let dx=mouse.x-dragRoom.start.x
-let dy=mouse.y-dragRoom.start.y
-
-dragRoom.start=mouse
-
-for(let v of dragRoom.room.v){
-
-v.x+=dx
-v.y+=dy
-
-}
-
-updateList()
-
 }
 
 draw()
-
-}
-
-canvas.onmouseup=()=>{
-
-dragVertex=null
-dragRoom=null
 
 }
 
@@ -296,12 +173,10 @@ current=[]
 
 function closeRoom(){
 
-if(current.length<3) return
-
-let name=prompt("Nombre estancia")
+if(current.length<3)return
 
 rooms.push({
-name:name||"estancia",
+name:"estancia",
 v:[...current]
 })
 
@@ -331,25 +206,18 @@ draw()
 
 }
 
-function zoomIn(){
+function zoomIn(){}
 
-camera.zoom*=1.2
-draw()
+function zoomOut(){}
 
-}
+function centerView(){}
 
-function zoomOut(){
+function drawVertex(p){
 
-camera.zoom/=1.2
-draw()
-
-}
-
-function centerView(){
-
-camera.x=canvas.width/2
-camera.y=canvas.height/2
-draw()
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
 
 }
 
@@ -359,9 +227,7 @@ ctx.beginPath()
 ctx.moveTo(v[0].x,v[0].y)
 
 for(let i=1;i<v.length;i++){
-
 ctx.lineTo(v[i].x,v[i].y)
-
 }
 
 ctx.closePath()
@@ -390,26 +256,8 @@ ctx.fillText(d.toFixed(2)+" m",mid.x,mid.y)
 
 }
 
-for(let i=0;i<v.length;i++){
-
-let a=v[(i-1+v.length)%v.length]
-let b=v[i]
-let c=v[(i+1)%v.length]
-
-let ang=angle(a,b,c)
-
-ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",b.x+5,b.y-5)
-
-}
-
 for(let p of v){
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
+drawVertex(p)
 }
 
 }
@@ -417,11 +265,6 @@ ctx.fill()
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
-
-ctx.save()
-
-ctx.translate(camera.x,camera.y)
-ctx.scale(camera.zoom,camera.zoom)
 
 for(let r of rooms){
 
@@ -433,8 +276,7 @@ let area=polygonArea(r.v)/scale/scale
 ctx.fillStyle="black"
 ctx.textAlign="center"
 
-ctx.fillText(r.name,c.x,c.y)
-ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
+ctx.fillText(area.toFixed(2)+" m²",c.x,c.y)
 
 }
 
@@ -444,20 +286,19 @@ ctx.beginPath()
 ctx.moveTo(current[0].x,current[0].y)
 
 for(let i=1;i<current.length;i++){
-
 ctx.lineTo(current[i].x,current[i].y)
-
 }
 
 ctx.lineTo(mouse.x,mouse.y)
 
 ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2
 ctx.stroke()
 
+for(let p of current){
+drawVertex(p)
 }
 
-ctx.restore()
+}
 
 }
 
@@ -469,24 +310,11 @@ let total=0
 for(let r of rooms){
 
 let area=polygonArea(r.v)/scale/scale
-let per=0
-
-for(let i=0;i<r.v.length;i++){
-
-let j=(i+1)%r.v.length
-per+=dist(r.v[i],r.v[j])
-
-}
-
-per/=scale
-
 total+=area
 
 html+=`
 <b>${r.name}</b><br>
-Área: ${area.toFixed(2)} m²<br>
-Perímetro: ${per.toFixed(2)} m
-<hr>
+Área: ${area.toFixed(2)} m²<br><hr>
 `
 
 }
