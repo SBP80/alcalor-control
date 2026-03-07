@@ -47,7 +47,7 @@ display:flex;
 }
 
 #panel{
-width:220px;
+width:230px;
 background:#1c3f63;
 padding:10px;
 }
@@ -104,9 +104,12 @@ Total: <span id="totalArea">0</span> m²
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
+
+const scaleInput=document.getElementById("scale")
 const snapButton=document.getElementById("snapButton")
 
 let scale=100
+
 let camera={x:0,y:0,zoom:1}
 
 let rooms=[]
@@ -119,6 +122,16 @@ let dragVertex=null
 let dragRoom=null
 
 let snapEnabled=false
+
+document.addEventListener("keydown",e=>{
+if(e.key==="Shift") lockAxis=true
+})
+
+document.addEventListener("keyup",e=>{
+if(e.key==="Shift") lockAxis=false
+})
+
+let lockAxis=false
 
 function toggleSnap(){
 snapEnabled=!snapEnabled
@@ -135,7 +148,7 @@ for(let i=0;i<v.length;i++){
 let j=(i+1)%v.length
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
 }
-return Math.abs(sum/2)
+return Math.abs(sum/2)/(scale*scale)
 }
 
 function perimeter(v){
@@ -144,7 +157,7 @@ for(let i=0;i<v.length;i++){
 let j=(i+1)%v.length
 p+=dist(v[i],v[j])
 }
-return p
+return p/scale
 }
 
 function centroid(v){
@@ -155,6 +168,17 @@ x+=p.x
 y+=p.y
 }
 return {x:x/v.length,y:y/v.length}
+}
+
+function angle(a,b,c){
+
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
+ang=Math.abs(ang*180/Math.PI)
+
+if(ang>180) ang=360-ang
+
+return ang
+
 }
 
 function pointInside(point,poly){
@@ -202,6 +226,8 @@ y:(p.y-camera.y)/camera.zoom
 }
 
 canvas.onmousedown=e=>{
+
+scale=parseFloat(scaleInput.value)
 
 let r=canvas.getBoundingClientRect()
 
@@ -257,12 +283,28 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 })
 
+if(lockAxis && current.length){
+
+let last=current[current.length-1]
+
+let dx=Math.abs(p.x-last.x)
+let dy=Math.abs(p.y-last.y)
+
+if(dx>dy) p.y=last.y
+else p.x=last.x
+
+}
+
+mouse=p
+
 if(dragVertex){
 
 dragVertex.x=p.x
 dragVertex.y=p.y
+
 draw()
 updateRooms()
+
 return
 
 }
@@ -283,6 +325,8 @@ draw()
 updateRooms()
 
 }
+
+draw()
 
 }
 
@@ -409,12 +453,37 @@ ctx.fill()
 ctx.strokeStyle="#4aa3ff"
 ctx.stroke()
 
-for(let v of r.v){
+for(let i=0;i<r.v.length;i++){
+
+let v=r.v[i]
 
 ctx.beginPath()
 ctx.arc(v.x,v.y,5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
+
+let prev=r.v[(i-1+r.v.length)%r.v.length]
+let next=r.v[(i+1)%r.v.length]
+
+let ang=angle(prev,v,next)
+
+ctx.fillStyle="red"
+ctx.fillText(ang.toFixed(0)+"°",v.x+6,v.y-6)
+
+}
+
+for(let i=0;i<r.v.length;i++){
+
+let a=r.v[i]
+let b=r.v[(i+1)%r.v.length]
+
+let midX=(a.x+b.x)/2
+let midY=(a.y+b.y)/2
+
+let len=dist(a,b)/scale
+
+ctx.fillStyle="black"
+ctx.fillText(len.toFixed(2)+" m",midX,midY)
 
 }
 
@@ -438,7 +507,16 @@ else ctx.lineTo(p.x,p.y)
 
 }
 
+ctx.lineTo(mouse.x,mouse.y)
+
 ctx.stroke()
+
+let last=current[current.length-1]
+
+let d=dist(last,mouse)/scale
+
+ctx.fillStyle="black"
+ctx.fillText(d.toFixed(2)+" m",(last.x+mouse.x)/2,(last.y+mouse.y)/2)
 
 }
 
