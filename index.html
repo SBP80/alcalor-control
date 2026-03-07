@@ -41,7 +41,14 @@ cursor:pointer;
 .blue{background:#2b83ff}
 .orange{background:#ff9800}
 .red{background:#e53935}
-.gray{background:#555}
+
+/* NUEVO COLOR ZOOM */
+
+.zoom{
+background:#ffd600;
+color:black;
+font-weight:bold;
+}
 
 #layout{
 display:flex;
@@ -88,9 +95,9 @@ Escala
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="reset()">Reiniciar</button>
 
-<button class="gray" onclick="zoom(1.2)">Zoom +</button>
-<button class="gray" onclick="zoom(0.8)">Zoom -</button>
-<button class="gray" onclick="centerView()">Centrar</button>
+<button class="zoom" onclick="zoom(1.2)">Zoom +</button>
+<button class="zoom" onclick="zoom(0.8)">Zoom -</button>
+<button class="zoom" onclick="centerView()">Centrar</button>
 
 </div>
 
@@ -423,18 +430,18 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
+/* ESTANCIAS */
+
 for(let r of rooms){
 
 ctx.beginPath()
 
 let p=worldToScreen(r.v[0].x,r.v[0].y)
-
 ctx.moveTo(p.x,p.y)
 
 for(let i=1;i<r.v.length;i++){
 
 let q=worldToScreen(r.v[i].x,r.v[i].y)
-
 ctx.lineTo(q.x,q.y)
 
 }
@@ -459,44 +466,53 @@ ctx.fill()
 
 }
 
-for(let i=0;i<r.v.length;i++){
-
-let j=(i+1)%r.v.length
-
-let mx=(r.v[i].x+r.v[j].x)/2
-let my=(r.v[i].y+r.v[j].y)/2
-
-let d=Math.hypot(
-r.v[j].x-r.v[i].x,
-r.v[j].y-r.v[i].y)
-
-let p=worldToScreen(mx,my)
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",p.x,p.y)
-
 }
 
-for(let i=0;i<r.v.length;i++){
-
-let prev=r.v[(i-1+r.v.length)%r.v.length]
-let cur=r.v[i]
-let next=r.v[(i+1)%r.v.length]
-
-let ang=angle(prev,cur,next)
-
-let p=worldToScreen(cur.x,cur.y)
-
-ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
-
-}
-
-}
+/* DIBUJO EN CURSO */
 
 if(current.length){
 
+for(let i=0;i<current.length;i++){
+
+let p=worldToScreen(current[i].x,current[i].y)
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+if(i>0){
+
+let p1=worldToScreen(current[i-1].x,current[i-1].y)
+
+ctx.beginPath()
+ctx.moveTo(p1.x,p1.y)
+ctx.lineTo(p.x,p.y)
+
+ctx.setLineDash([6,6])
+ctx.strokeStyle="#444"
+ctx.stroke()
+ctx.setLineDash([])
+
+}
+
+}
+
+/* LINEA HASTA CURSOR */
+
 let last=current[current.length-1]
+
+let p1=worldToScreen(last.x,last.y)
+let p2=worldToScreen(mouse.x,mouse.y)
+
+ctx.beginPath()
+ctx.moveTo(p1.x,p1.y)
+ctx.lineTo(p2.x,p2.y)
+
+ctx.setLineDash([6,6])
+ctx.strokeStyle="#444"
+ctx.stroke()
+ctx.setLineDash([])
 
 let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
 
@@ -510,18 +526,6 @@ ang=angle(prev,last,mouse)
 }
 
 hud.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
-
-let p1=worldToScreen(last.x,last.y)
-let p2=worldToScreen(mouse.x,mouse.y)
-
-ctx.beginPath()
-ctx.moveTo(p1.x,p1.y)
-ctx.lineTo(p2.x,p2.y)
-
-ctx.setLineDash([6,6])
-ctx.strokeStyle="#444"
-ctx.stroke()
-ctx.setLineDash([])
 
 }
 
