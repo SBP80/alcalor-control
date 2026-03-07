@@ -24,12 +24,14 @@ background:#12314a;
 padding:10px;
 border-radius:8px;
 margin-bottom:10px;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
 }
 
 button{
 border:none;
 padding:8px 12px;
-margin-right:6px;
 border-radius:5px;
 font-weight:bold;
 cursor:pointer;
@@ -39,6 +41,7 @@ cursor:pointer;
 .blue{background:#2b83ff}
 .orange{background:#ff9800}
 .red{background:#e53935}
+.gray{background:#555}
 
 #layout{
 display:flex;
@@ -60,13 +63,12 @@ cursor:crosshair;
 
 #hud{
 position:absolute;
-top:10px;
-left:50%;
-transform:translateX(-50%);
-background:rgba(0,0,0,0.6);
-padding:6px 12px;
+background:rgba(0,0,0,0.7);
+padding:4px 8px;
 border-radius:6px;
 font-weight:bold;
+font-size:14px;
+pointer-events:none;
 }
 
 </style>
@@ -78,13 +80,17 @@ font-weight:bold;
 
 <div class="toolbar">
 
-Escala (px por metro)
+Escala
 <input id="scale" type="number" value="100" style="width:70px">
 
 <button class="green" onclick="newRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="reset()">Reiniciar</button>
+
+<button class="gray" onclick="zoom(1.2)">Zoom +</button>
+<button class="gray" onclick="zoom(0.8)">Zoom -</button>
+<button class="gray" onclick="centerView()">Centrar</button>
 
 </div>
 
@@ -99,7 +105,7 @@ Escala (px por metro)
 
 <div style="position:relative">
 
-<div id="hud">0 m</div>
+<div id="hud">0 m | 0°</div>
 
 <canvas id="canvas" width="1100" height="650"></canvas>
 
@@ -111,6 +117,7 @@ Escala (px por metro)
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
+const hud=document.getElementById("hud")
 
 let rooms=[]
 let current=[]
@@ -121,16 +128,30 @@ let mouse={x:0,y:0}
 let dragVertex=null
 let dragRoom=null
 
+let zoomLevel=1
+let offsetX=0
+let offsetY=0
+
 function scale(){
 return parseFloat(document.getElementById("scale").value)
 }
 
-function toScreen(v){
-return v*scale()
+function worldToScreen(x,y){
+
+return{
+x:(x*scale()*zoomLevel)+offsetX,
+y:(y*scale()*zoomLevel)+offsetY
 }
 
-function toMeters(px){
-return px/scale()
+}
+
+function screenToWorld(x,y){
+
+return{
+x:(x-offsetX)/(scale()*zoomLevel),
+y:(y-offsetY)/(scale()*zoomLevel)
+}
+
 }
 
 canvas.addEventListener("mousemove",move)
@@ -141,10 +162,10 @@ function getMouse(e){
 
 const r=canvas.getBoundingClientRect()
 
-return{
-x:toMeters(e.clientX-r.left),
-y:toMeters(e.clientY-r.top)
-}
+return screenToWorld(
+e.clientX-r.left,
+e.clientY-r.top
+)
 
 }
 
@@ -192,8 +213,14 @@ return
 
 function move(e){
 
+const rect=canvas.getBoundingClientRect()
+
 let p=getMouse(e)
+
 mouse=p
+
+hud.style.left=(e.clientX-rect.left+15)+"px"
+hud.style.top=(e.clientY-rect.top+15)+"px"
 
 if(dragVertex){
 
@@ -234,6 +261,22 @@ function end(){
 
 dragVertex=null
 dragRoom=null
+
+}
+
+function zoom(f){
+
+zoomLevel*=f
+draw()
+
+}
+
+function centerView(){
+
+zoomLevel=1
+offsetX=0
+offsetY=0
+draw()
 
 }
 
@@ -384,17 +427,15 @@ for(let r of rooms){
 
 ctx.beginPath()
 
-ctx.moveTo(
-toScreen(r.v[0].x),
-toScreen(r.v[0].y)
-)
+let p=worldToScreen(r.v[0].x,r.v[0].y)
+
+ctx.moveTo(p.x,p.y)
 
 for(let i=1;i<r.v.length;i++){
 
-ctx.lineTo(
-toScreen(r.v[i].x),
-toScreen(r.v[i].y)
-)
+let q=worldToScreen(r.v[i].x,r.v[i].y)
+
+ctx.lineTo(q.x,q.y)
 
 }
 
@@ -409,8 +450,10 @@ ctx.stroke()
 
 for(let v of r.v){
 
+let p=worldToScreen(v.x,v.y)
+
 ctx.beginPath()
-ctx.arc(toScreen(v.x),toScreen(v.y),5,0,Math.PI*2)
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
@@ -427,8 +470,10 @@ let d=Math.hypot(
 r.v[j].x-r.v[i].x,
 r.v[j].y-r.v[i].y)
 
+let p=worldToScreen(mx,my)
+
 ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",toScreen(mx),toScreen(my))
+ctx.fillText(d.toFixed(2)+" m",p.x,p.y)
 
 }
 
@@ -440,12 +485,10 @@ let next=r.v[(i+1)%r.v.length]
 
 let ang=angle(prev,cur,next)
 
+let p=worldToScreen(cur.x,cur.y)
+
 ctx.fillStyle="orange"
-ctx.fillText(
-ang.toFixed(0)+"°",
-toScreen(cur.x)+6,
-toScreen(cur.y)-6
-)
+ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
 
 }
 
@@ -453,29 +496,32 @@ toScreen(cur.y)-6
 
 if(current.length){
 
-for(let v of current){
+let last=current[current.length-1]
 
-ctx.beginPath()
-ctx.arc(toScreen(v.x),toScreen(v.y),5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
+
+let ang=0
+
+if(current.length>1){
+
+let prev=current[current.length-2]
+ang=angle(prev,last,mouse)
 
 }
 
-let last=current[current.length-1]
+hud.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+
+let p1=worldToScreen(last.x,last.y)
+let p2=worldToScreen(mouse.x,mouse.y)
 
 ctx.beginPath()
-ctx.moveTo(toScreen(last.x),toScreen(last.y))
-ctx.lineTo(toScreen(mouse.x),toScreen(mouse.y))
+ctx.moveTo(p1.x,p1.y)
+ctx.lineTo(p2.x,p2.y)
 
 ctx.setLineDash([6,6])
 ctx.strokeStyle="#444"
 ctx.stroke()
 ctx.setLineDash([])
-
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
-
-document.getElementById("hud").innerText=dist.toFixed(2)+" m"
 
 }
 
