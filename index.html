@@ -39,6 +39,7 @@ font-weight:bold;
 .blue{background:#2b83ff}
 .orange{background:#ff9800}
 .red{background:#e53935}
+.yellow{background:#ffc107;color:black}
 
 #layout{
 display:flex;
@@ -81,6 +82,10 @@ Escala px/m
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
+<button class="yellow" onclick="zoomIn()">+</button>
+<button class="yellow" onclick="zoomOut()">−</button>
+<button class="yellow" onclick="centerView()">Centrar</button>
+
 </div>
 
 <div id="layout">
@@ -111,10 +116,15 @@ Total: <span id="totalArea">0</span> m²
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-
 const cursor=document.getElementById("cursor")
 
 let scale=100
+
+let camera={
+x:0,
+y:0,
+zoom:1
+}
 
 let rooms=[]
 let current=[]
@@ -147,7 +157,6 @@ let sum=0
 for(let i=0;i<v.length;i++){
 
 let j=(i+1)%v.length
-
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
 
 }
@@ -168,10 +177,7 @@ y+=p.y
 
 }
 
-return{
-x:x/v.length,
-y:y/v.length
-}
+return{x:x/v.length,y:y/v.length}
 
 }
 
@@ -210,14 +216,23 @@ return inside
 
 }
 
+function screenToWorld(p){
+
+return{
+x:(p.x-camera.x)/camera.zoom,
+y:(p.y-camera.y)/camera.zoom
+}
+
+}
+
 canvas.onmousedown=e=>{
 
 let r=canvas.getBoundingClientRect()
 
-let p={
+let p=screenToWorld({
 x:e.clientX-r.left,
 y:e.clientY-r.top
-}
+})
 
 mouse=p
 
@@ -265,26 +280,27 @@ canvas.onmousemove=e=>{
 
 let r=canvas.getBoundingClientRect()
 
-mouse={
+let p=screenToWorld({
 x:e.clientX-r.left,
 y:e.clientY-r.top
-}
+})
+
+mouse=p
 
 if(dragVertex){
 
-dragVertex.x=mouse.x
-dragVertex.y=mouse.y
-
+dragVertex.x=p.x
+dragVertex.y=p.y
 updateList()
 
 }
 
 if(dragRoom){
 
-let dx=mouse.x-dragRoom.start.x
-let dy=mouse.y-dragRoom.start.y
+let dx=p.x-dragRoom.start.x
+let dy=p.y-dragRoom.start.y
 
-dragRoom.start=mouse
+dragRoom.start=p
 
 for(let v of dragRoom.room.v){
 
@@ -307,6 +323,28 @@ canvas.onmouseup=()=>{
 
 dragVertex=null
 dragRoom=null
+
+}
+
+function updateCursor(){
+
+if(!drawing || current.length===0){
+
+cursor.style.display="none"
+return
+
+}
+
+cursor.style.display="block"
+
+cursor.style.left=(mouse.x*camera.zoom+camera.x+20)+"px"
+cursor.style.top=(mouse.y*camera.zoom+camera.y+20)+"px"
+
+let last=current[current.length-1]
+
+let d=dist(last,mouse)/scale
+
+cursor.innerText=d.toFixed(2)+" m"
 
 }
 
@@ -354,42 +392,37 @@ draw()
 
 }
 
-function updateCursor(){
+function zoomIn(){
 
-if(!drawing || current.length===0){
-
-cursor.style.display="none"
-return
+camera.zoom*=1.2
+draw()
 
 }
 
-cursor.style.display="block"
+function zoomOut(){
 
-cursor.style.left=(mouse.x+20)+"px"
-cursor.style.top=(mouse.y+20)+"px"
-
-let last=current[current.length-1]
-
-let d=dist(last,mouse)/scale
-
-let ang=0
-
-if(current.length>1){
-
-let prev=current[current.length-2]
-ang=angle(prev,last,mouse)
+camera.zoom/=1.2
+draw()
 
 }
 
-cursor.innerText=
-d.toFixed(2)+" m | "+
-ang.toFixed(0)+"°"
+function centerView(){
+
+camera.x=canvas.width/2
+camera.y=canvas.height/2
+
+draw()
 
 }
 
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.save()
+
+ctx.translate(camera.x,camera.y)
+ctx.scale(camera.zoom,camera.zoom)
 
 for(let room of rooms){
 
@@ -480,18 +513,22 @@ ctx.lineTo(current[i].x,current[i].y)
 ctx.strokeStyle="#2b83ff"
 ctx.stroke()
 
-let last=current[current.length-1]
-
 ctx.setLineDash([6,6])
 
 ctx.beginPath()
+
+let last=current[current.length-1]
+
 ctx.moveTo(last.x,last.y)
 ctx.lineTo(mouse.x,mouse.y)
+
 ctx.stroke()
 
 ctx.setLineDash([])
 
 }
+
+ctx.restore()
 
 }
 
