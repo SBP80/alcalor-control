@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <title>ALLCALOR PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/konva@9/konva.min.js"></script>
 
 <style>
 
@@ -15,10 +18,9 @@ color:white;
 
 header{
 background:#1b1b1b;
-padding:12px;
+padding:10px;
 text-align:center;
 font-size:22px;
-font-weight:bold;
 }
 
 .toolbar{
@@ -27,12 +29,12 @@ padding:10px;
 }
 
 button{
-border:none;
 padding:6px 12px;
-margin-right:6px;
+border:none;
 border-radius:4px;
 cursor:pointer;
 font-weight:bold;
+margin-right:6px;
 }
 
 .green{background:#28a745}
@@ -50,9 +52,9 @@ background:#1c3f63;
 padding:10px;
 }
 
-canvas{
+#container{
+flex:1;
 background:#f4f1e8;
-cursor:crosshair;
 }
 
 </style>
@@ -63,9 +65,6 @@ cursor:crosshair;
 <header>🔥 ALLCALOR PRO</header>
 
 <div class="toolbar">
-
-Escala px/m
-<input id="scaleInput" type="number" value="100" style="width:60px">
 
 <button class="green" onclick="startRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
@@ -88,360 +87,117 @@ Total: <span id="totalArea">0</span> m²
 
 </div>
 
-<canvas id="canvas" width="1200" height="700"></canvas>
+<div id="container"></div>
 
 </div>
 
 <script>
 
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
+let stage=new Konva.Stage({
+container:"container",
+width:window.innerWidth-220,
+height:700
+})
 
-let scale=100
-let rooms=[]
+let layer=new Konva.Layer()
+stage.add(layer)
+
 let drawing=false
 let points=[]
-let mouse={x:0,y:0}
+let rooms=[]
 
-let dragVertex=null
-let dragRoom=null
+let tempLine=new Konva.Line({
+stroke:"blue",
+strokeWidth:2
+})
 
-const MIN_DIST=10
-
-function distance(a,b){
-return Math.hypot(a.x-b.x,a.y-b.y)
-}
-
-function normalizeAngle(a){
-a=a%360
-if(a<0)a+=360
-return a
-}
-
-function polygonArea(v){
-
-let area=0
-
-for(let i=0;i<v.length;i++){
-
-let j=(i+1)%v.length
-
-area+=v[i].x*v[j].y-v[j].x*v[i].y
-
-}
-
-return Math.abs(area/2)
-
-}
-
-function centroid(v){
-
-let x=0
-let y=0
-
-for(let p of v){
-
-x+=p.x
-y+=p.y
-
-}
-
-return{x:x/v.length,y:y/v.length}
-
-}
-
-function angle(a,b,c){
-
-let abx=a.x-b.x
-let aby=a.y-b.y
-
-let cbx=c.x-b.x
-let cby=c.y-b.y
-
-let dot=abx*cbx+aby*cby
-
-let mag1=Math.hypot(abx,aby)
-let mag2=Math.hypot(cbx,cby)
-
-if(mag1===0||mag2===0)return 0
-
-let ang=Math.acos(dot/(mag1*mag2))*180/Math.PI
-
-return normalizeAngle(ang)
-
-}
-
-function pointInside(poly,x,y){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>y)!=(yj>y))
-&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
-
-}
-
-canvas.onmousedown=e=>{
-
-const r=canvas.getBoundingClientRect()
-
-let x=e.clientX-r.left
-let y=e.clientY-r.top
-
-mouse={x,y}
-
-for(let ri=0;ri<rooms.length;ri++){
-
-for(let vi=0;vi<rooms[ri].v.length;vi++){
-
-let p=rooms[ri].v[vi]
-
-if(distance(p,mouse)<10){
-
-dragVertex={room:ri,index:vi}
-return
-
-}
-
-}
-
-}
-
-for(let ri=0;ri<rooms.length;ri++){
-
-if(pointInside(rooms[ri].v,x,y)){
-
-dragRoom=ri
-return
-
-}
-
-}
-
-}
-
-canvas.onmouseup=()=>{
-
-dragVertex=null
-dragRoom=null
-
-}
-
-canvas.onmousemove=e=>{
-
-const r=canvas.getBoundingClientRect()
-
-let x=e.clientX-r.left
-let y=e.clientY-r.top
-
-let dx=x-mouse.x
-let dy=y-mouse.y
-
-mouse={x,y}
-
-if(dragVertex){
-
-let v=rooms[dragVertex.room].v
-
-v[dragVertex.index].x=x
-v[dragVertex.index].y=y
-
-draw()
-
-return
-
-}
-
-if(dragRoom!==null){
-
-for(let p of rooms[dragRoom].v){
-
-p.x+=dx
-p.y+=dy
-
-}
-
-draw()
-
-return
-
-}
-
-draw()
-
-}
-
-canvas.onclick=e=>{
-
-if(!drawing)return
-
-const r=canvas.getBoundingClientRect()
-
-let p={
-x:e.clientX-r.left,
-y:e.clientY-r.top
-}
-
-if(points.length>0){
-
-let last=points[points.length-1]
-
-if(distance(last,p)<MIN_DIST)return
-
-}
-
-points.push(p)
-
-draw()
-
-}
+layer.add(tempLine)
 
 function startRoom(){
 
 drawing=true
 points=[]
+tempLine.points([])
 
 }
 
-function closeRoom(){
+stage.on("click",function(e){
 
-if(points.length<3)return
+if(!drawing)return
 
-let name=prompt("Nombre estancia","estancia")
+let pos=stage.getPointerPosition()
 
-rooms.push({
-name:name,
-v:[...points]
+points.push(pos.x,pos.y)
+
+tempLine.points(points)
+
+layer.draw()
+
 })
 
-points=[]
+function closeRoom(){
+
+if(points.length<6)return
+
 drawing=false
 
+let poly=new Konva.Line({
+points:[...points],
+closed:true,
+fill:"rgba(0,150,255,0.2)",
+stroke:"#2b83ff",
+strokeWidth:2,
+draggable:true
+})
+
+layer.add(poly)
+
+rooms.push(poly)
+
+points=[]
+tempLine.points([])
+
+layer.draw()
+
 updatePanel()
-draw()
 
 }
 
 function undo(){
 
-points.pop()
-draw()
+points.splice(points.length-2,2)
+tempLine.points(points)
+layer.draw()
 
 }
 
 function resetAll(){
 
+rooms.forEach(r=>r.destroy())
+
 rooms=[]
 points=[]
-drawing=false
+tempLine.points([])
+
+layer.draw()
 
 updatePanel()
-draw()
 
 }
 
-function drawVertex(p){
+function polygonArea(points){
 
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
+let area=0
 
-}
+for(let i=0;i<points.length;i+=2){
 
-function drawPolygon(v){
+let j=(i+2)%points.length
 
-ctx.beginPath()
-
-ctx.moveTo(v[0].x,v[0].y)
-
-for(let i=1;i<v.length;i++)
-ctx.lineTo(v[i].x,v[i].y)
-
-ctx.closePath()
-
-ctx.fillStyle="rgba(0,150,255,0.15)"
-ctx.fill()
-
-ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2
-ctx.stroke()
-
-for(let i=0;i<v.length;i++){
-
-let p=v[i]
-let next=v[(i+1)%v.length]
-let prev=v[(i-1+v.length)%v.length]
-
-drawVertex(p)
-
-let ang=angle(prev,p,next)
-
-ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
-
-let midX=(p.x+next.x)/2
-let midY=(p.y+next.y)/2
-
-let d=distance(p,next)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",midX,midY)
+area+=points[i]*points[j+1]-points[j]*points[i+1]
 
 }
 
-}
-
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-scale=parseFloat(document.getElementById("scaleInput").value)
-
-for(let r of rooms){
-
-drawPolygon(r.v)
-
-let c=centroid(r.v)
-let area=polygonArea(r.v)/(scale*scale)
-
-ctx.fillStyle="black"
-ctx.fillText(area.toFixed(2)+" m²",c.x,c.y)
-
-}
-
-if(drawing){
-
-for(let p of points)
-drawVertex(p)
-
-if(points.length>0){
-
-let last=points[points.length-1]
-
-ctx.beginPath()
-ctx.moveTo(last.x,last.y)
-ctx.lineTo(mouse.x,mouse.y)
-ctx.stroke()
-
-let d=distance(last,mouse)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",(last.x+mouse.x)/2,(last.y+mouse.y)/2)
-
-}
-
-}
+return Math.abs(area/2)
 
 }
 
@@ -450,25 +206,23 @@ function updatePanel(){
 let html=""
 let total=0
 
-for(let r of rooms){
+rooms.forEach((r,i)=>{
 
-let area=polygonArea(r.v)/(scale*scale)
+let a=polygonArea(r.points())/10000
 
-total+=area
+total+=a
 
 html+=`
-<b>${r.name}</b><br>
-Área: ${area.toFixed(2)} m²<hr>
+Estancia ${i+1}<br>
+Área: ${a.toFixed(2)} m²<hr>
 `
 
-}
+})
 
 document.getElementById("roomsPanel").innerHTML=html
 document.getElementById("totalArea").innerText=total.toFixed(2)
 
 }
-
-draw()
 
 </script>
 
