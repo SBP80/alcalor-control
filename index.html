@@ -179,6 +179,23 @@ return Math.abs(sum/2)
 
 }
 
+function centroid(v){
+
+let x=0
+let y=0
+
+for(let p of v){
+x+=p.x
+y+=p.y
+}
+
+return{
+x:x/v.length,
+y:y/v.length
+}
+
+}
+
 function pointInside(p,poly){
 
 let inside=false
@@ -338,7 +355,14 @@ draw()
 
 function updateCursor(){
 
-if(current.length===0) return
+let div=document.getElementById("cursorInfo")
+
+let s=worldToScreen(mouse.x,mouse.y)
+
+div.style.left=(s.x+15)+"px"
+div.style.top=(s.y+15)+"px"
+
+if(current.length){
 
 let last=current[current.length-1]
 
@@ -353,14 +377,9 @@ ang=angle(prev,last,mouse)
 
 }
 
-let div=document.getElementById("cursorInfo")
-
-let s=worldToScreen(mouse.x,mouse.y)
-
-div.style.left=(s.x+15)+"px"
-div.style.top=(s.y+15)+"px"
-
 div.innerText=d.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+
+}
 
 }
 
@@ -394,6 +413,8 @@ ctx.lineWidth=2
 ctx.stroke()
 
 drawMeasures(room)
+
+drawRoomLabel(room)
 
 for(let v of room.v){
 
@@ -490,6 +511,23 @@ ctx.fillStyle="orange"
 ctx.fillText(Math.round(ang)+"°",s.x+6,s.y-6)
 
 }
+
+}
+
+function drawRoomLabel(room){
+
+let c=centroid(room.v)
+
+let s=worldToScreen(c.x,c.y)
+
+let area=polygonArea(room.v)/scale/scale
+
+ctx.fillStyle="black"
+ctx.textAlign="center"
+
+ctx.fillText(room.name,s.x,s.y)
+
+ctx.fillText(area.toFixed(2)+" m²",s.x,s.y+14)
 
 }
 
