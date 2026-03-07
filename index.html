@@ -14,7 +14,7 @@ color:white;
 }
 
 header{
-background:#1a1a1a;
+background:#1b1b1b;
 padding:12px;
 text-align:center;
 font-size:24px;
@@ -22,13 +22,13 @@ font-weight:bold;
 }
 
 .toolbar{
-padding:10px;
 background:#173a5e;
+padding:10px;
 }
 
 button{
 border:none;
-padding:7px 12px;
+padding:6px 12px;
 margin-right:6px;
 border-radius:4px;
 cursor:pointer;
@@ -53,15 +53,17 @@ padding:10px;
 
 canvas{
 background:#f4f1e8;
+cursor:crosshair;
 }
 
-.measure{
+#cursorInfo{
 position:absolute;
 background:#333;
 color:white;
-padding:3px 6px;
+padding:4px 8px;
 border-radius:4px;
 font-size:12px;
+pointer-events:none;
 }
 
 </style>
@@ -90,17 +92,22 @@ Escala px/m
 <div id="layout">
 
 <div id="panel">
+
 <h3>Estancias</h3>
+
 <div id="rooms"></div>
+
 <hr>
-<div>Total: <span id="totalArea">0</span> m²</div>
+
+Total: <span id="totalArea">0</span> m²
+
 </div>
 
 <div style="position:relative">
 
 <canvas id="canvas" width="1200" height="700"></canvas>
 
-<div id="cursorInfo" class="measure"></div>
+<div id="cursorInfo"></div>
 
 </div>
 
@@ -115,7 +122,6 @@ let scale=100
 
 let rooms=[]
 let current=[]
-
 let drawing=false
 
 let mouse={x:0,y:0}
@@ -139,6 +145,58 @@ return{
 x:x*zoom+offsetX,
 y:y*zoom+offsetY
 }
+}
+
+function dist(a,b){
+return Math.hypot(a.x-b.x,a.y-b.y)
+}
+
+function angle(a,b,c){
+
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
+
+ang=Math.abs(ang*180/Math.PI)
+
+if(ang>180) ang=360-ang
+
+return ang
+
+}
+
+function polygonArea(v){
+
+let sum=0
+
+for(let i=0;i<v.length;i++){
+
+let j=(i+1)%v.length
+
+sum+=v[i].x*v[j].y-v[j].x*v[i].y
+
+}
+
+return Math.abs(sum/2)
+
+}
+
+function pointInside(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect) inside=!inside
+
+}
+
+return inside
+
 }
 
 canvas.onmousedown=e=>{
@@ -230,7 +288,7 @@ current=[]
 
 function closeRoom(){
 
-if(current.length<3)return
+if(current.length<3) return
 
 let name=prompt("Nombre estancia")
 
@@ -265,32 +323,22 @@ draw()
 
 }
 
-function zoomIn(){
-
-zoom*=1.2
-draw()
-
-}
-
-function zoomOut(){
-
-zoom*=0.8
-draw()
-
-}
+function zoomIn(){ zoom*=1.2; draw() }
+function zoomOut(){ zoom*=0.8; draw() }
 
 function centerView(){
 
 zoom=1
 offsetX=0
 offsetY=0
+
 draw()
 
 }
 
 function updateCursor(){
 
-if(current.length===0)return
+if(current.length===0) return
 
 let last=current[current.length-1]
 
@@ -301,7 +349,6 @@ let ang=0
 if(current.length>1){
 
 let prev=current[current.length-2]
-
 ang=angle(prev,last,mouse)
 
 }
@@ -310,8 +357,8 @@ let div=document.getElementById("cursorInfo")
 
 let s=worldToScreen(mouse.x,mouse.y)
 
-div.style.left=s.x+15+"px"
-div.style.top=s.y+15+"px"
+div.style.left=(s.x+15)+"px"
+div.style.top=(s.y+15)+"px"
 
 div.innerText=d.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
@@ -362,6 +409,33 @@ ctx.fill()
 }
 
 if(current.length){
+
+ctx.beginPath()
+
+let p=worldToScreen(current[0].x,current[0].y)
+ctx.moveTo(p.x,p.y)
+
+for(let i=1;i<current.length;i++){
+
+let s=worldToScreen(current[i].x,current[i].y)
+
+ctx.lineTo(s.x,s.y)
+
+}
+
+ctx.strokeStyle="#2b83ff"
+ctx.stroke()
+
+for(let v of current){
+
+let s=worldToScreen(v.x,v.y)
+
+ctx.beginPath()
+ctx.arc(s.x,s.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
 
 let last=current[current.length-1]
 
@@ -427,10 +501,16 @@ let total=0
 for(let r of rooms){
 
 let area=polygonArea(r.v)/scale/scale
+let per=perimeter(r.v)/scale
 
 total+=area
 
-html+=r.name+"<br>Área: "+area.toFixed(2)+" m²<hr>"
+html+=`
+<b>${r.name}</b><br>
+Área: ${area.toFixed(2)} m²<br>
+Perímetro: ${per.toFixed(2)} m
+<hr>
+`
 
 }
 
@@ -439,57 +519,18 @@ document.getElementById("totalArea").innerText=total.toFixed(2)
 
 }
 
-function dist(a,b){
-
-return Math.hypot(a.x-b.x,a.y-b.y)
-
-}
-
-function angle(a,b,c){
-
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
-
-ang=Math.abs(ang*180/Math.PI)
-
-if(ang>180)ang=360-ang
-
-return ang
-
-}
-
-function polygonArea(v){
+function perimeter(v){
 
 let sum=0
 
 for(let i=0;i<v.length;i++){
 
 let j=(i+1)%v.length
-
-sum+=v[i].x*v[j].y-v[j].x*v[i].y
-
-}
-
-return Math.abs(sum/2)
+sum+=dist(v[i],v[j])
 
 }
 
-function pointInside(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
+return sum
 
 }
 
