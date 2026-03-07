@@ -57,27 +57,6 @@ background:#f4f1e8;
 cursor:crosshair;
 }
 
-#cursor{
-position:absolute;
-background:#333;
-padding:6px 10px;
-border-radius:4px;
-font-size:12px;
-pointer-events:none;
-}
-
-#inputLength{
-position:absolute;
-top:10px;
-left:50%;
-transform:translateX(-50%);
-background:black;
-padding:6px 12px;
-border-radius:6px;
-font-weight:bold;
-display:none;
-}
-
 </style>
 </head>
 
@@ -117,14 +96,7 @@ Total: <span id="totalArea">0</span> m²
 
 </div>
 
-<div style="position:relative">
-
 <canvas id="canvas" width="1200" height="700"></canvas>
-
-<div id="cursor"></div>
-<div id="inputLength"></div>
-
-</div>
 
 </div>
 
@@ -132,9 +104,7 @@ Total: <span id="totalArea">0</span> m²
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-const cursor=document.getElementById("cursor")
 const snapButton=document.getElementById("snapButton")
-const inputBox=document.getElementById("inputLength")
 
 let scale=100
 let camera={x:0,y:0,zoom:1}
@@ -142,14 +112,9 @@ let camera={x:0,y:0,zoom:1}
 let rooms=[]
 let current=[]
 let drawing=false
-
 let mouse={x:0,y:0}
 
-let dragVertex=null
-let dragRoom=null
-
 let snapEnabled=false
-let typedLength=""
 
 function toggleSnap(){
 
@@ -166,6 +131,7 @@ function angle(a,b,c){
 
 let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
 ang=Math.abs(ang*180/Math.PI)
+
 if(ang>180) ang=360-ang
 return ang
 
@@ -174,9 +140,12 @@ return ang
 function polygonArea(v){
 
 let sum=0
+
 for(let i=0;i<v.length;i++){
+
 let j=(i+1)%v.length
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
+
 }
 
 return Math.abs(sum/2)
@@ -199,62 +168,21 @@ return{x:x/v.length,y:y/v.length}
 
 }
 
-function perimeter(v){
+function snapPoint(p){
 
-let sum=0
+if(!snapEnabled) return p
 
-for(let i=0;i<v.length;i++){
+for(let r of rooms){
 
-let j=(i+1)%v.length
-sum+=dist(v[i],v[j])
+for(let v of r.v){
 
-}
-
-return sum
-
-}
-
-function pointInside(point,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>point.y)!=(yj>point.y)) &&
-(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
-
-if(intersect) inside=!inside
-
-}
-
-return inside
-
-}
-
-function snapPoint(point){
-
-if(!snapEnabled) return point
-
-let snapDistance=15/camera.zoom
-
-for(let room of rooms){
-
-for(let v of room.v){
-
-if(dist(point,v)<snapDistance){
-
-return{x:v.x,y:v.y}
+if(dist(p,v)<15) return v
 
 }
 
 }
 
-}
-
-return point
+return p
 
 }
 
@@ -284,33 +212,6 @@ if(drawing){
 
 current.push(p)
 draw()
-return
-
-}
-
-for(let room of rooms){
-
-for(let v of room.v){
-
-if(dist(v,p)<10){
-
-dragVertex=v
-return
-
-}
-
-}
-
-}
-
-for(let room of rooms){
-
-if(pointInside(p,room.v)){
-
-dragRoom={room:room,start:p}
-return
-
-}
 
 }
 
@@ -320,47 +221,12 @@ canvas.onmousemove=e=>{
 
 let r=canvas.getBoundingClientRect()
 
-let p=screenToWorld({
+mouse=screenToWorld({
 x:e.clientX-r.left,
 y:e.clientY-r.top
 })
 
-mouse=snapPoint(p)
-
-if(dragVertex){
-
-dragVertex.x=mouse.x
-dragVertex.y=mouse.y
-updateList()
-
-}
-
-if(dragRoom){
-
-let dx=mouse.x-dragRoom.start.x
-let dy=mouse.y-dragRoom.start.y
-
-dragRoom.start=mouse
-
-for(let v of dragRoom.room.v){
-
-v.x+=dx
-v.y+=dy
-
-}
-
-updateList()
-
-}
-
 draw()
-
-}
-
-canvas.onmouseup=()=>{
-
-dragVertex=null
-dragRoom=null
 
 }
 
@@ -409,47 +275,28 @@ draw()
 }
 
 function zoomIn(){
-
 camera.zoom*=1.2
 draw()
-
 }
 
 function zoomOut(){
-
 camera.zoom/=1.2
 draw()
-
 }
 
 function centerView(){
-
 camera.x=canvas.width/2
 camera.y=canvas.height/2
 draw()
-
 }
 
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-ctx.save()
-
-ctx.translate(camera.x,camera.y)
-ctx.scale(camera.zoom,camera.zoom)
-
-for(let room of rooms){
-
-let v=room.v
+function drawPolygon(v){
 
 ctx.beginPath()
 ctx.moveTo(v[0].x,v[0].y)
 
 for(let i=1;i<v.length;i++){
-
 ctx.lineTo(v[i].x,v[i].y)
-
 }
 
 ctx.closePath()
@@ -500,15 +347,36 @@ ctx.fill()
 
 }
 
-let c=centroid(v)
+}
 
-let area=polygonArea(v)/scale/scale
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.save()
+
+ctx.translate(camera.x,camera.y)
+ctx.scale(camera.zoom,camera.zoom)
+
+for(let r of rooms){
+
+drawPolygon(r.v)
+
+let c=centroid(r.v)
+let area=polygonArea(r.v)/scale/scale
 
 ctx.fillStyle="black"
 ctx.textAlign="center"
-
-ctx.fillText(room.name,c.x,c.y)
+ctx.fillText(r.name,c.x,c.y)
 ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
+
+}
+
+if(current.length){
+
+let temp=[...current,mouse]
+
+drawPolygon(temp)
 
 }
 
@@ -524,7 +392,16 @@ let total=0
 for(let r of rooms){
 
 let area=polygonArea(r.v)/scale/scale
-let per=perimeter(r.v)/scale
+let per=0
+
+for(let i=0;i<r.v.length;i++){
+
+let j=(i+1)%r.v.length
+per+=dist(r.v[i],r.v[j])
+
+}
+
+per/=scale
 
 total+=area
 
