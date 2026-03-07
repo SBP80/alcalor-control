@@ -71,14 +71,17 @@ Escala px/m
 
 <button class="green" onclick="newRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
+
+<button class="yellow" onclick="addDoor()">Puerta</button>
+<button class="yellow" onclick="addWindow()">Ventana</button>
+<button class="yellow" onclick="addCollector()">Colector</button>
+
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
 <button class="yellow" onclick="zoomIn()">+</button>
 <button class="yellow" onclick="zoomOut()">-</button>
 <button class="yellow" onclick="centerView()">Centrar</button>
-
-<button id="snapButton" class="purple" onclick="toggleSnap()">SNAP OFF</button>
 
 </div>
 
@@ -106,7 +109,6 @@ const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
 const scaleInput=document.getElementById("scale")
-const snapButton=document.getElementById("snapButton")
 
 let scale=100
 
@@ -116,104 +118,60 @@ let rooms=[]
 let current=[]
 let drawing=false
 
+let doors=[]
+let windows=[]
+let collectors=[]
+
 let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
+let dragElement=null
 
-let snapEnabled=false
-
-document.addEventListener("keydown",e=>{
-if(e.key==="Shift") lockAxis=true
-})
-
-document.addEventListener("keyup",e=>{
-if(e.key==="Shift") lockAxis=false
-})
-
-let lockAxis=false
-
-function toggleSnap(){
-snapEnabled=!snapEnabled
-snapButton.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
-}
+let mode="draw"
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
 }
 
 function polygonArea(v){
+
 let sum=0
+
 for(let i=0;i<v.length;i++){
 let j=(i+1)%v.length
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
 }
+
 return Math.abs(sum/2)/(scale*scale)
+
 }
 
 function perimeter(v){
+
 let p=0
+
 for(let i=0;i<v.length;i++){
 let j=(i+1)%v.length
 p+=dist(v[i],v[j])
 }
+
 return p/scale
+
 }
 
 function centroid(v){
+
 let x=0
 let y=0
+
 for(let p of v){
 x+=p.x
 y+=p.y
 }
+
 return {x:x/v.length,y:y/v.length}
-}
 
-function angle(a,b,c){
-
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
-ang=Math.abs(ang*180/Math.PI)
-
-if(ang>180) ang=360-ang
-
-return ang
-
-}
-
-function pointInside(point,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x
-let yi=poly[i].y
-
-let xj=poly[j].x
-let yj=poly[j].y
-
-let intersect=((yi>point.y)!=(yj>point.y)) &&
-(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
-
-if(intersect) inside=!inside
-
-}
-
-return inside
-}
-
-function snapPoint(p){
-
-if(!snapEnabled) return p
-
-for(let r of rooms){
-for(let v of r.v){
-if(dist(p,v)<15) return v
-}
-}
-
-return p
 }
 
 function screenToWorld(p){
@@ -236,9 +194,28 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 })
 
-p=snapPoint(p)
-
 mouse=p
+
+if(mode==="door"){
+doors.push({x:p.x,y:p.y})
+mode="draw"
+draw()
+return
+}
+
+if(mode==="window"){
+windows.push({x:p.x,y:p.y})
+mode="draw"
+draw()
+return
+}
+
+if(mode==="collector"){
+collectors.push({x:p.x,y:p.y})
+mode="draw"
+draw()
+return
+}
 
 if(drawing){
 
@@ -259,17 +236,18 @@ return
 
 }
 
-if(pointInside(p,room.v)){
-
-dragRoom={
-room:room,
-start:p
 }
 
-return
-
+for(let d of doors){
+if(dist(d,p)<10){dragElement=d;return}
 }
 
+for(let w of windows){
+if(dist(w,p)<10){dragElement=w;return}
+}
+
+for(let c of collectors){
+if(dist(c,p)<10){dragElement=c;return}
 }
 
 }
@@ -282,18 +260,6 @@ let p=screenToWorld({
 x:e.clientX-r.left,
 y:e.clientY-r.top
 })
-
-if(lockAxis && current.length){
-
-let last=current[current.length-1]
-
-let dx=Math.abs(p.x-last.x)
-let dy=Math.abs(p.y-last.y)
-
-if(dx>dy) p.y=last.y
-else p.x=last.x
-
-}
 
 mouse=p
 
@@ -309,20 +275,12 @@ return
 
 }
 
-if(dragRoom){
+if(dragElement){
 
-let dx=p.x-dragRoom.start.x
-let dy=p.y-dragRoom.start.y
-
-for(let v of dragRoom.room.v){
-v.x+=dx
-v.y+=dy
-}
-
-dragRoom.start=p
+dragElement.x=p.x
+dragElement.y=p.y
 
 draw()
-updateRooms()
 
 }
 
@@ -333,21 +291,25 @@ draw()
 canvas.onmouseup=()=>{
 
 dragVertex=null
-dragRoom=null
+dragElement=null
 
 }
 
 function newRoom(){
+
 drawing=true
 current=[]
+
 }
 
 function closeRoom(){
 
 if(current.length<3) return
 
+let nombre=prompt("Nombre de la estancia","Salón")
+
 rooms.push({
-name:"Estancia "+(rooms.length+1),
+name:nombre,
 v:[...current]
 })
 
@@ -359,6 +321,18 @@ draw()
 
 }
 
+function addDoor(){
+mode="door"
+}
+
+function addWindow(){
+mode="window"
+}
+
+function addCollector(){
+mode="collector"
+}
+
 function undo(){
 current.pop()
 draw()
@@ -368,6 +342,9 @@ function resetAll(){
 
 rooms=[]
 current=[]
+doors=[]
+windows=[]
+collectors=[]
 
 updateRooms()
 draw()
@@ -453,37 +430,12 @@ ctx.fill()
 ctx.strokeStyle="#4aa3ff"
 ctx.stroke()
 
-for(let i=0;i<r.v.length;i++){
-
-let v=r.v[i]
+for(let v of r.v){
 
 ctx.beginPath()
 ctx.arc(v.x,v.y,5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
-
-let prev=r.v[(i-1+r.v.length)%r.v.length]
-let next=r.v[(i+1)%r.v.length]
-
-let ang=angle(prev,v,next)
-
-ctx.fillStyle="red"
-ctx.fillText(ang.toFixed(0)+"°",v.x+6,v.y-6)
-
-}
-
-for(let i=0;i<r.v.length;i++){
-
-let a=r.v[i]
-let b=r.v[(i+1)%r.v.length]
-
-let midX=(a.x+b.x)/2
-let midY=(a.y+b.y)/2
-
-let len=dist(a,b)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(len.toFixed(2)+" m",midX,midY)
 
 }
 
@@ -491,6 +443,29 @@ let c=centroid(r.v)
 
 ctx.fillStyle="black"
 ctx.fillText(r.name,c.x-20,c.y)
+
+}
+
+for(let d of doors){
+
+ctx.fillStyle="brown"
+ctx.fillRect(d.x-10,d.y-3,20,6)
+
+}
+
+for(let w of windows){
+
+ctx.fillStyle="cyan"
+ctx.fillRect(w.x-10,w.y-3,20,6)
+
+}
+
+for(let c of collectors){
+
+ctx.fillStyle="purple"
+ctx.beginPath()
+ctx.arc(c.x,c.y,8,0,Math.PI*2)
+ctx.fill()
 
 }
 
@@ -510,13 +485,6 @@ else ctx.lineTo(p.x,p.y)
 ctx.lineTo(mouse.x,mouse.y)
 
 ctx.stroke()
-
-let last=current[current.length-1]
-
-let d=dist(last,mouse)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",(last.x+mouse.x)/2,(last.y+mouse.y)/2)
 
 }
 
