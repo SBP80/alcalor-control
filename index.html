@@ -265,6 +265,8 @@ if(dragVertex){
 dragVertex.x=p.x
 dragVertex.y=p.y
 
+updateList()
+
 }
 
 if(dragRoom){
@@ -280,6 +282,8 @@ v.x+=dx
 v.y+=dy
 
 }
+
+updateList()
 
 }
 
@@ -362,6 +366,8 @@ let s=worldToScreen(mouse.x,mouse.y)
 div.style.left=(s.x+15)+"px"
 div.style.top=(s.y+15)+"px"
 
+let txt=""
+
 if(current.length){
 
 let last=current[current.length-1]
@@ -377,9 +383,15 @@ ang=angle(prev,last,mouse)
 
 }
 
-div.innerText=d.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+txt=d.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+
+}else{
+
+txt="X:"+ (mouse.x/scale).toFixed(2)+" m  Y:"+ (mouse.y/scale).toFixed(2)+" m"
 
 }
+
+div.innerText=txt
 
 }
 
