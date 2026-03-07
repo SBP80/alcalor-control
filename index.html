@@ -93,10 +93,11 @@ const ctx=canvas.getContext("2d")
 let scale=100
 
 let rooms=[]
-let current=[]
-let drawing=false
-
+let drawingRoom=null
 let mouse={x:0,y:0}
+
+let dragVertex=null
+let dragRoom=null
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -107,10 +108,8 @@ function polygonArea(v){
 let sum=0
 
 for(let i=0;i<v.length;i++){
-
 let j=(i+1)%v.length
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
-
 }
 
 return Math.abs(sum/2)
@@ -123,13 +122,31 @@ let x=0
 let y=0
 
 for(let p of v){
-
 x+=p.x
 y+=p.y
-
 }
 
 return{x:x/v.length,y:y/v.length}
+
+}
+
+function pointInside(point,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>point.y)!=(yj>point.y)) &&
+(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
+
+if(intersect) inside=!inside
+
+}
+
+return inside
 
 }
 
@@ -137,15 +154,46 @@ canvas.onmousedown=e=>{
 
 const r=canvas.getBoundingClientRect()
 
-mouse={
+const p={
 x:e.clientX-r.left,
 y:e.clientY-r.top
 }
 
-if(drawing){
+mouse=p
 
-current.push({...mouse})
+if(drawingRoom){
+
+drawingRoom.push(p)
 draw()
+return
+
+}
+
+for(let room of rooms){
+
+for(let v of room.v){
+
+if(dist(v,p)<10){
+dragVertex=v
+return
+}
+
+}
+
+}
+
+for(let room of rooms){
+
+if(pointInside(p,room.v)){
+
+dragRoom={
+room:room,
+start:p
+}
+
+return
+
+}
 
 }
 
@@ -160,28 +208,53 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 }
 
+if(dragVertex){
+
+dragVertex.x=mouse.x
+dragVertex.y=mouse.y
+updateList()
+
+}
+
+if(dragRoom){
+
+let dx=mouse.x-dragRoom.start.x
+let dy=mouse.y-dragRoom.start.y
+
+dragRoom.start=mouse
+
+for(let v of dragRoom.room.v){
+v.x+=dx
+v.y+=dy
+}
+
+updateList()
+
+}
+
 draw()
 
 }
 
+canvas.onmouseup=()=>{
+dragVertex=null
+dragRoom=null
+}
+
 function newRoom(){
-
-drawing=true
-current=[]
-
+drawingRoom=[]
 }
 
 function closeRoom(){
 
-if(current.length<3)return
+if(!drawingRoom || drawingRoom.length<3) return
 
 rooms.push({
 name:"estancia",
-v:[...current]
+v:[...drawingRoom]
 })
 
-drawing=false
-current=[]
+drawingRoom=null
 
 updateList()
 draw()
@@ -190,16 +263,17 @@ draw()
 
 function undo(){
 
-current.pop()
+if(drawingRoom){
+drawingRoom.pop()
 draw()
+}
 
 }
 
 function resetAll(){
 
 rooms=[]
-current=[]
-drawing=false
+drawingRoom=null
 
 updateList()
 draw()
@@ -207,9 +281,7 @@ draw()
 }
 
 function zoomIn(){}
-
 function zoomOut(){}
-
 function centerView(){}
 
 function drawVertex(p){
@@ -239,23 +311,6 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-for(let i=0;i<v.length;i++){
-
-let a=v[i]
-let b=v[(i+1)%v.length]
-
-let mid={
-x:(a.x+b.x)/2,
-y:(a.y+b.y)/2
-}
-
-let d=dist(a,b)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",mid.x,mid.y)
-
-}
-
 for(let p of v){
 drawVertex(p)
 }
@@ -275,26 +330,28 @@ let area=polygonArea(r.v)/scale/scale
 
 ctx.fillStyle="black"
 ctx.textAlign="center"
-
 ctx.fillText(area.toFixed(2)+" m²",c.x,c.y)
 
 }
 
-if(current.length){
+if(drawingRoom){
 
 ctx.beginPath()
-ctx.moveTo(current[0].x,current[0].y)
 
-for(let i=1;i<current.length;i++){
-ctx.lineTo(current[i].x,current[i].y)
+if(drawingRoom.length){
+ctx.moveTo(drawingRoom[0].x,drawingRoom[0].y)
+
+for(let i=1;i<drawingRoom.length;i++){
+ctx.lineTo(drawingRoom[i].x,drawingRoom[i].y)
 }
 
 ctx.lineTo(mouse.x,mouse.y)
+}
 
 ctx.strokeStyle="#2b83ff"
 ctx.stroke()
 
-for(let p of current){
+for(let p of drawingRoom){
 drawVertex(p)
 }
 
