@@ -85,8 +85,8 @@ Escala
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="reset()">Reiniciar</button>
 
-<button class="zoom" onclick="zoom(1.2)">Zoom +</button>
-<button class="zoom" onclick="zoom(0.8)">Zoom -</button>
+<button class="zoom" onclick="zoomIn()">Zoom +</button>
+<button class="zoom" onclick="zoomOut()">Zoom -</button>
 <button class="zoom" onclick="centerView()">Centrar</button>
 
 </div>
@@ -126,28 +126,32 @@ let dragVertex=null
 let dragRoom=null
 let dragStart=null
 
+let zoom=1
+let offsetX=0
+let offsetY=0
+
 function scale(){
 return parseFloat(document.getElementById("scale").value)
+}
+
+function screenToWorld(x,y){
+
+const rect=canvas.getBoundingClientRect()
+
+return{
+x:(x-rect.left-offsetX)/(scale()*zoom),
+y:(y-rect.top-offsetY)/(scale()*zoom)
+}
+
 }
 
 canvas.addEventListener("mousemove",move)
 canvas.addEventListener("mousedown",start)
 canvas.addEventListener("mouseup",end)
 
-function getMouse(e){
-
-const r=canvas.getBoundingClientRect()
-
-return{
-x:(e.clientX-r.left)/scale(),
-y:(e.clientY-r.top)/scale()
-}
-
-}
-
 function start(e){
 
-let p=getMouse(e)
+let p=screenToWorld(e.clientX,e.clientY)
 mouse=p
 
 if(drawing){
@@ -165,16 +169,20 @@ for(let i=0;i<r.v.length;i++){
 let v=r.v[i]
 
 if(Math.hypot(v.x-p.x,v.y-p.y)<0.1){
+
 dragVertex={room:r,index:i}
 return
+
 }
 
 }
 
 if(pointInPolygon(p,r.v)){
+
 dragRoom=r
 dragStart=p
 return
+
 }
 
 }
@@ -183,11 +191,13 @@ return
 
 function move(e){
 
-let p=getMouse(e)
+let p=screenToWorld(e.clientX,e.clientY)
 mouse=p
 
-hud.style.left=(e.clientX+15)+"px"
-hud.style.top=(e.clientY+15)+"px"
+const rect=canvas.getBoundingClientRect()
+
+hud.style.left=(e.clientX-rect.left+15)+"px"
+hud.style.top=(e.clientY-rect.top+15)+"px"
 
 if(dragVertex){
 
@@ -205,10 +215,7 @@ let d2=Math.hypot(next.x-r.v[i].x,next.y-r.v[i].y)
 
 let ang=angle(prev,r.v[i],next)
 
-hud.innerText=
-d1.toFixed(2)+" m | "+
-d2.toFixed(2)+" m | "+
-ang.toFixed(1)+"°"
+hud.innerText=d1.toFixed(2)+" m | "+d2.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 draw()
 return
@@ -220,8 +227,10 @@ let dx=p.x-dragStart.x
 let dy=p.y-dragStart.y
 
 for(let v of dragRoom.v){
+
 v.x+=dx
 v.y+=dy
+
 }
 
 dragStart=p
@@ -239,9 +248,35 @@ dragVertex=null
 dragRoom=null
 }
 
+function zoomIn(){
+
+zoom*=1.2
+draw()
+
+}
+
+function zoomOut(){
+
+zoom/=1.2
+draw()
+
+}
+
+function centerView(){
+
+zoom=1
+offsetX=0
+offsetY=0
+
+draw()
+
+}
+
 function newRoom(){
+
 drawing=true
 current=[]
+
 }
 
 function closeRoom(){
@@ -266,22 +301,26 @@ draw()
 }
 
 function undo(){
+
 current.pop()
 draw()
+
 }
 
 function reset(){
+
 rooms=[]
 current=[]
 drawing=true
+
 updatePanel()
 draw()
+
 }
 
 function angle(a,b,c){
 
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-
-Math.atan2(a.y-b.y,a.x-b.x)
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
 
 ang=Math.abs(ang*180/Math.PI)
 
@@ -293,16 +332,15 @@ return ang
 
 function draw(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+ctx.setTransform(zoom,0,0,zoom,offsetX,offsetY)
 
-/* habitaciones */
+ctx.clearRect(-offsetX/zoom,-offsetY/zoom,canvas.width/zoom,canvas.height/zoom)
 
 for(let r of rooms){
 
 let poly=r.v
 
 ctx.beginPath()
-
 ctx.moveTo(poly[0].x*scale(),poly[0].y*scale())
 
 for(let i=1;i<poly.length;i++)
@@ -330,20 +368,13 @@ for(let i=0;i<poly.length;i++){
 
 let j=(i+1)%poly.length
 
-let dist=Math.hypot(
-poly[j].x-poly[i].x,
-poly[j].y-poly[i].y
-)
+let dist=Math.hypot(poly[j].x-poly[i].x,poly[j].y-poly[i].y)
 
 let mx=(poly[i].x+poly[j].x)/2
 let my=(poly[i].y+poly[j].y)/2
 
 ctx.fillStyle="black"
-ctx.fillText(
-dist.toFixed(2)+" m",
-mx*scale(),
-my*scale()
-)
+ctx.fillText(dist.toFixed(2)+" m",mx*scale(),my*scale())
 
 }
 
@@ -356,19 +387,32 @@ let next=poly[(i+1)%poly.length]
 let ang=angle(prev,cur,next)
 
 ctx.fillStyle="orange"
-ctx.fillText(
-ang.toFixed(0)+"°",
-cur.x*scale()+6,
-cur.y*scale()-6
-)
+ctx.fillText(ang.toFixed(0)+"°",cur.x*scale()+6,cur.y*scale()-6)
 
 }
 
 }
-
-/* dibujo actual */
 
 if(current.length){
+
+for(let v of current){
+
+ctx.beginPath()
+ctx.arc(v.x*scale(),v.y*scale(),5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+for(let i=0;i<current.length-1;i++){
+
+ctx.beginPath()
+ctx.moveTo(current[i].x*scale(),current[i].y*scale())
+ctx.lineTo(current[i+1].x*scale(),current[i+1].y*scale())
+ctx.strokeStyle="#2b83ff"
+ctx.stroke()
+
+}
 
 let last=current[current.length-1]
 
@@ -389,13 +433,13 @@ let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
 let ang=0
 
 if(current.length>1){
+
 let prev=current[current.length-2]
 ang=angle(prev,last,mouse)
+
 }
 
-hud.innerText=
-dist.toFixed(2)+" m | "+
-ang.toFixed(1)+"°"
+hud.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 }
 
@@ -434,8 +478,10 @@ let v=r.v
 let area=0
 
 for(let i=0;i<v.length;i++){
+
 let j=(i+1)%v.length
 area+=v[i].x*v[j].y-v[j].x*v[i].y
+
 }
 
 area=Math.abs(area/2)
@@ -443,8 +489,10 @@ area=Math.abs(area/2)
 let per=0
 
 for(let i=0;i<v.length;i++){
+
 let j=(i+1)%v.length
 per+=Math.hypot(v[j].x-v[i].x,v[j].y-v[i].y)
+
 }
 
 total+=area
