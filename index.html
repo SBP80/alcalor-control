@@ -126,26 +126,8 @@ let drawing=false
 
 let mouse={x:0,y:0}
 
-let zoom=1
-let offsetX=0
-let offsetY=0
-
 let dragVertex=null
 let dragRoom=null
-
-function screenToWorld(x,y){
-return{
-x:(x-offsetX)/zoom,
-y:(y-offsetY)/zoom
-}
-}
-
-function worldToScreen(x,y){
-return{
-x:x*zoom+offsetX,
-y:y*zoom+offsetY
-}
-}
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -154,7 +136,6 @@ return Math.hypot(a.x-b.x,a.y-b.y)
 function angle(a,b,c){
 
 let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
-
 ang=Math.abs(ang*180/Math.PI)
 
 if(ang>180) ang=360-ang
@@ -211,67 +192,73 @@ return sum
 
 }
 
-function updateCursor(){
+function pointInside(point,poly){
 
-let div=document.getElementById("cursorInfo")
+let inside=false
 
-if(!drawing || current.length===0){
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
 
-div.style.display="none"
-return
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
 
-}
+let intersect=((yi>point.y)!=(yj>point.y)) &&
+(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
 
-div.style.display="block"
-
-let s=worldToScreen(mouse.x,mouse.y)
-
-div.style.left=(s.x+15)+"px"
-div.style.top=(s.y+15)+"px"
-
-let last=current[current.length-1]
-
-let d=dist(last,mouse)/scale
-
-let ang=0
-
-if(current.length>1){
-
-let prev=current[current.length-2]
-ang=angle(prev,last,mouse)
+if(intersect) inside=!inside
 
 }
 
-let per=0
-
-for(let i=1;i<current.length;i++){
-
-per+=dist(current[i-1],current[i])
-
-}
-
-per+=dist(last,mouse)
-
-per/=scale
-
-div.innerText=
-d.toFixed(2)+" m | "+
-ang.toFixed(0)+"° | perímetro "+
-per.toFixed(2)+" m"
+return inside
 
 }
 
 canvas.onmousedown=e=>{
 
 let r=canvas.getBoundingClientRect()
-let p=screenToWorld(e.clientX-r.left,e.clientY-r.top)
+
+let p={
+x:e.clientX-r.left,
+y:e.clientY-r.top
+}
 
 mouse=p
 
 if(drawing){
+
 current.push(p)
 draw()
 return
+
+}
+
+for(let room of rooms){
+
+for(let v of room.v){
+
+if(dist(v,p)<10){
+
+dragVertex=v
+return
+
+}
+
+}
+
+}
+
+for(let room of rooms){
+
+if(pointInside(p,room.v)){
+
+dragRoom={
+room:room,
+start:p
+}
+
+return
+
+}
+
 }
 
 }
@@ -279,13 +266,51 @@ return
 canvas.onmousemove=e=>{
 
 let r=canvas.getBoundingClientRect()
-let p=screenToWorld(e.clientX-r.left,e.clientY-r.top)
+
+let p={
+x:e.clientX-r.left,
+y:e.clientY-r.top
+}
 
 mouse=p
+
+if(dragVertex){
+
+dragVertex.x=p.x
+dragVertex.y=p.y
+
+updateList()
+
+}
+
+if(dragRoom){
+
+let dx=p.x-dragRoom.start.x
+let dy=p.y-dragRoom.start.y
+
+dragRoom.start=p
+
+for(let v of dragRoom.room.v){
+
+v.x+=dx
+v.y+=dy
+
+}
+
+updateList()
+
+}
 
 updateCursor()
 
 draw()
+
+}
+
+canvas.onmouseup=()=>{
+
+dragVertex=null
+dragRoom=null
 
 }
 
@@ -333,16 +358,55 @@ draw()
 
 }
 
-function zoomIn(){ zoom*=1.2; draw() }
-function zoomOut(){ zoom*=0.8; draw() }
+function zoomIn(){}
+function zoomOut(){}
+function centerView(){}
 
-function centerView(){
+function updateCursor(){
 
-zoom=1
-offsetX=0
-offsetY=0
+let div=document.getElementById("cursorInfo")
 
-draw()
+if(!drawing || current.length===0){
+
+div.style.display="none"
+return
+
+}
+
+div.style.display="block"
+
+div.style.left=(mouse.x+15)+"px"
+div.style.top=(mouse.y+15)+"px"
+
+let last=current[current.length-1]
+
+let d=dist(last,mouse)/scale
+
+let ang=0
+
+if(current.length>1){
+
+let prev=current[current.length-2]
+ang=angle(prev,last,mouse)
+
+}
+
+let per=0
+
+for(let i=1;i<current.length;i++){
+
+per+=dist(current[i-1],current[i])
+
+}
+
+per+=dist(last,mouse)
+
+per/=scale
+
+div.innerText=
+d.toFixed(2)+" m | "+
+ang.toFixed(0)+"° | perímetro "+
+per.toFixed(2)+" m"
 
 }
 
@@ -354,15 +418,11 @@ for(let room of rooms){
 
 ctx.beginPath()
 
-let p=worldToScreen(room.v[0].x,room.v[0].y)
-
-ctx.moveTo(p.x,p.y)
+ctx.moveTo(room.v[0].x,room.v[0].y)
 
 for(let i=1;i<room.v.length;i++){
 
-let s=worldToScreen(room.v[i].x,room.v[i].y)
-
-ctx.lineTo(s.x,s.y)
+ctx.lineTo(room.v[i].x,room.v[i].y)
 
 }
 
@@ -375,17 +435,24 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-let c=centroid(room.v)
+for(let v of room.v){
 
-let s=worldToScreen(c.x,c.y)
+ctx.beginPath()
+ctx.arc(v.x,v.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+let c=centroid(room.v)
 
 let area=polygonArea(room.v)/scale/scale
 
 ctx.fillStyle="black"
 ctx.textAlign="center"
 
-ctx.fillText(room.name,s.x,s.y)
-ctx.fillText(area.toFixed(2)+" m²",s.x,s.y+14)
+ctx.fillText(room.name,c.x,c.y)
+ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
 
 }
 
@@ -393,30 +460,33 @@ if(current.length){
 
 ctx.beginPath()
 
-let p=worldToScreen(current[0].x,current[0].y)
-ctx.moveTo(p.x,p.y)
+ctx.moveTo(current[0].x,current[0].y)
 
 for(let i=1;i<current.length;i++){
 
-let s=worldToScreen(current[i].x,current[i].y)
-
-ctx.lineTo(s.x,s.y)
+ctx.lineTo(current[i].x,current[i].y)
 
 }
 
 ctx.strokeStyle="#2b83ff"
 ctx.stroke()
 
-let last=current[current.length-1]
+for(let v of current){
 
-let s1=worldToScreen(last.x,last.y)
-let s2=worldToScreen(mouse.x,mouse.y)
+ctx.beginPath()
+ctx.arc(v.x,v.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+let last=current[current.length-1]
 
 ctx.setLineDash([6,6])
 
 ctx.beginPath()
-ctx.moveTo(s1.x,s1.y)
-ctx.lineTo(s2.x,s2.y)
+ctx.moveTo(last.x,last.y)
+ctx.lineTo(mouse.x,mouse.y)
 ctx.stroke()
 
 ctx.setLineDash([])
