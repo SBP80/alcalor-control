@@ -112,7 +112,11 @@ let camera={x:0,y:0,zoom:1}
 let rooms=[]
 let current=[]
 let drawing=false
+
 let mouse={x:0,y:0}
+
+let dragVertex=null
+let dragRoom=null
 
 let snapEnabled=false
 
@@ -168,6 +172,26 @@ return{x:x/v.length,y:y/v.length}
 
 }
 
+function pointInside(point,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>point.y)!=(yj>point.y)) &&
+(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
+
+if(intersect) inside=!inside
+
+}
+
+return inside
+
+}
+
 function snapPoint(p){
 
 if(!snapEnabled) return p
@@ -212,6 +236,37 @@ if(drawing){
 
 current.push(p)
 draw()
+return
+
+}
+
+for(let room of rooms){
+
+for(let v of room.v){
+
+if(dist(v,p)<10){
+
+dragVertex=v
+return
+
+}
+
+}
+
+}
+
+for(let room of rooms){
+
+if(pointInside(p,room.v)){
+
+dragRoom={
+room:room,
+start:p
+}
+
+return
+
+}
 
 }
 
@@ -221,12 +276,47 @@ canvas.onmousemove=e=>{
 
 let r=canvas.getBoundingClientRect()
 
-mouse=screenToWorld({
+let p=screenToWorld({
 x:e.clientX-r.left,
 y:e.clientY-r.top
 })
 
+mouse=snapPoint(p)
+
+if(dragVertex){
+
+dragVertex.x=mouse.x
+dragVertex.y=mouse.y
+updateList()
+
+}
+
+if(dragRoom){
+
+let dx=mouse.x-dragRoom.start.x
+let dy=mouse.y-dragRoom.start.y
+
+dragRoom.start=mouse
+
+for(let v of dragRoom.room.v){
+
+v.x+=dx
+v.y+=dy
+
+}
+
+updateList()
+
+}
+
 draw()
+
+}
+
+canvas.onmouseup=()=>{
+
+dragVertex=null
+dragRoom=null
 
 }
 
@@ -275,19 +365,25 @@ draw()
 }
 
 function zoomIn(){
+
 camera.zoom*=1.2
 draw()
+
 }
 
 function zoomOut(){
+
 camera.zoom/=1.2
 draw()
+
 }
 
 function centerView(){
+
 camera.x=canvas.width/2
 camera.y=canvas.height/2
 draw()
+
 }
 
 function drawPolygon(v){
@@ -296,7 +392,9 @@ ctx.beginPath()
 ctx.moveTo(v[0].x,v[0].y)
 
 for(let i=1;i<v.length;i++){
+
 ctx.lineTo(v[i].x,v[i].y)
+
 }
 
 ctx.closePath()
@@ -367,6 +465,7 @@ let area=polygonArea(r.v)/scale/scale
 
 ctx.fillStyle="black"
 ctx.textAlign="center"
+
 ctx.fillText(r.name,c.x,c.y)
 ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
 
@@ -375,7 +474,6 @@ ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
 if(current.length){
 
 let temp=[...current,mouse]
-
 drawPolygon(temp)
 
 }
