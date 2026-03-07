@@ -2,90 +2,82 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🔥 ALLCALOR PRO</title>
+<title>ALLCALOR PRO</title>
 
 <style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#0f2b44;
+background:#0f2238;
 color:white;
 }
 
-h1{
+header{
 text-align:center;
-margin:10px 0;
+padding:15px;
+font-size:28px;
+font-weight:bold;
 }
 
-.panel{
+#toolbar{
 display:flex;
-gap:8px;
-flex-wrap:wrap;
-background:#12314a;
+gap:10px;
 padding:10px;
-border-radius:8px;
-margin:10px;
+background:#162f4d;
+align-items:center;
 }
 
 button{
 border:none;
 padding:8px 12px;
-border-radius:4px;
+border-radius:5px;
 font-weight:bold;
 cursor:pointer;
 }
 
-.new{background:#28a745}
-.close{background:#2b83ff}
-.undo{background:#ff9800}
-.reset{background:#e53935}
-.nav{background:#444}
+.green{background:#4caf50}
+.blue{background:#3498db}
+.orange{background:#ff9800}
+.red{background:#e53935}
 
-#layout{
+#container{
 display:flex;
-gap:10px;
-margin:10px;
+height:calc(100vh - 110px);
 }
 
-#roomsPanel{
-width:220px;
-background:#12314a;
+#panel{
+width:200px;
+background:#17395d;
 padding:10px;
-border-radius:8px;
 }
 
-#canvasBox{
+#canvasContainer{
+flex:1;
 position:relative;
+background:#e6e6e6;
+overflow:hidden;
 }
 
-canvas{
-background:#f4f1e8;
-border-radius:8px;
-cursor:crosshair;
-}
-
-#hud{
+#measureBox{
 position:absolute;
-top:6px;
+top:10px;
 left:50%;
 transform:translateX(-50%);
-background:rgba(0,0,0,0.7);
-padding:6px 14px;
-border-radius:6px;
+background:#222;
+color:#0f0;
+padding:6px 10px;
+border-radius:5px;
 font-weight:bold;
 }
 
-.len{color:#00e676}
-.ang{color:#ff9800}
+canvas{
+background:white;
+cursor:crosshair;
+}
 
-#cursorHUD{
-position:absolute;
-pointer-events:none;
-background:rgba(0,0,0,0.7);
-padding:4px 8px;
-border-radius:4px;
-font-size:13px;
+.point{
+fill:red;
 }
 
 </style>
@@ -93,44 +85,36 @@ font-size:13px;
 
 <body>
 
-<h1>🔥 ALLCALOR PRO</h1>
+<header>🔥 ALLCALOR PRO</header>
 
-<div class="panel">
+<div id="toolbar">
 
-Escala
-<input id="scale" type="number" value="100">
+Escala <input id="scaleInput" type="number" value="100" style="width:70px">
 
-<button class="new" onclick="newRoom()">Nueva estancia</button>
-<button class="close" onclick="closeRoom()">Cerrar estancia</button>
-<button class="undo" onclick="undo()">Deshacer</button>
-<button class="reset" onclick="resetAll()">Reiniciar</button>
+<button class="green" onclick="newRoom()">Nueva estancia</button>
+<button class="blue" onclick="closeRoom()">Cerrar estancia</button>
+<button class="orange" onclick="undo()">Deshacer</button>
+<button class="red" onclick="resetAll()">Reiniciar</button>
 
-<button class="nav" onclick="zoom(1.2)">+</button>
-<button class="nav" onclick="zoom(0.8)">−</button>
-<button class="nav" onclick="center()">⛶</button>
-<button class="nav" onclick="moveMode=!moveMode">🖐</button>
+<button onclick="zoom(1.2)">+</button>
+<button onclick="zoom(0.8)">-</button>
+<button onclick="resetView()">□</button>
+<button onclick="togglePan()">🖐</button>
 
 </div>
 
-<div id="layout">
+<div id="container">
 
-<div id="roomsPanel">
-<b>ESTANCIAS</b>
-<div id="rooms"></div>
-<hr>
-<div id="total"></div>
+<div id="panel">
+<h3>ESTANCIAS</h3>
+<div id="roomsInfo"></div>
 </div>
 
-<div id="canvasBox">
+<div id="canvasContainer">
 
-<div id="hud">
-<span class="len">0 m</span> |
-<span class="ang">0°</span>
-</div>
+<div id="measureBox">0.00 m | 0°</div>
 
-<div id="cursorHUD"></div>
-
-<canvas id="canvas" width="1100" height="650"></canvas>
+<canvas id="canvas"></canvas>
 
 </div>
 </div>
@@ -139,347 +123,198 @@ Escala
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
+const measureBox=document.getElementById("measureBox")
 
-let camera={x:0,y:0,zoom:1}
+canvas.width=window.innerWidth-200
+canvas.height=window.innerHeight-110
 
 let rooms=[]
-let current=[]
-let drawing=true
+let currentRoom=null
+let drawing=false
+
+let offsetX=0
+let offsetY=0
+let scale=1
+
+let isPanning=false
 
 let mouse={x:0,y:0}
 
-let dragVertex=null
-let dragRoom=null
-let moveMode=false
-let draggingCanvas=false
-
-function scale(){
-return parseFloat(document.getElementById("scale").value)
-}
-
-function screenToWorld(x,y){
+function world(x,y){
 return{
-x:(x-camera.x)/camera.zoom,
-y:(y-camera.y)/camera.zoom
+x:(x-offsetX)/scale,
+y:(y-offsetY)/scale
 }
 }
 
-function getMouse(e){
-const r=canvas.getBoundingClientRect()
-return screenToWorld(e.clientX-r.left,e.clientY-r.top)
+function screen(x,y){
+return{
+x:x*scale+offsetX,
+y:y*scale+offsetY
+}
 }
 
-canvas.onmousedown=e=>{
+canvas.addEventListener("mousemove",e=>{
 
-let p=getMouse(e)
-mouse=p
+const rect=canvas.getBoundingClientRect()
 
-if(moveMode){
-draggingCanvas=true
+mouse.x=e.clientX-rect.left
+mouse.y=e.clientY-rect.top
+
+if(drawing && currentRoom && currentRoom.length>0){
+
+const last=currentRoom[currentRoom.length-1]
+const w=world(mouse.x,mouse.y)
+
+const dx=w.x-last.x
+const dy=w.y-last.y
+
+const dist=Math.sqrt(dx*dx+dy*dy)/100
+const angle=Math.atan2(dy,dx)*180/Math.PI
+
+measureBox.innerText=dist.toFixed(2)+" m | "+angle.toFixed(1)+"°"
+
+}
+
+draw()
+
+})
+
+canvas.addEventListener("mousedown",e=>{
+
+if(isPanning){
+panStart={x:e.clientX,y:e.clientY}
 return
 }
+
+const w=world(mouse.x,mouse.y)
 
 if(drawing){
-current.push(p)
-draw()
-return
-}
-
-for(let r of rooms){
-for(let v of r.v){
-if(Math.hypot(v.x-p.x,v.y-p.y)<10/camera.zoom){
-dragVertex=v
-return
-}
-}
-}
-
-for(let r of rooms){
-if(pointInside(p,r.v)){
-dragRoom={room:r,start:p}
-return
-}
-}
-
-}
-
-canvas.onmousemove=e=>{
-
-let p=getMouse(e)
-mouse=p
-
-updateHUD(e)
-
-if(draggingCanvas){
-camera.x+=e.movementX
-camera.y+=e.movementY
-draw()
-return
-}
-
-if(dragVertex){
-dragVertex.x=p.x
-dragVertex.y=p.y
-updateList()
-draw()
-}
-
-if(dragRoom){
-
-let dx=p.x-dragRoom.start.x
-let dy=p.y-dragRoom.start.y
-
-dragRoom.start=p
-
-for(let v of dragRoom.room.v){
-v.x+=dx
-v.y+=dy
-}
-
-updateList()
-draw()
+currentRoom.push(w)
+}else{
 
 }
 
 draw()
 
-}
+})
 
-canvas.onmouseup=()=>{
-dragVertex=null
-dragRoom=null
-draggingCanvas=false
-}
+canvas.addEventListener("mouseup",e=>{
 
-canvas.onwheel=e=>{
-e.preventDefault()
-let factor=e.deltaY>0?0.9:1.1
-zoom(factor)
-}
-
-function zoom(f){
-camera.zoom*=f
-draw()
-}
-
-function center(){
-camera.zoom=1
-camera.x=0
-camera.y=0
-draw()
-}
+})
 
 function newRoom(){
 drawing=true
-current=[]
+currentRoom=[]
+rooms.push(currentRoom)
 }
 
 function closeRoom(){
-
-if(current.length<3)return
-
-let name=prompt("Nombre estancia")
-
-rooms.push({name:name||"estancia",v:[...current]})
-
-current=[]
 drawing=false
-
-updateList()
-draw()
-
+currentRoom=null
 }
 
 function undo(){
-current.pop()
+
+if(currentRoom && currentRoom.length>0)
+currentRoom.pop()
+
 draw()
+
 }
 
 function resetAll(){
+
 rooms=[]
-current=[]
-drawing=true
-updateList()
+currentRoom=null
+drawing=false
+
 draw()
-}
-
-function area(p){
-
-let a=0
-
-for(let i=0;i<p.length;i++){
-let j=(i+1)%p.length
-a+=p[i].x*p[j].y
-a-=p[j].x*p[i].y
-}
-
-return Math.abs(a/2)/(scale()*scale())
 
 }
 
-function per(p){
+function zoom(f){
 
-let s=0
-
-for(let i=0;i<p.length;i++){
-let j=(i+1)%p.length
-s+=Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)
-}
-
-return s/scale()
+scale*=f
+draw()
 
 }
 
-function updateList(){
+function resetView(){
 
-let html=""
-let tot=0
+scale=1
+offsetX=0
+offsetY=0
 
-for(let r of rooms){
-
-let a=area(r.v)
-let p=per(r.v)
-
-tot+=a
-
-html+=`<div>
-<b>${r.name}</b><br>
-Área: ${a.toFixed(2)} m²<br>
-Perímetro: ${p.toFixed(2)} m
-</div><br>`
+draw()
 
 }
 
-document.getElementById("rooms").innerHTML=html
-document.getElementById("total").innerHTML="<b>Total: "+tot.toFixed(2)+" m²</b>"
+function togglePan(){
+
+isPanning=!isPanning
 
 }
 
-function angle(a,b,c){
+canvas.addEventListener("wheel",e=>{
 
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
+const delta=e.deltaY<0?1.1:0.9
 
-ang=Math.abs(ang*180/Math.PI)
+zoom(delta)
 
-if(ang>180)ang=360-ang
+})
 
-return ang
+canvas.addEventListener("mousemove",e=>{
 
-}
+if(isPanning && e.buttons===1){
 
-function pointInside(p,poly){
+offsetX+=e.movementX
+offsetY+=e.movementY
 
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
+draw()
 
 }
 
-return inside
-
-}
-
-function updateHUD(e){
-
-const cursor=document.getElementById("cursorHUD")
-
-cursor.style.left=e.clientX+10+"px"
-cursor.style.top=e.clientY+10+"px"
-
-let last=null
-let prev=null
-
-if(current.length>0){
-last=current[current.length-1]
-prev=current[current.length-2]
-}
-
-if(dragVertex){
-last=dragVertex
-}
-
-if(last){
-
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
-
-let ang=0
-if(prev){
-ang=angle(prev,last,mouse)
-}
-
-document.querySelector(".len").innerText=dist.toFixed(2)+" m"
-document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
-
-cursor.innerHTML=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
-
-}
-
-}
+})
 
 function draw(){
 
-ctx.setTransform(1,0,0,1,0,0)
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-ctx.setTransform(camera.zoom,0,0,camera.zoom,camera.x,camera.y)
-
-for(let r of rooms){
+for(let room of rooms){
 
 ctx.beginPath()
-ctx.moveTo(r.v[0].x,r.v[0].y)
 
-for(let i=1;i<r.v.length;i++){
-ctx.lineTo(r.v[i].x,r.v[i].y)
-}
+for(let i=0;i<room.length;i++){
 
-ctx.closePath()
+const p=screen(room[i].x,room[i].y)
 
-ctx.fillStyle="rgba(0,120,255,0.15)"
+if(i==0) ctx.moveTo(p.x,p.y)
+else ctx.lineTo(p.x,p.y)
+
+ctx.fillStyle="red"
+ctx.beginPath()
+ctx.arc(p.x,p.y,4,0,Math.PI*2)
 ctx.fill()
 
-ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2/camera.zoom
+}
+
+ctx.strokeStyle="#2196f3"
+ctx.lineWidth=2
 ctx.stroke()
 
-for(let v of r.v){
-
-ctx.beginPath()
-ctx.arc(v.x,v.y,5/camera.zoom,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
 }
 
-}
+if(drawing && currentRoom && currentRoom.length>0){
 
-if(current.length){
-
-for(let v of current){
-
-ctx.beginPath()
-ctx.arc(v.x,v.y,5/camera.zoom,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-}
-
-let last=current[current.length-1]
-
-ctx.setLineDash([6/camera.zoom,6/camera.zoom])
+const last=currentRoom[currentRoom.length-1]
+const p=screen(last.x,last.y)
 
 ctx.beginPath()
-ctx.moveTo(last.x,last.y)
+ctx.moveTo(p.x,p.y)
 ctx.lineTo(mouse.x,mouse.y)
+ctx.setLineDash([6,6])
 ctx.stroke()
-
 ctx.setLineDash([])
 
 }
