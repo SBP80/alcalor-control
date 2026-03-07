@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🔥 ALLCALOR PRO</title>
+<title>ALLCALOR PRO</title>
 
 <style>
 
@@ -14,9 +14,7 @@ color:white;
 padding:10px;
 }
 
-h1{
-text-align:center;
-}
+h1{text-align:center}
 
 .toolbar{
 background:#12314a;
@@ -54,11 +52,6 @@ border-radius:8px;
 canvas{
 background:#f4f1e8;
 border-radius:8px;
-cursor:crosshair;
-}
-
-#canvasBox{
-position:relative;
 }
 
 #hud{
@@ -81,7 +74,7 @@ font-weight:bold;
 
 <div class="toolbar">
 
-Escala
+Escala (px por metro)
 <input id="scale" type="number" value="100" style="width:70px">
 
 <button class="green" onclick="newRoom()">Nueva estancia</button>
@@ -97,16 +90,14 @@ Escala
 
 <b>ESTANCIAS</b>
 <div id="rooms"></div>
-
 <hr>
-
 <div id="total"></div>
 
 </div>
 
-<div id="canvasBox">
+<div style="position:relative">
 
-<div id="hud">0 m | 0°</div>
+<div id="hud">0 m</div>
 
 <canvas id="canvas" width="1100" height="650"></canvas>
 
@@ -123,59 +114,19 @@ let rooms=[]
 let current=[]
 let drawing=true
 
-let zoom=1
-let offsetX=0
-let offsetY=0
-
 let mouse={x:0,y:0}
-
-let dragPoint=null
-let dragRoom=null
 
 function scale(){
 return parseFloat(document.getElementById("scale").value)
 }
 
-function screenToWorld(x,y){
-
-return{
-x:(x-offsetX)/zoom,
-y:(y-offsetY)/zoom
+function metersToScreen(m){
+return m*scale()
 }
 
+function screenToMeters(px){
+return px/scale()
 }
-
-function worldToScreen(x,y){
-
-return{
-x:x*zoom+offsetX,
-y:y*zoom+offsetY
-}
-
-}
-
-canvas.addEventListener("mousedown",e=>{
-
-const rect=canvas.getBoundingClientRect()
-
-const x=e.clientX-rect.left
-const y=e.clientY-rect.top
-
-const p=screenToWorld(x,y)
-
-mouse=p
-
-if(drawing){
-
-current.push(p)
-
-draw()
-
-return
-
-}
-
-})
 
 canvas.addEventListener("mousemove",e=>{
 
@@ -184,26 +135,28 @@ const rect=canvas.getBoundingClientRect()
 const x=e.clientX-rect.left
 const y=e.clientY-rect.top
 
-mouse=screenToWorld(x,y)
+mouse.x=screenToMeters(x)
+mouse.y=screenToMeters(y)
 
 draw()
 
 })
 
-canvas.addEventListener("wheel",e=>{
+canvas.addEventListener("mousedown",e=>{
 
-const scaleFactor=1.1
+const rect=canvas.getBoundingClientRect()
 
-const mouseX=e.offsetX
-const mouseY=e.offsetY
+const x=e.clientX-rect.left
+const y=e.clientY-rect.top
 
-const wx=(mouseX-offsetX)/zoom
-const wy=(mouseY-offsetY)/zoom
+const mx=screenToMeters(x)
+const my=screenToMeters(y)
 
-zoom*=e.deltaY<0?scaleFactor:1/scaleFactor
+if(drawing){
 
-offsetX=mouseX-wx*zoom
-offsetY=mouseY-wy*zoom
+current.push({x:mx,y:my})
+
+}
 
 draw()
 
@@ -253,18 +206,18 @@ draw()
 
 function area(poly){
 
-let a=0
+let sum=0
 
 for(let i=0;i<poly.length;i++){
 
 let j=(i+1)%poly.length
 
-a+=poly[i].x*poly[j].y
-a-=poly[j].x*poly[i].y
+sum+=poly[i].x*poly[j].y
+sum-=poly[j].x*poly[i].y
 
 }
 
-return Math.abs(a/2)/(scale()*scale())
+return Math.abs(sum/2)
 
 }
 
@@ -276,11 +229,13 @@ for(let i=0;i<poly.length;i++){
 
 let j=(i+1)%poly.length
 
-p+=Math.hypot(poly[j].x-poly[i].x,poly[j].y-poly[i].y)
+p+=Math.hypot(
+poly[j].x-poly[i].x,
+poly[j].y-poly[i].y)
 
 }
 
-return p/scale()
+return p
 
 }
 
@@ -319,13 +274,21 @@ for(let r of rooms){
 
 ctx.beginPath()
 
-let p0=worldToScreen(r.v[0].x,r.v[0].y)
-ctx.moveTo(p0.x,p0.y)
+let p0=r.v[0]
+
+ctx.moveTo(
+metersToScreen(p0.x),
+metersToScreen(p0.y)
+)
 
 for(let i=1;i<r.v.length;i++){
 
-let p=worldToScreen(r.v[i].x,r.v[i].y)
-ctx.lineTo(p.x,p.y)
+let p=r.v[i]
+
+ctx.lineTo(
+metersToScreen(p.x),
+metersToScreen(p.y)
+)
 
 }
 
@@ -342,32 +305,26 @@ ctx.stroke()
 
 if(current.length){
 
-for(let v of current){
-
-let p=worldToScreen(v.x,v.y)
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-}
-
 let last=current[current.length-1]
 
-let p1=worldToScreen(last.x,last.y)
-let p2=worldToScreen(mouse.x,mouse.y)
+ctx.beginPath()
+
+ctx.moveTo(
+metersToScreen(last.x),
+metersToScreen(last.y)
+)
+
+ctx.lineTo(
+metersToScreen(mouse.x),
+metersToScreen(mouse.y)
+)
 
 ctx.setLineDash([6,6])
-
-ctx.beginPath()
-ctx.moveTo(p1.x,p1.y)
-ctx.lineTo(p2.x,p2.y)
 ctx.stroke()
 
 ctx.setLineDash([])
 
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
 
 document.getElementById("hud").innerText=dist.toFixed(2)+" m"
 
