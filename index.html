@@ -60,9 +60,9 @@ cursor:crosshair;
 position:absolute;
 background:#333;
 color:white;
-padding:4px 8px;
+padding:6px 10px;
 border-radius:4px;
-font-size:12px;
+font-size:13px;
 pointer-events:none;
 }
 
@@ -83,9 +83,9 @@ Escala px/m
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
-<button class="yellow" onclick="zoomIn()">+</button>
-<button class="yellow" onclick="zoomOut()">-</button>
-<button class="yellow" onclick="centerView()">Centrar</button>
+<button class="yellow">+</button>
+<button class="yellow">-</button>
+<button class="yellow">Centrar</button>
 
 </div>
 
@@ -117,6 +117,7 @@ Total: <span id="totalArea">0</span> m²
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
+const cursorInfo=document.getElementById("cursorInfo")
 
 let scale=100
 
@@ -166,8 +167,10 @@ let x=0
 let y=0
 
 for(let p of v){
+
 x+=p.x
 y+=p.y
+
 }
 
 return{
@@ -267,17 +270,15 @@ canvas.onmousemove=e=>{
 
 let r=canvas.getBoundingClientRect()
 
-let p={
+mouse={
 x:e.clientX-r.left,
 y:e.clientY-r.top
 }
 
-mouse=p
-
 if(dragVertex){
 
-dragVertex.x=p.x
-dragVertex.y=p.y
+dragVertex.x=mouse.x
+dragVertex.y=mouse.y
 
 updateList()
 
@@ -285,10 +286,10 @@ updateList()
 
 if(dragRoom){
 
-let dx=p.x-dragRoom.start.x
-let dy=p.y-dragRoom.start.y
+let dx=mouse.x-dragRoom.start.x
+let dy=mouse.y-dragRoom.start.y
 
-dragRoom.start=p
+dragRoom.start=mouse
 
 for(let v of dragRoom.room.v){
 
@@ -358,25 +359,26 @@ draw()
 
 }
 
-function zoomIn(){}
-function zoomOut(){}
-function centerView(){}
-
 function updateCursor(){
 
-let div=document.getElementById("cursorInfo")
+if(!drawing){
 
-if(!drawing || current.length===0){
-
-div.style.display="none"
+cursorInfo.style.display="none"
 return
 
 }
 
-div.style.display="block"
+cursorInfo.style.display="block"
 
-div.style.left=(mouse.x+15)+"px"
-div.style.top=(mouse.y+15)+"px"
+cursorInfo.style.left=(mouse.x+15)+"px"
+cursorInfo.style.top=(mouse.y+15)+"px"
+
+if(current.length===0){
+
+cursorInfo.innerText="Coloca primer punto"
+return
+
+}
 
 let last=current[current.length-1]
 
@@ -403,7 +405,7 @@ per+=dist(last,mouse)
 
 per/=scale
 
-div.innerText=
+cursorInfo.innerText=
 d.toFixed(2)+" m | "+
 ang.toFixed(0)+"° | perímetro "+
 per.toFixed(2)+" m"
