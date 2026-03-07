@@ -15,8 +15,8 @@ color:white;
 
 header{
 text-align:center;
-padding:15px;
-font-size:26px;
+padding:14px;
+font-size:24px;
 font-weight:bold;
 }
 
@@ -25,6 +25,7 @@ display:flex;
 gap:10px;
 padding:10px;
 background:#162f4d;
+align-items:center;
 }
 
 button{
@@ -39,10 +40,11 @@ cursor:pointer;
 .blue{background:#3498db}
 .orange{background:#ff9800}
 .red{background:#e53935}
+.gray{background:#ddd}
 
 #container{
 display:flex;
-height:calc(100vh - 100px);
+height:calc(100vh - 90px);
 }
 
 #panel{
@@ -51,23 +53,26 @@ background:#17395d;
 padding:10px;
 }
 
-#canvasContainer{
+#canvasBox{
 flex:1;
-position:relative;
 background:#e6e6e6;
+position:relative;
 }
 
 canvas{
 background:white;
 }
 
-.measure{
+#measure{
 position:absolute;
+top:10px;
+left:50%;
+transform:translateX(-50%);
 background:#111;
 color:#0f0;
-padding:4px 8px;
+padding:6px 10px;
 border-radius:4px;
-font-size:13px;
+font-size:14px;
 }
 
 </style>
@@ -79,12 +84,16 @@ font-size:13px;
 
 <div id="toolbar">
 
-Escala <input type="number" value="100" style="width:70px">
+Escala <input id="scaleInput" type="number" value="100" style="width:70px">
 
 <button class="green" onclick="newRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
+
+<button class="gray" onclick="zoomIn()">+</button>
+<button class="gray" onclick="zoomOut()">-</button>
+<button class="gray" onclick="togglePan()">✋</button>
 
 </div>
 
@@ -95,8 +104,12 @@ Escala <input type="number" value="100" style="width:70px">
 <div id="roomList"></div>
 </div>
 
-<div id="canvasContainer">
+<div id="canvasBox">
+
+<div id="measure">0 m | 0°</div>
+
 <canvas id="canvas"></canvas>
+
 </div>
 
 </div>
@@ -110,101 +123,75 @@ canvas.width=window.innerWidth-220
 canvas.height=window.innerHeight-100
 
 let rooms=[]
-let current=null
-let draggingPoint=null
-let draggingRoom=null
+let currentRoom=null
 
 let mouse={x:0,y:0}
 
-canvas.onmousemove=e=>{
+let zoom=1
+let offsetX=0
+let offsetY=0
 
-const r=canvas.getBoundingClientRect()
+let panMode=false
+let panning=false
 
-mouse.x=e.clientX-r.left
-mouse.y=e.clientY-r.top
+const measure=document.getElementById("measure")
 
-if(draggingPoint){
+canvas.addEventListener("mousemove",e=>{
 
-draggingPoint.x=mouse.x
-draggingPoint.y=mouse.y
+const rect=canvas.getBoundingClientRect()
+
+mouse.x=(e.clientX-rect.left-offsetX)/zoom
+mouse.y=(e.clientY-rect.top-offsetY)/zoom
+
+if(panning){
+
+offsetX+=e.movementX
+offsetY+=e.movementY
 draw()
-
-}
-
-if(draggingRoom){
-
-let dx=mouse.x-draggingRoom.start.x
-let dy=mouse.y-draggingRoom.start.y
-
-for(let p of draggingRoom.room.points){
-
-p.x=p.ox+dx
-p.y=p.oy+dy
-
-}
-
-draw()
-
-}
-
-}
-
-canvas.onmousedown=e=>{
-
-for(let room of rooms){
-
-for(let p of room.points){
-
-let d=Math.hypot(mouse.x-p.x,mouse.y-p.y)
-
-if(d<8){
-
-draggingPoint=p
 return
 
 }
 
-}
+if(currentRoom && currentRoom.points.length>0){
+
+let last=currentRoom.points[currentRoom.points.length-1]
+
+let dx=mouse.x-last.x
+let dy=mouse.y-last.y
+
+let dist=Math.sqrt(dx*dx+dy*dy)/100
+let ang=Math.atan2(dy,dx)*180/Math.PI
+
+measure.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 }
 
-for(let room of rooms){
+draw()
 
-if(pointInPoly(mouse,room.points)){
+})
 
-draggingRoom={
-room:room,
-start:{x:mouse.x,y:mouse.y}
-}
+canvas.addEventListener("mousedown",e=>{
 
-for(let p of room.points){
+if(panMode){
 
-p.ox=p.x
-p.oy=p.y
-
-}
-
+panning=true
 return
 
 }
 
-}
+if(!currentRoom)return
 
-if(current){
+currentRoom.points.push({x:mouse.x,y:mouse.y})
 
-current.points.push({x:mouse.x,y:mouse.y})
 draw()
 
-}
+})
 
-}
+canvas.addEventListener("mouseup",()=>{
 
-canvas.onmouseup=()=>{
+panning=false
 
-draggingPoint=null
-draggingRoom=null
-
-}
+})
 
 function newRoom(){
 
@@ -212,12 +199,14 @@ let name=prompt("Nombre estancia")
 
 if(!name)return
 
-current={
+currentRoom={
+
 name:name,
 points:[]
+
 }
 
-rooms.push(current)
+rooms.push(currentRoom)
 
 updateList()
 
@@ -225,16 +214,16 @@ updateList()
 
 function closeRoom(){
 
-current=null
+currentRoom=null
 draw()
 
 }
 
 function undo(){
 
-if(current && current.points.length>0){
+if(currentRoom && currentRoom.points.length>0){
 
-current.points.pop()
+currentRoom.points.pop()
 draw()
 
 }
@@ -244,23 +233,43 @@ draw()
 function resetAll(){
 
 rooms=[]
-current=null
+currentRoom=null
 updateList()
 draw()
 
 }
 
+function zoomIn(){
+
+zoom*=1.2
+draw()
+
+}
+
+function zoomOut(){
+
+zoom/=1.2
+draw()
+
+}
+
+function togglePan(){
+
+panMode=!panMode
+
+}
+
 function updateList(){
 
-let div=document.getElementById("roomList")
+let list=document.getElementById("roomList")
 
-div.innerHTML=""
+list.innerHTML=""
 
 rooms.forEach(r=>{
 
-let el=document.createElement("div")
-el.innerText=r.name
-div.appendChild(el)
+let div=document.createElement("div")
+div.innerText=r.name
+list.appendChild(div)
 
 })
 
@@ -270,6 +279,11 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
+ctx.save()
+
+ctx.translate(offsetX,offsetY)
+ctx.scale(zoom,zoom)
+
 rooms.forEach(room=>{
 
 let pts=room.points
@@ -277,6 +291,7 @@ let pts=room.points
 if(pts.length<2)return
 
 ctx.beginPath()
+
 ctx.moveTo(pts[0].x,pts[0].y)
 
 for(let i=1;i<pts.length;i++){
@@ -298,12 +313,10 @@ ctx.fill()
 
 })
 
-for(let i=0;i<pts.length;i++){
+for(let i=0;i<pts.length-1;i++){
 
 let a=pts[i]
-let b=pts[(i+1)%pts.length]
-
-if(!b)continue
+let b=pts[i+1]
 
 let mx=(a.x+b.x)/2
 let my=(a.y+b.y)/2
@@ -320,9 +333,9 @@ ctx.fillText(dist.toFixed(2)+" m",mx-25,my+5)
 
 })
 
-if(current && current.points.length>0){
+if(currentRoom && currentRoom.points.length>0){
 
-let last=current.points[current.points.length-1]
+let last=currentRoom.points[currentRoom.points.length-1]
 
 ctx.beginPath()
 ctx.moveTo(last.x,last.y)
@@ -334,27 +347,7 @@ ctx.setLineDash([])
 
 }
 
-}
-
-function pointInPoly(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x
-let yi=poly[i].y
-let xj=poly[j].x
-let yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
+ctx.restore()
 
 }
 
