@@ -39,7 +39,6 @@ font-weight:bold;
 .blue{background:#2b83ff}
 .orange{background:#ff9800}
 .red{background:#e53935}
-.yellow{background:#ffcc00;color:black}
 
 #layout{
 display:flex;
@@ -54,6 +53,15 @@ padding:10px;
 canvas{
 background:#f4f1e8;
 cursor:crosshair;
+}
+
+#cursor{
+position:absolute;
+background:#333;
+padding:6px 10px;
+border-radius:4px;
+font-size:12px;
+pointer-events:none;
 }
 
 </style>
@@ -89,7 +97,13 @@ Total: <span id="totalArea">0</span> m²
 
 </div>
 
+<div style="position:relative">
+
 <canvas id="canvas" width="1200" height="700"></canvas>
+
+<div id="cursor"></div>
+
+</div>
 
 </div>
 
@@ -97,6 +111,8 @@ Total: <span id="totalArea">0</span> m²
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
+
+const cursor=document.getElementById("cursor")
 
 let scale=100
 
@@ -174,26 +190,23 @@ return sum
 
 }
 
-function snapPoint(last,point){
+function pointInside(point,poly){
 
-let dx=point.x-last.x
-let dy=point.y-last.y
+let inside=false
 
-let ang=Math.atan2(dy,dx)
-let deg=ang*180/Math.PI
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
 
-let snap=[0,45,90,135,180,-45,-90,-135]
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
 
-let closest=snap.reduce((a,b)=>
-Math.abs(b-deg)<Math.abs(a-deg)?b:a)
+let intersect=((yi>point.y)!=(yj>point.y)) &&
+(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
 
-let rad=closest*Math.PI/180
-let d=Math.sqrt(dx*dx+dy*dy)
+if(intersect) inside=!inside
 
-return{
-x:last.x+Math.cos(rad)*d,
-y:last.y+Math.sin(rad)*d
 }
+
+return inside
 
 }
 
@@ -210,14 +223,7 @@ mouse=p
 
 if(drawing){
 
-if(current.length>0){
-
-p=snapPoint(current[current.length-1],p)
-
-}
-
 current.push(p)
-
 draw()
 return
 
@@ -238,6 +244,21 @@ return
 
 }
 
+for(let room of rooms){
+
+if(pointInside(p,room.v)){
+
+dragRoom={
+room:room,
+start:p
+}
+
+return
+
+}
+
+}
+
 }
 
 canvas.onmousemove=e=>{
@@ -249,12 +270,6 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 }
 
-if(drawing && current.length>0){
-
-mouse=snapPoint(current[current.length-1],mouse)
-
-}
-
 if(dragVertex){
 
 dragVertex.x=mouse.x
@@ -263,6 +278,26 @@ dragVertex.y=mouse.y
 updateList()
 
 }
+
+if(dragRoom){
+
+let dx=mouse.x-dragRoom.start.x
+let dy=mouse.y-dragRoom.start.y
+
+dragRoom.start=mouse
+
+for(let v of dragRoom.room.v){
+
+v.x+=dx
+v.y+=dy
+
+}
+
+updateList()
+
+}
+
+updateCursor()
 
 draw()
 
@@ -319,6 +354,39 @@ draw()
 
 }
 
+function updateCursor(){
+
+if(!drawing || current.length===0){
+
+cursor.style.display="none"
+return
+
+}
+
+cursor.style.display="block"
+
+cursor.style.left=(mouse.x+20)+"px"
+cursor.style.top=(mouse.y+20)+"px"
+
+let last=current[current.length-1]
+
+let d=dist(last,mouse)/scale
+
+let ang=0
+
+if(current.length>1){
+
+let prev=current[current.length-2]
+ang=angle(prev,last,mouse)
+
+}
+
+cursor.innerText=
+d.toFixed(2)+" m | "+
+ang.toFixed(0)+"°"
+
+}
+
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -350,6 +418,7 @@ for(let i=0;i<v.length;i++){
 
 let a=v[i]
 let b=v[(i+1)%v.length]
+
 let mid={
 x:(a.x+b.x)/2,
 y:(a.y+b.y)/2
@@ -370,7 +439,7 @@ let c=v[(i+1)%v.length]
 
 let ang=angle(a,b,c)
 
-ctx.fillStyle="darkorange"
+ctx.fillStyle="orange"
 ctx.fillText(ang.toFixed(0)+"°",b.x+5,b.y-5)
 
 }
@@ -410,6 +479,17 @@ ctx.lineTo(current[i].x,current[i].y)
 
 ctx.strokeStyle="#2b83ff"
 ctx.stroke()
+
+let last=current[current.length-1]
+
+ctx.setLineDash([6,6])
+
+ctx.beginPath()
+ctx.moveTo(last.x,last.y)
+ctx.lineTo(mouse.x,mouse.y)
+ctx.stroke()
+
+ctx.setLineDash([])
 
 }
 
