@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR PRO</title>
+<title>🔥 ALLCALOR PRO</title>
 
 <style>
 
@@ -14,7 +14,10 @@ color:white;
 padding:10px;
 }
 
-h1{text-align:center}
+h1{
+text-align:center;
+margin-bottom:10px;
+}
 
 .toolbar{
 background:#12314a;
@@ -52,6 +55,7 @@ border-radius:8px;
 canvas{
 background:#f4f1e8;
 border-radius:8px;
+cursor:crosshair;
 }
 
 #hud{
@@ -87,12 +91,10 @@ Escala (px por metro)
 <div id="layout">
 
 <div id="panel">
-
 <b>ESTANCIAS</b>
 <div id="rooms"></div>
 <hr>
 <div id="total"></div>
-
 </div>
 
 <div style="position:relative">
@@ -126,6 +128,26 @@ return m*scale()
 
 function screenToMeters(px){
 return px/scale()
+}
+
+function snapAngle(last,mouse){
+
+let dx=mouse.x-last.x
+let dy=mouse.y-last.y
+
+let ang=Math.atan2(dy,dx)
+
+let step=Math.PI/2
+
+ang=Math.round(ang/step)*step
+
+let dist=Math.sqrt(dx*dx+dy*dy)
+
+return{
+x:last.x+Math.cos(ang)*dist,
+y:last.y+Math.sin(ang)*dist
+}
+
 }
 
 canvas.addEventListener("mousemove",e=>{
@@ -188,8 +210,10 @@ draw()
 
 function undo(){
 
+if(current.length>0){
 current.pop()
 draw()
+}
 
 }
 
@@ -305,7 +329,26 @@ ctx.stroke()
 
 if(current.length){
 
+for(let p of current){
+
+ctx.beginPath()
+
+ctx.arc(
+metersToScreen(p.x),
+metersToScreen(p.y),
+4,
+0,
+Math.PI*2
+)
+
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
 let last=current[current.length-1]
+
+let snapped=snapAngle(last,mouse)
 
 ctx.beginPath()
 
@@ -315,16 +358,16 @@ metersToScreen(last.y)
 )
 
 ctx.lineTo(
-metersToScreen(mouse.x),
-metersToScreen(mouse.y)
+metersToScreen(snapped.x),
+metersToScreen(snapped.y)
 )
 
 ctx.setLineDash([6,6])
+ctx.strokeStyle="#444"
 ctx.stroke()
-
 ctx.setLineDash([])
 
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)
+let dist=Math.hypot(snapped.x-last.x,snapped.y-last.y)
 
 document.getElementById("hud").innerText=dist.toFixed(2)+" m"
 
