@@ -42,12 +42,9 @@ cursor:pointer;
 .orange{background:#ff9800}
 .red{background:#e53935}
 
-/* NUEVO COLOR ZOOM */
-
 .zoom{
 background:#ffd600;
 color:black;
-font-weight:bold;
 }
 
 #layout{
@@ -144,21 +141,17 @@ return parseFloat(document.getElementById("scale").value)
 }
 
 function worldToScreen(x,y){
-
 return{
 x:(x*scale()*zoomLevel)+offsetX,
 y:(y*scale()*zoomLevel)+offsetY
 }
-
 }
 
 function screenToWorld(x,y){
-
 return{
 x:(x-offsetX)/(scale()*zoomLevel),
 y:(y-offsetY)/(scale()*zoomLevel)
 }
-
 }
 
 canvas.addEventListener("mousemove",move)
@@ -179,7 +172,6 @@ e.clientY-r.top
 function start(e){
 
 let p=getMouse(e)
-
 mouse=p
 
 if(drawing){
@@ -265,33 +257,25 @@ draw()
 }
 
 function end(){
-
 dragVertex=null
 dragRoom=null
-
 }
 
 function zoom(f){
-
 zoomLevel*=f
 draw()
-
 }
 
 function centerView(){
-
 zoomLevel=1
 offsetX=0
 offsetY=0
 draw()
-
 }
 
 function newRoom(){
-
 drawing=true
 current=[]
-
 }
 
 function closeRoom(){
@@ -314,21 +298,16 @@ draw()
 }
 
 function undo(){
-
 current.pop()
 draw()
-
 }
 
 function reset(){
-
 rooms=[]
 current=[]
 drawing=true
-
 updatePanel()
 draw()
-
 }
 
 function area(poly){
@@ -455,6 +434,8 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
+/* VERTICES */
+
 for(let v of r.v){
 
 let p=worldToScreen(v.x,v.y)
@@ -463,6 +444,45 @@ ctx.beginPath()
 ctx.arc(p.x,p.y,5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
+
+}
+
+/* MEDIDAS PAREDES */
+
+for(let i=0;i<r.v.length;i++){
+
+let j=(i+1)%r.v.length
+
+let dx=r.v[j].x-r.v[i].x
+let dy=r.v[j].y-r.v[i].y
+
+let dist=Math.hypot(dx,dy)
+
+let mx=(r.v[i].x+r.v[j].x)/2
+let my=(r.v[i].y+r.v[j].y)/2
+
+let p=worldToScreen(mx,my)
+
+ctx.fillStyle="black"
+ctx.font="12px Arial"
+ctx.fillText(dist.toFixed(2)+" m",p.x,p.y)
+
+}
+
+/* ANGULOS */
+
+for(let i=0;i<r.v.length;i++){
+
+let prev=r.v[(i-1+r.v.length)%r.v.length]
+let cur=r.v[i]
+let next=r.v[(i+1)%r.v.length]
+
+let ang=angle(prev,cur,next)
+
+let p=worldToScreen(cur.x,cur.y)
+
+ctx.fillStyle="orange"
+ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
 
 }
 
@@ -497,8 +517,6 @@ ctx.setLineDash([])
 }
 
 }
-
-/* LINEA HASTA CURSOR */
 
 let last=current[current.length-1]
 
