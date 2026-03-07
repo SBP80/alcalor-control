@@ -75,7 +75,7 @@ Escala px/m
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
 <button class="yellow" onclick="zoomIn()">+</button>
-<button class="yellow" onclick="zoomOut()">−</button>
+<button class="yellow" onclick="zoomOut()">-</button>
 <button class="yellow" onclick="centerView()">Centrar</button>
 
 <button id="snapButton" class="purple" onclick="toggleSnap()">SNAP OFF</button>
@@ -121,55 +121,40 @@ let dragRoom=null
 let snapEnabled=false
 
 function toggleSnap(){
-
 snapEnabled=!snapEnabled
 snapButton.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
-
 }
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
 }
 
-function angle(a,b,c){
-
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
-ang=Math.abs(ang*180/Math.PI)
-
-if(ang>180) ang=360-ang
-return ang
-
-}
-
 function polygonArea(v){
-
 let sum=0
-
 for(let i=0;i<v.length;i++){
-
 let j=(i+1)%v.length
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
-
+}
+return Math.abs(sum/2)
 }
 
-return Math.abs(sum/2)
-
+function perimeter(v){
+let p=0
+for(let i=0;i<v.length;i++){
+let j=(i+1)%v.length
+p+=dist(v[i],v[j])
+}
+return p
 }
 
 function centroid(v){
-
 let x=0
 let y=0
-
 for(let p of v){
-
 x+=p.x
 y+=p.y
-
 }
-
-return{x:x/v.length,y:y/v.length}
-
+return {x:x/v.length,y:y/v.length}
 }
 
 function pointInside(point,poly){
@@ -178,8 +163,11 @@ let inside=false
 
 for(let i=0,j=poly.length-1;i<poly.length;j=i++){
 
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
+let xi=poly[i].x
+let yi=poly[i].y
+
+let xj=poly[j].x
+let yj=poly[j].y
 
 let intersect=((yi>point.y)!=(yj>point.y)) &&
 (point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
@@ -189,7 +177,6 @@ if(intersect) inside=!inside
 }
 
 return inside
-
 }
 
 function snapPoint(p){
@@ -197,17 +184,12 @@ function snapPoint(p){
 if(!snapEnabled) return p
 
 for(let r of rooms){
-
 for(let v of r.v){
-
 if(dist(p,v)<15) return v
-
 }
-
 }
 
 return p
-
 }
 
 function screenToWorld(p){
@@ -245,17 +227,11 @@ for(let room of rooms){
 for(let v of room.v){
 
 if(dist(v,p)<10){
-
 dragVertex=v
 return
-
 }
 
 }
-
-}
-
-for(let room of rooms){
 
 if(pointInside(p,room.v)){
 
@@ -281,35 +257,32 @@ x:e.clientX-r.left,
 y:e.clientY-r.top
 })
 
-mouse=snapPoint(p)
-
 if(dragVertex){
 
-dragVertex.x=mouse.x
-dragVertex.y=mouse.y
-updateList()
+dragVertex.x=p.x
+dragVertex.y=p.y
+draw()
+updateRooms()
+return
 
 }
 
 if(dragRoom){
 
-let dx=mouse.x-dragRoom.start.x
-let dy=mouse.y-dragRoom.start.y
-
-dragRoom.start=mouse
+let dx=p.x-dragRoom.start.x
+let dy=p.y-dragRoom.start.y
 
 for(let v of dragRoom.room.v){
-
 v.x+=dx
 v.y+=dy
-
 }
 
-updateList()
-
-}
+dragRoom.start=p
 
 draw()
+updateRooms()
+
+}
 
 }
 
@@ -321,199 +294,153 @@ dragRoom=null
 }
 
 function newRoom(){
-
 drawing=true
 current=[]
-
 }
 
 function closeRoom(){
 
 if(current.length<3) return
 
-let name=prompt("Nombre estancia")
-
 rooms.push({
-name:name||"estancia",
+name:"Estancia "+(rooms.length+1),
 v:[...current]
 })
 
-drawing=false
 current=[]
+drawing=false
 
-updateList()
+updateRooms()
 draw()
 
 }
 
 function undo(){
-
 current.pop()
 draw()
-
 }
 
 function resetAll(){
 
 rooms=[]
 current=[]
-drawing=false
 
-updateList()
+updateRooms()
 draw()
 
 }
 
 function zoomIn(){
-
 camera.zoom*=1.2
 draw()
-
 }
 
 function zoomOut(){
-
 camera.zoom/=1.2
 draw()
-
 }
 
 function centerView(){
 
-camera.x=canvas.width/2
-camera.y=canvas.height/2
+camera.x=0
+camera.y=0
+camera.zoom=1
+
 draw()
 
 }
 
-function drawPolygon(v){
+function updateRooms(){
 
-ctx.beginPath()
-ctx.moveTo(v[0].x,v[0].y)
+let div=document.getElementById("rooms")
+div.innerHTML=""
 
-for(let i=1;i<v.length;i++){
+let total=0
 
-ctx.lineTo(v[i].x,v[i].y)
+for(let r of rooms){
 
-}
+let area=polygonArea(r.v)
+let per=perimeter(r.v)
 
-ctx.closePath()
+total+=area
 
-ctx.fillStyle="rgba(0,150,255,0.15)"
-ctx.fill()
+let d=document.createElement("div")
 
-ctx.strokeStyle="#2b83ff"
-ctx.lineWidth=2
-ctx.stroke()
+d.innerHTML="<b>"+r.name+"</b><br>"+
+"Área: "+area.toFixed(2)+" m²<br>"+
+"Perímetro: "+per.toFixed(2)+" m"
 
-for(let i=0;i<v.length;i++){
+d.style.marginBottom="10px"
 
-let a=v[i]
-let b=v[(i+1)%v.length]
-
-let mid={
-x:(a.x+b.x)/2,
-y:(a.y+b.y)/2
-}
-
-let d=dist(a,b)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",mid.x,mid.y)
+div.appendChild(d)
 
 }
 
-for(let i=0;i<v.length;i++){
-
-let a=v[(i-1+v.length)%v.length]
-let b=v[i]
-let c=v[(i+1)%v.length]
-
-let ang=angle(a,b,c)
-
-ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",b.x+5,b.y-5)
-
-}
-
-for(let p of v){
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-}
+document.getElementById("totalArea").innerText=total.toFixed(2)
 
 }
 
 function draw(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+ctx.setTransform(camera.zoom,0,0,camera.zoom,camera.x,camera.y)
 
-ctx.save()
+ctx.clearRect(-10000,-10000,20000,20000)
 
-ctx.translate(camera.x,camera.y)
-ctx.scale(camera.zoom,camera.zoom)
+ctx.lineWidth=2
 
 for(let r of rooms){
 
-drawPolygon(r.v)
+ctx.beginPath()
+
+for(let i=0;i<r.v.length;i++){
+
+let p=r.v[i]
+
+if(i==0) ctx.moveTo(p.x,p.y)
+else ctx.lineTo(p.x,p.y)
+
+}
+
+ctx.closePath()
+
+ctx.fillStyle="rgba(0,150,255,0.2)"
+ctx.fill()
+
+ctx.strokeStyle="#4aa3ff"
+ctx.stroke()
+
+for(let v of r.v){
+
+ctx.beginPath()
+ctx.arc(v.x,v.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
 
 let c=centroid(r.v)
-let area=polygonArea(r.v)/scale/scale
 
 ctx.fillStyle="black"
-ctx.textAlign="center"
-
-ctx.fillText(r.name,c.x,c.y)
-ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
+ctx.fillText(r.name,c.x-20,c.y)
 
 }
 
 if(current.length){
 
-let temp=[...current,mouse]
-drawPolygon(temp)
+ctx.beginPath()
+
+for(let i=0;i<current.length;i++){
+
+let p=current[i]
+
+if(i==0) ctx.moveTo(p.x,p.y)
+else ctx.lineTo(p.x,p.y)
 
 }
 
-ctx.restore()
+ctx.stroke()
 
 }
-
-function updateList(){
-
-let html=""
-let total=0
-
-for(let r of rooms){
-
-let area=polygonArea(r.v)/scale/scale
-let per=0
-
-for(let i=0;i<r.v.length;i++){
-
-let j=(i+1)%r.v.length
-per+=dist(r.v[i],r.v[j])
-
-}
-
-per/=scale
-
-total+=area
-
-html+=`
-<b>${r.name}</b><br>
-Área: ${area.toFixed(2)} m²<br>
-Perímetro: ${per.toFixed(2)} m
-<hr>
-`
-
-}
-
-document.getElementById("rooms").innerHTML=html
-document.getElementById("totalArea").innerText=total.toFixed(2)
 
 }
 
