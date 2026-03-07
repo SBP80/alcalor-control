@@ -16,7 +16,6 @@ padding:10px;
 
 h1{
 text-align:center;
-margin-bottom:10px;
 }
 
 .toolbar{
@@ -43,7 +42,7 @@ cursor:pointer;
 .red{background:#e53935}
 
 .zoom{
-background:#ffd600;
+background:#ffb300;
 color:black;
 }
 
@@ -197,17 +196,6 @@ return
 
 }
 
-for(let r of rooms){
-
-if(pointInside(p,r.v)){
-
-dragRoom={room:r,start:p}
-return
-
-}
-
-}
-
 }
 
 function move(e){
@@ -215,7 +203,6 @@ function move(e){
 const rect=canvas.getBoundingClientRect()
 
 let p=getMouse(e)
-
 mouse=p
 
 hud.style.left=(e.clientX-rect.left+15)+"px"
@@ -226,27 +213,6 @@ if(dragVertex){
 dragVertex.x=p.x
 dragVertex.y=p.y
 
-updatePanel()
-draw()
-return
-
-}
-
-if(dragRoom){
-
-let dx=p.x-dragRoom.start.x
-let dy=p.y-dragRoom.start.y
-
-dragRoom.start=p
-
-for(let v of dragRoom.room.v){
-
-v.x+=dx
-v.y+=dy
-
-}
-
-updatePanel()
 draw()
 return
 
@@ -257,8 +223,9 @@ draw()
 }
 
 function end(){
+
 dragVertex=null
-dragRoom=null
+
 }
 
 function zoom(f){
@@ -267,25 +234,28 @@ draw()
 }
 
 function centerView(){
+
 zoomLevel=1
 offsetX=0
 offsetY=0
+
 draw()
+
 }
 
 function newRoom(){
+
 drawing=true
 current=[]
+
 }
 
 function closeRoom(){
 
 if(current.length<3)return
 
-let name=prompt("Nombre estancia")
-
 rooms.push({
-name:name||"estancia",
+name:"h"+(rooms.length+1),
 v:[...current]
 })
 
@@ -303,72 +273,13 @@ draw()
 }
 
 function reset(){
+
 rooms=[]
 current=[]
 drawing=true
+
 updatePanel()
 draw()
-}
-
-function area(poly){
-
-let sum=0
-
-for(let i=0;i<poly.length;i++){
-
-let j=(i+1)%poly.length
-
-sum+=poly[i].x*poly[j].y
-sum-=poly[j].x*poly[i].y
-
-}
-
-return Math.abs(sum/2)
-
-}
-
-function perimeter(poly){
-
-let p=0
-
-for(let i=0;i<poly.length;i++){
-
-let j=(i+1)%poly.length
-
-p+=Math.hypot(
-poly[j].x-poly[i].x,
-poly[j].y-poly[i].y)
-
-}
-
-return p
-
-}
-
-function updatePanel(){
-
-let html=""
-let total=0
-
-for(let r of rooms){
-
-let a=area(r.v)
-let p=perimeter(r.v)
-
-total+=a
-
-html+=`
-<div>
-<b>${r.name}</b><br>
-Área: ${a.toFixed(2)} m²<br>
-Perímetro: ${p.toFixed(2)} m
-</div><br>
-`
-
-}
-
-document.getElementById("rooms").innerHTML=html
-document.getElementById("total").innerHTML="Total: "+total.toFixed(2)+" m²"
 
 }
 
@@ -385,26 +296,6 @@ return ang
 
 }
 
-function pointInside(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
-
-}
-
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -413,14 +304,16 @@ ctx.clearRect(0,0,canvas.width,canvas.height)
 
 for(let r of rooms){
 
+let poly=r.v
+
 ctx.beginPath()
 
-let p=worldToScreen(r.v[0].x,r.v[0].y)
+let p=worldToScreen(poly[0].x,poly[0].y)
 ctx.moveTo(p.x,p.y)
 
-for(let i=1;i<r.v.length;i++){
+for(let i=1;i<poly.length;i++){
 
-let q=worldToScreen(r.v[i].x,r.v[i].y)
+let q=worldToScreen(poly[i].x,poly[i].y)
 ctx.lineTo(q.x,q.y)
 
 }
@@ -436,7 +329,7 @@ ctx.stroke()
 
 /* VERTICES */
 
-for(let v of r.v){
+for(let v of poly){
 
 let p=worldToScreen(v.x,v.y)
 
@@ -447,41 +340,43 @@ ctx.fill()
 
 }
 
-/* MEDIDAS PAREDES */
-
-for(let i=0;i<r.v.length;i++){
-
-let j=(i+1)%r.v.length
-
-let dx=r.v[j].x-r.v[i].x
-let dy=r.v[j].y-r.v[i].y
-
-let dist=Math.hypot(dx,dy)
-
-let mx=(r.v[i].x+r.v[j].x)/2
-let my=(r.v[i].y+r.v[j].y)/2
-
-let p=worldToScreen(mx,my)
+/* MEDIDAS */
 
 ctx.fillStyle="black"
 ctx.font="12px Arial"
+
+for(let i=0;i<poly.length;i++){
+
+let j=(i+1)%poly.length
+
+let dx=poly[j].x-poly[i].x
+let dy=poly[j].y-poly[i].y
+
+let dist=Math.hypot(dx,dy)
+
+let mx=(poly[i].x+poly[j].x)/2
+let my=(poly[i].y+poly[j].y)/2
+
+let p=worldToScreen(mx,my)
+
 ctx.fillText(dist.toFixed(2)+" m",p.x,p.y)
 
 }
 
 /* ANGULOS */
 
-for(let i=0;i<r.v.length;i++){
+ctx.fillStyle="orange"
 
-let prev=r.v[(i-1+r.v.length)%r.v.length]
-let cur=r.v[i]
-let next=r.v[(i+1)%r.v.length]
+for(let i=0;i<poly.length;i++){
+
+let prev=poly[(i-1+poly.length)%poly.length]
+let cur=poly[i]
+let next=poly[(i+1)%poly.length]
 
 let ang=angle(prev,cur,next)
 
 let p=worldToScreen(cur.x,cur.y)
 
-ctx.fillStyle="orange"
 ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
 
 }
@@ -491,32 +386,6 @@ ctx.fillText(ang.toFixed(0)+"°",p.x+6,p.y-6)
 /* DIBUJO EN CURSO */
 
 if(current.length){
-
-for(let i=0;i<current.length;i++){
-
-let p=worldToScreen(current[i].x,current[i].y)
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-if(i>0){
-
-let p1=worldToScreen(current[i-1].x,current[i-1].y)
-
-ctx.beginPath()
-ctx.moveTo(p1.x,p1.y)
-ctx.lineTo(p.x,p.y)
-
-ctx.setLineDash([6,6])
-ctx.strokeStyle="#444"
-ctx.stroke()
-ctx.setLineDash([])
-
-}
-
-}
 
 let last=current[current.length-1]
 
@@ -528,7 +397,6 @@ ctx.moveTo(p1.x,p1.y)
 ctx.lineTo(p2.x,p2.y)
 
 ctx.setLineDash([6,6])
-ctx.strokeStyle="#444"
 ctx.stroke()
 ctx.setLineDash([])
 
@@ -546,6 +414,54 @@ ang=angle(prev,last,mouse)
 hud.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 }
+
+}
+
+function updatePanel(){
+
+let html=""
+let total=0
+
+for(let r of rooms){
+
+let area=0
+
+let v=r.v
+
+for(let i=0;i<v.length;i++){
+
+let j=(i+1)%v.length
+
+area+=v[i].x*v[j].y-v[j].x*v[i].y
+
+}
+
+area=Math.abs(area/2)
+
+let per=0
+
+for(let i=0;i<v.length;i++){
+
+let j=(i+1)%v.length
+
+per+=Math.hypot(v[j].x-v[i].x,v[j].y-v[i].y)
+
+}
+
+total+=area
+
+html+=`
+<div>
+<b>${r.name}</b><br>
+Área: ${area.toFixed(2)} m²<br>
+Perímetro: ${per.toFixed(2)} m
+</div><br>
+`
+
+}
+
+document.getElementById("rooms").innerHTML=html
+document.getElementById("total").innerHTML="Total: "+total.toFixed(2)+" m²"
 
 }
 
