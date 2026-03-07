@@ -39,7 +39,6 @@ font-weight:bold;
 .blue{background:#2b83ff}
 .orange{background:#ff9800}
 .red{background:#e53935}
-.yellow{background:#ffc107;color:black}
 
 #layout{
 display:flex;
@@ -70,7 +69,7 @@ Escala px/m
 
 <button class="green" onclick="startRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
-<button class="orange" onclick="undo()">Deshacer</button>
+<button class="orange" onclick="undoPoint()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
 </div>
@@ -81,7 +80,7 @@ Escala px/m
 
 <h3>Estancias</h3>
 
-<div id="rooms"></div>
+<div id="roomsPanel"></div>
 
 <hr>
 
@@ -101,26 +100,18 @@ const ctx=canvas.getContext("2d")
 let scale=100
 
 let rooms=[]
+let drawingPoints=[]
 let drawing=false
-let current=[]
 
 let mouse={x:0,y:0}
 
 let dragVertex=null
 let dragRoom=null
 
+// ---------- utilidades ----------
+
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
-}
-
-function angle(a,b,c){
-
-let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
-ang=Math.abs(ang*180/Math.PI)
-
-if(ang>180) ang=360-ang
-return ang
-
 }
 
 function polygonArea(v){
@@ -152,6 +143,28 @@ return{x:x/v.length,y:y/v.length}
 
 }
 
+function pointInside(point,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>point.y)!=(yj>point.y)) &&
+(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
+
+if(intersect) inside=!inside
+
+}
+
+return inside
+
+}
+
+// ---------- mouse ----------
+
 canvas.onmousedown=e=>{
 
 const r=canvas.getBoundingClientRect()
@@ -165,7 +178,7 @@ mouse=p
 
 if(drawing){
 
-current.push({...p})
+drawingPoints.push({...p})
 draw()
 return
 
@@ -176,10 +189,8 @@ for(let room of rooms){
 for(let v of room.v){
 
 if(dist(v,p)<10){
-
 dragVertex=v
 return
-
 }
 
 }
@@ -246,33 +257,37 @@ dragRoom=null
 
 }
 
+// ---------- acciones ----------
+
 function startRoom(){
 
 drawing=true
-current=[]
+drawingPoints=[]
 
 }
 
 function closeRoom(){
 
-if(current.length<3)return
+if(drawingPoints.length<3) return
 
 rooms.push({
 name:"estancia",
-v:[...current]
+v:[...drawingPoints]
 })
 
 drawing=false
-current=[]
+drawingPoints=[]
 
 updatePanel()
 draw()
 
 }
 
-function undo(){
+function undoPoint(){
 
-current.pop()
+if(drawingPoints.length)
+drawingPoints.pop()
+
 draw()
 
 }
@@ -280,13 +295,15 @@ draw()
 function resetAll(){
 
 rooms=[]
-current=[]
+drawingPoints=[]
 drawing=false
 
 updatePanel()
 draw()
 
 }
+
+// ---------- dibujo ----------
 
 function drawVertex(p){
 
@@ -315,39 +332,8 @@ ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-for(let i=0;i<v.length;i++){
-
-let a=v[i]
-let b=v[(i+1)%v.length]
-
-let mid={
-x:(a.x+b.x)/2,
-y:(a.y+b.y)/2
-}
-
-let d=dist(a,b)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",mid.x,mid.y)
-
-}
-
-for(let i=0;i<v.length;i++){
-
-let a=v[(i-1+v.length)%v.length]
-let b=v[i]
-let c=v[(i+1)%v.length]
-
-let ang=angle(a,b,c)
-
-ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",b.x+5,b.y-5)
-
-}
-
-for(let p of v){
+for(let p of v)
 drawVertex(p)
-}
 
 }
 
@@ -360,7 +346,7 @@ for(let r of rooms){
 drawPolygon(r.v)
 
 let c=centroid(r.v)
-let area=polygonArea(r.v)/scale/scale
+let area=polygonArea(r.v)/(scale*scale)
 
 ctx.fillStyle="black"
 ctx.textAlign="center"
@@ -369,27 +355,32 @@ ctx.fillText(area.toFixed(2)+" m²",c.x,c.y)
 
 }
 
-if(drawing && current.length){
+if(drawing){
 
 ctx.beginPath()
-ctx.moveTo(current[0].x,current[0].y)
 
-for(let i=1;i<current.length;i++){
-ctx.lineTo(current[i].x,current[i].y)
-}
+if(drawingPoints.length){
+
+ctx.moveTo(drawingPoints[0].x,drawingPoints[0].y)
+
+for(let i=1;i<drawingPoints.length;i++)
+ctx.lineTo(drawingPoints[i].x,drawingPoints[i].y)
 
 ctx.lineTo(mouse.x,mouse.y)
+
+}
 
 ctx.strokeStyle="#2b83ff"
 ctx.stroke()
 
-for(let p of current){
+for(let p of drawingPoints)
 drawVertex(p)
-}
 
 }
 
 }
+
+// ---------- panel ----------
 
 function updatePanel(){
 
@@ -398,39 +389,18 @@ let total=0
 
 for(let r of rooms){
 
-let area=polygonArea(r.v)/scale/scale
+let area=polygonArea(r.v)/(scale*scale)
 total+=area
 
 html+=`
 <b>${r.name}</b><br>
-Área: ${area.toFixed(2)} m²<br>
-<hr>
+Área: ${area.toFixed(2)} m²<hr>
 `
 
 }
 
-document.getElementById("rooms").innerHTML=html
+document.getElementById("roomsPanel").innerHTML=html
 document.getElementById("totalArea").innerText=total.toFixed(2)
-
-}
-
-function pointInside(point,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>point.y)!=(yj>point.y)) &&
-(point.x<(xj-xi)*(point.y-yi)/(yj-yi)+xi)
-
-if(intersect) inside=!inside
-
-}
-
-return inside
 
 }
 
