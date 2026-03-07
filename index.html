@@ -122,7 +122,6 @@ Total: <span id="totalArea">0</span> m²
 <canvas id="canvas" width="1200" height="700"></canvas>
 
 <div id="cursor"></div>
-
 <div id="inputLength"></div>
 
 </div>
@@ -138,7 +137,6 @@ const snapButton=document.getElementById("snapButton")
 const inputBox=document.getElementById("inputLength")
 
 let scale=100
-
 let camera={x:0,y:0,zoom:1}
 
 let rooms=[]
@@ -151,7 +149,6 @@ let dragVertex=null
 let dragRoom=null
 
 let snapEnabled=false
-
 let typedLength=""
 
 function toggleSnap(){
@@ -169,9 +166,7 @@ function angle(a,b,c){
 
 let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
 ang=Math.abs(ang*180/Math.PI)
-
 if(ang>180) ang=360-ang
-
 return ang
 
 }
@@ -179,12 +174,9 @@ return ang
 function polygonArea(v){
 
 let sum=0
-
 for(let i=0;i<v.length;i++){
-
 let j=(i+1)%v.length
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
-
 }
 
 return Math.abs(sum/2)
@@ -275,53 +267,6 @@ y:(p.y-camera.y)/camera.zoom
 
 }
 
-document.addEventListener("keydown",function(e){
-
-if(!drawing || current.length==0) return
-
-if(e.key>="0" && e.key<="9" || e.key=="." ){
-
-typedLength+=e.key
-inputBox.style.display="block"
-inputBox.innerText="Longitud: "+typedLength+" m"
-
-}
-
-if(e.key==="Backspace"){
-
-typedLength=typedLength.slice(0,-1)
-
-inputBox.innerText="Longitud: "+typedLength+" m"
-
-}
-
-if(e.key==="Enter" && typedLength!=""){
-
-let last=current[current.length-1]
-
-let len=parseFloat(typedLength)*scale
-
-let dx=mouse.x-last.x
-let dy=mouse.y-last.y
-
-let ang=Math.atan2(dy,dx)
-
-let p={
-x:last.x+Math.cos(ang)*len,
-y:last.y+Math.sin(ang)*len
-}
-
-current.push(p)
-
-typedLength=""
-inputBox.style.display="none"
-
-draw()
-
-}
-
-})
-
 canvas.onmousedown=e=>{
 
 let r=canvas.getBoundingClientRect()
@@ -408,7 +353,6 @@ updateList()
 
 }
 
-updateCursor()
 draw()
 
 }
@@ -417,28 +361,6 @@ canvas.onmouseup=()=>{
 
 dragVertex=null
 dragRoom=null
-
-}
-
-function updateCursor(){
-
-if(!drawing || current.length===0){
-
-cursor.style.display="none"
-return
-
-}
-
-cursor.style.display="block"
-
-cursor.style.left=(mouse.x*camera.zoom+camera.x+20)+"px"
-cursor.style.top=(mouse.y*camera.zoom+camera.y+20)+"px"
-
-let last=current[current.length-1]
-
-let d=dist(last,mouse)/scale
-
-cursor.innerText=d.toFixed(2)+" m"
 
 }
 
@@ -522,7 +444,6 @@ for(let room of rooms){
 let v=room.v
 
 ctx.beginPath()
-
 ctx.moveTo(v[0].x,v[0].y)
 
 for(let i=1;i<v.length;i++){
@@ -539,6 +460,36 @@ ctx.fill()
 ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
+
+for(let i=0;i<v.length;i++){
+
+let a=v[i]
+let b=v[(i+1)%v.length]
+
+let mid={
+x:(a.x+b.x)/2,
+y:(a.y+b.y)/2
+}
+
+let d=dist(a,b)/scale
+
+ctx.fillStyle="black"
+ctx.fillText(d.toFixed(2)+" m",mid.x,mid.y)
+
+}
+
+for(let i=0;i<v.length;i++){
+
+let a=v[(i-1+v.length)%v.length]
+let b=v[i]
+let c=v[(i+1)%v.length]
+
+let ang=angle(a,b,c)
+
+ctx.fillStyle="orange"
+ctx.fillText(ang.toFixed(0)+"°",b.x+5,b.y-5)
+
+}
 
 for(let p of v){
 
@@ -558,34 +509,6 @@ ctx.textAlign="center"
 
 ctx.fillText(room.name,c.x,c.y)
 ctx.fillText(area.toFixed(2)+" m²",c.x,c.y+14)
-
-}
-
-if(current.length){
-
-ctx.beginPath()
-
-ctx.moveTo(current[0].x,current[0].y)
-
-for(let i=1;i<current.length;i++){
-
-ctx.lineTo(current[i].x,current[i].y)
-
-}
-
-ctx.strokeStyle="#2b83ff"
-ctx.stroke()
-
-ctx.setLineDash([6,6])
-
-let last=current[current.length-1]
-
-ctx.beginPath()
-ctx.moveTo(last.x,last.y)
-ctx.lineTo(mouse.x,mouse.y)
-ctx.stroke()
-
-ctx.setLineDash([])
 
 }
 
