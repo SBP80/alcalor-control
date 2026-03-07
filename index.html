@@ -61,6 +61,7 @@ position:relative;
 
 canvas{
 background:white;
+cursor:crosshair;
 }
 
 #measure{
@@ -134,6 +135,8 @@ let offsetY=0
 let panMode=false
 let panning=false
 
+let walls=[]
+
 const measure=document.getElementById("measure")
 
 canvas.addEventListener("mousemove",e=>{
@@ -159,6 +162,12 @@ let last=currentRoom.points[currentRoom.points.length-1]
 let dx=mouse.x-last.x
 let dy=mouse.y-last.y
 
+if(Math.abs(dx)>Math.abs(dy)){
+mouse.y=last.y
+}else{
+mouse.x=last.x
+}
+
 let dist=Math.sqrt(dx*dx+dy*dy)/100
 let ang=Math.atan2(dy,dx)*180/Math.PI
 
@@ -175,6 +184,7 @@ canvas.addEventListener("mousedown",e=>{
 if(panMode){
 
 panning=true
+canvas.style.cursor="grabbing"
 return
 
 }
@@ -191,6 +201,40 @@ canvas.addEventListener("mouseup",()=>{
 
 panning=false
 
+if(panMode){
+canvas.style.cursor="grab"
+}
+
+})
+
+canvas.addEventListener("dblclick",e=>{
+
+const rect=canvas.getBoundingClientRect()
+
+let x=(e.clientX-rect.left-offsetX)/zoom
+let y=(e.clientY-rect.top-offsetY)/zoom
+
+walls.forEach(w=>{
+
+let dx=x-w.mx
+let dy=y-w.my
+
+if(Math.sqrt(dx*dx+dy*dy)<30){
+
+let val=prompt("Nueva medida (m)",w.length)
+
+if(val){
+
+w.length=parseFloat(val)
+
+}
+
+}
+
+})
+
+draw()
+
 })
 
 function newRoom(){
@@ -199,12 +243,7 @@ let name=prompt("Nombre estancia")
 
 if(!name)return
 
-currentRoom={
-
-name:name,
-points:[]
-
-}
+currentRoom={name:name,points:[]}
 
 rooms.push(currentRoom)
 
@@ -214,7 +253,18 @@ updateList()
 
 function closeRoom(){
 
+if(!currentRoom)return
+
+if(currentRoom.points.length>2){
+
+let first=currentRoom.points[0]
+
+currentRoom.points.push({x:first.x,y:first.y})
+
+}
+
 currentRoom=null
+
 draw()
 
 }
@@ -224,9 +274,10 @@ function undo(){
 if(currentRoom && currentRoom.points.length>0){
 
 currentRoom.points.pop()
-draw()
 
 }
+
+draw()
 
 }
 
@@ -234,6 +285,8 @@ function resetAll(){
 
 rooms=[]
 currentRoom=null
+walls=[]
+
 updateList()
 draw()
 
@@ -256,6 +309,12 @@ draw()
 function togglePan(){
 
 panMode=!panMode
+
+if(panMode){
+canvas.style.cursor="grab"
+}else{
+canvas.style.cursor="crosshair"
+}
 
 }
 
@@ -284,44 +343,35 @@ ctx.save()
 ctx.translate(offsetX,offsetY)
 ctx.scale(zoom,zoom)
 
+walls=[]
+
 rooms.forEach(room=>{
 
 let pts=room.points
-
-if(pts.length<2)return
-
-ctx.beginPath()
-
-ctx.moveTo(pts[0].x,pts[0].y)
-
-for(let i=1;i<pts.length;i++){
-
-ctx.lineTo(pts[i].x,pts[i].y)
-
-}
-
-ctx.strokeStyle="#2196f3"
-ctx.lineWidth=2
-ctx.stroke()
-
-pts.forEach(p=>{
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-})
 
 for(let i=0;i<pts.length-1;i++){
 
 let a=pts[i]
 let b=pts[i+1]
 
+ctx.beginPath()
+ctx.moveTo(a.x,a.y)
+ctx.lineTo(b.x,b.y)
+ctx.strokeStyle="#2196f3"
+ctx.lineWidth=2
+ctx.stroke()
+
+ctx.beginPath()
+ctx.arc(a.x,a.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
 let mx=(a.x+b.x)/2
 let my=(a.y+b.y)/2
 
 let dist=Math.hypot(b.x-a.x,b.y-a.y)/100
+
+walls.push({mx:mx,my:my,length:dist})
 
 ctx.fillStyle="black"
 ctx.fillRect(mx-30,my-10,60,20)
