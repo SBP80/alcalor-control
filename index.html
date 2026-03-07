@@ -162,16 +162,24 @@ let last=currentRoom.points[currentRoom.points.length-1]
 let dx=mouse.x-last.x
 let dy=mouse.y-last.y
 
-if(Math.abs(dx)>Math.abs(dy)){
+let angle=Math.atan2(dy,dx)*180/Math.PI
+let dist=Math.sqrt(dx*dx+dy*dy)
+
+if(Math.abs(angle)<10 || Math.abs(Math.abs(angle)-180)<10){
 mouse.y=last.y
-}else{
+}
+
+else if(Math.abs(angle-90)<10 || Math.abs(angle+90)<10){
 mouse.x=last.x
 }
 
-let dist=Math.sqrt(dx*dx+dy*dy)/100
-let ang=Math.atan2(dy,dx)*180/Math.PI
+let finaldx=mouse.x-last.x
+let finaldy=mouse.y-last.y
 
-measure.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+let finaldist=Math.sqrt(finaldx*finaldx+finaldy*finaldy)/100
+let finalang=Math.atan2(finaldy,finaldx)*180/Math.PI
+
+measure.innerText=finaldist.toFixed(2)+" m | "+finalang.toFixed(1)+"°"
 
 }
 
@@ -224,9 +232,7 @@ if(Math.sqrt(dx*dx+dy*dy)<30){
 let val=prompt("Nueva medida (m)",w.length)
 
 if(val){
-
 w.length=parseFloat(val)
-
 }
 
 }
@@ -272,9 +278,7 @@ draw()
 function undo(){
 
 if(currentRoom && currentRoom.points.length>0){
-
 currentRoom.points.pop()
-
 }
 
 draw()
