@@ -1,1 +1,534 @@
-1abe7b971bc3f71c2a0f64c2a4b4387408315fb0
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>🔥 ALLCALOR PRO</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f2b44;
+color:white;
+margin:0;
+padding:10px;
+}
+
+h1{
+text-align:center;
+margin-bottom:10px;
+}
+
+.panel{
+background:#12314a;
+padding:10px;
+border-radius:8px;
+margin-bottom:10px;
+}
+
+button{
+border:none;
+padding:8px 12px;
+margin-right:6px;
+cursor:pointer;
+font-weight:bold;
+border-radius:4px;
+}
+
+.btnNew{background:#28a745;color:white;}
+.btnClose{background:#2b83ff;color:white;}
+.btnUndo{background:#ff9800;color:white;}
+.btnReset{background:#e53935;color:white;}
+
+canvas{
+background:#f4f1e8;
+border-radius:8px;
+touch-action:none;
+}
+
+#layout{
+display:flex;
+gap:10px;
+}
+
+#lista{
+width:220px;
+background:#12314a;
+padding:10px;
+border-radius:8px;
+}
+
+.room{
+margin-bottom:10px;
+border-bottom:1px solid rgba(255,255,255,0.2);
+padding-bottom:6px;
+}
+
+#hud{
+position:absolute;
+top:120px;
+left:50%;
+transform:translateX(-50%);
+background:rgba(0,0,0,0.6);
+padding:8px 14px;
+border-radius:6px;
+font-size:20px;
+font-weight:bold;
+}
+
+.len{color:#00e676;}
+.ang{color:#ff9800;}
+
+</style>
+</head>
+
+<body>
+
+<h1>🔥 ALLCALOR PRO</h1>
+
+<div class="panel">
+
+Escala del plano (px por metro)
+<input id="escala" type="number" value="100">
+
+<button class="btnNew" onclick="nuevaEstancia()">Nueva estancia</button>
+<button class="btnClose" onclick="cerrar()">Cerrar estancia</button>
+<button class="btnUndo" onclick="deshacer()">Deshacer</button>
+<button class="btnReset" onclick="reiniciar()">Reiniciar</button>
+
+</div>
+
+<div id="layout">
+
+<div id="lista">
+<b>ESTANCIAS</b>
+<div id="rooms"></div>
+<hr>
+<div id="total"></div>
+</div>
+
+<div style="position:relative">
+
+<div id="hud">
+<span class="len">0 m</span> |
+<span class="ang">0°</span>
+</div>
+
+<canvas id="canvas" width="1100" height="650"></canvas>
+
+</div>
+
+</div>
+
+<script>
+
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
+
+let rooms=[]
+let current=[]
+let drawing=true
+
+let zoom=1
+let offsetX=0
+let offsetY=0
+
+let mouse={x:0,y:0}
+
+let dragVertex=null
+let dragRoom=null
+
+function escala(){
+return parseFloat(document.getElementById("escala").value)
+}
+
+function worldToScreen(x,y){
+return{
+x:x*zoom+offsetX,
+y:y*zoom+offsetY
+}
+}
+
+function screenToWorld(x,y){
+return{
+x:(x-offsetX)/zoom,
+y:(y-offsetY)/zoom
+}
+}
+
+function pos(e){
+
+const r=canvas.getBoundingClientRect()
+
+return screenToWorld(
+e.clientX-r.left,
+e.clientY-r.top)
+
+}
+
+canvas.addEventListener("mousedown",start)
+canvas.addEventListener("mousemove",move)
+canvas.addEventListener("mouseup",end)
+
+function start(e){
+
+let p=pos(e)
+mouse=p
+
+if(drawing){
+
+if(current.length){
+
+let last=current[current.length-1]
+
+if(Math.hypot(p.x-last.x,p.y-last.y)<20/zoom){
+return
+}
+
+}
+
+current.push(p)
+draw()
+return
+
+}
+
+for(let r of rooms){
+
+for(let v of r.vertices){
+
+if(Math.hypot(v.x-p.x,v.y-p.y)<10/zoom){
+dragVertex=v
+return
+}
+
+}
+
+}
+
+for(let r of rooms){
+
+if(pointInside(p,r.vertices)){
+dragRoom={room:r,start:p}
+return
+}
+
+}
+
+}
+
+function move(e){
+
+let p=pos(e)
+
+if(current.length){
+
+let last=current[current.length-1]
+
+let dx=p.x-last.x
+let dy=p.y-last.y
+
+let ang=Math.atan2(dy,dx)*180/Math.PI
+
+if(Math.abs(ang)<8 || Math.abs(Math.abs(ang)-180)<8){
+p.y=last.y
+}
+
+if(Math.abs(ang-90)<8 || Math.abs(ang+90)<8){
+p.x=last.x
+}
+
+}
+
+mouse=p
+
+if(dragVertex){
+
+dragVertex.x=p.x
+dragVertex.y=p.y
+updateList()
+
+}
+
+if(dragRoom){
+
+let dx=p.x-dragRoom.start.x
+let dy=p.y-dragRoom.start.y
+
+dragRoom.start=p
+
+for(let v of dragRoom.room.vertices){
+v.x+=dx
+v.y+=dy
+}
+
+updateList()
+
+}
+
+draw()
+
+}
+
+function end(){
+dragVertex=null
+dragRoom=null
+}
+
+function nuevaEstancia(){
+drawing=true
+current=[]
+}
+
+function cerrar(){
+
+if(current.length<3)return
+
+let first=current[0]
+let last=current[current.length-1]
+
+if(Math.hypot(first.x-last.x,first.y-last.y)<30/zoom){
+current.pop()
+}
+
+let name=prompt("Nombre estancia")
+
+rooms.push({
+name:name||"estancia",
+vertices:[...current]
+})
+
+drawing=false
+current=[]
+
+updateList()
+draw()
+
+}
+
+function deshacer(){
+current.pop()
+draw()
+}
+
+function reiniciar(){
+
+rooms=[]
+current=[]
+drawing=true
+
+updateList()
+draw()
+
+}
+
+function area(poly){
+
+let sum=0
+
+for(let i=0;i<poly.length;i++){
+
+let j=(i+1)%poly.length
+
+sum+=poly[i].x*poly[j].y
+sum-=poly[j].x*poly[i].y
+
+}
+
+return Math.abs(sum/2)/(escala()*escala())
+
+}
+
+function perimeter(poly){
+
+let p=0
+
+for(let i=0;i<poly.length;i++){
+
+let j=(i+1)%poly.length
+
+p+=Math.hypot(
+poly[j].x-poly[i].x,
+poly[j].y-poly[i].y)
+
+}
+
+return p/escala()
+
+}
+
+function updateList(){
+
+let html=""
+let total=0
+
+for(let r of rooms){
+
+let a=area(r.vertices)
+let p=perimeter(r.vertices)
+
+total+=a
+
+html+=`
+<div class="room">
+<b>${r.name}</b><br>
+Área: <span style="color:#00e676">${a.toFixed(2)} m²</span><br>
+Perímetro: <span style="color:#4fc3f7">${p.toFixed(2)} m</span>
+</div>
+`
+
+}
+
+document.getElementById("rooms").innerHTML=html
+
+document.getElementById("total").innerHTML=
+"<b style='color:#ff9800'>Total: "+total.toFixed(2)+" m²</b>"
+
+}
+
+function angle(a,b,c){
+
+let ang=Math.atan2(c.y-b.y,c.x-b.x)-
+Math.atan2(a.y-b.y,a.x-b.x)
+
+ang=Math.abs(ang*180/Math.PI)
+
+if(ang>180)ang=360-ang
+
+return ang
+
+}
+
+function pointInside(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x,yi=poly[i].y
+let xj=poly[j].x,yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
+
+}
+
+return inside
+
+}
+
+function center(poly){
+
+let x=0,y=0
+
+for(let v of poly){
+x+=v.x
+y+=v.y
+}
+
+return{
+x:x/poly.length,
+y:y/poly.length
+}
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+for(let r of rooms){
+
+ctx.beginPath()
+
+let s=worldToScreen(r.vertices[0].x,r.vertices[0].y)
+ctx.moveTo(s.x,s.y)
+
+for(let i=1;i<r.vertices.length;i++){
+
+let p=worldToScreen(r.vertices[i].x,r.vertices[i].y)
+ctx.lineTo(p.x,p.y)
+
+}
+
+ctx.closePath()
+
+ctx.fillStyle="rgba(0,120,255,0.15)"
+ctx.fill()
+
+ctx.strokeStyle="#2b83ff"
+ctx.lineWidth=2
+ctx.stroke()
+
+for(let v of r.vertices){
+
+let p=worldToScreen(v.x,v.y)
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+let c=center(r.vertices)
+let sc=worldToScreen(c.x,c.y)
+
+ctx.fillStyle="black"
+ctx.fillText(r.name,sc.x,sc.y)
+
+}
+
+if(current.length){
+
+for(let v of current){
+
+let p=worldToScreen(v.x,v.y)
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
+ctx.fillStyle="red"
+ctx.fill()
+
+}
+
+let last=current[current.length-1]
+
+let s1=worldToScreen(last.x,last.y)
+let s2=worldToScreen(mouse.x,mouse.y)
+
+ctx.beginPath()
+ctx.setLineDash([6,6])
+ctx.moveTo(s1.x,s1.y)
+ctx.lineTo(s2.x,s2.y)
+ctx.strokeStyle="#2b83ff"
+ctx.lineWidth=2
+ctx.stroke()
+ctx.setLineDash([])
+
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/escala()
+
+let ang=0
+
+if(current.length>1){
+
+let prev=current[current.length-2]
+ang=angle(prev,last,mouse)
+
+}
+
+document.querySelector(".len").innerText=dist.toFixed(2)+" m"
+document.querySelector(".ang").innerText=ang.toFixed(1)+"°"
+
+}
+
+}
+
+draw()
+
+</script>
+
+</body>
+</html>
