@@ -7,19 +7,18 @@
 <style>
 
 body{
+margin:0;
 font-family:Arial;
 background:#0f2b44;
 color:white;
-margin:0;
 padding:10px;
 }
 
 h1{
 text-align:center;
-margin-bottom:10px;
 }
 
-.panel{
+.toolbar{
 background:#12314a;
 padding:10px;
 border-radius:8px;
@@ -30,61 +29,47 @@ button{
 border:none;
 padding:8px 12px;
 margin-right:6px;
-cursor:pointer;
+border-radius:5px;
 font-weight:bold;
-border-radius:4px;
+cursor:pointer;
 }
 
-.btnNew{background:#28a745;color:white;}
-.btnClose{background:#2b83ff;color:white;}
-.btnUndo{background:#ff9800;color:white;}
-.btnReset{background:#e53935;color:white;}
-
-canvas{
-background:#f4f1e8;
-border-radius:8px;
-touch-action:none;
-}
+.green{background:#28a745}
+.blue{background:#2b83ff}
+.orange{background:#ff9800}
+.red{background:#e53935}
 
 #layout{
 display:flex;
 gap:10px;
 }
 
-#lista{
+#panel{
 width:220px;
 background:#12314a;
 padding:10px;
 border-radius:8px;
 }
 
-.room{
-margin-bottom:10px;
-border-bottom:1px solid rgba(255,255,255,0.2);
-padding-bottom:6px;
+canvas{
+background:#f4f1e8;
+border-radius:8px;
+cursor:crosshair;
+}
+
+#canvasBox{
+position:relative;
 }
 
 #hud{
 position:absolute;
-top:120px;
+top:10px;
 left:50%;
 transform:translateX(-50%);
 background:rgba(0,0,0,0.6);
-padding:8px 14px;
+padding:6px 12px;
 border-radius:6px;
-font-size:20px;
 font-weight:bold;
-}
-
-.len{color:#00e676;}
-.ang{color:#ff9800;}
-
-.measure{
-background:black;
-color:#00e676;
-padding:2px 6px;
-font-size:12px;
-border-radius:4px;
 }
 
 </style>
@@ -94,33 +79,34 @@ border-radius:4px;
 
 <h1>🔥 ALLCALOR PRO</h1>
 
-<div class="panel">
+<div class="toolbar">
 
-Escala del plano (px por metro)
-<input id="escala" type="number" value="100">
+Escala
+<input id="scale" type="number" value="100" style="width:70px">
 
-<button class="btnNew" onclick="nuevaEstancia()">Nueva estancia</button>
-<button class="btnClose" onclick="cerrar()">Cerrar estancia</button>
-<button class="btnUndo" onclick="deshacer()">Deshacer</button>
-<button class="btnReset" onclick="reiniciar()">Reiniciar</button>
+<button class="green" onclick="newRoom()">Nueva estancia</button>
+<button class="blue" onclick="closeRoom()">Cerrar estancia</button>
+<button class="orange" onclick="undo()">Deshacer</button>
+<button class="red" onclick="reset()">Reiniciar</button>
 
 </div>
 
 <div id="layout">
 
-<div id="lista">
+<div id="panel">
+
 <b>ESTANCIAS</b>
 <div id="rooms"></div>
+
 <hr>
+
 <div id="total"></div>
+
 </div>
 
-<div style="position:relative">
+<div id="canvasBox">
 
-<div id="hud">
-<span class="len">0 m</span> |
-<span class="ang">0°</span>
-</div>
+<div id="hud">0 m | 0°</div>
 
 <canvas id="canvas" width="1100" height="650"></canvas>
 
@@ -143,220 +129,142 @@ let offsetY=0
 
 let mouse={x:0,y:0}
 
-let dragVertex=null
+let dragPoint=null
 let dragRoom=null
 
-function escala(){
-return parseFloat(document.getElementById("escala").value)
-}
-
-function worldToScreen(x,y){
-return{
-x:x*zoom+offsetX,
-y:y*zoom+offsetY
-}
+function scale(){
+return parseFloat(document.getElementById("scale").value)
 }
 
 function screenToWorld(x,y){
+
 return{
 x:(x-offsetX)/zoom,
 y:(y-offsetY)/zoom
 }
-}
-
-function pos(e){
-
-const r=canvas.getBoundingClientRect()
-
-return screenToWorld(
-e.clientX-r.left,
-e.clientY-r.top)
 
 }
 
-canvas.addEventListener("mousedown",start)
-canvas.addEventListener("mousemove",move)
-canvas.addEventListener("mouseup",end)
+function worldToScreen(x,y){
 
-canvas.addEventListener("wheel",zoomWheel)
+return{
+x:x*zoom+offsetX,
+y:y*zoom+offsetY
+}
 
-function start(e){
+}
 
-let p=pos(e)
+canvas.addEventListener("mousedown",e=>{
+
+const rect=canvas.getBoundingClientRect()
+
+const x=e.clientX-rect.left
+const y=e.clientY-rect.top
+
+const p=screenToWorld(x,y)
+
 mouse=p
 
 if(drawing){
 
-if(current.length){
-
-let last=current[current.length-1]
-
-if(Math.hypot(p.x-last.x,p.y-last.y)<20/zoom){
-return
-}
-
-}
-
 current.push(p)
-draw()
-return
-
-}
-
-for(let r of rooms){
-
-for(let v of r.vertices){
-
-if(Math.hypot(v.x-p.x,v.y-p.y)<10/zoom){
-dragVertex=v
-return
-}
-
-}
-
-}
-
-for(let r of rooms){
-
-if(pointInside(p,r.vertices)){
-dragRoom={room:r,start:p}
-return
-}
-
-}
-
-}
-
-function move(e){
-
-let p=pos(e)
-
-if(current.length){
-
-let last=current[current.length-1]
-
-let dx=p.x-last.x
-let dy=p.y-last.y
-
-let ang=Math.atan2(dy,dx)*180/Math.PI
-
-if(Math.abs(ang)<6 || Math.abs(Math.abs(ang)-180)<6){
-p.y=last.y
-}
-
-if(Math.abs(ang-90)<6 || Math.abs(ang+90)<6){
-p.x=last.x
-}
-
-}
-
-mouse=p
-
-if(dragVertex){
-
-dragVertex.x=p.x
-dragVertex.y=p.y
-updateList()
-
-}
-
-if(dragRoom){
-
-let dx=p.x-dragRoom.start.x
-let dy=p.y-dragRoom.start.y
-
-dragRoom.start=p
-
-for(let v of dragRoom.room.vertices){
-v.x+=dx
-v.y+=dy
-}
-
-updateList()
-
-}
 
 draw()
 
+return
+
 }
 
-function end(){
-dragVertex=null
-dragRoom=null
-}
+})
 
-function zoomWheel(e){
+canvas.addEventListener("mousemove",e=>{
 
-const scaleAmount=1.1
+const rect=canvas.getBoundingClientRect()
+
+const x=e.clientX-rect.left
+const y=e.clientY-rect.top
+
+mouse=screenToWorld(x,y)
+
+draw()
+
+})
+
+canvas.addEventListener("wheel",e=>{
+
+const scaleFactor=1.1
+
 const mouseX=e.offsetX
 const mouseY=e.offsetY
 
 const wx=(mouseX-offsetX)/zoom
 const wy=(mouseY-offsetY)/zoom
 
-zoom*=e.deltaY<0?scaleAmount:1/scaleAmount
+zoom*=e.deltaY<0?scaleFactor:1/scaleFactor
 
 offsetX=mouseX-wx*zoom
 offsetY=mouseY-wy*zoom
 
 draw()
 
-}
+})
 
-function nuevaEstancia(){
+function newRoom(){
+
 drawing=true
 current=[]
+
 }
 
-function cerrar(){
+function closeRoom(){
 
 if(current.length<3)return
 
-let name=prompt("Nombre estancia")
-
 rooms.push({
-name:name||"estancia",
-vertices:[...current]
+name:"h"+(rooms.length+1),
+v:[...current]
 })
 
-drawing=false
 current=[]
+drawing=false
 
-updateList()
+updatePanel()
 draw()
 
 }
 
-function deshacer(){
+function undo(){
+
 current.pop()
 draw()
+
 }
 
-function reiniciar(){
+function reset(){
 
 rooms=[]
 current=[]
 drawing=true
 
-updateList()
+updatePanel()
 draw()
 
 }
 
 function area(poly){
 
-let sum=0
+let a=0
 
 for(let i=0;i<poly.length;i++){
 
 let j=(i+1)%poly.length
 
-sum+=poly[i].x*poly[j].y
-sum-=poly[j].x*poly[i].y
+a+=poly[i].x*poly[j].y
+a-=poly[j].x*poly[i].y
 
 }
 
-return Math.abs(sum/2)/(escala()*escala())
+return Math.abs(a/2)/(scale()*scale())
 
 }
 
@@ -368,86 +276,38 @@ for(let i=0;i<poly.length;i++){
 
 let j=(i+1)%poly.length
 
-p+=Math.hypot(
-poly[j].x-poly[i].x,
-poly[j].y-poly[i].y)
+p+=Math.hypot(poly[j].x-poly[i].x,poly[j].y-poly[i].y)
 
 }
 
-return p/escala()
+return p/scale()
 
 }
 
-function updateList(){
+function updatePanel(){
 
 let html=""
 let total=0
 
 for(let r of rooms){
 
-let a=area(r.vertices)
-let p=perimeter(r.vertices)
+let a=area(r.v)
+let p=perimeter(r.v)
 
 total+=a
 
 html+=`
-<div class="room">
+<div>
 <b>${r.name}</b><br>
 Área: ${a.toFixed(2)} m²<br>
 Perímetro: ${p.toFixed(2)} m
-</div>
+</div><br>
 `
 
 }
 
 document.getElementById("rooms").innerHTML=html
-document.getElementById("total").innerHTML="<b>Total: "+total.toFixed(2)+" m²</b>"
-
-}
-
-function drawMeasurements(poly){
-
-for(let i=0;i<poly.length;i++){
-
-let j=(i+1)%poly.length
-
-let a=poly[i]
-let b=poly[j]
-
-let midX=(a.x+b.x)/2
-let midY=(a.y+b.y)/2
-
-let len=Math.hypot(b.x-a.x,b.y-a.y)/escala()
-
-let s=worldToScreen(midX,midY)
-
-ctx.fillStyle="black"
-ctx.fillRect(s.x-25,s.y-10,50,20)
-
-ctx.fillStyle="#00e676"
-ctx.fillText(len.toFixed(2)+" m",s.x-22,s.y+5)
-
-}
-
-}
-
-function pointInside(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x,yi=poly[i].y
-let xj=poly[j].x,yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
+document.getElementById("total").innerHTML="Total: "+total.toFixed(2)+" m²"
 
 }
 
@@ -459,28 +319,30 @@ for(let r of rooms){
 
 ctx.beginPath()
 
-let s=worldToScreen(r.vertices[0].x,r.vertices[0].y)
-ctx.moveTo(s.x,s.y)
+let p0=worldToScreen(r.v[0].x,r.v[0].y)
+ctx.moveTo(p0.x,p0.y)
 
-for(let i=1;i<r.vertices.length;i++){
+for(let i=1;i<r.v.length;i++){
 
-let p=worldToScreen(r.vertices[i].x,r.vertices[i].y)
+let p=worldToScreen(r.v[i].x,r.v[i].y)
 ctx.lineTo(p.x,p.y)
 
 }
 
 ctx.closePath()
 
-ctx.fillStyle="rgba(0,120,255,0.15)"
+ctx.fillStyle="rgba(0,120,255,0.2)"
 ctx.fill()
 
 ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
 
-drawMeasurements(r.vertices)
+}
 
-for(let v of r.vertices){
+if(current.length){
+
+for(let v of current){
 
 let p=worldToScreen(v.x,v.y)
 
@@ -491,15 +353,23 @@ ctx.fill()
 
 }
 
-}
-
-if(current.length){
-
 let last=current[current.length-1]
 
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/escala()
+let p1=worldToScreen(last.x,last.y)
+let p2=worldToScreen(mouse.x,mouse.y)
 
-document.querySelector(".len").innerText=dist.toFixed(2)+" m"
+ctx.setLineDash([6,6])
+
+ctx.beginPath()
+ctx.moveTo(p1.x,p1.y)
+ctx.lineTo(p2.x,p2.y)
+ctx.stroke()
+
+ctx.setLineDash([])
+
+let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
+
+document.getElementById("hud").innerText=dist.toFixed(2)+" m"
 
 }
 
