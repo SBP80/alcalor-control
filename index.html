@@ -134,6 +134,29 @@ function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
 }
 
+function snapPoint(last,point){
+
+let dx=point.x-last.x
+let dy=point.y-last.y
+
+let ang=Math.atan2(dy,dx)
+let deg=ang*180/Math.PI
+
+let snap=[0,45,90,135,180,-45,-90,-135]
+
+let closest=snap.reduce((a,b)=>
+Math.abs(b-deg)<Math.abs(a-deg)?b:a)
+
+let rad=closest*Math.PI/180
+let d=Math.sqrt(dx*dx+dy*dy)
+
+return{
+x:last.x+Math.cos(rad)*d,
+y:last.y+Math.sin(rad)*d
+}
+
+}
+
 function angle(a,b,c){
 
 let ang=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x)
@@ -152,7 +175,6 @@ let sum=0
 for(let i=0;i<v.length;i++){
 
 let j=(i+1)%v.length
-
 sum+=v[i].x*v[j].y-v[j].x*v[i].y
 
 }
@@ -228,7 +250,14 @@ mouse=p
 
 if(drawing){
 
+if(current.length>0){
+
+p=snapPoint(current[current.length-1],p)
+
+}
+
 current.push(p)
+
 draw()
 return
 
@@ -273,6 +302,12 @@ let r=canvas.getBoundingClientRect()
 mouse={
 x:e.clientX-r.left,
 y:e.clientY-r.top
+}
+
+if(drawing && current.length>0){
+
+mouse=snapPoint(current[current.length-1],mouse)
+
 }
 
 if(dragVertex){
