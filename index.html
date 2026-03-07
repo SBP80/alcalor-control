@@ -66,6 +66,18 @@ font-size:12px;
 pointer-events:none;
 }
 
+#inputLength{
+position:absolute;
+top:10px;
+left:50%;
+transform:translateX(-50%);
+background:black;
+padding:6px 12px;
+border-radius:6px;
+font-weight:bold;
+display:none;
+}
+
 </style>
 </head>
 
@@ -111,6 +123,8 @@ Total: <span id="totalArea">0</span> m²
 
 <div id="cursor"></div>
 
+<div id="inputLength"></div>
+
 </div>
 
 </div>
@@ -121,14 +135,11 @@ const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 const cursor=document.getElementById("cursor")
 const snapButton=document.getElementById("snapButton")
+const inputBox=document.getElementById("inputLength")
 
 let scale=100
 
-let camera={
-x:0,
-y:0,
-zoom:1
-}
+let camera={x:0,y:0,zoom:1}
 
 let rooms=[]
 let current=[]
@@ -141,15 +152,14 @@ let dragRoom=null
 
 let snapEnabled=false
 
+let typedLength=""
+
 function toggleSnap(){
 
 snapEnabled=!snapEnabled
-
 snapButton.innerText=snapEnabled?"SNAP ON":"SNAP OFF"
 
 }
-
-/* matemáticas */
 
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
@@ -232,8 +242,6 @@ return inside
 
 }
 
-/* SNAP */
-
 function snapPoint(point){
 
 if(!snapEnabled) return point
@@ -254,44 +262,9 @@ return{x:v.x,y:v.y}
 
 }
 
-if(drawing && current.length>0){
-
-let last=current[current.length-1]
-
-let dx=point.x-last.x
-let dy=point.y-last.y
-
-let angleRad=Math.atan2(dy,dx)
-
-let snapAngles=[
-0,
-Math.PI/4,
-Math.PI/2,
-3*Math.PI/4,
-Math.PI,
-- Math.PI/4,
-- Math.PI/2,
-- 3*Math.PI/4
-]
-
-let best=snapAngles.reduce((prev,curr)=>
-Math.abs(curr-angleRad)<Math.abs(prev-angleRad)?curr:prev
-)
-
-let length=Math.sqrt(dx*dx+dy*dy)
-
-point={
-x:last.x+Math.cos(best)*length,
-y:last.y+Math.sin(best)*length
-}
-
-}
-
 return point
 
 }
-
-/* cámara */
 
 function screenToWorld(p){
 
@@ -302,7 +275,52 @@ y:(p.y-camera.y)/camera.zoom
 
 }
 
-/* eventos */
+document.addEventListener("keydown",function(e){
+
+if(!drawing || current.length==0) return
+
+if(e.key>="0" && e.key<="9" || e.key=="." ){
+
+typedLength+=e.key
+inputBox.style.display="block"
+inputBox.innerText="Longitud: "+typedLength+" m"
+
+}
+
+if(e.key==="Backspace"){
+
+typedLength=typedLength.slice(0,-1)
+
+inputBox.innerText="Longitud: "+typedLength+" m"
+
+}
+
+if(e.key==="Enter" && typedLength!=""){
+
+let last=current[current.length-1]
+
+let len=parseFloat(typedLength)*scale
+
+let dx=mouse.x-last.x
+let dy=mouse.y-last.y
+
+let ang=Math.atan2(dy,dx)
+
+let p={
+x:last.x+Math.cos(ang)*len,
+y:last.y+Math.sin(ang)*len
+}
+
+current.push(p)
+
+typedLength=""
+inputBox.style.display="none"
+
+draw()
+
+}
+
+})
 
 canvas.onmousedown=e=>{
 
@@ -344,11 +362,7 @@ for(let room of rooms){
 
 if(pointInside(p,room.v)){
 
-dragRoom={
-room:room,
-start:p
-}
-
+dragRoom={room:room,start:p}
 return
 
 }
@@ -395,7 +409,6 @@ updateList()
 }
 
 updateCursor()
-
 draw()
 
 }
@@ -406,8 +419,6 @@ dragVertex=null
 dragRoom=null
 
 }
-
-/* cursor */
 
 function updateCursor(){
 
@@ -430,8 +441,6 @@ let d=dist(last,mouse)/scale
 cursor.innerText=d.toFixed(2)+" m"
 
 }
-
-/* controles */
 
 function newRoom(){
 
@@ -499,8 +508,6 @@ draw()
 
 }
 
-/* dibujo */
-
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -532,36 +539,6 @@ ctx.fill()
 ctx.strokeStyle="#2b83ff"
 ctx.lineWidth=2
 ctx.stroke()
-
-for(let i=0;i<v.length;i++){
-
-let a=v[i]
-let b=v[(i+1)%v.length]
-
-let mid={
-x:(a.x+b.x)/2,
-y:(a.y+b.y)/2
-}
-
-let d=dist(a,b)/scale
-
-ctx.fillStyle="black"
-ctx.fillText(d.toFixed(2)+" m",mid.x,mid.y)
-
-}
-
-for(let i=0;i<v.length;i++){
-
-let a=v[(i-1+v.length)%v.length]
-let b=v[i]
-let c=v[(i+1)%v.length]
-
-let ang=angle(a,b,c)
-
-ctx.fillStyle="orange"
-ctx.fillText(ang.toFixed(0)+"°",b.x+5,b.y-5)
-
-}
 
 for(let p of v){
 
@@ -615,8 +592,6 @@ ctx.setLineDash([])
 ctx.restore()
 
 }
-
-/* panel */
 
 function updateList(){
 
