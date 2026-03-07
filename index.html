@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
 <title>ALLCALOR PRO</title>
@@ -47,7 +46,7 @@ height:calc(100vh - 100px);
 }
 
 #panel{
-width:200px;
+width:220px;
 background:#17395d;
 padding:10px;
 }
@@ -60,19 +59,15 @@ background:#e6e6e6;
 
 canvas{
 background:white;
-cursor:crosshair;
 }
 
-#measure{
+.measure{
 position:absolute;
-top:10px;
-left:50%;
-transform:translateX(-50%);
-background:#222;
-padding:6px 10px;
-border-radius:5px;
+background:#111;
 color:#0f0;
-font-weight:bold;
+padding:4px 8px;
+border-radius:4px;
+font-size:13px;
 }
 
 </style>
@@ -86,7 +81,7 @@ font-weight:bold;
 
 Escala <input type="number" value="100" style="width:70px">
 
-<button class="green" onclick="startRoom()">Nueva estancia</button>
+<button class="green" onclick="newRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
@@ -97,95 +92,149 @@ Escala <input type="number" value="100" style="width:70px">
 
 <div id="panel">
 <h3>ESTANCIAS</h3>
+<div id="roomList"></div>
 </div>
 
 <div id="canvasContainer">
-
-<div id="measure">0 m | 0°</div>
-
 <canvas id="canvas"></canvas>
-
 </div>
+
 </div>
 
 <script>
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-const measure=document.getElementById("measure")
 
-canvas.width=window.innerWidth-200
+canvas.width=window.innerWidth-220
 canvas.height=window.innerHeight-100
 
 let rooms=[]
 let current=null
+let draggingPoint=null
+let draggingRoom=null
 
 let mouse={x:0,y:0}
 
-canvas.addEventListener("mousemove",e=>{
+canvas.onmousemove=e=>{
 
-const rect=canvas.getBoundingClientRect()
+const r=canvas.getBoundingClientRect()
 
-mouse.x=e.clientX-rect.left
-mouse.y=e.clientY-rect.top
+mouse.x=e.clientX-r.left
+mouse.y=e.clientY-r.top
 
-if(current && current.length>0){
+if(draggingPoint){
 
-let last=current[current.length-1]
+draggingPoint.x=mouse.x
+draggingPoint.y=mouse.y
+draw()
 
-let dx=mouse.x-last.x
-let dy=mouse.y-last.y
+}
 
-let dist=Math.sqrt(dx*dx+dy*dy)/100
-let ang=Math.atan2(dy,dx)*180/Math.PI
+if(draggingRoom){
 
-measure.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
+let dx=mouse.x-draggingRoom.start.x
+let dy=mouse.y-draggingRoom.start.y
+
+for(let p of draggingRoom.room.points){
+
+p.x=p.ox+dx
+p.y=p.oy+dy
 
 }
 
 draw()
 
-})
+}
 
-canvas.addEventListener("mousedown",e=>{
+}
 
-if(!current) return
+canvas.onmousedown=e=>{
 
-current.push({x:mouse.x,y:mouse.y})
+for(let room of rooms){
 
+for(let p of room.points){
+
+let d=Math.hypot(mouse.x-p.x,mouse.y-p.y)
+
+if(d<8){
+
+draggingPoint=p
+return
+
+}
+
+}
+
+}
+
+for(let room of rooms){
+
+if(pointInPoly(mouse,room.points)){
+
+draggingRoom={
+room:room,
+start:{x:mouse.x,y:mouse.y}
+}
+
+for(let p of room.points){
+
+p.ox=p.x
+p.oy=p.y
+
+}
+
+return
+
+}
+
+}
+
+if(current){
+
+current.points.push({x:mouse.x,y:mouse.y})
 draw()
 
-})
+}
 
-function startRoom(){
+}
 
-current=[]
+canvas.onmouseup=()=>{
+
+draggingPoint=null
+draggingRoom=null
+
+}
+
+function newRoom(){
+
+let name=prompt("Nombre estancia")
+
+if(!name)return
+
+current={
+name:name,
+points:[]
+}
+
 rooms.push(current)
+
+updateList()
 
 }
 
 function closeRoom(){
 
-if(!current) return
-
-if(current.length<3){
-alert("mínimo 3 puntos")
-return
-}
-
-current.push({...current[0]})
-
 current=null
-
 draw()
 
 }
 
 function undo(){
 
-if(current && current.length>0){
+if(current && current.points.length>0){
 
-current.pop()
+current.points.pop()
 draw()
 
 }
@@ -196,7 +245,24 @@ function resetAll(){
 
 rooms=[]
 current=null
+updateList()
 draw()
+
+}
+
+function updateList(){
+
+let div=document.getElementById("roomList")
+
+div.innerHTML=""
+
+rooms.forEach(r=>{
+
+let el=document.createElement("div")
+el.innerText=r.name
+div.appendChild(el)
+
+})
 
 }
 
@@ -204,17 +270,18 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-for(let r of rooms){
+rooms.forEach(room=>{
 
-if(r.length<2) continue
+let pts=room.points
+
+if(pts.length<2)return
 
 ctx.beginPath()
+ctx.moveTo(pts[0].x,pts[0].y)
 
-ctx.moveTo(r[0].x,r[0].y)
+for(let i=1;i<pts.length;i++){
 
-for(let i=1;i<r.length;i++){
-
-ctx.lineTo(r[i].x,r[i].y)
+ctx.lineTo(pts[i].x,pts[i].y)
 
 }
 
@@ -222,24 +289,40 @@ ctx.strokeStyle="#2196f3"
 ctx.lineWidth=2
 ctx.stroke()
 
-}
-
-for(let r of rooms){
-
-for(let p of r){
+pts.forEach(p=>{
 
 ctx.beginPath()
-ctx.arc(p.x,p.y,4,0,Math.PI*2)
+ctx.arc(p.x,p.y,5,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
-}
+})
+
+for(let i=0;i<pts.length;i++){
+
+let a=pts[i]
+let b=pts[(i+1)%pts.length]
+
+if(!b)continue
+
+let mx=(a.x+b.x)/2
+let my=(a.y+b.y)/2
+
+let dist=Math.hypot(b.x-a.x,b.y-a.y)/100
+
+ctx.fillStyle="black"
+ctx.fillRect(mx-30,my-10,60,20)
+
+ctx.fillStyle="#0f0"
+ctx.fillText(dist.toFixed(2)+" m",mx-25,my+5)
 
 }
 
-if(current && current.length>0){
+})
 
-let last=current[current.length-1]
+if(current && current.points.length>0){
+
+let last=current.points[current.points.length-1]
 
 ctx.beginPath()
 ctx.moveTo(last.x,last.y)
@@ -250,6 +333,28 @@ ctx.stroke()
 ctx.setLineDash([])
 
 }
+
+}
+
+function pointInPoly(p,poly){
+
+let inside=false
+
+for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+
+let xi=poly[i].x
+let yi=poly[i].y
+let xj=poly[j].x
+let yj=poly[j].y
+
+let intersect=((yi>p.y)!=(yj>p.y)) &&
+(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
+
+if(intersect)inside=!inside
+
+}
+
+return inside
 
 }
 
