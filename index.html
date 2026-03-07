@@ -15,8 +15,8 @@ color:white;
 
 header{
 text-align:center;
-padding:15px;
-font-size:28px;
+padding:14px;
+font-size:26px;
 font-weight:bold;
 }
 
@@ -25,13 +25,12 @@ display:flex;
 gap:10px;
 padding:10px;
 background:#162f4d;
-align-items:center;
 }
 
 button{
 border:none;
 padding:8px 12px;
-border-radius:5px;
+border-radius:6px;
 font-weight:bold;
 cursor:pointer;
 }
@@ -43,7 +42,7 @@ cursor:pointer;
 
 #container{
 display:flex;
-height:calc(100vh - 110px);
+height:calc(100vh - 100px);
 }
 
 #panel{
@@ -56,24 +55,23 @@ padding:10px;
 flex:1;
 position:relative;
 background:#e6e6e6;
-overflow:hidden;
-}
-
-#measureBox{
-position:absolute;
-top:10px;
-left:50%;
-transform:translateX(-50%);
-background:#222;
-color:#0f0;
-padding:6px 10px;
-border-radius:5px;
-font-weight:bold;
 }
 
 canvas{
 background:white;
 cursor:crosshair;
+}
+
+#measure{
+position:absolute;
+top:10px;
+left:50%;
+transform:translateX(-50%);
+background:#222;
+padding:6px 10px;
+border-radius:5px;
+color:#0f0;
+font-weight:bold;
 }
 
 </style>
@@ -85,7 +83,7 @@ cursor:crosshair;
 
 <div id="toolbar">
 
-Escala <input id="scaleInput" type="number" value="100" style="width:70px">
+Escala <input type="number" value="100" id="scaleInput" style="width:70px">
 
 <button class="green" onclick="newRoom()">Nueva estancia</button>
 <button class="blue" onclick="closeRoom()">Cerrar estancia</button>
@@ -108,7 +106,7 @@ Escala <input id="scaleInput" type="number" value="100" style="width:70px">
 
 <div id="canvasContainer">
 
-<div id="measureBox">0.00 m | 0°</div>
+<div id="measure">0 m | 0°</div>
 
 <canvas id="canvas"></canvas>
 
@@ -119,36 +117,40 @@ Escala <input id="scaleInput" type="number" value="100" style="width:70px">
 
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-const measureBox=document.getElementById("measureBox")
+
+const measure=document.getElementById("measure")
 
 canvas.width=window.innerWidth-200
-canvas.height=window.innerHeight-110
+canvas.height=window.innerHeight-100
 
 let rooms=[]
 let currentRoom=null
 let drawing=false
 
-let offsetX=0
-let offsetY=0
-let scale=1
-
-let isPanning=false
-let panStart=null
-
 let mouse={x:0,y:0}
 
+let scale=1
+let offsetX=0
+let offsetY=0
+
+let pan=false
+
 function world(x,y){
+
 return{
 x:(x-offsetX)/scale,
 y:(y-offsetY)/scale
 }
+
 }
 
 function screen(x,y){
+
 return{
 x:x*scale+offsetX,
 y:y*scale+offsetY
 }
+
 }
 
 canvas.addEventListener("mousemove",e=>{
@@ -158,27 +160,19 @@ const rect=canvas.getBoundingClientRect()
 mouse.x=e.clientX-rect.left
 mouse.y=e.clientY-rect.top
 
-if(isPanning && e.buttons===1){
-
-offsetX+=e.movementX
-offsetY+=e.movementY
-draw()
-return
-
-}
-
 if(drawing && currentRoom && currentRoom.length>0){
 
 const last=currentRoom[currentRoom.length-1]
+
 const w=world(mouse.x,mouse.y)
 
 const dx=w.x-last.x
 const dy=w.y-last.y
 
 const dist=Math.sqrt(dx*dx+dy*dy)/100
-const angle=Math.atan2(dy,dx)*180/Math.PI
+const ang=Math.atan2(dy,dx)*180/Math.PI
 
-measureBox.innerText=dist.toFixed(2)+" m | "+angle.toFixed(1)+"°"
+measure.innerText=dist.toFixed(2)+" m | "+ang.toFixed(1)+"°"
 
 }
 
@@ -188,17 +182,13 @@ draw()
 
 canvas.addEventListener("mousedown",e=>{
 
-if(isPanning){
-return
-}
+if(pan) return
+
+if(!drawing) return
 
 const w=world(mouse.x,mouse.y)
 
-if(drawing){
-
 currentRoom.push(w)
-
-}
 
 draw()
 
@@ -206,9 +196,9 @@ draw()
 
 function newRoom(){
 
-drawing=true
 currentRoom=[]
 rooms.push(currentRoom)
+drawing=true
 
 }
 
@@ -236,9 +226,9 @@ if(currentRoom && currentRoom.length>0){
 
 currentRoom.pop()
 
-}
-
 draw()
+
+}
 
 }
 
@@ -271,16 +261,9 @@ draw()
 
 function togglePan(){
 
-isPanning=!isPanning
+pan=!pan
 
 }
-
-canvas.addEventListener("wheel",e=>{
-
-const delta=e.deltaY<0?1.1:0.9
-zoom(delta)
-
-})
 
 function draw(){
 
@@ -296,7 +279,7 @@ for(let i=0;i<room.length;i++){
 
 const p=screen(room[i].x,room[i].y)
 
-if(i===0){
+if(i==0){
 ctx.moveTo(p.x,p.y)
 }else{
 ctx.lineTo(p.x,p.y)
@@ -318,11 +301,13 @@ ctx.stroke()
 if(drawing && currentRoom && currentRoom.length>0){
 
 const last=currentRoom[currentRoom.length-1]
+
 const p=screen(last.x,last.y)
 
 ctx.beginPath()
 ctx.moveTo(p.x,p.y)
 ctx.lineTo(mouse.x,mouse.y)
+
 ctx.setLineDash([6,6])
 ctx.stroke()
 ctx.setLineDash([])
