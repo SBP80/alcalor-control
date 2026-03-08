@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>APP SUELO RADIANTE</title>
+<title>ALLCALOR CONTROL</title>
 
 <style>
 
@@ -26,11 +26,12 @@ gap:10px;
 }
 
 button{
-padding:10px;
+padding:10px 14px;
 background:#444;
-color:white;
 border:none;
 border-radius:6px;
+color:white;
+cursor:pointer;
 }
 
 button:hover{
@@ -46,18 +47,18 @@ right:0;
 }
 
 canvas{
-background:#101010;
-touch-action:none;
+background:#111;
 }
 
-#info{
+#panel{
 position:absolute;
 right:10px;
 top:70px;
 background:#2c2c2c;
-padding:10px;
-border-radius:6px;
+padding:12px;
+border-radius:8px;
 font-size:13px;
+width:200px;
 }
 
 </style>
@@ -68,9 +69,8 @@ font-size:13px;
 
 <div id="toolbar">
 
-<button id="room">Estancia</button>
-<button id="obstacle">Obstáculo</button>
-<button id="close">Cerrar estancia</button>
+<button id="newRoom">Nueva estancia</button>
+<button id="closeRoom">Cerrar estancia</button>
 <button id="generate">Generar circuito</button>
 <button id="reset">Reset</button>
 
@@ -80,8 +80,12 @@ font-size:13px;
 <canvas id="canvas"></canvas>
 </div>
 
-<div id="info">
-metros tubo: <span id="meters">0</span>
+<div id="panel">
+
+<div>Estancia: <span id="roomName">-</span></div>
+<div>Superficie: <span id="area">0</span> m²</div>
+<div>Tubo total: <span id="meters">0</span> m</div>
+
 </div>
 
 <script>
@@ -89,81 +93,85 @@ metros tubo: <span id="meters">0</span>
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
-let W=window.innerWidth
-let H=window.innerHeight-60
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight-60
 
-canvas.width=W
-canvas.height=H
-
-const GRID=10
-
-let mode=null
-let currentRoom=null
-let currentObstacle=null
+const GRID=50
 
 let rooms=[]
-let obstacles=[]
 let pipes=[]
+let drawing=false
+let currentRoom=null
 
 function drawGrid(){
 
 ctx.strokeStyle="#222"
 
-for(let x=0;x<W;x+=GRID){
+for(let x=0;x<canvas.width;x+=GRID){
 
 ctx.beginPath()
 ctx.moveTo(x,0)
-ctx.lineTo(x,H)
+ctx.lineTo(x,canvas.height)
 ctx.stroke()
 
 }
 
-for(let y=0;y<H;y+=GRID){
+for(let y=0;y<canvas.height;y+=GRID){
 
 ctx.beginPath()
 ctx.moveTo(0,y)
-ctx.lineTo(W,y)
+ctx.lineTo(canvas.width,y)
 ctx.stroke()
 
 }
 
 }
 
-function drawPolygon(poly,color){
+function drawRooms(){
 
-ctx.strokeStyle=color
+rooms.forEach(room=>{
+
+ctx.strokeStyle="#00ff88"
 ctx.lineWidth=2
 
 ctx.beginPath()
 
-poly.forEach((p,i)=>{
+room.points.forEach((p,i)=>{
 
 if(i==0) ctx.moveTo(p.x,p.y)
 else ctx.lineTo(p.x,p.y)
 
 })
 
+ctx.closePath()
 ctx.stroke()
 
-}
-
-function drawRooms(){
-
-rooms.forEach(r=>{
-
-drawPolygon(r.points,"#00ff88")
+drawMeasurements(room)
 
 })
 
 }
 
-function drawObstacles(){
+function drawMeasurements(room){
 
-obstacles.forEach(o=>{
+ctx.fillStyle="white"
 
-drawPolygon(o.points,"#ff5555")
+for(let i=0;i<room.points.length;i++){
 
-})
+let p1=room.points[i]
+let p2=room.points[(i+1)%room.points.length]
+
+let mx=(p1.x+p2.x)/2
+let my=(p1.y+p2.y)/2
+
+let dx=p2.x-p1.x
+let dy=p2.y-p1.y
+
+let length=Math.sqrt(dx*dx+dy*dy)/100
+
+ctx.fillText(length.toFixed(2)+" m",mx,my)
+
+}
 
 }
 
@@ -191,11 +199,10 @@ ctx.stroke()
 
 function render(){
 
-ctx.clearRect(0,0,W,H)
+ctx.clearRect(0,0,canvas.width,canvas.height)
 
 drawGrid()
 drawRooms()
-drawObstacles()
 drawPipes()
 
 requestAnimationFrame(render)
@@ -206,53 +213,36 @@ render()
 
 canvas.onclick=(e)=>{
 
-let x=e.offsetX
-let y=e.offsetY
+if(!drawing) return
 
-if(mode==="room"){
+currentRoom.points.push({
+x:e.offsetX,
+y:e.offsetY
+})
 
-if(!currentRoom){
+}
 
-currentRoom={points:[]}
+document.getElementById("newRoom").onclick=()=>{
+
+let name=prompt("Nombre de la estancia")
+
+currentRoom={
+name:name,
+points:[]
+}
+
 rooms.push(currentRoom)
 
-}
+drawing=true
 
-currentRoom.points.push({x,y})
-
-}
-
-if(mode==="obstacle"){
-
-if(!currentObstacle){
-
-currentObstacle={points:[]}
-obstacles.push(currentObstacle)
+document.getElementById("roomName").innerText=name
 
 }
 
-currentObstacle.points.push({x,y})
+document.getElementById("closeRoom").onclick=()=>{
 
-}
-
-}
-
-document.getElementById("close").onclick=()=>{
-
-currentRoom=null
-currentObstacle=null
-
-}
-
-document.getElementById("room").onclick=()=>{
-
-mode="room"
-
-}
-
-document.getElementById("obstacle").onclick=()=>{
-
-mode="obstacle"
+drawing=false
+calculateArea(currentRoom)
 
 }
 
@@ -260,76 +250,57 @@ document.getElementById("reset").onclick=()=>{
 
 rooms=[]
 pipes=[]
-obstacles=[]
+document.getElementById("meters").innerText="0"
+document.getElementById("area").innerText="0"
 
 }
 
-function boundingBox(points){
+function calculateArea(room){
 
-let minX=Infinity
-let minY=Infinity
-let maxX=-Infinity
-let maxY=-Infinity
+let area=0
 
-points.forEach(p=>{
+let pts=room.points
 
-if(p.x<minX)minX=p.x
-if(p.y<minY)minY=p.y
-if(p.x>maxX)maxX=p.x
-if(p.y>maxY)maxY=p.y
+for(let i=0;i<pts.length;i++){
 
-})
+let j=(i+1)%pts.length
 
-return {minX,minY,maxX,maxY}
+area+=pts[i].x*pts[j].y
+area-=pts[j].x*pts[i].y
+
+}
+
+area=Math.abs(area/2)/10000
+
+document.getElementById("area").innerText=area.toFixed(2)
 
 }
 
 function generateCircuit(room){
 
-let box=boundingBox(room.points)
+let minX=Math.min(...room.points.map(p=>p.x))
+let minY=Math.min(...room.points.map(p=>p.y))
+let maxX=Math.max(...room.points.map(p=>p.x))
+let maxY=Math.max(...room.points.map(p=>p.y))
 
-let minX=box.minX+5
-let minY=box.minY+5
-let maxX=box.maxX-5
-let maxY=box.maxY-5
-
-let step=10
-let offset=step*2
-
-let ida=[]
-let retorno=[]
+let step=20
+let pipe=[]
 
 while(minX<maxX && minY<maxY){
 
-ida.push({x:minX,y:minY})
-ida.push({x:maxX,y:minY})
-ida.push({x:maxX,y:maxY})
-ida.push({x:minX,y:maxY})
+pipe.push({x:minX,y:minY})
+pipe.push({x:maxX,y:minY})
+pipe.push({x:maxX,y:maxY})
+pipe.push({x:minX,y:maxY})
 
-minX+=offset
-minY+=offset
-maxX-=offset
-maxY-=offset
-
-}
-
-let cx=(box.minX+box.maxX)/2
-let cy=(box.minY+box.maxY)/2
-
-retorno.push({x:cx,y:cy})
-
-for(let i=ida.length-1;i>=0;i--){
-
-let p=ida[i]
-
-retorno.push({
-x:p.x+step,
-y:p.y+step
-})
+minX+=step
+minY+=step
+maxX-=step
+maxY-=step
 
 }
 
-return ida.concat(retorno)
+return pipe
 
 }
 
