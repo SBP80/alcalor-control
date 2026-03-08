@@ -10,8 +10,8 @@ body{
 margin:0;
 background:#1e1e1e;
 font-family:Arial;
-overflow:hidden;
 color:white;
+overflow:hidden;
 }
 
 #toolbar{
@@ -37,8 +37,8 @@ background:#666;
 }
 
 canvas{
-display:block;
 background:#111;
+display:block;
 }
 
 #info{
@@ -47,7 +47,7 @@ right:10px;
 top:70px;
 background:#2b2b2b;
 padding:10px;
-border-radius:8px;
+border-radius:6px;
 font-size:13px;
 }
 
@@ -57,133 +57,118 @@ font-size:13px;
 <body>
 
 <div id="toolbar">
-
 <button id="newRoom">Nueva estancia</button>
-<button id="closeRoom">Cerrar estancia</button>
 <button id="reset">Reset</button>
-
 </div>
 
 <canvas id="canvas"></canvas>
 
 <div id="info">
-<div id="cursor"></div>
+<div id="cursorInfo"></div>
+<div id="typedInfo"></div>
 </div>
 
 <script>
 
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight-60
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight - 60
 
-let scale=1
-let offsetX=0
-let offsetY=0
+const GRID = 100
 
-const GRID=100
+let rooms = []
+let currentRoom = null
+let drawing = false
 
-let rooms=[]
-let drawing=false
-let currentRoom=null
+let mouse = {x:0,y:0}
+let lastPoint = null
+let typedLength = ""
 
-let mouse={x:0,y:0}
+canvas.addEventListener("mousemove", e => {
 
-function screenToWorld(x,y){
-
-return{
-x:(x-offsetX)/scale,
-y:(y-offsetY)/scale
-}
-
-}
-
-function worldToScreen(x,y){
-
-return{
-x:x*scale+offsetX,
-y:y*scale+offsetY
-}
-
-}
-
-canvas.addEventListener("mousemove",e=>{
-
-let pos=screenToWorld(e.offsetX,e.offsetY)
-
-mouse.x=Math.round(pos.x/GRID)*GRID
-mouse.y=Math.round(pos.y/GRID)*GRID
+mouse.x = Math.round(e.offsetX / GRID) * GRID
+mouse.y = Math.round(e.offsetY / GRID) * GRID
 
 })
 
-canvas.addEventListener("click",e=>{
+canvas.addEventListener("click", () => {
 
-if(!drawing)return
+if(!drawing) return
 
-currentRoom.points.push({x:mouse.x,y:mouse.y})
+if(!lastPoint){
+
+lastPoint = {x:mouse.x,y:mouse.y}
+currentRoom.points.push(lastPoint)
+return
+
+}
 
 })
 
-document.getElementById("newRoom").onclick=()=>{
+document.getElementById("newRoom").onclick = () => {
 
-let name=prompt("Nombre estancia")
+let name = prompt("Nombre estancia")
 
-currentRoom={
+currentRoom = {
 name:name,
 points:[]
 }
 
 rooms.push(currentRoom)
-drawing=true
+
+drawing = true
+lastPoint = null
+typedLength = ""
 
 }
 
-document.getElementById("closeRoom").onclick=()=>{
+document.getElementById("reset").onclick = () => {
 
-drawing=false
-
-}
-
-document.getElementById("reset").onclick=()=>{
-
-rooms=[]
-drawing=false
+rooms = []
+currentRoom = null
+drawing = false
+lastPoint = null
+typedLength = ""
 
 }
 
-canvas.addEventListener("wheel",e=>{
+document.addEventListener("keydown", e => {
 
-let zoom=e.deltaY<0?1.1:0.9
+if(!drawing) return
+if(!lastPoint) return
 
-scale*=zoom
-
-})
-
-let dragging=false
-
-canvas.addEventListener("mousedown",e=>{
-
-if(e.button===1 || e.spaceKey){
-
-dragging=true
-
+if((e.key >= "0" && e.key <= "9") || e.key === "."){
+typedLength += e.key
 }
 
-})
+if(e.key === "Backspace"){
+typedLength = typedLength.slice(0,-1)
+}
 
-canvas.addEventListener("mouseup",()=>{
+if(e.key === "Enter"){
 
-dragging=false
+let meters = parseFloat(typedLength)
 
-})
+if(!meters) return
 
-canvas.addEventListener("mousemove",e=>{
+let dx = mouse.x - lastPoint.x
+let dy = mouse.y - lastPoint.y
 
-if(dragging){
+let angle = Math.atan2(dy,dx)
 
-offsetX+=e.movementX
-offsetY+=e.movementY
+let length = meters * 1000
+
+let newX = lastPoint.x + Math.cos(angle)*length
+let newY = lastPoint.y + Math.sin(angle)*length
+
+let newPoint = {x:newX,y:newY}
+
+currentRoom.points.push(newPoint)
+
+lastPoint = newPoint
+typedLength = ""
 
 }
 
@@ -191,26 +176,20 @@ offsetY+=e.movementY
 
 function drawGrid(){
 
-let step=GRID*scale
-
-for(let x=offsetX%step;x<canvas.width;x+=step){
-
 ctx.strokeStyle="#222"
 
+for(let x=0;x<canvas.width;x+=GRID){
 ctx.beginPath()
 ctx.moveTo(x,0)
 ctx.lineTo(x,canvas.height)
 ctx.stroke()
-
 }
 
-for(let y=offsetY%step;y<canvas.height;y+=step){
-
+for(let y=0;y<canvas.height;y+=GRID){
 ctx.beginPath()
 ctx.moveTo(0,y)
 ctx.lineTo(canvas.width,y)
 ctx.stroke()
-
 }
 
 }
@@ -226,10 +205,11 @@ ctx.beginPath()
 
 room.points.forEach((p,i)=>{
 
-let s=worldToScreen(p.x,p.y)
-
-if(i===0)ctx.moveTo(s.x,s.y)
-else ctx.lineTo(s.x,s.y)
+if(i===0){
+ctx.moveTo(p.x,p.y)
+}else{
+ctx.lineTo(p.x,p.y)
+}
 
 })
 
@@ -241,29 +221,27 @@ ctx.stroke()
 
 function drawPreview(){
 
-if(!drawing)return
-if(currentRoom.points.length===0)return
-
-let last=currentRoom.points[currentRoom.points.length-1]
-
-let a=worldToScreen(last.x,last.y)
-let b=worldToScreen(mouse.x,mouse.y)
+if(!drawing) return
+if(!lastPoint) return
 
 ctx.strokeStyle="#ffaa00"
 
 ctx.beginPath()
-ctx.moveTo(a.x,a.y)
-ctx.lineTo(b.x,b.y)
+ctx.moveTo(lastPoint.x,lastPoint.y)
+ctx.lineTo(mouse.x,mouse.y)
 ctx.stroke()
 
-let dx=mouse.x-last.x
-let dy=mouse.y-last.y
+let dx = mouse.x - lastPoint.x
+let dy = mouse.y - lastPoint.y
 
-let length=Math.sqrt(dx*dx+dy*dy)/1000
-let angle=Math.atan2(dy,dx)*180/Math.PI
+let length = Math.sqrt(dx*dx+dy*dy)/1000
+let angle = Math.atan2(dy,dx)*180/Math.PI
 
-document.getElementById("cursor").innerText=
+document.getElementById("cursorInfo").innerText =
 length.toFixed(2)+" m | "+angle.toFixed(1)+"°"
+
+document.getElementById("typedInfo").innerText =
+"medida: "+typedLength
 
 }
 
