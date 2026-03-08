@@ -5,7 +5,6 @@
 <title>ALLCALOR CONTROL</title>
 
 <style>
-
 body{
 margin:0;
 background:#1e1e1e;
@@ -32,10 +31,6 @@ border-radius:6px;
 cursor:pointer;
 }
 
-button:hover{
-background:#666;
-}
-
 canvas{
 background:#111;
 display:block;
@@ -58,6 +53,7 @@ font-size:13px;
 
 <div id="toolbar">
 <button id="newRoom">Nueva estancia</button>
+<button id="closeRoom">Cerrar estancia</button>
 <button id="reset">Reset</button>
 </div>
 
@@ -65,7 +61,6 @@ font-size:13px;
 
 <div id="info">
 <div id="cursorInfo"></div>
-<div id="typedInfo"></div>
 </div>
 
 <script>
@@ -76,38 +71,33 @@ const ctx = canvas.getContext("2d")
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight - 60
 
-const GRID = 100
+const GRID = 50
 
 let rooms = []
-let currentRoom = null
 let drawing = false
+let currentRoom = null
 
 let mouse = {x:0,y:0}
-let lastPoint = null
-let typedLength = ""
 
-canvas.addEventListener("mousemove", e => {
+canvas.addEventListener("mousemove",e=>{
 
-mouse.x = Math.round(e.offsetX / GRID) * GRID
-mouse.y = Math.round(e.offsetY / GRID) * GRID
+mouse.x = Math.round(e.offsetX/GRID)*GRID
+mouse.y = Math.round(e.offsetY/GRID)*GRID
 
 })
 
-canvas.addEventListener("click", () => {
+canvas.addEventListener("click",()=>{
 
 if(!drawing) return
 
-if(!lastPoint){
-
-lastPoint = {x:mouse.x,y:mouse.y}
-currentRoom.points.push(lastPoint)
-return
-
-}
+currentRoom.points.push({
+x:mouse.x,
+y:mouse.y
+})
 
 })
 
-document.getElementById("newRoom").onclick = () => {
+document.getElementById("newRoom").onclick = ()=>{
 
 let name = prompt("Nombre estancia")
 
@@ -119,77 +109,42 @@ points:[]
 rooms.push(currentRoom)
 
 drawing = true
-lastPoint = null
-typedLength = ""
 
 }
 
-document.getElementById("reset").onclick = () => {
+document.getElementById("closeRoom").onclick = ()=>{
+
+drawing = false
+
+}
+
+document.getElementById("reset").onclick = ()=>{
 
 rooms = []
-currentRoom = null
 drawing = false
-lastPoint = null
-typedLength = ""
 
 }
-
-document.addEventListener("keydown", e => {
-
-if(!drawing) return
-if(!lastPoint) return
-
-if((e.key >= "0" && e.key <= "9") || e.key === "."){
-typedLength += e.key
-}
-
-if(e.key === "Backspace"){
-typedLength = typedLength.slice(0,-1)
-}
-
-if(e.key === "Enter"){
-
-let meters = parseFloat(typedLength)
-
-if(!meters) return
-
-let dx = mouse.x - lastPoint.x
-let dy = mouse.y - lastPoint.y
-
-let angle = Math.atan2(dy,dx)
-
-let length = meters * 1000
-
-let newX = lastPoint.x + Math.cos(angle)*length
-let newY = lastPoint.y + Math.sin(angle)*length
-
-let newPoint = {x:newX,y:newY}
-
-currentRoom.points.push(newPoint)
-
-lastPoint = newPoint
-typedLength = ""
-
-}
-
-})
 
 function drawGrid(){
 
 ctx.strokeStyle="#222"
 
 for(let x=0;x<canvas.width;x+=GRID){
+
 ctx.beginPath()
 ctx.moveTo(x,0)
 ctx.lineTo(x,canvas.height)
 ctx.stroke()
+
 }
 
 for(let y=0;y<canvas.height;y+=GRID){
+
 ctx.beginPath()
 ctx.moveTo(0,y)
 ctx.lineTo(canvas.width,y)
 ctx.stroke()
+
 }
 
 }
@@ -222,26 +177,27 @@ ctx.stroke()
 function drawPreview(){
 
 if(!drawing) return
-if(!lastPoint) return
+if(!currentRoom) return
+if(currentRoom.points.length===0) return
+
+let last = currentRoom.points[currentRoom.points.length-1]
 
 ctx.strokeStyle="#ffaa00"
 
 ctx.beginPath()
-ctx.moveTo(lastPoint.x,lastPoint.y)
+ctx.moveTo(last.x,last.y)
 ctx.lineTo(mouse.x,mouse.y)
 ctx.stroke()
 
-let dx = mouse.x - lastPoint.x
-let dy = mouse.y - lastPoint.y
+let dx = mouse.x-last.x
+let dy = mouse.y-last.y
 
-let length = Math.sqrt(dx*dx+dy*dy)/1000
+let length = Math.sqrt(dx*dx+dy*dy)/100
+
 let angle = Math.atan2(dy,dx)*180/Math.PI
 
 document.getElementById("cursorInfo").innerText =
 length.toFixed(2)+" m | "+angle.toFixed(1)+"°"
-
-document.getElementById("typedInfo").innerText =
-"medida: "+typedLength
 
 }
 
