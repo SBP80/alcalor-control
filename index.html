@@ -2,17 +2,16 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ALLCALOR CONTROL</title>
 
 <style>
 
 body{
 margin:0;
-background:#1c1c1c;
+background:#1e1e1e;
 font-family:Arial;
-color:white;
 overflow:hidden;
+color:white;
 }
 
 #toolbar{
@@ -20,14 +19,14 @@ height:60px;
 background:#2b2b2b;
 display:flex;
 align-items:center;
-padding:10px;
 gap:10px;
+padding:10px;
 }
 
 button{
 padding:8px 14px;
-border:none;
 background:#444;
+border:none;
 color:white;
 border-radius:6px;
 cursor:pointer;
@@ -38,8 +37,8 @@ background:#666;
 }
 
 canvas{
-background:#111;
 display:block;
+background:#111;
 }
 
 #info{
@@ -47,7 +46,7 @@ position:absolute;
 right:10px;
 top:70px;
 background:#2b2b2b;
-padding:12px;
+padding:10px;
 border-radius:8px;
 font-size:13px;
 }
@@ -58,19 +57,17 @@ font-size:13px;
 <body>
 
 <div id="toolbar">
+
 <button id="newRoom">Nueva estancia</button>
 <button id="closeRoom">Cerrar estancia</button>
-<button id="generate">Generar circuito</button>
 <button id="reset">Reset</button>
+
 </div>
 
 <canvas id="canvas"></canvas>
 
 <div id="info">
-<div>Estancia: <span id="roomName">-</span></div>
-<div>Superficie: <span id="area">0</span> m²</div>
-<div>Tubo: <span id="meters">0</span> m</div>
-<div id="cursorInfo"></div>
+<div id="cursor"></div>
 </div>
 
 <script>
@@ -81,23 +78,42 @@ const ctx=canvas.getContext("2d")
 canvas.width=window.innerWidth
 canvas.height=window.innerHeight-60
 
-const GRID=50
+let scale=1
+let offsetX=0
+let offsetY=0
+
+const GRID=100
 
 let rooms=[]
-let pipes=[]
-
 let drawing=false
 let currentRoom=null
+
 let mouse={x:0,y:0}
 
-function snap(v){
-return Math.round(v/GRID)*GRID
+function screenToWorld(x,y){
+
+return{
+x:(x-offsetX)/scale,
+y:(y-offsetY)/scale
+}
+
+}
+
+function worldToScreen(x,y){
+
+return{
+x:x*scale+offsetX,
+y:y*scale+offsetY
+}
+
 }
 
 canvas.addEventListener("mousemove",e=>{
 
-mouse.x=snap(e.offsetX)
-mouse.y=snap(e.offsetY)
+let pos=screenToWorld(e.offsetX,e.offsetY)
+
+mouse.x=Math.round(pos.x/GRID)*GRID
+mouse.y=Math.round(pos.y/GRID)*GRID
 
 })
 
@@ -105,10 +121,7 @@ canvas.addEventListener("click",e=>{
 
 if(!drawing)return
 
-currentRoom.points.push({
-x:mouse.x,
-y:mouse.y
-})
+currentRoom.points.push({x:mouse.x,y:mouse.y})
 
 })
 
@@ -122,35 +135,67 @@ points:[]
 }
 
 rooms.push(currentRoom)
-
 drawing=true
-
-document.getElementById("roomName").innerText=name
 
 }
 
 document.getElementById("closeRoom").onclick=()=>{
 
 drawing=false
-calculateArea(currentRoom)
 
 }
 
 document.getElementById("reset").onclick=()=>{
 
 rooms=[]
-pipes=[]
-
-document.getElementById("meters").innerText="0"
-document.getElementById("area").innerText="0"
+drawing=false
 
 }
 
+canvas.addEventListener("wheel",e=>{
+
+let zoom=e.deltaY<0?1.1:0.9
+
+scale*=zoom
+
+})
+
+let dragging=false
+
+canvas.addEventListener("mousedown",e=>{
+
+if(e.button===1 || e.spaceKey){
+
+dragging=true
+
+}
+
+})
+
+canvas.addEventListener("mouseup",()=>{
+
+dragging=false
+
+})
+
+canvas.addEventListener("mousemove",e=>{
+
+if(dragging){
+
+offsetX+=e.movementX
+offsetY+=e.movementY
+
+}
+
+})
+
 function drawGrid(){
 
-ctx.strokeStyle="#222"
+let step=GRID*scale
 
-for(let x=0;x<canvas.width;x+=GRID){
+for(let x=offsetX%step;x<canvas.width;x+=step){
+
+ctx.strokeStyle="#222"
 
 ctx.beginPath()
 ctx.moveTo(x,0)
@@ -159,7 +204,7 @@ ctx.stroke()
 
 }
 
-for(let y=0;y<canvas.height;y+=GRID){
+for(let y=offsetY%step;y<canvas.height;y+=step){
 
 ctx.beginPath()
 ctx.moveTo(0,y)
@@ -174,15 +219,17 @@ function drawRooms(){
 
 rooms.forEach(room=>{
 
-ctx.strokeStyle="#00ff9c"
+ctx.strokeStyle="#00ffaa"
 ctx.lineWidth=2
 
 ctx.beginPath()
 
 room.points.forEach((p,i)=>{
 
-if(i===0)ctx.moveTo(p.x,p.y)
-else ctx.lineTo(p.x,p.y)
+let s=worldToScreen(p.x,p.y)
+
+if(i===0)ctx.moveTo(s.x,s.y)
+else ctx.lineTo(s.x,s.y)
 
 })
 
@@ -199,44 +246,24 @@ if(currentRoom.points.length===0)return
 
 let last=currentRoom.points[currentRoom.points.length-1]
 
+let a=worldToScreen(last.x,last.y)
+let b=worldToScreen(mouse.x,mouse.y)
+
 ctx.strokeStyle="#ffaa00"
-ctx.lineWidth=1
 
 ctx.beginPath()
-ctx.moveTo(last.x,last.y)
-ctx.lineTo(mouse.x,mouse.y)
+ctx.moveTo(a.x,a.y)
+ctx.lineTo(b.x,b.y)
 ctx.stroke()
 
 let dx=mouse.x-last.x
 let dy=mouse.y-last.y
 
-let length=Math.sqrt(dx*dx+dy*dy)/100
+let length=Math.sqrt(dx*dx+dy*dy)/1000
 let angle=Math.atan2(dy,dx)*180/Math.PI
 
-document.getElementById("cursorInfo").innerText=
+document.getElementById("cursor").innerText=
 length.toFixed(2)+" m | "+angle.toFixed(1)+"°"
-
-}
-
-function drawPipes(){
-
-ctx.strokeStyle="#00aaff"
-ctx.lineWidth=2
-
-pipes.forEach(pipe=>{
-
-ctx.beginPath()
-
-pipe.forEach((p,i)=>{
-
-if(i===0)ctx.moveTo(p.x,p.y)
-else ctx.lineTo(p.x,p.y)
-
-})
-
-ctx.stroke()
-
-})
 
 }
 
@@ -247,96 +274,12 @@ ctx.clearRect(0,0,canvas.width,canvas.height)
 drawGrid()
 drawRooms()
 drawPreview()
-drawPipes()
 
 requestAnimationFrame(render)
 
 }
 
 render()
-
-function calculateArea(room){
-
-let area=0
-let pts=room.points
-
-for(let i=0;i<pts.length;i++){
-
-let j=(i+1)%pts.length
-
-area+=pts[i].x*pts[j].y
-area-=pts[j].x*pts[i].y
-
-}
-
-area=Math.abs(area/2)/10000
-
-document.getElementById("area").innerText=area.toFixed(2)
-
-}
-
-function generateCircuit(room){
-
-let minX=Math.min(...room.points.map(p=>p.x))
-let minY=Math.min(...room.points.map(p=>p.y))
-let maxX=Math.max(...room.points.map(p=>p.x))
-let maxY=Math.max(...room.points.map(p=>p.y))
-
-let step=100
-let pipe=[]
-
-while(minX<maxX && minY<maxY){
-
-pipe.push({x:minX,y:minY})
-pipe.push({x:maxX,y:minY})
-pipe.push({x:maxX,y:maxY})
-pipe.push({x:minX,y:maxY})
-
-minX+=step
-minY+=step
-maxX-=step
-maxY-=step
-
-}
-
-return pipe
-
-}
-
-function pipeLength(pipe){
-
-let L=0
-
-for(let i=1;i<pipe.length;i++){
-
-let dx=pipe[i].x-pipe[i-1].x
-let dy=pipe[i].y-pipe[i-1].y
-
-L+=Math.sqrt(dx*dx+dy*dy)
-
-}
-
-return L/100
-
-}
-
-document.getElementById("generate").onclick=()=>{
-
-pipes=[]
-let total=0
-
-rooms.forEach(room=>{
-
-let circuit=generateCircuit(room)
-pipes.push(circuit)
-
-total+=pipeLength(circuit)
-
-})
-
-document.getElementById("meters").innerText=total.toFixed(1)
-
-}
 
 </script>
 
