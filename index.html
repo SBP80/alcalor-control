@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>🔥 ALLCALOR PRO</title>
+<title>ALLCALOR PRO</title>
 
 <style>
 
@@ -24,8 +24,7 @@ font-size:22px;
 background:#173a5e;
 padding:10px;
 display:flex;
-gap:6px;
-flex-wrap:wrap;
+gap:8px;
 }
 
 button{
@@ -40,39 +39,21 @@ font-weight:bold;
 .blue{background:#2b83ff}
 .orange{background:#ff9800}
 .red{background:#e53935}
-.gray{background:#607d8b}
 
 #layout{
 display:flex;
 }
 
 #panel{
-width:260px;
+width:250px;
 background:#1c3f63;
 padding:10px;
-height:calc(100vh - 110px);
-overflow:auto;
+height:calc(100vh - 90px);
 }
 
 canvas{
 background:#f4f1e8;
 cursor:crosshair;
-}
-
-.roomBlock{
-margin-bottom:10px;
-border-bottom:1px solid rgba(255,255,255,0.2);
-padding-bottom:6px;
-}
-
-#cursorInfo{
-position:absolute;
-pointer-events:none;
-background:rgba(0,0,0,0.85);
-color:white;
-padding:4px 6px;
-font-size:12px;
-border-radius:4px;
 }
 
 </style>
@@ -87,311 +68,86 @@ border-radius:4px;
 Escala
 <input id="scale" type="number" value="100" style="width:60px">
 
-<button class="green" onclick="newRoom()">Nueva estancia</button>
-<button class="blue" onclick="closeRoom()">Cerrar estancia</button>
+<button class="green" onclick="startRoom()">Nueva estancia</button>
+<button class="blue" onclick="finishRoom()">Cerrar estancia</button>
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
-
-<button class="gray" onclick="zoomIn()">Zoom +</button>
-<button class="gray" onclick="zoomOut()">Zoom -</button>
-<button class="gray" onclick="centerView()">Centrar</button>
 
 </div>
 
 <div id="layout">
 
 <div id="panel">
+
 <h3>Estancias</h3>
-<div id="rooms"></div>
-<hr>
-<b>Total</b>
-<div id="totalArea">0</div>
+
+<div id="roomList"></div>
+
 </div>
 
-<div style="position:relative">
-<canvas id="canvas" width="1200" height="700"></canvas>
-<div id="cursorInfo"></div>
-</div>
+<canvas id="canvas" width="1100" height="700"></canvas>
 
 </div>
 
 <script>
 
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
-let rooms=[]
-let current=[]
-let drawing=false
+let rooms = []
+let current = []
+let drawing = false
 
-let zoom=1
-let offsetX=0
-let offsetY=0
+canvas.addEventListener("click",clickCanvas)
 
-let mouse={x:0,y:0}
+function startRoom(){
 
-let dragPoint=null
-let dragRoom=null
-
-const cursorInfo=document.getElementById("cursorInfo")
-
-function scale(){
-return parseFloat(document.getElementById("scale").value)
-}
-
-function worldToScreen(x,y){
-return{x:x*zoom+offsetX,y:y*zoom+offsetY}
-}
-
-function screenToWorld(x,y){
-return{x:(x-offsetX)/zoom,y:(y-offsetY)/zoom}
-}
-
-canvas.onmousemove=e=>{
-
-const rect=canvas.getBoundingClientRect()
-
-let sx=e.clientX-rect.left
-let sy=e.clientY-rect.top
-
-mouse=screenToWorld(sx,sy)
-
-cursorInfo.style.left=(e.clientX+10)+"px"
-cursorInfo.style.top=(e.clientY+10)+"px"
-
-if(current.length){
-
-let last=current[current.length-1]
-
-let dist=Math.hypot(mouse.x-last.x,mouse.y-last.y)/scale()
-
-let angleText=""
-
-if(current.length>1){
-
-let prev=current[current.length-2]
-
-let ang=calcAngle(prev,last,mouse)
-
-angleText=" | "+ang.toFixed(1)+"°"
-
-}
-
-cursorInfo.innerHTML=dist.toFixed(2)+" m"+angleText
-
-}else{
-cursorInfo.innerHTML=""
-}
-
-if(dragPoint){
-
-dragPoint.x=mouse.x
-dragPoint.y=mouse.y
-updateRooms()
-
-}
-
-if(dragRoom){
-
-let dx=mouse.x-dragRoom.start.x
-let dy=mouse.y-dragRoom.start.y
-
-dragRoom.room.v.forEach(v=>{
-v.x+=dx
-v.y+=dy
-})
-
-dragRoom.start={...mouse}
-
-updateRooms()
-
-}
-
-draw()
-
-}
-
-canvas.onmousedown=e=>{
-
-const rect=canvas.getBoundingClientRect()
-
-let sx=e.clientX-rect.left
-let sy=e.clientY-rect.top
-
-let p=screenToWorld(sx,sy)
-
-for(let r of rooms){
-for(let v of r.v){
-if(Math.hypot(v.x-p.x,v.y-p.y)<8/zoom){
-dragPoint=v
-return
-}
-}
-}
-
-for(let r of rooms){
-if(pointInside(p,r.v)){
-dragRoom={room:r,start:{...p}}
-return
-}
-}
-
-if(drawing){
-current.push(p)
-draw()
-}
-
-}
-
-canvas.onmouseup=()=>{
-dragPoint=null
-dragRoom=null
-}
-
-function zoomIn(){
-zoom*=1.2
-draw()
-}
-
-function zoomOut(){
-zoom/=1.2
-draw()
-}
-
-function centerView(){
-zoom=1
-offsetX=0
-offsetY=0
-draw()
-}
-
-function newRoom(){
 drawing=true
 current=[]
+
 }
 
-function closeRoom(){
+function finishRoom(){
 
 if(current.length<3)return
 
-let name=prompt("Nombre estancia","Estancia")
-
-rooms.push({
-name:name,
-v:[...current]
-})
-
-drawing=false
+rooms.push([...current])
 current=[]
+drawing=false
 
-updateRooms()
 draw()
 
 }
 
 function undo(){
+
 current.pop()
 draw()
+
 }
 
 function resetAll(){
 
 rooms=[]
 current=[]
+drawing=false
 
-updateRooms()
 draw()
 
 }
 
-function polygonArea(v){
+function clickCanvas(e){
 
-let sum=0
+if(!drawing)return
 
-for(let i=0;i<v.length;i++){
-let j=(i+1)%v.length
-sum+=v[i].x*v[j].y-v[j].x*v[i].y
-}
+const rect = canvas.getBoundingClientRect()
 
-return Math.abs(sum/2)/(scale()*scale())
+const x = e.clientX-rect.left
+const y = e.clientY-rect.top
 
-}
+current.push({x,y})
 
-function polygonPerimeter(v){
-
-let p=0
-
-for(let i=0;i<v.length;i++){
-let j=(i+1)%v.length
-p+=Math.hypot(v[j].x-v[i].x,v[j].y-v[i].y)
-}
-
-return p/scale()
-
-}
-
-function calcAngle(a,b,c){
-
-let ab=Math.atan2(a.y-b.y,a.x-b.x)
-let cb=Math.atan2(c.y-b.y,c.x-b.x)
-
-let ang=Math.abs((ab-cb)*180/Math.PI)
-
-if(ang>180)ang=360-ang
-
-return ang
-
-}
-
-function updateRooms(){
-
-let div=document.getElementById("rooms")
-div.innerHTML=""
-
-let total=0
-
-rooms.forEach(r=>{
-
-let area=polygonArea(r.v)
-let per=polygonPerimeter(r.v)
-
-total+=area
-
-let block=document.createElement("div")
-block.className="roomBlock"
-
-block.innerHTML=
-"<b>"+r.name+"</b><br>"+
-"Área: "+area.toFixed(2)+" m²<br>"+
-"Perímetro: "+per.toFixed(2)+" m"
-
-div.appendChild(block)
-
-})
-
-document.getElementById("totalArea").innerText=total.toFixed(2)+" m²"
-
-}
-
-function pointInside(p,poly){
-
-let inside=false
-
-for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-
-let xi=poly[i].x
-let yi=poly[i].y
-let xj=poly[j].x
-let yj=poly[j].y
-
-let intersect=((yi>p.y)!=(yj>p.y)) &&
-(p.x<(xj-xi)*(p.y-yi)/(yj-yi)+xi)
-
-if(intersect)inside=!inside
-
-}
-
-return inside
+draw()
 
 }
 
@@ -399,27 +155,23 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-rooms.forEach(r=>{
+rooms.forEach(room=>{
 
 ctx.beginPath()
 
-let p0=worldToScreen(r.v[0].x,r.v[0].y)
-ctx.moveTo(p0.x,p0.y)
+ctx.moveTo(room[0].x,room[0].y)
 
-for(let i=1;i<r.v.length;i++){
+for(let i=1;i<room.length;i++){
 
-let p=worldToScreen(r.v[i].x,r.v[i].y)
-ctx.lineTo(p.x,p.y)
+ctx.lineTo(room[i].x,room[i].y)
 
 }
 
 ctx.closePath()
-ctx.strokeStyle="#2b83ff"
+ctx.strokeStyle="blue"
 ctx.stroke()
 
-r.v.forEach(v=>{
-
-let p=worldToScreen(v.x,v.y)
+room.forEach(p=>{
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,4,0,Math.PI*2)
@@ -432,30 +184,20 @@ ctx.fill()
 
 if(current.length){
 
-ctx.setLineDash([6,6])
-
 ctx.beginPath()
 
-let p0=worldToScreen(current[0].x,current[0].y)
-ctx.moveTo(p0.x,p0.y)
+ctx.moveTo(current[0].x,current[0].y)
 
 for(let i=1;i<current.length;i++){
 
-let p=worldToScreen(current[i].x,current[i].y)
-ctx.lineTo(p.x,p.y)
+ctx.lineTo(current[i].x,current[i].y)
 
 }
 
-let m=worldToScreen(mouse.x,mouse.y)
-
-ctx.lineTo(m.x,m.y)
+ctx.strokeStyle="black"
 ctx.stroke()
 
-ctx.setLineDash([])
-
-current.forEach(v=>{
-
-let p=worldToScreen(v.x,v.y)
+current.forEach(p=>{
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,4,0,Math.PI*2)
