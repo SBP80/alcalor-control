@@ -91,14 +91,18 @@ Escala
 
 <script>
 
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d")
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
 
-let rooms = []
-let current = []
-let drawing = false
+let rooms=[]
+let current=[]
+let drawing=false
 
-canvas.addEventListener("click",clickCanvas)
+let dragPoint=null
+
+canvas.addEventListener("mousedown",mouseDown)
+canvas.addEventListener("mousemove",mouseMove)
+canvas.addEventListener("mouseup",()=>dragPoint=null)
 
 function startRoom(){
 
@@ -111,10 +115,17 @@ function finishRoom(){
 
 if(current.length<3)return
 
-rooms.push([...current])
-current=[]
-drawing=false
+let name=prompt("Nombre estancia","Estancia")
 
+rooms.push({
+name,
+points:[...current]
+})
+
+drawing=false
+current=[]
+
+updatePanel()
 draw()
 
 }
@@ -132,22 +143,109 @@ rooms=[]
 current=[]
 drawing=false
 
+updatePanel()
 draw()
 
 }
 
-function clickCanvas(e){
+function mouseDown(e){
 
-if(!drawing)return
+const rect=canvas.getBoundingClientRect()
 
-const rect = canvas.getBoundingClientRect()
+let x=e.clientX-rect.left
+let y=e.clientY-rect.top
 
-const x = e.clientX-rect.left
-const y = e.clientY-rect.top
+for(let r of rooms){
+
+for(let p of r.points){
+
+if(Math.hypot(p.x-x,p.y-y)<8){
+
+dragPoint=p
+return
+
+}
+
+}
+
+}
+
+if(drawing){
 
 current.push({x,y})
-
 draw()
+
+}
+
+}
+
+function mouseMove(e){
+
+if(!dragPoint)return
+
+const rect=canvas.getBoundingClientRect()
+
+dragPoint.x=e.clientX-rect.left
+dragPoint.y=e.clientY-rect.top
+
+updatePanel()
+draw()
+
+}
+
+function distance(a,b){
+
+return Math.hypot(b.x-a.x,b.y-a.y)
+
+}
+
+function angle(a,b,c){
+
+let ab=Math.atan2(a.y-b.y,a.x-b.x)
+let cb=Math.atan2(c.y-b.y,c.x-b.x)
+
+let ang=Math.abs((ab-cb)*180/Math.PI)
+
+if(ang>180)ang=360-ang
+
+return ang
+
+}
+
+function polygonArea(points){
+
+let area=0
+
+for(let i=0;i<points.length;i++){
+
+let j=(i+1)%points.length
+
+area+=points[i].x*points[j].y
+area-=points[j].x*points[i].y
+
+}
+
+return Math.abs(area/2)
+
+}
+
+function updatePanel(){
+
+const list=document.getElementById("roomList")
+
+list.innerHTML=""
+
+rooms.forEach(r=>{
+
+let area=polygonArea(r.points)/10000
+
+let div=document.createElement("div")
+
+div.innerHTML="<b>"+r.name+"</b><br>"+area.toFixed(2)+" m²"
+
+list.appendChild(div)
+
+})
 
 }
 
@@ -159,26 +257,49 @@ rooms.forEach(room=>{
 
 ctx.beginPath()
 
-ctx.moveTo(room[0].x,room[0].y)
+ctx.moveTo(room.points[0].x,room.points[0].y)
 
-for(let i=1;i<room.length;i++){
+for(let i=1;i<room.points.length;i++){
 
-ctx.lineTo(room[i].x,room[i].y)
+ctx.lineTo(room.points[i].x,room.points[i].y)
 
 }
 
 ctx.closePath()
+
 ctx.strokeStyle="blue"
 ctx.stroke()
 
-room.forEach(p=>{
+room.points.forEach((p,i)=>{
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,4,0,Math.PI*2)
 ctx.fillStyle="red"
 ctx.fill()
 
+let prev=room.points[(i-1+room.points.length)%room.points.length]
+let next=room.points[(i+1)%room.points.length]
+
+let ang=angle(prev,p,next)
+
+ctx.fillStyle="black"
+ctx.fillText(ang.toFixed(1)+"°",p.x+5,p.y-5)
+
 })
+
+for(let i=0;i<room.points.length;i++){
+
+let a=room.points[i]
+let b=room.points[(i+1)%room.points.length]
+
+let midX=(a.x+b.x)/2
+let midY=(a.y+b.y)/2
+
+let len=distance(a,b)/100
+
+ctx.fillText(len.toFixed(2)+" m",midX,midY)
+
+}
 
 })
 
