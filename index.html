@@ -2,96 +2,86 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALLCALOR PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>APP SUELO RADIANTE</title>
 
 <style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#0f2b44;
+background:#1b1b1b;
 color:white;
+overflow:hidden;
 }
 
-header{
-background:#1a1a1a;
-padding:12px;
-text-align:center;
-font-size:22px;
-}
-
-.toolbar{
-background:#173a5e;
-padding:10px;
+#toolbar{
+height:60px;
+background:#2c2c2c;
 display:flex;
-gap:8px;
 align-items:center;
+padding:10px;
+gap:10px;
 }
 
 button{
-border:none;
-padding:6px 12px;
-border-radius:4px;
-cursor:pointer;
-font-weight:bold;
-}
-
-.green{background:#28a745}
-.blue{background:#2b83ff}
-.orange{background:#ff9800}
-.red{background:#e53935}
-
-#layout{
-display:flex;
-}
-
-#panel{
-width:250px;
-background:#1c3f63;
 padding:10px;
-height:calc(100vh - 90px);
+background:#444;
+color:white;
+border:none;
+border-radius:6px;
+}
+
+button:hover{
+background:#666;
+}
+
+#canvasContainer{
+position:absolute;
+top:60px;
+bottom:0;
+left:0;
+right:0;
 }
 
 canvas{
-background:#f4f1e8;
-cursor:crosshair;
+background:#101010;
+touch-action:none;
+}
+
+#info{
+position:absolute;
+right:10px;
+top:70px;
+background:#2c2c2c;
+padding:10px;
+border-radius:6px;
+font-size:13px;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<header>🔥 ALLCALOR PRO</header>
+<div id="toolbar">
 
-<div class="toolbar">
-
-Escala
-<input id="scale" type="number" value="100" style="width:60px">
-
-<button class="green" onclick="startRoom()">Nueva estancia</button>
-<button class="blue" onclick="finishRoom()">Cerrar estancia</button>
-
-<button class="orange" onclick="generateSpiral(0.05)">5 cm</button>
-<button class="orange" onclick="generateSpiral(0.10)">10 cm</button>
-<button class="orange" onclick="generateSpiral(0.15)">15 cm</button>
-
-<button class="orange" onclick="undo()">Deshacer</button>
-<button class="red" onclick="resetAll()">Reiniciar</button>
+<button id="room">Estancia</button>
+<button id="obstacle">Obstáculo</button>
+<button id="close">Cerrar estancia</button>
+<button id="generate">Generar circuito</button>
+<button id="reset">Reset</button>
 
 </div>
 
-<div id="layout">
-
-<div id="panel">
-
-<h3>Estancias</h3>
-<div id="roomList"></div>
-
+<div id="canvasContainer">
+<canvas id="canvas"></canvas>
 </div>
 
-<canvas id="canvas" width="1100" height="700"></canvas>
-
+<div id="info">
+metros tubo: <span id="meters">0</span>
 </div>
 
 <script>
@@ -99,174 +89,222 @@ Escala
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
+let W=window.innerWidth
+let H=window.innerHeight-60
+
+canvas.width=W
+canvas.height=H
+
+const GRID=10
+
+let mode=null
+let currentRoom=null
+let currentObstacle=null
+
 let rooms=[]
-let current=[]
-let drawing=false
-let dragPoint=null
-let circuits=[]
+let obstacles=[]
+let pipes=[]
 
-canvas.addEventListener("mousedown",mouseDown)
-canvas.addEventListener("mousemove",mouseMove)
-canvas.addEventListener("mouseup",()=>dragPoint=null)
+function drawGrid(){
 
-function startRoom(){
-drawing=true
-current=[]
+ctx.strokeStyle="#222"
+
+for(let x=0;x<W;x+=GRID){
+
+ctx.beginPath()
+ctx.moveTo(x,0)
+ctx.lineTo(x,H)
+ctx.stroke()
+
 }
 
-function finishRoom(){
+for(let y=0;y<H;y+=GRID){
 
-if(current.length<3)return
+ctx.beginPath()
+ctx.moveTo(0,y)
+ctx.lineTo(W,y)
+ctx.stroke()
 
-let name=prompt("Nombre estancia","Estancia")
+}
 
-rooms.push({
-name,
-points:[...current]
+}
+
+function drawPolygon(poly,color){
+
+ctx.strokeStyle=color
+ctx.lineWidth=2
+
+ctx.beginPath()
+
+poly.forEach((p,i)=>{
+
+if(i==0) ctx.moveTo(p.x,p.y)
+else ctx.lineTo(p.x,p.y)
+
 })
 
-drawing=false
-current=[]
-
-updatePanel()
-draw()
+ctx.stroke()
 
 }
 
-function undo(){
-current.pop()
-draw()
-}
-
-function resetAll(){
-rooms=[]
-current=[]
-circuits=[]
-drawing=false
-updatePanel()
-draw()
-}
-
-function mouseDown(e){
-
-const rect=canvas.getBoundingClientRect()
-
-let x=e.clientX-rect.left
-let y=e.clientY-rect.top
-
-for(let r of rooms){
-
-for(let p of r.points){
-
-if(Math.hypot(p.x-x,p.y-y)<8){
-
-dragPoint=p
-return
-
-}
-
-}
-
-}
-
-if(drawing){
-
-current.push({x,y})
-draw()
-
-}
-
-}
-
-function mouseMove(e){
-
-if(!dragPoint)return
-
-const rect=canvas.getBoundingClientRect()
-
-dragPoint.x=e.clientX-rect.left
-dragPoint.y=e.clientY-rect.top
-
-updatePanel()
-draw()
-
-}
-
-function distance(a,b){
-return Math.hypot(b.x-a.x,b.y-a.y)
-}
-
-function angle(a,b,c){
-
-let ab=Math.atan2(a.y-b.y,a.x-b.x)
-let cb=Math.atan2(c.y-b.y,c.x-b.x)
-
-let ang=Math.abs((ab-cb)*180/Math.PI)
-
-if(ang>180)ang=360-ang
-
-return ang
-
-}
-
-function polygonArea(points){
-
-let area=0
-
-for(let i=0;i<points.length;i++){
-
-let j=(i+1)%points.length
-
-area+=points[i].x*points[j].y
-area-=points[j].x*points[i].y
-
-}
-
-return Math.abs(area/2)
-
-}
-
-function updatePanel(){
-
-const list=document.getElementById("roomList")
-list.innerHTML=""
+function drawRooms(){
 
 rooms.forEach(r=>{
 
-let area=polygonArea(r.points)/10000
-
-let div=document.createElement("div")
-
-div.innerHTML="<b>"+r.name+"</b><br>"+area.toFixed(2)+" m²"
-
-list.appendChild(div)
+drawPolygon(r.points,"#00ff88")
 
 })
 
 }
 
-function generateSpiral(step){
+function drawObstacles(){
 
-if(rooms.length===0)return
+obstacles.forEach(o=>{
 
-let room=rooms[rooms.length-1]
-let pts=room.points
+drawPolygon(o.points,"#ff5555")
 
-let minX=Math.min(...pts.map(p=>p.x))
-let maxX=Math.max(...pts.map(p=>p.x))
-let minY=Math.min(...pts.map(p=>p.y))
-let maxY=Math.max(...pts.map(p=>p.y))
+})
 
-let offset=step*100
+}
 
-let path=[]
+function drawPipes(){
+
+ctx.strokeStyle="#00aaff"
+ctx.lineWidth=2
+
+pipes.forEach(pipe=>{
+
+ctx.beginPath()
+
+pipe.forEach((p,i)=>{
+
+if(i==0) ctx.moveTo(p.x,p.y)
+else ctx.lineTo(p.x,p.y)
+
+})
+
+ctx.stroke()
+
+})
+
+}
+
+function render(){
+
+ctx.clearRect(0,0,W,H)
+
+drawGrid()
+drawRooms()
+drawObstacles()
+drawPipes()
+
+requestAnimationFrame(render)
+
+}
+
+render()
+
+canvas.onclick=(e)=>{
+
+let x=e.offsetX
+let y=e.offsetY
+
+if(mode==="room"){
+
+if(!currentRoom){
+
+currentRoom={points:[]}
+rooms.push(currentRoom)
+
+}
+
+currentRoom.points.push({x,y})
+
+}
+
+if(mode==="obstacle"){
+
+if(!currentObstacle){
+
+currentObstacle={points:[]}
+obstacles.push(currentObstacle)
+
+}
+
+currentObstacle.points.push({x,y})
+
+}
+
+}
+
+document.getElementById("close").onclick=()=>{
+
+currentRoom=null
+currentObstacle=null
+
+}
+
+document.getElementById("room").onclick=()=>{
+
+mode="room"
+
+}
+
+document.getElementById("obstacle").onclick=()=>{
+
+mode="obstacle"
+
+}
+
+document.getElementById("reset").onclick=()=>{
+
+rooms=[]
+pipes=[]
+obstacles=[]
+
+}
+
+function boundingBox(points){
+
+let minX=Infinity
+let minY=Infinity
+let maxX=-Infinity
+let maxY=-Infinity
+
+points.forEach(p=>{
+
+if(p.x<minX)minX=p.x
+if(p.y<minY)minY=p.y
+if(p.x>maxX)maxX=p.x
+if(p.y>maxY)maxY=p.y
+
+})
+
+return {minX,minY,maxX,maxY}
+
+}
+
+function generateCircuit(room){
+
+let box=boundingBox(room.points)
+
+let minX=box.minX+5
+let minY=box.minY+5
+let maxX=box.maxX-5
+let maxY=box.maxY-5
+
+let step=10
+let offset=step*2
+
+let ida=[]
+let retorno=[]
 
 while(minX<maxX && minY<maxY){
 
-path.push({x:minX,y:minY})
-path.push({x:maxX,y:minY})
-path.push({x:maxX,y:maxY})
-path.push({x:minX,y:maxY})
+ida.push({x:minX,y:minY})
+ida.push({x:maxX,y:minY})
+ida.push({x:maxX,y:maxY})
+ida.push({x:minX,y:maxY})
 
 minX+=offset
 minY+=offset
@@ -275,105 +313,62 @@ maxY-=offset
 
 }
 
-circuits.push(path)
+let cx=(box.minX+box.maxX)/2
+let cy=(box.minY+box.maxY)/2
 
-draw()
+retorno.push({x:cx,y:cy})
+
+for(let i=ida.length-1;i>=0;i--){
+
+let p=ida[i]
+
+retorno.push({
+x:p.x+step,
+y:p.y+step
+})
 
 }
 
-function draw(){
+return ida.concat(retorno)
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+}
+
+function pipeLength(pipe){
+
+let L=0
+
+for(let i=1;i<pipe.length;i++){
+
+let dx=pipe[i].x-pipe[i-1].x
+let dy=pipe[i].y-pipe[i-1].y
+
+L+=Math.sqrt(dx*dx+dy*dy)
+
+}
+
+return L/100
+
+}
+
+document.getElementById("generate").onclick=()=>{
+
+pipes=[]
+
+let total=0
 
 rooms.forEach(room=>{
 
-ctx.beginPath()
+let circuit=generateCircuit(room)
 
-ctx.moveTo(room.points[0].x,room.points[0].y)
+pipes.push(circuit)
 
-for(let i=1;i<room.points.length;i++){
-ctx.lineTo(room.points[i].x,room.points[i].y)
-}
-
-ctx.closePath()
-ctx.strokeStyle="blue"
-ctx.stroke()
-
-room.points.forEach((p,i)=>{
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,4,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-let prev=room.points[(i-1+room.points.length)%room.points.length]
-let next=room.points[(i+1)%room.points.length]
-
-let ang=angle(prev,p,next)
-
-ctx.fillStyle="black"
-ctx.fillText(ang.toFixed(1)+"°",p.x+5,p.y-5)
+total+=pipeLength(circuit)
 
 })
 
-for(let i=0;i<room.points.length;i++){
-
-let a=room.points[i]
-let b=room.points[(i+1)%room.points.length]
-
-let midX=(a.x+b.x)/2
-let midY=(a.y+b.y)/2
-
-let len=distance(a,b)/100
-
-ctx.fillText(len.toFixed(2)+" m",midX,midY)
+document.getElementById("meters").innerText=total.toFixed(1)
 
 }
-
-})
-
-circuits.forEach(c=>{
-
-ctx.beginPath()
-ctx.moveTo(c[0].x,c[0].y)
-
-for(let i=1;i<c.length;i++){
-ctx.lineTo(c[i].x,c[i].y)
-}
-
-ctx.strokeStyle="red"
-ctx.lineWidth=2
-ctx.stroke()
-
-})
-
-if(current.length){
-
-ctx.beginPath()
-
-ctx.moveTo(current[0].x,current[0].y)
-
-for(let i=1;i<current.length;i++){
-ctx.lineTo(current[i].x,current[i].y)
-}
-
-ctx.strokeStyle="black"
-ctx.stroke()
-
-current.forEach(p=>{
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,4,0,Math.PI*2)
-ctx.fillStyle="red"
-ctx.fill()
-
-})
-
-}
-
-}
-
-draw()
 
 </script>
 
