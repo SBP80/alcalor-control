@@ -25,6 +25,7 @@ background:#173a5e;
 padding:10px;
 display:flex;
 gap:8px;
+align-items:center;
 }
 
 button{
@@ -70,6 +71,11 @@ Escala
 
 <button class="green" onclick="startRoom()">Nueva estancia</button>
 <button class="blue" onclick="finishRoom()">Cerrar estancia</button>
+
+<button class="orange" onclick="generateSpiral(0.05)">5 cm</button>
+<button class="orange" onclick="generateSpiral(0.10)">10 cm</button>
+<button class="orange" onclick="generateSpiral(0.15)">15 cm</button>
+
 <button class="orange" onclick="undo()">Deshacer</button>
 <button class="red" onclick="resetAll()">Reiniciar</button>
 
@@ -80,7 +86,6 @@ Escala
 <div id="panel">
 
 <h3>Estancias</h3>
-
 <div id="roomList"></div>
 
 </div>
@@ -97,18 +102,16 @@ const ctx=canvas.getContext("2d")
 let rooms=[]
 let current=[]
 let drawing=false
-
 let dragPoint=null
+let circuits=[]
 
 canvas.addEventListener("mousedown",mouseDown)
 canvas.addEventListener("mousemove",mouseMove)
 canvas.addEventListener("mouseup",()=>dragPoint=null)
 
 function startRoom(){
-
 drawing=true
 current=[]
-
 }
 
 function finishRoom(){
@@ -131,21 +134,17 @@ draw()
 }
 
 function undo(){
-
 current.pop()
 draw()
-
 }
 
 function resetAll(){
-
 rooms=[]
 current=[]
+circuits=[]
 drawing=false
-
 updatePanel()
 draw()
-
 }
 
 function mouseDown(e){
@@ -194,9 +193,7 @@ draw()
 }
 
 function distance(a,b){
-
 return Math.hypot(b.x-a.x,b.y-a.y)
-
 }
 
 function angle(a,b,c){
@@ -232,7 +229,6 @@ return Math.abs(area/2)
 function updatePanel(){
 
 const list=document.getElementById("roomList")
-
 list.innerHTML=""
 
 rooms.forEach(r=>{
@@ -249,6 +245,42 @@ list.appendChild(div)
 
 }
 
+function generateSpiral(step){
+
+if(rooms.length===0)return
+
+let room=rooms[rooms.length-1]
+let pts=room.points
+
+let minX=Math.min(...pts.map(p=>p.x))
+let maxX=Math.max(...pts.map(p=>p.x))
+let minY=Math.min(...pts.map(p=>p.y))
+let maxY=Math.max(...pts.map(p=>p.y))
+
+let offset=step*100
+
+let path=[]
+
+while(minX<maxX && minY<maxY){
+
+path.push({x:minX,y:minY})
+path.push({x:maxX,y:minY})
+path.push({x:maxX,y:maxY})
+path.push({x:minX,y:maxY})
+
+minX+=offset
+minY+=offset
+maxX-=offset
+maxY-=offset
+
+}
+
+circuits.push(path)
+
+draw()
+
+}
+
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -260,13 +292,10 @@ ctx.beginPath()
 ctx.moveTo(room.points[0].x,room.points[0].y)
 
 for(let i=1;i<room.points.length;i++){
-
 ctx.lineTo(room.points[i].x,room.points[i].y)
-
 }
 
 ctx.closePath()
-
 ctx.strokeStyle="blue"
 ctx.stroke()
 
@@ -303,6 +332,21 @@ ctx.fillText(len.toFixed(2)+" m",midX,midY)
 
 })
 
+circuits.forEach(c=>{
+
+ctx.beginPath()
+ctx.moveTo(c[0].x,c[0].y)
+
+for(let i=1;i<c.length;i++){
+ctx.lineTo(c[i].x,c[i].y)
+}
+
+ctx.strokeStyle="red"
+ctx.lineWidth=2
+ctx.stroke()
+
+})
+
 if(current.length){
 
 ctx.beginPath()
@@ -310,9 +354,7 @@ ctx.beginPath()
 ctx.moveTo(current[0].x,current[0].y)
 
 for(let i=1;i<current.length;i++){
-
 ctx.lineTo(current[i].x,current[i].y)
-
 }
 
 ctx.strokeStyle="black"
