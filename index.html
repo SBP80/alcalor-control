@@ -150,6 +150,26 @@ function getActiva(){
   return estancias[estanciaActiva];
 }
 
+function esEstanciaVacia(estancia){
+  return (
+    estancia &&
+    estancia.puntos.length === 0 &&
+    !estancia.cerrado &&
+    estancia.nombre.trim() === "" &&
+    estancia.planta === "Planta baja"
+  );
+}
+
+function contarEstanciasConContenido(){
+  let total = 0;
+  for(const estancia of estancias){
+    if(!esEstanciaVacia(estancia)){
+      total++;
+    }
+  }
+  return total;
+}
+
 function ajustar(){
   const barraH = document.getElementById("barra").offsetHeight;
   const infoH = document.getElementById("info").offsetHeight;
@@ -682,7 +702,7 @@ function actualizarInfo(estancia){
     texto += " · Escala: 1 m = " + estancia.pxPorMetro.toFixed(1).replace(".", ",") + " px";
   }
 
-  texto += " · Estancias: " + estancias.length;
+  texto += " · Estancias útiles: " + contarEstanciasConContenido();
   info.textContent = texto;
 }
 
@@ -1060,13 +1080,7 @@ btnNuevo.onclick = function(){
 
   const activa = getActiva();
 
-  if(
-    activa &&
-    activa.puntos.length === 0 &&
-    !activa.cerrado &&
-    !activa.nombre.trim() &&
-    activa.planta === "Planta baja"
-  ){
+  if(activa && activa.puntos.length === 0 && !activa.cerrado){
     sincronizarCamposUI();
     dibujar();
     return;
@@ -1081,13 +1095,19 @@ btnNuevo.onclick = function(){
 btnBorrarEstancia.onclick = function(){
   if(estancias.length === 0) return;
 
+  if(estanciaActiva < 0 || estanciaActiva >= estancias.length){
+    estanciaActiva = 0;
+  }
+
   estancias.splice(estanciaActiva, 1);
 
   if(estancias.length === 0){
-    estancias.push(crearEstanciaVacia());
+    estancias = [crearEstanciaVacia()];
     estanciaActiva = 0;
-  }else if(estanciaActiva >= estancias.length){
-    estanciaActiva = estancias.length - 1;
+  }else{
+    if(estanciaActiva >= estancias.length){
+      estanciaActiva = estancias.length - 1;
+    }
   }
 
   modoMover = false;
@@ -1156,7 +1176,9 @@ btnMover.onclick = function(){
   const activa = getActiva();
   if(!activa || activa.fijado || !activa.cerrado) return;
   modoMover = !modoMover;
-  if(modoMover) modoRotar = false;
+  if(modoMover){
+    modoRotar = false;
+  }
   dibujar();
 };
 
