@@ -24,7 +24,7 @@ button{
   border:none;
   background:#f97316;
   color:#fff;
-  border-radius:6px;
+  border-radius:4px;
   font-weight:bold;
   font-size:14px;
 }
@@ -33,7 +33,7 @@ button.bloqueado{ background:#6b7280; }
 input,select{
   padding:10px 12px;
   border:1px solid #ccc;
-  border-radius:6px;
+  border-radius:4px;
   font-size:14px;
   min-width:140px;
 }
@@ -163,7 +163,9 @@ function esEstanciaVacia(estancia){
 function contarEstanciasConContenido(){
   let total = 0;
   for(const estancia of estancias){
-    if(!esEstanciaVacia(estancia)) total++;
+    if(!esEstanciaVacia(estancia)){
+      total++;
+    }
   }
   return total;
 }
@@ -172,7 +174,7 @@ function ajustar(){
   const barraH = document.getElementById("barra").offsetHeight;
   const infoH = document.getElementById("info").offsetHeight;
   canvas.width = window.innerWidth;
-  canvas.height = Math.max(180, window.innerHeight - barraH - infoH);
+  canvas.height = window.innerHeight - barraH - infoH;
   dibujar();
 }
 window.addEventListener("resize", ajustar);
@@ -229,10 +231,9 @@ function puntoSobreSegmento(px,py,a,b){
 
 function puntoDentroPoligono(estancia, x, y){
   if(estancia.puntos.length < 3) return false;
-
   let dentro = false;
 
-  for(let i=0, j=estancia.puntos.length-1; i<estancia.puntos.length; j=i++){
+  for(let i=0,j=estancia.puntos.length-1;i<estancia.puntos.length;j=i++){
     const xi = estancia.puntos[i].x;
     const yi = estancia.puntos[i].y;
     const xj = estancia.puntos[j].x;
@@ -243,28 +244,23 @@ function puntoDentroPoligono(estancia, x, y){
 
     if(cruza) dentro = !dentro;
   }
-
   return dentro;
 }
 
 function puntoSobreAlgunLado(estancia, x, y){
   if(estancia.puntos.length < 2) return false;
-
   const limite = estancia.cerrado ? estancia.puntos.length : estancia.puntos.length - 1;
-
   for(let i=0;i<limite;i++){
     const a = estancia.puntos[i];
     const b = estancia.puntos[(i+1)%estancia.puntos.length];
     if(puntoSobreSegmento(x,y,a,b)) return true;
   }
-
   return false;
 }
 
 function puntoDentroPoligonoConBorde(estancia, x, y){
   return puntoDentroPoligono(estancia, x, y) || puntoSobreAlgunLado(estancia, x, y);
 }
-
 function orient(a,b,c){
   const v = (b.y-a.y)*(c.x-b.x) - (b.x-a.x)*(c.y-b.y);
   if(Math.abs(v) < 0.000001) return 0;
@@ -315,11 +311,9 @@ function diagonalValida(estancia, i, j){
 
 function calcularDiagonales(estancia){
   estancia.diagonales = [];
-
   if(!estancia.cerrado || estancia.puntos.length < 4) return;
 
   const n = estancia.puntos.length;
-
   for(let i=0;i<n;i++){
     for(let j=i+2;j<n;j++){
       if(i === 0 && j === n-1) continue;
@@ -348,10 +342,8 @@ function centroFigura(estancia){
     return {x: canvas.width/2, y: canvas.height/2};
   }
 
-  let minX = estancia.puntos[0].x;
-  let maxX = estancia.puntos[0].x;
-  let minY = estancia.puntos[0].y;
-  let maxY = estancia.puntos[0].y;
+  let minX = estancia.puntos[0].x, maxX = estancia.puntos[0].x;
+  let minY = estancia.puntos[0].y, maxY = estancia.puntos[0].y;
 
   for(const p of estancia.puntos){
     if(p.x < minX) minX = p.x;
@@ -360,10 +352,7 @@ function centroFigura(estancia){
     if(p.y > maxY) maxY = p.y;
   }
 
-  return {
-    x: (minX + maxX) / 2,
-    y: (minY + maxY) / 2
-  };
+  return { x:(minX+maxX)/2, y:(minY+maxY)/2 };
 }
 
 function angulo(a,b,c){
@@ -393,7 +382,6 @@ function rotarPunto(p, centro, rad){
   const dy = p.y - centro.y;
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
-
   return {
     x: centro.x + dx * cos - dy * sin,
     y: centro.y + dx * sin + dy * cos
@@ -402,11 +390,9 @@ function rotarPunto(p, centro, rad){
 
 function rotarEstancia(estancia, rad){
   const centro = centroFigura(estancia);
-
   for(let i=0;i<estancia.puntos.length;i++){
     estancia.puntos[i] = rotarPunto(estancia.puntos[i], centro, rad);
   }
-
   estancia.rotacionGrados += rad * 180 / Math.PI;
   while(estancia.rotacionGrados > 180) estancia.rotacionGrados -= 360;
   while(estancia.rotacionGrados <= -180) estancia.rotacionGrados += 360;
@@ -415,20 +401,17 @@ function rotarEstancia(estancia, rad){
 function obtenerTiradorRotacion(estancia){
   const centro = centroFigura(estancia);
   let minY = estancia.puntos[0].y;
-
   for(const p of estancia.puntos){
     if(p.y < minY) minY = p.y;
   }
-
   return {
     x: centro.x,
     y: minY - 45
   };
 }
 
-function etiqueta(texto, x, y, color, relleno="rgba(255,255,255,0.96)"){
+function etiqueta(texto,x,y,color, relleno="rgba(255,255,255,0.96)"){
   const lineas = String(texto).split("\n");
-
   ctx.save();
   ctx.font = "bold 14px Arial";
   ctx.textAlign = "center";
@@ -461,20 +444,29 @@ function etiqueta(texto, x, y, color, relleno="rgba(255,255,255,0.96)"){
   }
 
   ctx.restore();
-
   return {x, y, w: ancho, h: alto};
 }
 
-function generarEtiquetasLados(estancia){
+function generarEtiquetasLados(estancia, esActiva){
   etiquetasLados = [];
   if(!estancia || !estancia.cerrado) return;
 
   for(let i=0;i<estancia.puntos.length;i++){
     const a = estancia.puntos[i];
     const b = estancia.puntos[(i+1)%estancia.puntos.length];
-    const mx = (a.x+b.x)/2;
-    const my = (a.y+b.y)/2;
-    const caja = etiqueta(formatM(metrosDesdePx(estancia, distancia(a,b))), mx, my, "#2563eb");
+
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+
+    const largoM = metrosDesdePx(estancia, distancia(a,b));
+
+    const caja = etiqueta(
+      formatM(largoM),
+      mx,
+      my,
+      esActiva ? "#2563eb" : "#6b7280",
+      esActiva ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.84)"
+    );
 
     etiquetasLados.push({
       lado: i,
@@ -499,7 +491,6 @@ function buscarEtiquetaLado(x,y){
   }
   return -1;
 }
-
 function editarMedidaLado(estancia, lado){
   if(!estancia || !estancia.cerrado || modoVerificacion) return;
 
@@ -558,8 +549,10 @@ function aplicarDiagonalObjetivo(estancia){
   if(estancia.diagonalesObjetivo[estancia.diagActual] === undefined) return;
 
   const d = estancia.diagonales[estancia.diagActual];
-  const a = estancia.puntos[d[0]];
-  const b = estancia.puntos[d[1]];
+  const i = d[0];
+  const j = d[1];
+  const a = estancia.puntos[i];
+  const b = estancia.puntos[j];
 
   const objetivoM = estancia.diagonalesObjetivo[estancia.diagActual];
   const objetivoPx = pxDesdeMetros(estancia, objetivoM);
@@ -583,15 +576,35 @@ function aplicarDiagonalObjetivo(estancia){
 }
 
 function dibujarNombreYPlanta(estancia, activa){
-  if(!estancia.cerrado || modoVerificacion) return;
+  if(!estancia || !estancia.cerrado || modoVerificacion) return;
 
   const c = centroFigura(estancia);
   const nombre = estancia.nombre.trim() || "Sin nombre";
   const planta = estancia.planta;
-  const fondo = activa ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.88)";
+
+  const fondo = activa
+    ? "rgba(255,255,255,0.98)"
+    : "rgba(255,255,255,0.88)";
 
   etiqueta(nombre, c.x, c.y - 12, "#111827", fondo);
   etiqueta(planta, c.x, c.y + 18, "#374151", fondo);
+}
+
+function dibujarAngulos(estancia, esActiva){
+  if(!estancia || !estancia.cerrado) return;
+  if(!esActiva) return;
+
+  for(let i=0;i<estancia.puntos.length;i++){
+    const a = estancia.puntos[(i - 1 + estancia.puntos.length) % estancia.puntos.length];
+    const b = estancia.puntos[i];
+    const c = estancia.puntos[(i + 1) % estancia.puntos.length];
+
+    ctx.fillStyle = "#15803d";
+    ctx.font = "bold 14px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(Math.round(angulo(a,b,c)) + "°", b.x + 22, b.y - 12);
+  }
 }
 
 function dibujarDiagonal(estancia){
@@ -740,13 +753,11 @@ function actualizarBotones(estancia){
 
 function sincronizarCamposUI(){
   const estancia = getActiva();
-
   if(!estancia){
     inputNombre.value = "";
     selectPlanta.value = "Planta baja";
     return;
   }
-
   inputNombre.value = estancia.nombre;
   selectPlanta.value = estancia.planta;
 }
@@ -766,7 +777,6 @@ function dibujar(){
     if(estancia.puntos.length > 1){
       ctx.beginPath();
       ctx.moveTo(estancia.puntos[0].x, estancia.puntos[0].y);
-
       for(let i=1;i<estancia.puntos.length;i++){
         ctx.lineTo(estancia.puntos[i].x, estancia.puntos[i].y);
       }
@@ -805,27 +815,8 @@ function dibujar(){
     }
 
     if(estancia.cerrado){
-      if(esActiva){
-        generarEtiquetasLados(estancia);
-
-        for(let i=0;i<estancia.puntos.length;i++){
-          const a = estancia.puntos[(i-1+estancia.puntos.length)%estancia.puntos.length];
-          const b = estancia.puntos[i];
-          const c = estancia.puntos[(i+1)%estancia.puntos.length];
-          ctx.fillStyle = "green";
-          ctx.font = "14px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText(Math.round(angulo(a,b,c)) + "°", b.x + 20, b.y - 10);
-        }
-      }else{
-        for(let i=0;i<estancia.puntos.length;i++){
-          const a = estancia.puntos[i];
-          const b = estancia.puntos[(i+1)%estancia.puntos.length];
-          const mx = (a.x+b.x)/2;
-          const my = (a.y+b.y)/2;
-          etiqueta(formatM(metrosDesdePx(estancia, distancia(a,b))), mx, my, "#6b7280", "rgba(255,255,255,0.82)");
-        }
-      }
+      generarEtiquetasLados(estancia, esActiva);
+      dibujarAngulos(estancia, esActiva);
     }
 
     dibujarNombreYPlanta(estancia, esActiva);
@@ -837,10 +828,8 @@ function dibujar(){
   actualizarBotones(activa);
   actualizarInfo(activa);
 }
-
 function empezarCalibracion(estancia){
   if(!estancia || !estancia.cerrado || estancia.puntos.length < 2) return;
-
   calibrando = true;
   modoMover = false;
   modoRotar = false;
@@ -1195,7 +1184,9 @@ btnMover.onclick = function(){
   const activa = getActiva();
   if(!activa || activa.fijado || !activa.cerrado) return;
   modoMover = !modoMover;
-  if(modoMover) modoRotar = false;
+  if(modoMover){
+    modoRotar = false;
+  }
   dibujar();
 };
 
