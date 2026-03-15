@@ -124,11 +124,13 @@ let etiquetasLados = [];
 let etiquetaDiagonal = null;
 let tiradorRotacion = null;
 let anguloInicioRotacion = 0;
+let snapGuias = [];
 
 const RADIO_PUNTO = 20;
 const UMBRAL_ARRASTRE = 6;
 const UMBRAL_TOQUE = 10;
 const RADIO_TIRADOR = 18;
+const SNAP_DIST = 14;
 
 function crearEstanciaVacia(){
   return {
@@ -261,6 +263,7 @@ function puntoSobreAlgunLado(estancia, x, y){
 function puntoDentroPoligonoConBorde(estancia, x, y){
   return puntoDentroPoligono(estancia, x, y) || puntoSobreAlgunLado(estancia, x, y);
 }
+
 function orient(a,b,c){
   const v = (b.y-a.y)*(c.x-b.x) - (b.x-a.x)*(c.y-b.y);
   if(Math.abs(v) < 0.000001) return 0;
@@ -282,7 +285,6 @@ function segmentosIntersectan(a,b,c,d){
 
   return false;
 }
-
 function diagonalValida(estancia, i, j){
   const a = estancia.puntos[i];
   const b = estancia.puntos[j];
@@ -353,6 +355,129 @@ function centroFigura(estancia){
   }
 
   return { x:(minX+maxX)/2, y:(minY+maxY)/2 };
+}
+
+function obtenerBounds(estancia){
+  if(!estancia || estancia.puntos.length === 0){
+    return null;
+  }
+
+  let minX = estancia.puntos[0].x;
+  let maxX = estancia.puntos[0].x;
+  let minY = estancia.puntos[0].y;
+  let maxY = estancia.puntos[0].y;
+
+  for(const p of estancia.puntos){
+    if(p.x < minX) minX = p.x;
+    if(p.x > maxX) maxX = p.x;
+    if(p.y < minY) minY = p.y;
+    if(p.y > maxY) maxY = p.y;
+  }
+
+  return {
+    minX, maxX, minY, maxY,
+    cx:(minX+maxX)/2,
+    cy:(minY+maxY)/2
+  };
+}
+
+function copiarBoundsConDelta(bounds, dx, dy){
+  return {
+    minX: bounds.minX + dx,
+    maxX: bounds.maxX + dx,
+    minY: bounds.minY + dy,
+    maxY: bounds.maxY + dy,
+    cx: bounds.cx + dx,
+    cy: bounds.cy + dy
+  };
+}
+
+function mejorAjuste(lista){
+  if(lista.length === 0) return null;
+  let mejor = lista[0];
+  for(const v of lista){
+    if(Math.abs(v) < Math.abs(mejor)) mejor = v;
+  }
+  return mejor;
+}
+
+function snapMoverEstancia(estancia, dx, dy){
+  const boundsAct = obtenerBounds(estancia);
+  if(!boundsAct) return {dx,dy,guias:[]};
+
+  const futuro = copiarBoundsConDelta(boundsAct, dx, dy);
+  const candidatosX = [];
+  const candidatosY = [];
+  const guias = [];
+
+  for(let i=0;i<estancias.length;i++){
+    if(i === estanciaActiva) continue;
+
+    const otra = estancias[i];
+    if(!otra || otra.puntos.length === 0 || !otra.cerrado) continue;
+
+    const b = obtenerBounds(otra);
+    if(!b) continue;
+
+    const posiblesX = [
+      b.minX - futuro.minX,
+      b.maxX - futuro.minX,
+      b.minX - futuro.maxX,
+      b.maxX - futuro.maxX,
+      b.cx - futuro.cx
+    ];
+
+    const posiblesY = [
+      b.minY - futuro.minY,
+      b.maxY - futuro.minY,
+      b.minY - futuro.maxY,
+      b.maxY - futuro.maxY,
+      b.cy - futuro.cy
+    ];
+
+    for(const vx of posiblesX){
+      if(Math.abs(vx) <= SNAP_DIST) candidatosX.push(vx);
+    }
+    for(const vy of posiblesY){
+      if(Math.abs(vy) <= SNAP_DIST) candidatosY.push(vy);
+    }
+
+    for(const p1 of estancia.puntos){
+      const px = p1.x + dx;
+      const py = p1.y + dy;
+
+      for(const p2 of otra.puntos){
+        const ax = p2.x - px;
+        const ay = p2.y - py;
+        if(Math.abs(ax) <= SNAP_DIST) candidatosX.push(ax);
+        if(Math.abs(ay) <= SNAP_DIST) candidatosY.push(ay);
+      }
+    }
+  }
+
+  const ajusteX = mejorAjuste(candidatosX);
+  const ajusteY = mejorAjuste(candidatosY);
+
+  let dxFinal = dx;
+  let dyFinal = dy;
+
+  if(ajusteX !== null){
+    dxFinal += ajusteX;
+    const b2 = copiarBoundsConDelta(boundsAct, dxFinal, dyFinal);
+    guias.push({tipo:"v", x:b2.minX});
+    guias.push({tipo:"v", x:b2.maxX});
+    guias.push({tipo:"v", x:b2.cx});
+  }
+
+  if(ajusteY !== null){
+    dyFinal += ajusteY;
+    const b2 = copiarBoundsConDelta(boundsAct, dxFinal, dyFinal);
+    guias.push({tipo:"h", y:b2.minY});
+    guias.push({tipo:"h", y:b2.maxY});
+    guias.push({tipo:"h", y:b2.cy});
+  }
+
+  return {dx:dxFinal, dy:dyFinal, guias};
 }
 
 function angulo(a,b,c){
@@ -446,7 +571,6 @@ function etiqueta(texto,x,y,color, relleno="rgba(255,255,255,0.96)"){
   ctx.restore();
   return {x, y, w: ancho, h: alto};
 }
-
 function generarEtiquetasLados(estancia, esActiva){
   etiquetasLados = [];
   if(!estancia || !estancia.cerrado) return;
@@ -491,6 +615,7 @@ function buscarEtiquetaLado(x,y){
   }
   return -1;
 }
+
 function editarMedidaLado(estancia, lado){
   if(!estancia || !estancia.cerrado || modoVerificacion) return;
 
@@ -549,10 +674,8 @@ function aplicarDiagonalObjetivo(estancia){
   if(estancia.diagonalesObjetivo[estancia.diagActual] === undefined) return;
 
   const d = estancia.diagonales[estancia.diagActual];
-  const i = d[0];
-  const j = d[1];
-  const a = estancia.puntos[i];
-  const b = estancia.puntos[j];
+  const a = estancia.puntos[d[0]];
+  const b = estancia.puntos[d[1]];
 
   const objetivoM = estancia.diagonalesObjetivo[estancia.diagActual];
   const objetivoPx = pxDesdeMetros(estancia, objetivoM);
@@ -695,6 +818,29 @@ function dibujarCalibracion(estancia){
   }
 }
 
+function dibujarGuiasSnap(){
+  if(!snapGuias || snapGuias.length === 0) return;
+
+  ctx.save();
+  ctx.setLineDash([6,6]);
+  ctx.strokeStyle = "rgba(14,165,233,0.9)";
+  ctx.lineWidth = 1.5;
+
+  for(const g of snapGuias){
+    ctx.beginPath();
+    if(g.tipo === "v"){
+      ctx.moveTo(g.x, 0);
+      ctx.lineTo(g.x, canvas.height);
+    }else if(g.tipo === "h"){
+      ctx.moveTo(0, g.y);
+      ctx.lineTo(canvas.width, g.y);
+    }
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
 function actualizarInfo(estancia){
   let texto = "";
 
@@ -715,7 +861,7 @@ function actualizarInfo(estancia){
   }else if(estancia && estancia.fijado){
     texto = "Estancia fijada";
   }else if(modoMover){
-    texto = "Modo mover estancia";
+    texto = "Modo mover estancia con encaje";
   }else if(estancia && estancia.cerrado){
     texto = "Estancia cerrada · Toca una medida azul para editar en metros";
   }else if(estancia && estancia.puntos.length >= 3){
@@ -733,7 +879,6 @@ function actualizarInfo(estancia){
   texto += " · Estancias útiles: " + contarEstanciasConContenido();
   info.textContent = texto;
 }
-
 function actualizarBotones(estancia){
   btnMover.classList.toggle("activo", modoMover);
   btnRotar.classList.toggle("activo", modoRotar);
@@ -822,12 +967,14 @@ function dibujar(){
     dibujarNombreYPlanta(estancia, esActiva);
   }
 
+  dibujarGuiasSnap();
   dibujarDiagonal(activa);
   dibujarRotacion(activa);
   dibujarCalibracion(activa);
   actualizarBotones(activa);
   actualizarInfo(activa);
 }
+
 function empezarCalibracion(estancia){
   if(!estancia || !estancia.cerrado || estancia.puntos.length < 2) return;
   calibrando = true;
@@ -901,6 +1048,7 @@ function onPointerDown(e){
   startY = p.y;
   lastX = p.x;
   lastY = p.y;
+  snapGuias = [];
 
   let activa = getActiva();
 
@@ -959,17 +1107,23 @@ function onPointerMove(e){
     rotarEstancia(activa, delta);
     anguloInicioRotacion = anguloActual;
     calcularDiagonales(activa);
+    snapGuias = [];
     dibujar();
     return;
   }
 
   if(moviendoFigura){
-    const dx = p.x - lastX;
-    const dy = p.y - lastY;
-    moverFigura(activa, dx, dy);
-    lastX = p.x;
-    lastY = p.y;
+    const dxRaw = p.x - lastX;
+    const dyRaw = p.y - lastY;
+    const snap = snapMoverEstancia(activa, dxRaw, dyRaw);
+
+    moverFigura(activa, snap.dx, snap.dy);
+
+    lastX += snap.dx;
+    lastY += snap.dy;
+
     calcularDiagonales(activa);
+    snapGuias = snap.guias;
     dibujar();
     return;
   }
@@ -983,6 +1137,7 @@ function onPointerMove(e){
       activa.puntos[indicePunto].x = p.x;
       activa.puntos[indicePunto].y = p.y;
       if(activa.cerrado) calcularDiagonales(activa);
+      snapGuias = [];
       dibujar();
     }
   }
@@ -1009,6 +1164,7 @@ function onPointerUp(e){
       }
     }
     pointerActivo = false;
+    snapGuias = [];
     dibujar();
     return;
   }
@@ -1017,6 +1173,7 @@ function onPointerUp(e){
     pointerActivo = false;
     rotandoFigura = false;
     indicePunto = -1;
+    snapGuias = [];
     if(activa) calcularDiagonales(activa);
     dibujar();
     return;
@@ -1026,6 +1183,7 @@ function onPointerUp(e){
     pointerActivo = false;
     moviendoFigura = false;
     indicePunto = -1;
+    snapGuias = [];
     if(activa) calcularDiagonales(activa);
     dibujar();
     return;
@@ -1040,6 +1198,7 @@ function onPointerUp(e){
         p.y <= etiquetaDiagonal.y + etiquetaDiagonal.h/2
       ){
         pointerActivo = false;
+        snapGuias = [];
         editarDiagonal(activa);
         return;
       }
@@ -1056,6 +1215,7 @@ function onPointerUp(e){
       const lado = buscarEtiquetaLado(p.x,p.y);
       if(lado !== -1){
         pointerActivo = false;
+        snapGuias = [];
         editarMedidaLado(activa, lado);
         return;
       }else{
@@ -1071,6 +1231,7 @@ function onPointerUp(e){
   pointerActivo = false;
   arrastrandoPunto = false;
   indicePunto = -1;
+  snapGuias = [];
   dibujar();
 }
 
@@ -1085,6 +1246,7 @@ btnNuevo.onclick = function(){
   modoVerificacion = false;
   calibrando = false;
   verticesCalibracion = [];
+  snapGuias = [];
 
   const activa = getActiva();
 
@@ -1123,6 +1285,7 @@ btnBorrarEstancia.onclick = function(){
   modoVerificacion = false;
   calibrando = false;
   verticesCalibracion = [];
+  snapGuias = [];
   sincronizarCamposUI();
   dibujar();
 };
@@ -1159,6 +1322,7 @@ btnBorrar.onclick = function(){
     calcularDiagonales(activa);
   }
 
+  snapGuias = [];
   dibujar();
 };
 
@@ -1168,6 +1332,7 @@ btnFijar.onclick = function(){
   activa.fijado = true;
   modoMover = false;
   modoRotar = false;
+  snapGuias = [];
   dibujar();
 };
 
@@ -1177,6 +1342,7 @@ btnEditar.onclick = function(){
   activa.fijado = false;
   modoMover = false;
   modoRotar = false;
+  snapGuias = [];
   dibujar();
 };
 
@@ -1187,6 +1353,7 @@ btnMover.onclick = function(){
   if(modoMover){
     modoRotar = false;
   }
+  snapGuias = [];
   dibujar();
 };
 
@@ -1198,6 +1365,7 @@ btnRotar.onclick = function(){
     modoMover = false;
     modoVerificacion = false;
   }
+  snapGuias = [];
   dibujar();
 };
 
@@ -1215,6 +1383,7 @@ btnVerificar.onclick = function(){
     activa.diagActual = 0;
   }
 
+  snapGuias = [];
   dibujar();
 };
 
