@@ -2,83 +2,387 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <title>ALLCALOR</title>
 <style>
-body{
+:root{
+  --bg:#101214;
+  --panel:#181b1f;
+  --panel-2:#20242a;
+  --line:#2c3138;
+  --text:#f3f4f6;
+  --muted:#a7afb9;
+  --accent:#f97316;
+  --accent-2:#fb923c;
+  --ok:#15803d;
+  --danger:#b91c1c;
+  --canvas:#f3f4f6;
+  --chip:#2a2f36;
+  --shadow:0 8px 24px rgba(0,0,0,.22);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
   margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:var(--bg);
   font-family:Arial,sans-serif;
-  background:#f0f0f0;
+  color:var(--text);
+}
+
+body{
+  display:flex;
+  flex-direction:column;
+}
+
+#topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px calc(10px + env(safe-area-inset-top)) 12px;
+  background:linear-gradient(180deg,#111315 0%, #171a1e 100%);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow);
+  z-index:30;
+}
+
+.brandWrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.brandMark{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:linear-gradient(180deg,#242932 0%, #171a1e 100%);
+  border:1px solid #343944;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  flex:0 0 auto;
+}
+
+.brandMark .a{
+  font-size:28px;
+  font-weight:900;
+  line-height:1;
+  color:#fff;
+  transform:translateY(1px);
+}
+
+.brandMark .flame{
+  position:absolute;
+  right:5px;
+  top:3px;
+  color:var(--accent);
+  font-size:12px;
+  line-height:1;
+}
+
+.brandText{
+  min-width:0;
+}
+
+.brandText .name{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.4px;
+  line-height:1.05;
+}
+
+.brandText .sub{
+  font-size:10px;
+  color:var(--accent-2);
+  font-weight:700;
+  letter-spacing:1.2px;
+  margin-top:2px;
+}
+
+#tituloApp{
+  margin-top:4px;
+  font-size:12px;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:180px;
+}
+
+#togglePanel{
+  border:none;
+  background:var(--panel-2);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:12px;
+  font-weight:700;
+  font-size:13px;
+  border:1px solid #333943;
+  flex:0 0 auto;
+}
+
+#info{
+  background:#ffffff;
+  color:#111827;
+  padding:7px 10px;
+  font-size:13px;
+  border-bottom:1px solid #d6d9de;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  z-index:20;
+}
+
+#canvasWrap{
+  flex:1 1 auto;
+  position:relative;
+  background:var(--canvas);
   overflow:hidden;
 }
-#barra{
-  background:#222;
-  padding:10px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-button{
-  padding:10px 14px;
-  border:none;
-  background:#f97316;
-  color:#fff;
-  border-radius:4px;
-  font-weight:bold;
-  font-size:14px;
-}
-button.activo{ background:#15803d; }
-button.bloqueado{ background:#6b7280; }
-input,select{
-  padding:10px 12px;
-  border:1px solid #ccc;
-  border-radius:4px;
-  font-size:14px;
-  min-width:140px;
-}
-#info{
-  background:#fff;
-  padding:8px 10px;
-  font-size:14px;
-  border-bottom:1px solid #ccc;
-  white-space:pre-line;
-}
+
 canvas{
   display:block;
-  background:#f5f5f5;
+  width:100%;
+  height:100%;
+  background:var(--canvas);
   touch-action:none;
+}
+
+#tools{
+  background:linear-gradient(180deg,#171a1e 0%, #13161a 100%);
+  border-top:1px solid var(--line);
+  box-shadow:var(--shadow);
+  z-index:25;
+  transition:max-height .22s ease, padding .22s ease;
+  overflow:hidden;
+}
+
+#tools.collapsed{
+  max-height:0 !important;
+  padding-top:0 !important;
+  padding-bottom:0 !important;
+  border-top:none;
+}
+
+.toolsInner{
+  padding:10px 10px 8px 10px;
+}
+
+.toolPanel{
+  display:none;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.toolPanel.active{
+  display:flex;
+}
+
+button.toolBtn,
+.fieldWrap input,
+.fieldWrap select,
+.tabBtn{
+  border-radius:12px;
+}
+
+.toolBtn{
+  border:none;
+  background:var(--accent);
+  color:#fff;
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:800;
+  min-height:42px;
+  box-shadow:none;
+}
+
+.toolBtn.sec{
+  background:var(--panel-2);
+  border:1px solid #343944;
+  color:#fff;
+}
+
+.toolBtn.activo{
+  background:var(--ok);
+}
+
+.toolBtn.bloqueado{
+  background:#515967;
+}
+
+.fieldWrap{
+  display:flex;
+  gap:8px;
+  width:100%;
+  flex-wrap:wrap;
+}
+
+.field{
+  flex:1 1 180px;
+  min-width:140px;
+}
+
+.field label{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+  margin:0 0 5px 2px;
+  font-weight:700;
+  letter-spacing:.4px;
+}
+
+.field input,
+.field select{
+  width:100%;
+  min-height:42px;
+  border:1px solid #343944;
+  background:var(--panel-2);
+  color:#fff;
+  padding:10px 12px;
+  font-size:14px;
+  outline:none;
+}
+
+.field input::placeholder{
+  color:#8b95a3;
+}
+
+#tabs{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom)) 10px;
+  background:#111315;
+  border-top:1px solid var(--line);
+  z-index:30;
+}
+
+.tabBtn{
+  border:none;
+  background:#20242a;
+  color:#d1d5db;
+  min-height:48px;
+  font-size:12px;
+  font-weight:800;
+  border:1px solid #343944;
+}
+
+.tabBtn.active{
+  background:#fff;
+  color:#111827;
+  border-color:#fff;
+}
+
+.statusChip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--chip);
+  color:#fff;
+  border:1px solid #383e47;
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.statusRow{
+  width:100%;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+@media (min-width:700px){
+  #tituloApp{max-width:340px}
+  .toolBtn{font-size:14px}
 }
 </style>
 </head>
 <body>
 
-<div id="barra">
-  <button id="nuevo">Nueva estancia</button>
-  <button id="borrarEstancia">Borrar estancia</button>
-  <button id="cerrar">Cerrar estancia</button>
-  <button id="borrar">Borrar punto</button>
-  <button id="fijar">Fijar estancia</button>
-  <button id="editar">Editar estancia</button>
-  <button id="mover">Mover estancia</button>
-  <button id="rotar">Rotar estancia</button>
-  <button id="verificar">Verificación</button>
-  <button id="diag">Diagonal siguiente</button>
-  <button id="aplicarDiag">Aplicar diagonal</button>
-  <button id="escala">Calibrar escala</button>
-
-  <input id="nombre" type="text" placeholder="Nombre estancia">
-  <select id="planta">
-    <option value="Planta baja">Planta baja</option>
-    <option value="Planta 1">Planta 1</option>
-    <option value="Planta 2">Planta 2</option>
-    <option value="Sótano">Sótano</option>
-    <option value="Buhardilla">Buhardilla</option>
-  </select>
+<div id="topbar">
+  <div class="brandWrap">
+    <div class="brandMark">
+      <div class="a">a</div>
+      <div class="flame">🔥</div>
+    </div>
+    <div class="brandText">
+      <div class="name">Allcalor</div>
+      <div class="sub">SOLUTIONS</div>
+      <div id="tituloApp">Editor de estancias</div>
+    </div>
+  </div>
+  <button id="togglePanel">Ocultar</button>
 </div>
 
 <div id="info">Modo dibujo</div>
-<canvas id="canvas"></canvas>
+
+<div id="canvasWrap">
+  <canvas id="canvas"></canvas>
+</div>
+
+<div id="tools">
+  <div class="toolsInner">
+    <div id="panel-dibujo" class="toolPanel active">
+      <button id="nuevo" class="toolBtn">Nueva estancia</button>
+      <button id="cerrar" class="toolBtn">Cerrar estancia</button>
+      <button id="borrar" class="toolBtn sec">Borrar punto</button>
+      <button id="borrarEstancia" class="toolBtn sec">Borrar estancia</button>
+      <div class="statusRow">
+        <div class="statusChip" id="chipEstancias">0 estancias</div>
+        <div class="statusChip" id="chipEscala">Escala 1 m = 100 px</div>
+      </div>
+    </div>
+
+    <div id="panel-editar" class="toolPanel">
+      <button id="editar" class="toolBtn sec">Editar</button>
+      <button id="fijar" class="toolBtn sec">Fijar</button>
+      <button id="mover" class="toolBtn sec">Mover</button>
+      <button id="rotar" class="toolBtn sec">Rotar</button>
+      <button id="escala" class="toolBtn sec">Calibrar escala</button>
+    </div>
+
+    <div id="panel-verificar" class="toolPanel">
+      <button id="verificar" class="toolBtn sec">Verificación</button>
+      <button id="diag" class="toolBtn sec">Diagonal siguiente</button>
+      <button id="aplicarDiag" class="toolBtn sec">Aplicar diagonal</button>
+    </div>
+
+    <div id="panel-datos" class="toolPanel">
+      <div class="fieldWrap">
+        <div class="field">
+          <label for="nombre">Nombre estancia</label>
+          <input id="nombre" type="text" placeholder="Nombre estancia">
+        </div>
+        <div class="field">
+          <label for="planta">Planta</label>
+          <select id="planta">
+            <option value="Planta baja">Planta baja</option>
+            <option value="Planta 1">Planta 1</option>
+            <option value="Planta 2">Planta 2</option>
+            <option value="Sótano">Sótano</option>
+            <option value="Buhardilla">Buhardilla</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tabs">
+  <button class="tabBtn active" data-tab="dibujo">Dibujar</button>
+  <button class="tabBtn" data-tab="editar">Editar</button>
+  <button class="tabBtn" data-tab="verificar">Verificar</button>
+  <button class="tabBtn" data-tab="datos">Datos</button>
+</div>
 
 <script>
 const canvas = document.getElementById("canvas");
@@ -99,6 +403,21 @@ const btnEscala = document.getElementById("escala");
 const inputNombre = document.getElementById("nombre");
 const selectPlanta = document.getElementById("planta");
 const info = document.getElementById("info");
+const tituloApp = document.getElementById("tituloApp");
+const chipEstancias = document.getElementById("chipEstancias");
+const chipEscala = document.getElementById("chipEscala");
+const tools = document.getElementById("tools");
+const togglePanel = document.getElementById("togglePanel");
+const tabButtons = [...document.querySelectorAll(".tabBtn")];
+const panels = {
+  dibujo: document.getElementById("panel-dibujo"),
+  editar: document.getElementById("panel-editar"),
+  verificar: document.getElementById("panel-verificar"),
+  datos: document.getElementById("panel-datos")
+};
+
+let tabActiva = "dibujo";
+let panelAbierto = true;
 
 let estancias = [];
 let estanciaActiva = -1;
@@ -163,18 +482,39 @@ function esEstanciaVacia(estancia){
 function contarEstanciasConContenido(){
   let total = 0;
   for(const estancia of estancias){
-    if(!esEstanciaVacia(estancia)){
-      total++;
-    }
+    if(!esEstanciaVacia(estancia)) total++;
   }
   return total;
 }
 
+function activarTab(tab){
+  tabActiva = tab;
+  tabButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab));
+  Object.entries(panels).forEach(([k,p]) => p.classList.toggle("active", k === tab));
+  ajustar();
+}
+
+function cambiarPanel(){
+  panelAbierto = !panelAbierto;
+  tools.classList.toggle("collapsed", !panelAbierto);
+  togglePanel.textContent = panelAbierto ? "Ocultar" : "Mostrar";
+  ajustar();
+}
+
+togglePanel.addEventListener("click", cambiarPanel);
+tabButtons.forEach(btn=>{
+  btn.addEventListener("click", ()=>activarTab(btn.dataset.tab));
+});
+
 function ajustar(){
-  const barraH = document.getElementById("barra").offsetHeight;
+  const topbarH = document.getElementById("topbar").offsetHeight;
   const infoH = document.getElementById("info").offsetHeight;
+  const tabsH = document.getElementById("tabs").offsetHeight;
+  const toolsH = panelAbierto ? tools.offsetHeight : 0;
+
+  const libre = window.innerHeight - topbarH - infoH - tabsH - toolsH;
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - barraH - infoH;
+  canvas.height = Math.max(180, libre);
   dibujar();
 }
 window.addEventListener("resize", ajustar);
@@ -704,550 +1044,5 @@ function actualizarInfo(estancia){
 
   texto += " · Estancias útiles: " + contarEstanciasConContenido();
   info.textContent = texto;
-}
-
-function actualizarBotones(estancia){
-  btnMover.classList.toggle("activo", modoMover);
-  btnRotar.classList.toggle("activo", modoRotar);
-  btnVerificar.classList.toggle("activo", modoVerificacion);
-  btnEscala.classList.toggle("activo", calibrando);
-
-  const fijada = estancia ? estancia.fijado : false;
-  btnFijar.classList.toggle("bloqueado", fijada);
-  btnEditar.classList.toggle("activo", !fijada);
-  btnAplicarDiag.classList.toggle(
-    "activo",
-    !!estancia &&
-    modoVerificacion &&
-    estancia.diagonalesObjetivo[estancia.diagActual] !== undefined
-  );
-}
-
-function sincronizarCamposUI(){
-  const estancia = getActiva();
-  if(!estancia){
-    inputNombre.value = "";
-    selectPlanta.value = "Planta baja";
-    return;
-  }
-  inputNombre.value = estancia.nombre;
-  selectPlanta.value = estancia.planta;
-}
-
-function dibujar(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  etiquetasLados = [];
-  etiquetaDiagonal = null;
-  tiradorRotacion = null;
-
-  const activa = getActiva();
-
-  for(let idx=0; idx<estancias.length; idx++){
-    const estancia = estancias[idx];
-    const esActiva = idx === estanciaActiva;
-
-    if(estancia.puntos.length > 1){
-      ctx.beginPath();
-      ctx.moveTo(estancia.puntos[0].x, estancia.puntos[0].y);
-      for(let i=1;i<estancia.puntos.length;i++){
-        ctx.lineTo(estancia.puntos[i].x, estancia.puntos[i].y);
-      }
-
-      if(estancia.cerrado){
-        ctx.closePath();
-        ctx.fillStyle = esActiva ? "rgba(249,115,22,0.10)" : "rgba(107,114,128,0.06)";
-        ctx.fill();
-      }
-
-      ctx.strokeStyle = esActiva ? "#f97316" : "#9ca3af";
-      ctx.lineWidth = esActiva ? 3 : 2;
-      ctx.stroke();
-    }
-
-    const mostrarPuntos = esActiva && !estancia.fijado && !modoRotar;
-
-    if(mostrarPuntos){
-      for(let i=0;i<estancia.puntos.length;i++){
-        const p = estancia.puntos[i];
-        ctx.beginPath();
-
-        if(i === 0 && !estancia.cerrado && estancia.puntos.length >= 3){
-          ctx.arc(p.x,p.y,10,0,Math.PI*2);
-          ctx.fillStyle = "#16a34a";
-          ctx.fill();
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        }else{
-          ctx.arc(p.x,p.y,7,0,Math.PI*2);
-          ctx.fillStyle = "#000000";
-          ctx.fill();
-        }
-      }
-    }
-
-    if(estancia.cerrado){
-      if(esActiva){
-        generarEtiquetasLados(estancia);
-
-        for(let i=0;i<estancia.puntos.length;i++){
-          const a = estancia.puntos[(i-1+estancia.puntos.length)%estancia.puntos.length];
-          const b = estancia.puntos[i];
-          const c = estancia.puntos[(i+1)%estancia.puntos.length];
-          ctx.fillStyle = "green";
-          ctx.font = "14px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText(Math.round(angulo(a,b,c)) + "°", b.x + 20, b.y - 10);
-        }
-      }else{
-        for(let i=0;i<estancia.puntos.length;i++){
-          const a = estancia.puntos[i];
-          const b = estancia.puntos[(i+1)%estancia.puntos.length];
-          const mx = (a.x+b.x)/2;
-          const my = (a.y+b.y)/2;
-          etiqueta(formatM(metrosDesdePx(estancia, distancia(a,b))), mx, my, "#6b7280", "rgba(255,255,255,0.82)");
-        }
-      }
-    }
-
-    dibujarNombreYPlanta(estancia, esActiva);
-  }
-
-  dibujarDiagonal(activa);
-  dibujarRotacion(activa);
-  dibujarCalibracion(activa);
-  actualizarBotones(activa);
-  actualizarInfo(activa);
-}
-
-function empezarCalibracion(estancia){
-  if(!estancia || !estancia.cerrado || estancia.puntos.length < 2) return;
-  calibrando = true;
-  modoMover = false;
-  modoRotar = false;
-  modoVerificacion = false;
-  verticesCalibracion = [];
-  dibujar();
-}
-
-function terminarCalibracion(estancia){
-  if(!estancia || verticesCalibracion.length !== 2) return;
-
-  const a = estancia.puntos[verticesCalibracion[0]];
-  const b = estancia.puntos[verticesCalibracion[1]];
-  const largoPx = distancia(a,b);
-
-  if(largoPx < 10){
-    calibrando = false;
-    verticesCalibracion = [];
-    dibujar();
-    return;
-  }
-
-  const respuesta = prompt("Distancia real en metros", "");
-  if(respuesta === null){
-    calibrando = false;
-    verticesCalibracion = [];
-    dibujar();
-    return;
-  }
-
-  const realM = Number(respuesta.replace(",", ".").trim());
-  if(!Number.isFinite(realM) || realM <= 0){
-    calibrando = false;
-    verticesCalibracion = [];
-    dibujar();
-    return;
-  }
-
-  estancia.pxPorMetro = largoPx / realM;
-  calibrando = false;
-  verticesCalibracion = [];
-  dibujar();
-}
-
-function seleccionarEstanciaPorPunto(x,y){
-  for(let i=estancias.length-1;i>=0;i--){
-    const estancia = estancias[i];
-    if(estancia.cerrado && puntoDentroPoligonoConBorde(estancia, x, y)){
-      estanciaActiva = i;
-      sincronizarCamposUI();
-      return true;
-    }
-  }
-  return false;
-}
-
-function onPointerDown(e){
-  e.preventDefault();
-  canvas.setPointerCapture(e.pointerId);
-
-  const p = pos(e);
-  pointerActivo = true;
-  arrastrandoPunto = false;
-  moviendoFigura = false;
-  rotandoFigura = false;
-  indicePunto = -1;
-
-  startX = p.x;
-  startY = p.y;
-  lastX = p.x;
-  lastY = p.y;
-
-  let activa = getActiva();
-
-  if(calibrando){
-    if(!activa) return;
-    return;
-  }
-
-  if(activa && activa.fijado){
-    if(seleccionarEstanciaPorPunto(p.x,p.y)){
-      activa = getActiva();
-    }else{
-      return;
-    }
-  }
-
-  if(indicePunto === -1){
-    seleccionarEstanciaPorPunto(p.x,p.y);
-    activa = getActiva();
-  }
-
-  if(!activa) return;
-
-  if(modoRotar && activa.cerrado){
-    const tirador = obtenerTiradorRotacion(activa);
-    if(distanciaXY(tirador.x, tirador.y, p.x, p.y) <= RADIO_TIRADOR + 8){
-      rotandoFigura = true;
-      const centro = centroFigura(activa);
-      anguloInicioRotacion = anguloPuntoRespectoCentro(centro, p);
-      dibujar();
-      return;
-    }
-  }
-
-  indicePunto = buscarPuntoEnEstancia(activa, p.x, p.y);
-
-  if(modoMover && activa.cerrado && puntoDentroPoligonoConBorde(activa, p.x, p.y)){
-    moviendoFigura = true;
-    indicePunto = -1;
-  }
-
-  sincronizarCamposUI();
-  dibujar();
-}
-
-function onPointerMove(e){
-  const activa = getActiva();
-  if(!pointerActivo || !activa || activa.fijado || calibrando) return;
-
-  const p = pos(e);
-
-  if(rotandoFigura){
-    const centro = centroFigura(activa);
-    const anguloActual = anguloPuntoRespectoCentro(centro, p);
-    const delta = anguloActual - anguloInicioRotacion;
-    rotarEstancia(activa, delta);
-    anguloInicioRotacion = anguloActual;
-    calcularDiagonales(activa);
-    dibujar();
-    return;
-  }
-
-  if(moviendoFigura){
-    const dx = p.x - lastX;
-    const dy = p.y - lastY;
-    moverFigura(activa, dx, dy);
-    lastX = p.x;
-    lastY = p.y;
-    calcularDiagonales(activa);
-    dibujar();
-    return;
-  }
-
-  if(indicePunto !== -1 && !modoRotar){
-    if(distanciaXY(startX,startY,p.x,p.y) > UMBRAL_ARRASTRE){
-      arrastrandoPunto = true;
-    }
-
-    if(arrastrandoPunto){
-      activa.puntos[indicePunto].x = p.x;
-      activa.puntos[indicePunto].y = p.y;
-      if(activa.cerrado) calcularDiagonales(activa);
-      dibujar();
-    }
-  }
-}
-
-function onPointerUp(e){
-  if(!pointerActivo) return;
-  e.preventDefault();
-
-  const p = pos(e);
-  const movimiento = distanciaXY(startX, startY, p.x, p.y);
-  const activa = getActiva();
-
-  if(calibrando){
-    if(activa){
-      const idx = buscarPuntoEnEstancia(activa, p.x,p.y);
-      if(idx !== -1){
-        if(verticesCalibracion.length === 0){
-          verticesCalibracion.push(idx);
-        }else if(verticesCalibracion.length === 1 && idx !== verticesCalibracion[0]){
-          verticesCalibracion.push(idx);
-          terminarCalibracion(activa);
-        }
-      }
-    }
-    pointerActivo = false;
-    dibujar();
-    return;
-  }
-
-  if(rotandoFigura){
-    pointerActivo = false;
-    rotandoFigura = false;
-    indicePunto = -1;
-    if(activa) calcularDiagonales(activa);
-    dibujar();
-    return;
-  }
-
-  if(moviendoFigura){
-    pointerActivo = false;
-    moviendoFigura = false;
-    indicePunto = -1;
-    if(activa) calcularDiagonales(activa);
-    dibujar();
-    return;
-  }
-
-  if(activa && !activa.fijado && !arrastrandoPunto && movimiento <= UMBRAL_TOQUE){
-    if(modoVerificacion && etiquetaDiagonal){
-      if(
-        p.x >= etiquetaDiagonal.x - etiquetaDiagonal.w/2 &&
-        p.x <= etiquetaDiagonal.x + etiquetaDiagonal.w/2 &&
-        p.y >= etiquetaDiagonal.y - etiquetaDiagonal.h/2 &&
-        p.y <= etiquetaDiagonal.y + etiquetaDiagonal.h/2
-      ){
-        pointerActivo = false;
-        editarDiagonal(activa);
-        return;
-      }
-    }
-
-    const i = buscarPuntoEnEstancia(activa, p.x,p.y);
-
-    if(i === 0 && activa.puntos.length >= 3 && !activa.cerrado){
-      activa.cerrado = true;
-      calcularDiagonales(activa);
-    }else if(i === -1 && !activa.cerrado){
-      activa.puntos.push({x:p.x,y:p.y});
-    }else if(i === -1 && activa.cerrado && !modoMover && !modoVerificacion && !modoRotar){
-      const lado = buscarEtiquetaLado(p.x,p.y);
-      if(lado !== -1){
-        pointerActivo = false;
-        editarMedidaLado(activa, lado);
-        return;
-      }else{
-        seleccionarEstanciaPorPunto(p.x,p.y);
-        sincronizarCamposUI();
-      }
-    }
-  }else{
-    seleccionarEstanciaPorPunto(p.x,p.y);
-    sincronizarCamposUI();
-  }
-
-  pointerActivo = false;
-  arrastrandoPunto = false;
-  indicePunto = -1;
-  dibujar();
-}
-
-canvas.addEventListener("pointerdown", onPointerDown);
-canvas.addEventListener("pointermove", onPointerMove);
-canvas.addEventListener("pointerup", onPointerUp);
-canvas.addEventListener("pointercancel", onPointerUp);
-
-btnNuevo.onclick = function(){
-  modoMover = false;
-  modoRotar = false;
-  modoVerificacion = false;
-  calibrando = false;
-  verticesCalibracion = [];
-
-  const activa = getActiva();
-
-  if(activa && activa.puntos.length === 0 && !activa.cerrado){
-    sincronizarCamposUI();
-    dibujar();
-    return;
-  }
-
-  estancias.push(crearEstanciaVacia());
-  estanciaActiva = estancias.length - 1;
-  sincronizarCamposUI();
-  dibujar();
-};
-
-btnBorrarEstancia.onclick = function(){
-  if(estancias.length === 0) return;
-
-  if(estanciaActiva < 0 || estanciaActiva >= estancias.length){
-    estanciaActiva = 0;
-  }
-
-  estancias.splice(estanciaActiva, 1);
-
-  if(estancias.length === 0){
-    estancias = [crearEstanciaVacia()];
-    estanciaActiva = 0;
-  }else{
-    if(estanciaActiva >= estancias.length){
-      estanciaActiva = estancias.length - 1;
-    }
-  }
-
-  modoMover = false;
-  modoRotar = false;
-  modoVerificacion = false;
-  calibrando = false;
-  verticesCalibracion = [];
-  sincronizarCamposUI();
-  dibujar();
-};
-
-btnCerrar.onclick = function(){
-  const activa = getActiva();
-  if(!activa) return;
-
-  if(activa.puntos.length >= 3){
-    activa.cerrado = true;
-    calcularDiagonales(activa);
-    dibujar();
-  }
-};
-
-btnBorrar.onclick = function(){
-  const activa = getActiva();
-  if(!activa || activa.fijado) return;
-
-  if(activa.puntos.length > 0){
-    activa.puntos.pop();
-  }
-
-  if(activa.puntos.length < 3){
-    activa.cerrado = false;
-    modoVerificacion = false;
-    activa.diagonales = [];
-    activa.diagActual = 0;
-    activa.diagonalesObjetivo = [];
-    etiquetaDiagonal = null;
-    calibrando = false;
-    verticesCalibracion = [];
-  }else if(activa.cerrado){
-    calcularDiagonales(activa);
-  }
-
-  dibujar();
-};
-
-btnFijar.onclick = function(){
-  const activa = getActiva();
-  if(!activa || !activa.cerrado) return;
-  activa.fijado = true;
-  modoMover = false;
-  modoRotar = false;
-  dibujar();
-};
-
-btnEditar.onclick = function(){
-  const activa = getActiva();
-  if(!activa) return;
-  activa.fijado = false;
-  modoMover = false;
-  modoRotar = false;
-  dibujar();
-};
-
-btnMover.onclick = function(){
-  const activa = getActiva();
-  if(!activa || activa.fijado || !activa.cerrado) return;
-  modoMover = !modoMover;
-  if(modoMover){
-    modoRotar = false;
-  }
-  dibujar();
-};
-
-btnRotar.onclick = function(){
-  const activa = getActiva();
-  if(!activa || activa.fijado || !activa.cerrado) return;
-  modoRotar = !modoRotar;
-  if(modoRotar){
-    modoMover = false;
-    modoVerificacion = false;
-  }
-  dibujar();
-};
-
-btnVerificar.onclick = function(){
-  const activa = getActiva();
-  if(!activa || !activa.cerrado) return;
-
-  modoVerificacion = !modoVerificacion;
-
-  if(modoVerificacion){
-    modoRotar = false;
-    calibrando = false;
-    verticesCalibracion = [];
-    calcularDiagonales(activa);
-    activa.diagActual = 0;
-  }
-
-  dibujar();
-};
-
-btnDiag.onclick = function(){
-  const activa = getActiva();
-  if(!activa || !modoVerificacion || activa.diagonales.length === 0) return;
-  activa.diagActual++;
-  if(activa.diagActual >= activa.diagonales.length) activa.diagActual = 0;
-  dibujar();
-};
-
-btnAplicarDiag.onclick = function(){
-  aplicarDiagonalObjetivo(getActiva());
-};
-
-btnEscala.onclick = function(){
-  empezarCalibracion(getActiva());
-};
-
-inputNombre.oninput = function(){
-  const activa = getActiva();
-  if(!activa) return;
-  activa.nombre = inputNombre.value;
-  dibujar();
-};
-
-selectPlanta.onchange = function(){
-  const activa = getActiva();
-  if(!activa) return;
-  activa.planta = selectPlanta.value;
-  dibujar();
-};
-
-function iniciarApp(){
-  estancias = [crearEstanciaVacia()];
-  estanciaActiva = 0;
-  sincronizarCamposUI();
-  ajustar();
-}
-
-iniciarApp();
-</script>
-</body>
-</html>
+  tituloApp.textContent = estancia ? (estancia.nombre.trim() || "Estancia activa") : "Editor de estancias";
+  chipEstancias.textContent = contarEstanciasConContenido() +
