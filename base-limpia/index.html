@@ -1,1 +1,99 @@
-base-limpia/index.html
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ALLCALOR</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#111;
+color:white;
+display:flex;
+flex-direction:column;
+height:100vh;
+}
+
+header{
+background:#1f1f1f;
+padding:14px;
+font-size:18px;
+font-weight:bold;
+text-align:center;
+border-bottom:1px solid #333;
+}
+
+#canvas{
+flex:1;
+background:#f2f2f2;
+touch-action:none;
+}
+
+#panel{
+background:#1f1f1f;
+padding:10px;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+border-top:1px solid #333;
+}
+
+button{
+padding:10px 14px;
+border:none;
+background:#f97316;
+color:white;
+font-weight:bold;
+border-radius:4px;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<header>
+ALLCALOR PRO
+</header>
+
+<canvas id="canvas"></canvas>
+
+<div id="panel">
+
+<button id="btnEstancia">Nueva estancia</button>
+<button id="btnPuerta">Puerta</button>
+<button id="btnVentana">Ventana</button>
+
+</div>
+
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function ajustarCanvas(){
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - 120;
+
+}
+
+window.addEventListener("resize", ajustarCanvas);
+
+ajustarCanvas();
+
+ctx.fillStyle="black";
+ctx.font="20px Arial";
+ctx.fillText("ALLCALOR iniciado",40,40);
+
+</script>
+
+</body>
+</html>
