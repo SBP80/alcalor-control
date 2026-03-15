@@ -54,7 +54,7 @@ canvas{
 <body>
 
 <div id="barra">
-  <button id="nuevo">Nueva estancia</<button>
+  <button id="nuevo">Nueva estancia</button>
   <button id="borrarEstancia">Borrar estancia</button>
   <button id="cerrar">Cerrar estancia</button>
   <button id="borrar">Borrar punto</button>
@@ -1058,8 +1058,43 @@ btnNuevo.onclick = function(){
   calibrando = false;
   verticesCalibracion = [];
 
+  const activa = getActiva();
+
+  if(
+    activa &&
+    activa.puntos.length === 0 &&
+    !activa.cerrado &&
+    !activa.nombre.trim() &&
+    activa.planta === "Planta baja"
+  ){
+    sincronizarCamposUI();
+    dibujar();
+    return;
+  }
+
   estancias.push(crearEstanciaVacia());
   estanciaActiva = estancias.length - 1;
+  sincronizarCamposUI();
+  dibujar();
+};
+
+btnBorrarEstancia.onclick = function(){
+  if(estancias.length === 0) return;
+
+  estancias.splice(estanciaActiva, 1);
+
+  if(estancias.length === 0){
+    estancias.push(crearEstanciaVacia());
+    estanciaActiva = 0;
+  }else if(estanciaActiva >= estancias.length){
+    estanciaActiva = estancias.length - 1;
+  }
+
+  modoMover = false;
+  modoRotar = false;
+  modoVerificacion = false;
+  calibrando = false;
+  verticesCalibracion = [];
   sincronizarCamposUI();
   dibujar();
 };
@@ -1121,9 +1156,7 @@ btnMover.onclick = function(){
   const activa = getActiva();
   if(!activa || activa.fijado || !activa.cerrado) return;
   modoMover = !modoMover;
-  if(modoMover){
-    modoRotar = false;
-  }
+  if(modoMover) modoRotar = false;
   dibujar();
 };
 
