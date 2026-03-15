@@ -60,6 +60,7 @@ canvas{
   <button id="fijar">Fijar estancia</button>
   <button id="editar">Editar estancia</button>
   <button id="mover">Mover estancia</button>
+  <button id="rotar">Rotar estancia</button>
   <button id="verificar">Verificación</button>
   <button id="diag">Diagonal siguiente</button>
   <button id="aplicarDiag">Aplicar diagonal</button>
@@ -88,6 +89,7 @@ const btnBorrar = document.getElementById("borrar");
 const btnFijar = document.getElementById("fijar");
 const btnEditar = document.getElementById("editar");
 const btnMover = document.getElementById("mover");
+const btnRotar = document.getElementById("rotar");
 const btnVerificar = document.getElementById("verificar");
 const btnDiag = document.getElementById("diag");
 const btnAplicarDiag = document.getElementById("aplicarDiag");
@@ -100,6 +102,7 @@ let estancias = [];
 let estanciaActiva = -1;
 
 let modoMover = false;
+let modoRotar = false;
 let modoVerificacion = false;
 let calibrando = false;
 let verticesCalibracion = [];
@@ -107,6 +110,7 @@ let verticesCalibracion = [];
 let pointerActivo = false;
 let arrastrandoPunto = false;
 let moviendoFigura = false;
+let rotandoFigura = false;
 let indicePunto = -1;
 
 let startX = 0;
@@ -116,10 +120,13 @@ let lastY = 0;
 
 let etiquetasLados = [];
 let etiquetaDiagonal = null;
+let tiradorRotacion = null;
+let anguloInicioRotacion = 0;
 
 const RADIO_PUNTO = 20;
 const UMBRAL_ARRASTRE = 6;
 const UMBRAL_TOQUE = 10;
+const RADIO_TIRADOR = 18;
 
 function crearEstanciaVacia(){
   return {
@@ -131,7 +138,8 @@ function crearEstanciaVacia(){
     pxPorMetro: 100,
     diagonales: [],
     diagActual: 0,
-    diagonalesObjetivo: []
+    diagonalesObjetivo: [],
+    rotacionGrados: 0
   };
 }
 
@@ -344,6 +352,43 @@ function angulo(a,b,c){
   return Math.acos(cos) * 180 / Math.PI;
 }
 
+function anguloPuntoRespectoCentro(centro, p){
+  return Math.atan2(p.y - centro.y, p.x - centro.x);
+}
+
+function rotarPunto(p, centro, rad){
+  const dx = p.x - centro.x;
+  const dy = p.y - centro.y;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  return {
+    x: centro.x + dx * cos - dy * sin,
+    y: centro.y + dx * sin + dy * cos
+  };
+}
+
+function rotarEstancia(estancia, rad){
+  const centro = centroFigura(estancia);
+  for(let i=0;i<estancia.puntos.length;i++){
+    estancia.puntos[i] = rotarPunto(estancia.puntos[i], centro, rad);
+  }
+  estancia.rotacionGrados += rad * 180 / Math.PI;
+  while(estancia.rotacionGrados > 180) estancia.rotacionGrados -= 360;
+  while(estancia.rotacionGrados <= -180) estancia.rotacionGrados += 360;
+}
+
+function obtenerTiradorRotacion(estancia){
+  const centro = centroFigura(estancia);
+  let minY = estancia.puntos[0].y;
+  for(const p of estancia.puntos){
+    if(p.y < minY) minY = p.y;
+  }
+  return {
+    x: centro.x,
+    y: minY - 45
+  };
+}
+
 function etiqueta(texto,x,y,color, relleno="rgba(255,255,255,0.96)"){
   const lineas = String(texto).split("\n");
   ctx.save();
@@ -554,6 +599,35 @@ function dibujarDiagonal(estancia){
   };
 }
 
+function dibujarRotacion(estancia){
+  tiradorRotacion = null;
+  if(!estancia || !estancia.cerrado || !modoRotar) return;
+
+  const centro = centroFigura(estancia);
+  const tirador = obtenerTiradorRotacion(estancia);
+  tiradorRotacion = tirador;
+
+  ctx.save();
+  ctx.setLineDash([6,6]);
+  ctx.beginPath();
+  ctx.moveTo(centro.x, centro.y);
+  ctx.lineTo(tirador.x, tirador.y);
+  ctx.strokeStyle = "#0ea5e9";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(tirador.x, tirador.y, RADIO_TIRADOR, 0, Math.PI * 2);
+  ctx.fillStyle = "#0ea5e9";
+  ctx.fill();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  etiqueta("Rot " + estancia.rotacionGrados.toFixed(1).replace(".", ",") + "°", tirador.x, tirador.y - 32, "#0ea5e9");
+}
+
 function dibujarCalibracion(estancia){
   if(!calibrando || !estancia) return;
 
@@ -578,6 +652,8 @@ function actualizarInfo(estancia){
     texto = verticesCalibracion.length === 0
       ? "Calibrar escala · toca el primer vértice"
       : "Calibrar escala · toca el segundo vértice";
+  }else if(modoRotar){
+    texto = "Modo rotar estancia";
   }else if(modoVerificacion){
     texto = "Modo verificación";
     if(estancia){
@@ -610,6 +686,7 @@ function actualizarInfo(estancia){
 
 function actualizarBotones(estancia){
   btnMover.classList.toggle("activo", modoMover);
+  btnRotar.classList.toggle("activo", modoRotar);
   btnVerificar.classList.toggle("activo", modoVerificacion);
   btnEscala.classList.toggle("activo", calibrando);
 
@@ -639,6 +716,7 @@ function dibujar(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   etiquetasLados = [];
   etiquetaDiagonal = null;
+  tiradorRotacion = null;
 
   const activa = getActiva();
 
@@ -664,7 +742,7 @@ function dibujar(){
       ctx.stroke();
     }
 
-    const mostrarPuntos = esActiva && !estancia.fijado;
+    const mostrarPuntos = esActiva && !estancia.fijado && !modoRotar;
 
     if(mostrarPuntos){
       for(let i=0;i<estancia.puntos.length;i++){
@@ -714,6 +792,7 @@ function dibujar(){
   }
 
   dibujarDiagonal(activa);
+  dibujarRotacion(activa);
   dibujarCalibracion(activa);
   actualizarBotones(activa);
   actualizarInfo(activa);
@@ -723,6 +802,7 @@ function empezarCalibracion(estancia){
   if(!estancia || !estancia.cerrado || estancia.puntos.length < 2) return;
   calibrando = true;
   modoMover = false;
+  modoRotar = false;
   modoVerificacion = false;
   verticesCalibracion = [];
   dibujar();
@@ -784,6 +864,7 @@ function onPointerDown(e){
   pointerActivo = true;
   arrastrandoPunto = false;
   moviendoFigura = false;
+  rotandoFigura = false;
   indicePunto = -1;
 
   startX = p.x;
@@ -806,20 +887,27 @@ function onPointerDown(e){
     }
   }
 
-  if(activa){
-    const idx = buscarPuntoEnEstancia(activa, p.x, p.y);
-    indicePunto = idx;
-  }
-
   if(indicePunto === -1){
     seleccionarEstanciaPorPunto(p.x,p.y);
     activa = getActiva();
-    if(activa){
-      indicePunto = buscarPuntoEnEstancia(activa, p.x, p.y);
+  }
+
+  if(!activa) return;
+
+  if(modoRotar && activa.cerrado){
+    const tirador = obtenerTiradorRotacion(activa);
+    if(distanciaXY(tirador.x, tirador.y, p.x, p.y) <= RADIO_TIRADOR + 8){
+      rotandoFigura = true;
+      const centro = centroFigura(activa);
+      anguloInicioRotacion = anguloPuntoRespectoCentro(centro, p);
+      dibujar();
+      return;
     }
   }
 
-  if(modoMover && activa && activa.cerrado && puntoDentroPoligonoConBorde(activa, p.x, p.y)){
+  indicePunto = buscarPuntoEnEstancia(activa, p.x, p.y);
+
+  if(modoMover && activa.cerrado && puntoDentroPoligonoConBorde(activa, p.x, p.y)){
     moviendoFigura = true;
     indicePunto = -1;
   }
@@ -834,6 +922,17 @@ function onPointerMove(e){
 
   const p = pos(e);
 
+  if(rotandoFigura){
+    const centro = centroFigura(activa);
+    const anguloActual = anguloPuntoRespectoCentro(centro, p);
+    const delta = anguloActual - anguloInicioRotacion;
+    rotarEstancia(activa, delta);
+    anguloInicioRotacion = anguloActual;
+    calcularDiagonales(activa);
+    dibujar();
+    return;
+  }
+
   if(moviendoFigura){
     const dx = p.x - lastX;
     const dy = p.y - lastY;
@@ -845,7 +944,7 @@ function onPointerMove(e){
     return;
   }
 
-  if(indicePunto !== -1){
+  if(indicePunto !== -1 && !modoRotar){
     if(distanciaXY(startX,startY,p.x,p.y) > UMBRAL_ARRASTRE){
       arrastrandoPunto = true;
     }
@@ -884,6 +983,15 @@ function onPointerUp(e){
     return;
   }
 
+  if(rotandoFigura){
+    pointerActivo = false;
+    rotandoFigura = false;
+    indicePunto = -1;
+    if(activa) calcularDiagonales(activa);
+    dibujar();
+    return;
+  }
+
   if(moviendoFigura){
     pointerActivo = false;
     moviendoFigura = false;
@@ -914,7 +1022,7 @@ function onPointerUp(e){
       calcularDiagonales(activa);
     }else if(i === -1 && !activa.cerrado){
       activa.puntos.push({x:p.x,y:p.y});
-    }else if(i === -1 && activa.cerrado && !modoMover && !modoVerificacion){
+    }else if(i === -1 && activa.cerrado && !modoMover && !modoVerificacion && !modoRotar){
       const lado = buscarEtiquetaLado(p.x,p.y);
       if(lado !== -1){
         pointerActivo = false;
@@ -943,6 +1051,7 @@ canvas.addEventListener("pointercancel", onPointerUp);
 
 btnNuevo.onclick = function(){
   modoMover = false;
+  modoRotar = false;
   modoVerificacion = false;
   calibrando = false;
   verticesCalibracion = [];
@@ -993,6 +1102,7 @@ btnFijar.onclick = function(){
   if(!activa || !activa.cerrado) return;
   activa.fijado = true;
   modoMover = false;
+  modoRotar = false;
   dibujar();
 };
 
@@ -1001,6 +1111,7 @@ btnEditar.onclick = function(){
   if(!activa) return;
   activa.fijado = false;
   modoMover = false;
+  modoRotar = false;
   dibujar();
 };
 
@@ -1008,6 +1119,20 @@ btnMover.onclick = function(){
   const activa = getActiva();
   if(!activa || activa.fijado || !activa.cerrado) return;
   modoMover = !modoMover;
+  if(modoMover){
+    modoRotar = false;
+  }
+  dibujar();
+};
+
+btnRotar.onclick = function(){
+  const activa = getActiva();
+  if(!activa || activa.fijado || !activa.cerrado) return;
+  modoRotar = !modoRotar;
+  if(modoRotar){
+    modoMover = false;
+    modoVerificacion = false;
+  }
   dibujar();
 };
 
@@ -1018,6 +1143,7 @@ btnVerificar.onclick = function(){
   modoVerificacion = !modoVerificacion;
 
   if(modoVerificacion){
+    modoRotar = false;
     calibrando = false;
     verticesCalibracion = [];
     calcularDiagonales(activa);
@@ -1066,5 +1192,3 @@ function iniciarApp(){
 
 iniciarApp();
 </script>
-</body>
-</html>
