@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>ALLCALOR</title>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial,Helvetica,sans-serif;
+font-family:Arial, Helvetica, sans-serif;
 background:#111;
 color:white;
 display:flex;
@@ -22,76 +20,163 @@ height:100vh;
 header{
 background:#1f1f1f;
 padding:14px;
-font-size:18px;
-font-weight:bold;
 text-align:center;
-border-bottom:1px solid #333;
+font-weight:bold;
 }
 
-#canvas{
-flex:1;
-background:#f2f2f2;
-touch-action:none;
-}
-
-#panel{
-background:#1f1f1f;
+#barra{
+background:#2a2a2a;
 padding:10px;
 display:flex;
 gap:8px;
 flex-wrap:wrap;
-border-top:1px solid #333;
 }
 
 button{
-padding:10px 14px;
+background:#ff7a1a;
 border:none;
-background:#f97316;
 color:white;
+padding:10px 14px;
 font-weight:bold;
-border-radius:4px;
+border-radius:6px;
+}
+
+button:hover{
+background:#ff933f;
+}
+
+#canvas{
+flex:1;
+background:#202020;
+touch-action:none;
+}
+
+#info{
+background:#1f1f1f;
+padding:8px;
+font-size:14px;
 }
 
 </style>
 </head>
 
-
 <body>
 
 <header>
-ALLCALOR PRO
+ALLCALOR ENGINE v2
 </header>
+
+<div id="barra">
+<button id="btnEstancia">Nueva estancia</button>
+<button id="btnBorrar">Borrar</button>
+<button id="btnMover">Mover</button>
+<button id="btnEscala">Escala</button>
+</div>
 
 <canvas id="canvas"></canvas>
 
-<div id="panel">
-
-<button id="btnEstancia">Nueva estancia</button>
-<button id="btnPuerta">Puerta</button>
-<button id="btnVentana">Ventana</button>
-
+<div id="info">
+Editor base preparado
 </div>
-
 
 <script>
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
-function ajustarCanvas(){
+let W
+let H
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight - 120;
+function resize(){
+W = canvas.width = window.innerWidth
+H = canvas.height = window.innerHeight - 120
+draw()
+}
+
+window.addEventListener("resize",resize)
+
+resize()
+
+let estancias = []
+
+let modo = "ninguno"
+
+let startX
+let startY
+
+canvas.addEventListener("pointerdown",e=>{
+
+if(modo==="estancia"){
+
+startX = e.offsetX
+startY = e.offsetY
+
+canvas.addEventListener("pointermove",preview)
+
+canvas.addEventListener("pointerup",crear)
 
 }
 
-window.addEventListener("resize", ajustarCanvas);
+})
 
-ajustarCanvas();
+function preview(e){
 
-ctx.fillStyle="black";
-ctx.font="20px Arial";
-ctx.fillText("ALLCALOR iniciado",40,40);
+draw()
+
+let w = e.offsetX - startX
+let h = e.offsetY - startY
+
+ctx.strokeStyle="#ff7a1a"
+ctx.lineWidth=2
+ctx.strokeRect(startX,startY,w,h)
+
+}
+
+function crear(e){
+
+canvas.removeEventListener("pointermove",preview)
+canvas.removeEventListener("pointerup",crear)
+
+let w = e.offsetX - startX
+let h = e.offsetY - startY
+
+estancias.push({
+x:startX,
+y:startY,
+w:w,
+h:h
+})
+
+draw()
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,W,H)
+
+ctx.strokeStyle="#00ff9d"
+ctx.lineWidth=2
+
+for(let r of estancias){
+
+ctx.strokeRect(r.x,r.y,r.w,r.h)
+
+let m = Math.abs(r.w)/100
+
+ctx.fillStyle="white"
+ctx.font="12px Arial"
+ctx.fillText(m.toFixed(2)+" m",r.x+5,r.y+15)
+
+}
+
+}
+
+document.getElementById("btnEstancia").onclick=()=>{
+
+modo="estancia"
+
+}
 
 </script>
 
