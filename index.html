@@ -1,221 +1,941 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>ALLCALOR CONTROL</title>
-
-<style>
-body{
-margin:0;
-background:#1e1e1e;
-font-family:Arial;
-color:white;
-overflow:hidden;
-}
-
-#toolbar{
-height:60px;
-background:#2b2b2b;
-display:flex;
-align-items:center;
-gap:10px;
-padding:10px;
-}
-
-button{
-padding:8px 14px;
-background:#444;
-border:none;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-canvas{
-background:#111;
-display:block;
-}
-
-#info{
-position:absolute;
-right:10px;
-top:70px;
-background:#2b2b2b;
-padding:10px;
-border-radius:6px;
-font-size:13px;
-}
-
-</style>
-</head>
-
-<body>
-
-<div id="toolbar">
-<button id="newRoom">Nueva estancia</button>
-<button id="closeRoom">Cerrar estancia</button>
-<button id="reset">Reset</button>
-</div>
-
-<canvas id="canvas"></canvas>
-
-<div id="info">
-<div id="cursorInfo"></div>
-</div>
-
-<script>
-
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d")
-
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight - 60
-
-const GRID = 50
-
-let rooms = []
-let drawing = false
-let currentRoom = null
-
-let mouse = {x:0,y:0}
-
-canvas.addEventListener("mousemove",e=>{
-
-mouse.x = Math.round(e.offsetX/GRID)*GRID
-mouse.y = Math.round(e.offsetY/GRID)*GRID
-
-})
-
-canvas.addEventListener("click",()=>{
-
-if(!drawing) return
-
-currentRoom.points.push({
-x:mouse.x,
-y:mouse.y
-})
-
-})
-
-document.getElementById("newRoom").onclick = ()=>{
-
-let name = prompt("Nombre estancia")
-
-currentRoom = {
-name:name,
-points:[]
-}
-
-rooms.push(currentRoom)
-
-drawing = true
-
-}
-
-document.getElementById("closeRoom").onclick = ()=>{
-
-drawing = false
-
-}
-
-document.getElementById("reset").onclick = ()=>{
-
-rooms = []
-drawing = false
-
-}
-
-function drawGrid(){
-
-ctx.strokeStyle="#222"
-
-for(let x=0;x<canvas.width;x+=GRID){
-
-ctx.beginPath()
-ctx.moveTo(x,0)
-ctx.lineTo(x,canvas.height)
-ctx.stroke()
-
-}
-
-for(let y=0;y<canvas.height;y+=GRID){
-
-ctx.beginPath()
-ctx.moveTo(0,y)
-ctx.lineTo(canvas.width,y)
-ctx.stroke()
-
-}
-
-}
-
-function drawRooms(){
-
-rooms.forEach(room=>{
-
-ctx.strokeStyle="#00ffaa"
-ctx.lineWidth=2
-
-ctx.beginPath()
-
-room.points.forEach((p,i)=>{
-
-if(i===0){
-ctx.moveTo(p.x,p.y)
-}else{
-ctx.lineTo(p.x,p.y)
-}
-
-})
-
-ctx.stroke()
-
-})
-
-}
-
-function drawPreview(){
-
-if(!drawing) return
-if(!currentRoom) return
-if(currentRoom.points.length===0) return
-
-let last = currentRoom.points[currentRoom.points.length-1]
-
-ctx.strokeStyle="#ffaa00"
-
-ctx.beginPath()
-ctx.moveTo(last.x,last.y)
-ctx.lineTo(mouse.x,mouse.y)
-ctx.stroke()
-
-let dx = mouse.x-last.x
-let dy = mouse.y-last.y
-
-let length = Math.sqrt(dx*dx+dy*dy)/100
-
-let angle = Math.atan2(dy,dx)*180/Math.PI
-
-document.getElementById("cursorInfo").innerText =
-length.toFixed(2)+" m | "+angle.toFixed(1)+"°"
-
-}
-
-function render(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-drawGrid()
-drawRooms()
-drawPreview()
-
-requestAnimationFrame(render)
-
-}
-
-render()
-
-</script>
-
-</body>
-</html>
+     1	<!DOCTYPE html>
+     2	<html lang="es">
+     3	<head>
+     4	<meta charset="UTF-8">
+     5	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+     6	<title>ALLCALOR</title>
+     7	<style>
+     8	body{
+     9	  margin:0;
+    10	  font-family:Arial,sans-serif;
+    11	  background:#f0f0f0;
+    12	  overflow:hidden;
+    13	}
+    14	#barra{
+    15	  background:#222;
+    16	  padding:10px;
+    17	  display:flex;
+    18	  gap:10px;
+    19	  flex-wrap:wrap;
+    20	  align-items:center;
+    21	}
+    22	button{
+    23	  padding:10px 14px;
+    24	  border:none;
+    25	  background:#f97316;
+    26	  color:#fff;
+    27	  border-radius:4px;
+    28	  font-weight:bold;
+    29	  font-size:14px;
+    30	}
+    31	button.activo{ background:#15803d; }
+    32	button.bloqueado{ background:#6b7280; }
+    33	input,select{
+    34	  padding:10px 12px;
+    35	  border:1px solid #ccc;
+    36	  border-radius:4px;
+    37	  font-size:14px;
+    38	  min-width:140px;
+    39	}
+    40	#info{
+    41	  background:#fff;
+    42	  padding:8px 10px;
+    43	  font-size:14px;
+    44	  border-bottom:1px solid #ccc;
+    45	  white-space:pre-line;
+    46	}
+    47	canvas{
+    48	  display:block;
+    49	  background:#f5f5f5;
+    50	  touch-action:none;
+    51	}
+    52	</style>
+    53	</head>
+    54	<body>
+    55	
+    56	<div id="barra">
+    57	  <button id="nuevo">Nuevo</button>
+    58	  <button id="cerrar">Cerrar estancia</button>
+    59	  <button id="borrar">Borrar punto</button>
+    60	  <button id="fijar">Fijar estancia</button>
+    61	  <button id="editar">Editar estancia</button>
+    62	  <button id="mover">Mover estancia</button>
+    63	  <button id="verificar">VerificaciÃ³n</button>
+    64	  <button id="diag">Diagonal siguiente</button>
+    65	  <button id="aplicarDiag">Aplicar diagonal</button>
+    66	  <button id="escala">Calibrar escala</button>
+    67	
+    68	  <input id="nombre" type="text" placeholder="Nombre estancia">
+    69	  <select id="planta">
+    70	    <option value="Planta baja">Planta baja</option>
+    71	    <option value="Planta 1">Planta 1</option>
+    72	    <option value="Planta 2">Planta 2</option>
+    73	    <option value="SÃ³tano">SÃ³tano</option>
+    74	    <option value="Buhardilla">Buhardilla</option>
+    75	  </select>
+    76	</div>
+    77	
+    78	<div id="info">Modo dibujo</div>
+    79	<canvas id="canvas"></canvas>
+    80	
+    81	<script>
+    82	const canvas = document.getElementById("canvas");
+    83	const ctx = canvas.getContext("2d");
+    84	
+    85	const btnNuevo = document.getElementById("nuevo");
+    86	const btnCerrar = document.getElementById("cerrar");
+    87	const btnBorrar = document.getElementById("borrar");
+    88	const btnFijar = document.getElementById("fijar");
+    89	const btnEditar = document.getElementById("editar");
+    90	const btnMover = document.getElementById("mover");
+    91	const btnVerificar = document.getElementById("verificar");
+    92	const btnDiag = document.getElementById("diag");
+    93	const btnAplicarDiag = document.getElementById("aplicarDiag");
+    94	const btnEscala = document.getElementById("escala");
+    95	const inputNombre = document.getElementById("nombre");
+    96	const selectPlanta = document.getElementById("planta");
+    97	const info = document.getElementById("info");
+    98	
+    99	let puntos = [];
+   100	let cerrado = false;
+   101	let fijado = false;
+   102	let modoMover = false;
+   103	let modoVerificacion = false;
+   104	
+   105	let diagonales = [];
+   106	let diagActual = 0;
+   107	let diagonalesObjetivo = [];
+   108	let etiquetaDiagonal = null;
+   109	
+   110	let pxPorMetro = 100;
+   111	let calibrando = false;
+   112	let verticesCalibracion = [];
+   113	
+   114	let etiquetasLados = [];
+   115	
+   116	let pointerActivo = false;
+   117	let arrastrandoPunto = false;
+   118	let moviendoFigura = false;
+   119	let indicePunto = -1;
+   120	
+   121	let startX = 0;
+   122	let startY = 0;
+   123	let lastX = 0;
+   124	let lastY = 0;
+   125	
+   126	const RADIO_PUNTO = 20;
+   127	const UMBRAL_ARRASTRE = 6;
+   128	const UMBRAL_TOQUE = 10;
+   129	
+   130	function ajustar(){
+   131	  const barraH = document.getElementById("barra").offsetHeight;
+   132	  const infoH = document.getElementById("info").offsetHeight;
+   133	  canvas.width = window.innerWidth;
+   134	  canvas.height = window.innerHeight - barraH - infoH;
+   135	  dibujar();
+   136	}
+   137	window.addEventListener("resize", ajustar);
+   138	
+   139	function pos(e){
+   140	  const r = canvas.getBoundingClientRect();
+   141	  return {
+   142	    x: e.clientX - r.left,
+   143	    y: e.clientY - r.top
+   144	  };
+   145	}
+   146	
+   147	function distancia(a,b){
+   148	  return Math.hypot(a.x - b.x, a.y - b.y);
+   149	}
+   150	
+   151	function distanciaXY(x1,y1,x2,y2){
+   152	  return Math.hypot(x2 - x1, y2 - y1);
+   153	}
+   154	
+   155	function metrosDesdePx(px){
+   156	  return px / pxPorMetro;
+   157	}
+   158	
+   159	function pxDesdeMetros(m){
+   160	  return m * pxPorMetro;
+   161	}
+   162	
+   163	function formatM(v){
+   164	  return v.toFixed(2).replace(".", ",") + " m";
+   165	}
+   166	
+   167	function buscarPunto(x,y){
+   168	  for(let i=0;i<puntos.length;i++){
+   169	    if(distanciaXY(puntos[i].x,puntos[i].y,x,y) < RADIO_PUNTO){
+   170	      return i;
+   171	    }
+   172	  }
+   173	  return -1;
+   174	}
+   175	
+   176	function puntoSobreSegmento(px,py,a,b){
+   177	  const cross = Math.abs((py-a.y)*(b.x-a.x) - (px-a.x)*(b.y-a.y));
+   178	  if(cross > 0.8) return false;
+   179	
+   180	  const dot = (px-a.x)*(b.x-a.x) + (py-a.y)*(b.y-a.y);
+   181	  if(dot < 0) return false;
+   182	
+   183	  const lenSq = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
+   184	  if(dot > lenSq) return false;
+   185	
+   186	  return true;
+   187	}
+   188	
+   189	function puntoDentroPoligono(x,y){
+   190	  if(puntos.length < 3) return false;
+   191	  let dentro = false;
+   192	
+   193	  for(let i=0,j=puntos.length-1;i<puntos.length;j=i++){
+   194	    const xi = puntos[i].x;
+   195	    const yi = puntos[i].y;
+   196	    const xj = puntos[j].x;
+   197	    const yj = puntos[j].y;
+   198	
+   199	    const cruza = ((yi > y) !== (yj > y)) &&
+   200	      (x < (xj - xi) * (y - yi) / ((yj - yi) || 0.000001) + xi);
+   201	
+   202	    if(cruza) dentro = !dentro;
+   203	  }
+   204	  return dentro;
+   205	}
+   206	
+   207	function puntoSobreAlgunLado(x,y){
+   208	  if(puntos.length < 2) return false;
+   209	  const limite = cerrado ? puntos.length : puntos.length - 1;
+   210	  for(let i=0;i<limite;i++){
+   211	    const a = puntos[i];
+   212	    const b = puntos[(i+1)%puntos.length];
+   213	    if(puntoSobreSegmento(x,y,a,b)) return true;
+   214	  }
+   215	  return false;
+   216	}
+   217	
+   218	function puntoDentroPoligonoConBorde(x,y){
+   219	  return puntoDentroPoligono(x,y) || puntoSobreAlgunLado(x,y);
+   220	}
+   221	
+   222	function orient(a,b,c){
+   223	  const v = (b.y-a.y)*(c.x-b.x) - (b.x-a.x)*(c.y-b.y);
+   224	  if(Math.abs(v) < 0.000001) return 0;
+   225	  return v > 0 ? 1 : 2;
+   226	}
+   227	
+   228	function segmentosIntersectan(a,b,c,d){
+   229	  const o1 = orient(a,b,c);
+   230	  const o2 = orient(a,b,d);
+   231	  const o3 = orient(c,d,a);
+   232	  const o4 = orient(c,d,b);
+   233	
+   234	  if(o1 !== o2 && o3 !== o4) return true;
+   235	
+   236	  if(o1 === 0 && puntoSobreSegmento(c.x,c.y,a,b)) return true;
+   237	  if(o2 === 0 && puntoSobreSegmento(d.x,d.y,a,b)) return true;
+   238	  if(o3 === 0 && puntoSobreSegmento(a.x,a.y,c,d)) return true;
+   239	  if(o4 === 0 && puntoSobreSegmento(b.x,b.y,c,d)) return true;
+   240	
+   241	  return false;
+   242	}
+   243	
+   244	function diagonalValida(i,j){
+   245	  const a = puntos[i];
+   246	  const b = puntos[j];
+   247	
+   248	  for(let k=0;k<puntos.length;k++){
+   249	    const c = puntos[k];
+   250	    const d = puntos[(k+1)%puntos.length];
+   251	
+   252	    const usaI = (k === i || (k+1)%puntos.length === i);
+   253	    const usaJ = (k === j || (k+1)%puntos.length === j);
+   254	    if(usaI || usaJ) continue;
+   255	
+   256	    if(segmentosIntersectan(a,b,c,d)) return false;
+   257	  }
+   258	
+   259	  const muestras = 12;
+   260	  for(let t=1;t<muestras;t++){
+   261	    const s = t / muestras;
+   262	    const x = a.x + (b.x - a.x) * s;
+   263	    const y = a.y + (b.y - a.y) * s;
+   264	    if(!puntoDentroPoligonoConBorde(x,y)) return false;
+   265	  }
+   266	
+   267	  return true;
+   268	}
+   269	
+   270	function calcularDiagonales(){
+   271	  diagonales = [];
+   272	  if(!cerrado || puntos.length < 4) return;
+   273	
+   274	  const n = puntos.length;
+   275	  for(let i=0;i<n;i++){
+   276	    for(let j=i+2;j<n;j++){
+   277	      if(i === 0 && j === n-1) continue;
+   278	      if(diagonalValida(i,j)) diagonales.push([i,j]);
+   279	    }
+   280	  }
+   281	
+   282	  if(diagActual >= diagonales.length) diagActual = 0;
+   283	
+   284	  while(diagonalesObjetivo.length < diagonales.length){
+   285	    diagonalesObjetivo.push(undefined);
+   286	  }
+   287	}
+   288	
+   289	function moverFigura(dx,dy){
+   290	  for(const p of puntos){
+   291	    p.x += dx;
+   292	    p.y += dy;
+   293	  }
+   294	}
+   295	
+   296	function centroFigura(){
+   297	  if(puntos.length === 0){
+   298	    return {x: canvas.width/2, y: canvas.height/2};
+   299	  }
+   300	
+   301	  let minX = puntos[0].x, maxX = puntos[0].x;
+   302	  let minY = puntos[0].y, maxY = puntos[0].y;
+   303	
+   304	  for(const p of puntos){
+   305	    if(p.x < minX) minX = p.x;
+   306	    if(p.x > maxX) maxX = p.x;
+   307	    if(p.y < minY) minY = p.y;
+   308	    if(p.y > maxY) maxY = p.y;
+   309	  }
+   310	
+   311	  return { x:(minX+maxX)/2, y:(minY+maxY)/2 };
+   312	}
+   313	
+   314	function angulo(a,b,c){
+   315	  const abx = a.x - b.x;
+   316	  const aby = a.y - b.y;
+   317	  const cbx = c.x - b.x;
+   318	  const cby = c.y - b.y;
+   319	
+   320	  const dot = abx * cbx + aby * cby;
+   321	  const mag1 = Math.hypot(abx, aby);
+   322	  const mag2 = Math.hypot(cbx, cby);
+   323	
+   324	  if(mag1 === 0 || mag2 === 0) return 0;
+   325	
+   326	  let cos = dot / (mag1 * mag2);
+   327	  cos = Math.max(-1, Math.min(1, cos));
+   328	
+   329	  return Math.acos(cos) * 180 / Math.PI;
+   330	}
+   331	
+   332	function etiqueta(texto,x,y,color){
+   333	  const lineas = String(texto).split("\n");
+   334	  ctx.save();
+   335	  ctx.font = "bold 14px Arial";
+   336	  ctx.textAlign = "center";
+   337	  ctx.textBaseline = "middle";
+   338	
+   339	  let ancho = 0;
+   340	  for(const linea of lineas){
+   341	    ancho = Math.max(ancho, ctx.measureText(linea).width);
+   342	  }
+   343	  ancho += 28;
+   344	
+   345	  const altoLinea = 18;
+   346	  const alto = Math.max(34, lineas.length * altoLinea + 16);
+   347	
+   348	  ctx.fillStyle = "rgba(255,255,255,0.96)";
+   349	  ctx.fillRect(x - ancho/2, y - alto/2, ancho, alto);
+   350	
+   351	  ctx.strokeStyle = "rgba(0,0,0,0.12)";
+   352	  ctx.strokeRect(x - ancho/2, y - alto/2, ancho, alto);
+   353	
+   354	  ctx.fillStyle = color;
+   355	
+   356	  if(lineas.length === 1){
+   357	    ctx.fillText(lineas[0], x, y);
+   358	  }else{
+   359	    const inicioY = y - ((lineas.length - 1) * altoLinea) / 2;
+   360	    for(let i=0;i<lineas.length;i++){
+   361	      ctx.fillText(lineas[i], x, inicioY + i * altoLinea);
+   362	    }
+   363	  }
+   364	
+   365	  ctx.restore();
+   366	  return {x, y, w: ancho, h: alto};
+   367	}
+   368	
+   369	function generarEtiquetasLados(){
+   370	  etiquetasLados = [];
+   371	  if(!cerrado) return;
+   372	
+   373	  for(let i=0;i<puntos.length;i++){
+   374	    const a = puntos[i];
+   375	    const b = puntos[(i+1)%puntos.length];
+   376	    const mx = (a.x+b.x)/2;
+   377	    const my = (a.y+b.y)/2;
+   378	    const caja = etiqueta(formatM(metrosDesdePx(distancia(a,b))), mx, my, "#2563eb");
+   379	
+   380	    etiquetasLados.push({
+   381	      lado: i,
+   382	      x: caja.x,
+   383	      y: caja.y,
+   384	      w: caja.w,
+   385	      h: caja.h
+   386	    });
+   387	  }
+   388	}
+   389	
+   390	function buscarEtiquetaLado(x,y){
+   391	  for(const e of etiquetasLados){
+   392	    if(
+   393	      x >= e.x - e.w/2 &&
+   394	      x <= e.x + e.w/2 &&
+   395	      y >= e.y - e.h/2 &&
+   396	      y <= e.y + e.h/2
+   397	    ){
+   398	      return e.lado;
+   399	    }
+   400	  }
+   401	  return -1;
+   402	}
+   403	
+   404	function editarMedidaLado(lado){
+   405	  if(!cerrado || modoVerificacion) return;
+   406	
+   407	  const a = puntos[lado];
+   408	  const bIndex = (lado + 1) % puntos.length;
+   409	  const b = puntos[bIndex];
+   410	  const actualM = metrosDesdePx(distancia(a,b));
+   411	
+   412	  const respuesta = prompt("Nueva medida del lado en metros", actualM.toFixed(2).replace(".", ","));
+   413	  if(respuesta === null) return;
+   414	
+   415	  const nuevaM = Number(respuesta.replace(",", ".").trim());
+   416	  if(!Number.isFinite(nuevaM) || nuevaM <= 0) return;
+   417	
+   418	  const nuevaPx = pxDesdeMetros(nuevaM);
+   419	
+   420	  const dx = b.x - a.x;
+   421	  const dy = b.y - a.y;
+   422	  const len = Math.hypot(dx,dy);
+   423	  if(len <= 0.0001) return;
+   424	
+   425	  const ux = dx / len;
+   426	  const uy = dy / len;
+   427	
+   428	  b.x = a.x + ux * nuevaPx;
+   429	  b.y = a.y + uy * nuevaPx;
+   430	
+   431	  calcularDiagonales();
+   432	  dibujar();
+   433	}
+   434	
+   435	function editarDiagonal(){
+   436	  if(!modoVerificacion || !etiquetaDiagonal || diagonales.length === 0) return;
+   437	
+   438	  const d = diagonales[diagActual];
+   439	  const a = puntos[d[0]];
+   440	  const b = puntos[d[1]];
+   441	  const actual = metrosDesdePx(distancia(a,b));
+   442	
+   443	  const respuesta = prompt(
+   444	    "Medida real diagonal en metros",
+   445	    (diagonalesObjetivo[diagActual] ?? actual).toFixed(2).replace(".", ",")
+   446	  );
+   447	  if(respuesta === null) return;
+   448	
+   449	  const valor = Number(respuesta.replace(",", ".").trim());
+   450	  if(!Number.isFinite(valor) || valor <= 0) return;
+   451	
+   452	  diagonalesObjetivo[diagActual] = valor;
+   453	  dibujar();
+   454	}
+   455	
+   456	function aplicarDiagonalObjetivo(){
+   457	  if(!modoVerificacion) return;
+   458	  if(diagonales.length === 0) return;
+   459	  if(diagonalesObjetivo[diagActual] === undefined) return;
+   460	
+   461	  const d = diagonales[diagActual];
+   462	  const i = d[0];
+   463	  const j = d[1];
+   464	  const a = puntos[i];
+   465	  const b = puntos[j];
+   466	
+   467	  const objetivoM = diagonalesObjetivo[diagActual];
+   468	  const objetivoPx = pxDesdeMetros(objetivoM);
+   469	
+   470	  const dx = b.x - a.x;
+   471	  const dy = b.y - a.y;
+   472	  const len = Math.hypot(dx,dy);
+   473	
+   474	  if(len <= 0.0001){
+   475	    b.x = a.x + objetivoPx;
+   476	    b.y = a.y;
+   477	  }else{
+   478	    const ux = dx / len;
+   479	    const uy = dy / len;
+   480	    b.x = a.x + ux * objetivoPx;
+   481	    b.y = a.y + uy * objetivoPx;
+   482	  }
+   483	
+   484	  calcularDiagonales();
+   485	  dibujar();
+   486	}
+   487	
+   488	function dibujarNombreYPlanta(){
+   489	  if(!cerrado || modoVerificacion) return;
+   490	
+   491	  const c = centroFigura();
+   492	  const nombre = inputNombre.value.trim() || "Sin nombre";
+   493	  const planta = selectPlanta.value;
+   494	
+   495	  etiqueta(nombre, c.x, c.y - 12, "#111827");
+   496	  etiqueta(planta, c.x, c.y + 18, "#374151");
+   497	}
+   498	
+   499	function dibujarDiagonal(){
+   500	  etiquetaDiagonal = null;
+   501	  if(!modoVerificacion || diagonales.length === 0) return;
+   502	
+   503	  const d = diagonales[diagActual];
+   504	  const a = puntos[d[0]];
+   505	  const b = puntos[d[1]];
+   506	
+   507	  ctx.save();
+   508	  ctx.setLineDash([10,8]);
+   509	  ctx.beginPath();
+   510	  ctx.moveTo(a.x,a.y);
+   511	  ctx.lineTo(b.x,b.y);
+   512	  ctx.strokeStyle = "purple";
+   513	  ctx.lineWidth = 3;
+   514	  ctx.stroke();
+   515	  ctx.restore();
+   516	
+   517	  const mx = (a.x+b.x)/2;
+   518	  const my = (a.y+b.y)/2;
+   519	  const valor = metrosDesdePx(distancia(a,b));
+   520	
+   521	  let texto = "D" + (diagActual + 1) + " " + formatM(valor);
+   522	
+   523	  if(diagonalesObjetivo[diagActual] !== undefined){
+   524	    const obj = diagonalesObjetivo[diagActual];
+   525	    const error = Math.abs(valor - obj);
+   526	    texto =
+   527	      "D" + (diagActual + 1) + " " + formatM(valor) +
+   528	      "\nObj " + formatM(obj) +
+   529	      "\nÎ " + formatM(error);
+   530	  }
+   531	
+   532	  const caja = etiqueta(texto, mx, my, "purple");
+   533	  etiquetaDiagonal = {
+   534	    x: caja.x,
+   535	    y: caja.y,
+   536	    w: caja.w,
+   537	    h: caja.h
+   538	  };
+   539	}
+   540	
+   541	function dibujarCalibracion(){
+   542	  if(!calibrando) return;
+   543	
+   544	  for(const idx of verticesCalibracion){
+   545	    const p = puntos[idx];
+   546	    if(!p) continue;
+   547	
+   548	    ctx.beginPath();
+   549	    ctx.arc(p.x,p.y,10,0,Math.PI*2);
+   550	    ctx.fillStyle = "#dc2626";
+   551	    ctx.fill();
+   552	    ctx.strokeStyle = "#ffffff";
+   553	    ctx.lineWidth = 3;
+   554	    ctx.stroke();
+   555	  }
+   556	}
+   557	
+   558	function actualizarInfo(){
+   559	  let texto = "";
+   560	
+   561	  if(calibrando){
+   562	    texto = verticesCalibracion.length === 0
+   563	      ? "Calibrar escala Â· toca el primer vÃ©rtice"
+   564	      : "Calibrar escala Â· toca el segundo vÃ©rtice";
+   565	  }else if(modoVerificacion){
+   566	    texto = "Modo verificaciÃ³n";
+   567	    texto += diagonales.length > 0
+   568	      ? " Â· D" + (diagActual + 1) + " de " + diagonales.length
+   569	      : " Â· Sin diagonales vÃ¡lidas";
+   570	    texto += " Â· Toca la etiqueta morada para introducir la diagonal real";
+   571	  }else if(fijado){
+   572	    texto = "Estancia fijada";
+   573	  }else if(modoMover){
+   574	    texto = "Modo mover estancia";
+   575	  }else if(cerrado){
+   576	    texto = "Estancia cerrada Â· Toca una medida azul para editar en metros";
+   577	  }else if(puntos.length >= 3){
+   578	    texto = "Modo dibujo Â· Toca el punto verde para cerrar";
+   579	  }else{
+   580	    texto = "Modo dibujo";
+   581	  }
+   582	
+   583	  texto += " Â· Escala: 1 m = " + pxPorMetro.toFixed(1).replace(".", ",") + " px";
+   584	  info.textContent = texto;
+   585	}
+   586	
+   587	function actualizarBotones(){
+   588	  btnMover.classList.toggle("activo", modoMover);
+   589	  btnVerificar.classList.toggle("activo", modoVerificacion);
+   590	  btnEscala.classList.toggle("activo", calibrando);
+   591	  btnFijar.classList.toggle("bloqueado", fijado);
+   592	  btnEditar.classList.toggle("activo", !fijado);
+   593	  btnAplicarDiag.classList.toggle(
+   594	    "activo",
+   595	    modoVerificacion && diagonalesObjetivo[diagActual] !== undefined
+   596	  );
+   597	}
+   598	
+   599	function dibujar(){
+   600	  ctx.clearRect(0,0,canvas.width,canvas.height);
+   601	  etiquetasLados = [];
+   602	  etiquetaDiagonal = null;
+   603	
+   604	  if(puntos.length > 1){
+   605	    ctx.beginPath();
+   606	    ctx.moveTo(puntos[0].x, puntos[0].y);
+   607	    for(let i=1;i<puntos.length;i++){
+   608	      ctx.lineTo(puntos[i].x, puntos[i].y);
+   609	    }
+   610	
+   611	    if(cerrado){
+   612	      ctx.closePath();
+   613	      ctx.fillStyle = "rgba(249,115,22,0.10)";
+   614	      ctx.fill();
+   615	    }
+   616	
+   617	    ctx.strokeStyle = "#f97316";
+   618	    ctx.lineWidth = 3;
+   619	    ctx.stroke();
+   620	  }
+   621	
+   622	  if(!fijado){
+   623	    for(let i=0;i<puntos.length;i++){
+   624	      const p = puntos[i];
+   625	      ctx.beginPath();
+   626	
+   627	      if(i === 0 && !cerrado && puntos.length >= 3){
+   628	        ctx.arc(p.x,p.y,10,0,Math.PI*2);
+   629	        ctx.fillStyle = "#16a34a";
+   630	        ctx.fill();
+   631	        ctx.strokeStyle = "#ffffff";
+   632	        ctx.lineWidth = 3;
+   633	        ctx.stroke();
+   634	      }else{
+   635	        ctx.arc(p.x,p.y,7,0,Math.PI*2);
+   636	        ctx.fillStyle = "#000000";
+   637	        ctx.fill();
+   638	      }
+   639	    }
+   640	  }
+   641	
+   642	  if(cerrado){
+   643	    generarEtiquetasLados();
+   644	
+   645	    for(let i=0;i<puntos.length;i++){
+   646	      const a = puntos[(i-1+puntos.length)%puntos.length];
+   647	      const b = puntos[i];
+   648	      const c = puntos[(i+1)%puntos.length];
+   649	      ctx.fillStyle = "green";
+   650	      ctx.font = "14px Arial";
+   651	      ctx.textAlign = "center";
+   652	      ctx.fillText(Math.round(angulo(a,b,c)) + "Â°", b.x + 20, b.y - 10);
+   653	    }
+   654	  }
+   655	
+   656	  dibujarNombreYPlanta();
+   657	  dibujarDiagonal();
+   658	  dibujarCalibracion();
+   659	  actualizarBotones();
+   660	  actualizarInfo();
+   661	}
+   662	
+   663	function empezarCalibracion(){
+   664	  if(!cerrado || puntos.length < 2) return;
+   665	  calibrando = true;
+   666	  modoMover = false;
+   667	  modoVerificacion = false;
+   668	  verticesCalibracion = [];
+   669	  dibujar();
+   670	}
+   671	
+   672	function terminarCalibracion(){
+   673	  if(verticesCalibracion.length !== 2) return;
+   674	
+   675	  const a = puntos[verticesCalibracion[0]];
+   676	  const b = puntos[verticesCalibracion[1]];
+   677	  const largoPx = distancia(a,b);
+   678	
+   679	  if(largoPx < 10){
+   680	    calibrando = false;
+   681	    verticesCalibracion = [];
+   682	    dibujar();
+   683	    return;
+   684	  }
+   685	
+   686	  const respuesta = prompt("Distancia real en metros", "");
+   687	  if(respuesta === null){
+   688	    calibrando = false;
+   689	    verticesCalibracion = [];
+   690	    dibujar();
+   691	    return;
+   692	  }
+   693	
+   694	  const realM = Number(respuesta.replace(",", ".").trim());
+   695	  if(!Number.isFinite(realM) || realM <= 0){
+   696	    calibrando = false;
+   697	    verticesCalibracion = [];
+   698	    dibujar();
+   699	    return;
+   700	  }
+   701	
+   702	  pxPorMetro = largoPx / realM;
+   703	  calibrando = false;
+   704	  verticesCalibracion = [];
+   705	  dibujar();
+   706	}
+   707	
+   708	function onPointerDown(e){
+   709	  e.preventDefault();
+   710	  canvas.setPointerCapture(e.pointerId);
+   711	
+   712	  if(fijado && !calibrando) return;
+   713	
+   714	  const p = pos(e);
+   715	  pointerActivo = true;
+   716	  arrastrandoPunto = false;
+   717	  moviendoFigura = false;
+   718	  indicePunto = buscarPunto(p.x,p.y);
+   719	
+   720	  startX = p.x;
+   721	  startY = p.y;
+   722	  lastX = p.x;
+   723	  lastY = p.y;
+   724	
+   725	  if(calibrando) return;
+   726	
+   727	  if(modoMover && cerrado && puntoDentroPoligonoConBorde(p.x,p.y)){
+   728	    moviendoFigura = true;
+   729	    indicePunto = -1;
+   730	  }
+   731	}
+   732	
+   733	function onPointerMove(e){
+   734	  if(!pointerActivo || fijado || calibrando) return;
+   735	
+   736	  const p = pos(e);
+   737	
+   738	  if(moviendoFigura){
+   739	    const dx = p.x - lastX;
+   740	    const dy = p.y - lastY;
+   741	    moverFigura(dx,dy);
+   742	    lastX = p.x;
+   743	    lastY = p.y;
+   744	    calcularDiagonales();
+   745	    dibujar();
+   746	    return;
+   747	  }
+   748	
+   749	  if(indicePunto !== -1){
+   750	    if(distanciaXY(startX,startY,p.x,p.y) > UMBRAL_ARRASTRE){
+   751	      arrastrandoPunto = true;
+   752	    }
+   753	
+   754	    if(arrastrandoPunto){
+   755	      puntos[indicePunto].x = p.x;
+   756	      puntos[indicePunto].y = p.y;
+   757	      if(cerrado) calcularDiagonales();
+   758	      dibujar();
+   759	    }
+   760	  }
+   761	}
+   762	
+   763	function onPointerUp(e){
+   764	  if(!pointerActivo) return;
+   765	  e.preventDefault();
+   766	
+   767	  const p = pos(e);
+   768	  const movimiento = distanciaXY(startX, startY, p.x, p.y);
+   769	
+   770	  if(calibrando){
+   771	    const idx = buscarPunto(p.x,p.y);
+   772	    if(idx !== -1){
+   773	      if(verticesCalibracion.length === 0){
+   774	        verticesCalibracion.push(idx);
+   775	      }else if(verticesCalibracion.length === 1 && idx !== verticesCalibracion[0]){
+   776	        verticesCalibracion.push(idx);
+   777	        terminarCalibracion();
+   778	      }
+   779	    }
+   780	    pointerActivo = false;
+   781	    dibujar();
+   782	    return;
+   783	  }
+   784	
+   785	  if(moviendoFigura){
+   786	    pointerActivo = false;
+   787	    moviendoFigura = false;
+   788	    indicePunto = -1;
+   789	    calcularDiagonales();
+   790	    dibujar();
+   791	    return;
+   792	  }
+   793	
+   794	  if(!arrastrandoPunto && movimiento <= UMBRAL_TOQUE){
+   795	    if(modoVerificacion && etiquetaDiagonal){
+   796	      const margen = 22;
+   797	      if(
+   798	        p.x >= etiquetaDiagonal.x - etiquetaDiagonal.w/2 - margen &&
+   799	        p.x <= etiquetaDiagonal.x + etiquetaDiagonal.w/2 + margen &&
+   800	        p.y >= etiquetaDiagonal.y - etiquetaDiagonal.h/2 - margen &&
+   801	        p.y <= etiquetaDiagonal.y + etiquetaDiagonal.h/2 + margen
+   802	      ){
+   803	        pointerActivo = false;
+   804	        arrastrandoPunto = false;
+   805	        moviendoFigura = false;
+   806	        indicePunto = -1;
+   807	        editarDiagonal();
+   808	        return;
+   809	      }
+   810	    }
+   811	
+   812	    const i = buscarPunto(p.x,p.y);
+   813	
+   814	    if(i === 0 && puntos.length >= 3 && !cerrado){
+   815	      cerrado = true;
+   816	      calcularDiagonales();
+   817	    }else if(i === -1 && !cerrado){
+   818	      puntos.push({x:p.x,y:p.y});
+   819	    }else if(i === -1 && cerrado && !modoMover && !modoVerificacion){
+   820	      const lado = buscarEtiquetaLado(p.x,p.y);
+   821	      if(lado !== -1){
+   822	        pointerActivo = false;
+   823	        editarMedidaLado(lado);
+   824	        return;
+   825	      }
+   826	    }
+   827	  }
+   828	
+   829	  pointerActivo = false;
+   830	  arrastrandoPunto = false;
+   831	  indicePunto = -1;
+   832	  dibujar();
+   833	}
+   834	
+   835	canvas.addEventListener("pointerdown", onPointerDown);
+   836	canvas.addEventListener("pointermove", onPointerMove);
+   837	canvas.addEventListener("pointerup", onPointerUp);
+   838	canvas.addEventListener("pointercancel", onPointerUp);
+   839	
+   840	btnNuevo.onclick = function(){
+   841	  puntos = [];
+   842	  cerrado = false;
+   843	  fijado = false;
+   844	  modoMover = false;
+   845	  modoVerificacion = false;
+   846	  diagonales = [];
+   847	  diagActual = 0;
+   848	  diagonalesObjetivo = [];
+   849	  etiquetaDiagonal = null;
+   850	  calibrando = false;
+   851	  verticesCalibracion = [];
+   852	  pxPorMetro = 100;
+   853	  inputNombre.value = "";
+   854	  selectPlanta.value = "Planta baja";
+   855	  dibujar();
+   856	};
+   857	
+   858	btnCerrar.onclick = function(){
+   859	  if(puntos.length >= 3){
+   860	    cerrado = true;
+   861	    calcularDiagonales();
+   862	    dibujar();
+   863	  }
+   864	};
+   865	
+   866	btnBorrar.onclick = function(){
+   867	  if(fijado) return;
+   868	
+   869	  if(puntos.length > 0){
+   870	    puntos.pop();
+   871	  }
+   872	
+   873	  if(puntos.length < 3){
+   874	    cerrado = false;
+   875	    modoVerificacion = false;
+   876	    diagonales = [];
+   877	    diagActual = 0;
+   878	    diagonalesObjetivo = [];
+   879	    etiquetaDiagonal = null;
+   880	    calibrando = false;
+   881	    verticesCalibracion = [];
+   882	  }else if(cerrado){
+   883	    calcularDiagonales();
+   884	  }
+   885	
+   886	  dibujar();
+   887	};
+   888	
+   889	btnFijar.onclick = function(){
+   890	  if(!cerrado) return;
+   891	  fijado = true;
+   892	  modoMover = false;
+   893	  dibujar();
+   894	};
+   895	
+   896	btnEditar.onclick = function(){
+   897	  fijado = false;
+   898	  modoMover = false;
+   899	  dibujar();
+   900	};
+   901	
+   902	btnMover.onclick = function(){
+   903	  if(fijado || !cerrado) return;
+   904	  modoMover = !modoMover;
+   905	  dibujar();
+   906	};
+   907	
+   908	btnVerificar.onclick = function(){
+   909	  if(!cerrado) return;
+   910	  modoVerificacion = !modoVerificacion;
+   911	
+   912	  if(modoVerificacion){
+   913	    calibrando = false;
+   914	    verticesCalibracion = [];
+   915	    calcularDiagonales();
+   916	    diagActual = 0;
+   917	  }
+   918	
+   919	  dibujar();
+   920	};
+   921	
+   922	btnDiag.onclick = function(){
+   923	  if(!modoVerificacion || diagonales.length === 0) return;
+   924	  diagActual++;
+   925	  if(diagActual >= diagonales.length) diagActual = 0;
+   926	  dibujar();
+   927	};
+   928	
+   929	btnAplicarDiag.onclick = function(){
+   930	  aplicarDiagonalObjetivo();
+   931	};
+   932	
+   933	btnEscala.onclick = function(){
+   934	  empezarCalibracion();
+   935	};
+   936	
+   937	inputNombre.oninput = function(){ dibujar(); };
+   938	selectPlanta.onchange = function(){ dibujar(); };
+   939	
+   940	ajustar();
+   941	</script>
