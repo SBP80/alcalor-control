@@ -62,6 +62,7 @@ canvas{
   <button id="editar">Editar estancia</button>
   <button id="mover">Mover estancia</button>
   <button id="rotar">Rotar estancia</button>
+  <button id="puerta">Puerta</button>
   <button id="verificar">Verificación</button>
   <button id="diag">Diagonal siguiente</button>
   <button id="aplicarDiag">Aplicar diagonal</button>
@@ -92,6 +93,7 @@ const btnFijar = document.getElementById("fijar");
 const btnEditar = document.getElementById("editar");
 const btnMover = document.getElementById("mover");
 const btnRotar = document.getElementById("rotar");
+const btnPuerta = document.getElementById("puerta");
 const btnVerificar = document.getElementById("verificar");
 const btnDiag = document.getElementById("diag");
 const btnAplicarDiag = document.getElementById("aplicarDiag");
@@ -105,6 +107,7 @@ let estanciaActiva = -1;
 
 let modoMover = false;
 let modoRotar = false;
+let modoPuerta = false;
 let modoVerificacion = false;
 let calibrando = false;
 let verticesCalibracion = [];
@@ -131,12 +134,14 @@ const UMBRAL_ARRASTRE = 6;
 const UMBRAL_TOQUE = 10;
 const RADIO_TIRADOR = 18;
 const SNAP_DIST = 14;
+const ANCHO_PUERTA_DEFECTO_M = 0.82;
 
 function crearEstanciaVacia(){
   return {
     nombre: "",
     planta: "Planta baja",
     puntos: [],
+    puertas: [],
     cerrado: false,
     fijado: false,
     pxPorMetro: 100,
@@ -616,6 +621,112 @@ function buscarEtiquetaLado(x,y){
   return -1;
 }
 
+function buscarLadoPorPunto(estancia, x, y){
+  if(!estancia || !estancia.cerrado || estancia.puntos.length < 2) return -1;
+
+  let mejor = -1;
+  let mejorDist = 999999;
+
+  for(let i=0;i<estancia.puntos.length;i++){
+    const a = estancia.puntos[i];
+    const b = estancia.puntos[(i+1)%estancia.puntos.length];
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx*dx + dy*dy;
+    if(len2 <= 0.0001) continue;
+
+    let t = ((x-a.x)*dx + (y-a.y)*dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+
+    const px = a.x + dx*t;
+    const py = a.y + dy*t;
+    const d = Math.hypot(x-px, y-py);
+
+    if(d < mejorDist){
+      mejorDist = d;
+      mejor = i;
+    }
+  }
+
+  return mejorDist <= 22 ? mejor : -1;
+}
+
+function colocarPuertaEnLado(estancia, lado, x, y){
+  if(!estancia || !estancia.cerrado) return;
+  const a = estancia.puntos[lado];
+  const b = estancia.puntos[(lado+1)%estancia.puntos.length];
+
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len2 = dx*dx + dy*dy;
+  if(len2 <= 0.0001) return;
+
+  let t = ((x-a.x)*dx + (y-a.y)*dy) / len2;
+  t = Math.max(0.15, Math.min(0.85, t));
+
+  estancia.puertas.push({
+    lado,
+    t,
+    anchoM: ANCHO_PUERTA_DEFECTO_M
+  });
+
+  dibujar();
+}
+
+function dibujarPuertas(estancia, esActiva){
+  if(!estancia || !estancia.cerrado || !estancia.puertas) return;
+
+  for(const puerta of estancia.puertas){
+    const lado = puerta.lado;
+    if(lado < 0 || lado >= estancia.puntos.length) continue;
+
+    const a = estancia.puntos[lado];
+    const b = estancia.puntos[(lado+1)%estancia.puntos.length];
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx,dy);
+    if(len <= 0.0001) continue;
+
+    const ux = dx / len;
+    const uy = dy / len;
+
+    const anchoPx = Math.min(pxDesdeMetros(estancia, puerta.anchoM), len * 0.9);
+    const mitad = anchoPx / 2;
+
+    const cx = a.x + dx * puerta.t;
+    const cy = a.y + dy * puerta.t;
+
+    const x1 = cx - ux * mitad;
+    const y1 = cy - uy * mitad;
+    const x2 = cx + ux * mitad;
+    const y2 = cy + uy * mitad;
+
+    const nx = -uy;
+    const ny = ux;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = esActiva ? "#92400e" : "#a16207";
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 + nx * anchoPx * 0.55, y1 + ny * anchoPx * 0.55);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = esActiva ? "rgba(146,64,14,0.9)" : "rgba(161,98,7,0.8)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
 function editarMedidaLado(estancia, lado){
   if(!estancia || !estancia.cerrado || modoVerificacion) return;
 
@@ -771,7 +882,6 @@ function dibujarDiagonal(estancia){
     h: caja.h
   };
 }
-
 function dibujarRotacion(estancia){
   tiradorRotacion = null;
   if(!estancia || !estancia.cerrado || !modoRotar) return;
@@ -850,6 +960,8 @@ function actualizarInfo(estancia){
       : "Calibrar escala · toca el segundo vértice";
   }else if(modoRotar){
     texto = "Modo rotar estancia";
+  }else if(modoPuerta){
+    texto = "Modo puerta · toca un lado para colocarla";
   }else if(modoVerificacion){
     texto = "Modo verificación";
     if(estancia){
@@ -874,14 +986,17 @@ function actualizarInfo(estancia){
     const nombre = estancia.nombre.trim() || "Sin nombre";
     texto += " · Activa: " + nombre + " · " + estancia.planta;
     texto += " · Escala: 1 m = " + estancia.pxPorMetro.toFixed(1).replace(".", ",") + " px";
+    texto += " · Puertas: " + estancia.puertas.length;
   }
 
   texto += " · Estancias útiles: " + contarEstanciasConContenido();
   info.textContent = texto;
 }
+
 function actualizarBotones(estancia){
   btnMover.classList.toggle("activo", modoMover);
   btnRotar.classList.toggle("activo", modoRotar);
+  btnPuerta.classList.toggle("activo", modoPuerta);
   btnVerificar.classList.toggle("activo", modoVerificacion);
   btnEscala.classList.toggle("activo", calibrando);
 
@@ -937,6 +1052,8 @@ function dibujar(){
       ctx.stroke();
     }
 
+    dibujarPuertas(estancia, esActiva);
+
     const mostrarPuntos = esActiva && !estancia.fijado && !modoRotar;
 
     if(mostrarPuntos){
@@ -980,6 +1097,7 @@ function empezarCalibracion(estancia){
   calibrando = true;
   modoMover = false;
   modoRotar = false;
+  modoPuerta = false;
   modoVerificacion = false;
   verticesCalibracion = [];
   dibujar();
@@ -1211,6 +1329,14 @@ function onPointerUp(e){
       calcularDiagonales(activa);
     }else if(i === -1 && !activa.cerrado){
       activa.puntos.push({x:p.x,y:p.y});
+    }else if(modoPuerta && activa.cerrado){
+      const ladoPuerta = buscarLadoPorPunto(activa, p.x, p.y);
+      if(ladoPuerta !== -1){
+        pointerActivo = false;
+        snapGuias = [];
+        colocarPuertaEnLado(activa, ladoPuerta, p.x, p.y);
+        return;
+      }
     }else if(i === -1 && activa.cerrado && !modoMover && !modoVerificacion && !modoRotar){
       const lado = buscarEtiquetaLado(p.x,p.y);
       if(lado !== -1){
@@ -1243,6 +1369,7 @@ canvas.addEventListener("pointercancel", onPointerUp);
 btnNuevo.onclick = function(){
   modoMover = false;
   modoRotar = false;
+  modoPuerta = false;
   modoVerificacion = false;
   calibrando = false;
   verticesCalibracion = [];
@@ -1282,6 +1409,7 @@ btnBorrarEstancia.onclick = function(){
 
   modoMover = false;
   modoRotar = false;
+  modoPuerta = false;
   modoVerificacion = false;
   calibrando = false;
   verticesCalibracion = [];
@@ -1332,6 +1460,7 @@ btnFijar.onclick = function(){
   activa.fijado = true;
   modoMover = false;
   modoRotar = false;
+  modoPuerta = false;
   snapGuias = [];
   dibujar();
 };
@@ -1342,6 +1471,7 @@ btnEditar.onclick = function(){
   activa.fijado = false;
   modoMover = false;
   modoRotar = false;
+  modoPuerta = false;
   snapGuias = [];
   dibujar();
 };
@@ -1352,6 +1482,7 @@ btnMover.onclick = function(){
   modoMover = !modoMover;
   if(modoMover){
     modoRotar = false;
+    modoPuerta = false;
   }
   snapGuias = [];
   dibujar();
@@ -1363,6 +1494,20 @@ btnRotar.onclick = function(){
   modoRotar = !modoRotar;
   if(modoRotar){
     modoMover = false;
+    modoPuerta = false;
+    modoVerificacion = false;
+  }
+  snapGuias = [];
+  dibujar();
+};
+
+btnPuerta.onclick = function(){
+  const activa = getActiva();
+  if(!activa || activa.fijado || !activa.cerrado) return;
+  modoPuerta = !modoPuerta;
+  if(modoPuerta){
+    modoMover = false;
+    modoRotar = false;
     modoVerificacion = false;
   }
   snapGuias = [];
@@ -1377,6 +1522,7 @@ btnVerificar.onclick = function(){
 
   if(modoVerificacion){
     modoRotar = false;
+    modoPuerta = false;
     calibrando = false;
     verticesCalibracion = [];
     calcularDiagonales(activa);
