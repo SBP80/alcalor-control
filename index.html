@@ -2,313 +2,460 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALLCALOR ENGINE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ALLCALOR</title>
 
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#111;
-color:white;
-display:flex;
-flex-direction:column;
-height:100vh;
-overflow:hidden;
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
-#barra{
-background:#1f1f1f;
-padding:10px;
-display:flex;
-gap:10px;
-flex-wrap:wrap;
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111;
+  font-family:Arial, Helvetica, sans-serif;
+  color:#fff;
+}
+
+body{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+}
+
+#topbar{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:10px;
+  background:#1f1f1f;
+  border-bottom:1px solid #333;
 }
 
 button{
-border:none;
-padding:12px 16px;
-font-size:16px;
-border-radius:8px;
-background:#f0842f;
-color:white;
-font-weight:bold;
+  border:none;
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:16px;
+  font-weight:700;
+  color:#fff;
+  background:#f0842f;
 }
 
-.sec{
-background:#5a5f69;
+button.sec{
+  background:#5a616c;
 }
 
-#panel{
-background:#222;
-padding:10px;
-display:flex;
-gap:10px;
-align-items:center;
+button.activo{
+  background:#2f8f46;
 }
 
-input{
-font-size:18px;
-padding:6px;
-border-radius:6px;
-border:none;
-width:90px;
+#panelMedidas{
+  flex:0 0 auto;
+  display:none;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:10px;
+  background:#252525;
+  border-bottom:1px solid #333;
+}
+
+#panelMedidas.visible{
+  display:flex;
+}
+
+.bloqueCampo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#1a1a1a;
+  padding:8px 10px;
+  border-radius:10px;
+}
+
+.bloqueCampo span{
+  font-size:15px;
+}
+
+.bloqueCampo input{
+  width:95px;
+  padding:8px;
+  font-size:18px;
+  border:none;
+  border-radius:8px;
+  background:#fff;
+  color:#111;
+}
+
+#zonaCanvas{
+  flex:1 1 auto;
+  min-height:0;
+  position:relative;
+  background:#181818;
 }
 
 #canvas{
-flex:1;
-background:#181818;
-touch-action:none;
+  width:100%;
+  height:100%;
+  display:block;
+  background:#181818;
+  touch-action:none;
 }
 
+#info{
+  flex:0 0 auto;
+  padding:8px 10px;
+  font-size:13px;
+  line-height:1.35;
+  background:#1f1f1f;
+  border-top:1px solid #333;
+  white-space:pre-line;
+}
 </style>
 </head>
 
 <body>
 
-<div id="barra">
-
-<button id="crear">Estancia</button>
-
-<button id="editar">Editar</button>
-
-<button id="borrar" class="sec">Borrar activa</button>
-
-<button id="limpiar" class="sec">Limpiar</button>
-
+<div id="topbar">
+  <button id="btnEstancia">Estancia</button>
+  <button id="btnEditar">Editar</button>
+  <button id="btnBorrar" class="sec">Borrar activa</button>
+  <button id="btnLimpiar" class="sec">Limpiar</button>
 </div>
 
-<div id="panel">
+<div id="panelMedidas">
+  <div class="bloqueCampo">
+    <span>Ancho</span>
+    <input id="inputAncho" type="number" step="0.01" inputmode="decimal">
+    <span>m</span>
+  </div>
 
-Ancho
-<input id="ancho">
+  <div class="bloqueCampo">
+    <span>Alto</span>
+    <input id="inputAlto" type="number" step="0.01" inputmode="decimal">
+    <span>m</span>
+  </div>
 
-Alto
-<input id="alto">
-
-<button id="aplicar">Aplicar</button>
-
+  <button id="btnAplicar">Aplicar</button>
 </div>
 
-<canvas id="canvas"></canvas>
+<div id="zonaCanvas">
+  <canvas id="canvas"></canvas>
+</div>
+
+<div id="info">ALLCALOR listo.</div>
 
 <script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
+const zonaCanvas = document.getElementById("zonaCanvas");
+const panelMedidas = document.getElementById("panelMedidas");
+const inputAncho = document.getElementById("inputAncho");
+const inputAlto = document.getElementById("inputAlto");
+const info = document.getElementById("info");
 
-const anchoInput=document.getElementById("ancho")
-const altoInput=document.getElementById("alto")
+const btnEstancia = document.getElementById("btnEstancia");
+const btnEditar = document.getElementById("btnEditar");
+const btnBorrar = document.getElementById("btnBorrar");
+const btnLimpiar = document.getElementById("btnLimpiar");
+const btnAplicar = document.getElementById("btnAplicar");
 
-let W,H
+const PX_POR_METRO = 100;
 
-function resize(){
-W=canvas.clientWidth
-H=canvas.clientHeight
-canvas.width=W
-canvas.height=H
-draw()
+let W = 0;
+let H = 0;
+
+let modo = "estancia"; // estancia | editar
+let estancias = [];
+let activa = -1;
+
+let dibujando = false;
+let moviendo = false;
+
+let inicioX = 0;
+let inicioY = 0;
+let actualX = 0;
+let actualY = 0;
+
+let offsetX = 0;
+let offsetY = 0;
+
+function setInfo(txt){
+  info.textContent = txt;
 }
 
-window.addEventListener("resize",resize)
+function ajustarCanvas(){
+  const r = zonaCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
 
-resize()
+  W = Math.max(1, Math.round(r.width));
+  H = Math.max(1, Math.round(r.height));
 
-let modo="crear"
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
 
-let estancias=[]
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-let activa=-1
-
-let startX,startY
-let moving=false
-let drawMode=false
-let offsetX,offsetY
-
-document.getElementById("crear").onclick=()=>modo="crear"
-document.getElementById("editar").onclick=()=>modo="editar"
-
-document.getElementById("borrar").onclick=()=>{
-
-if(activa==-1)return
-
-estancias.splice(activa,1)
-
-activa=-1
-
-draw()
-
+  dibujar();
 }
 
-document.getElementById("limpiar").onclick=()=>{
-
-estancias=[]
-
-activa=-1
-
-draw()
-
+function pos(ev){
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: ev.clientX - r.left,
+    y: ev.clientY - r.top
+  };
 }
 
-document.getElementById("aplicar").onclick=()=>{
-
-if(activa==-1)return
-
-let w=parseFloat(anchoInput.value)
-let h=parseFloat(altoInput.value)
-
-if(isNaN(w)||isNaN(h))return
-
-estancias[activa].w=w*100
-estancias[activa].h=h*100
-
-draw()
-
+function pxAMetros(px){
+  return px / PX_POR_METRO;
 }
 
-canvas.addEventListener("pointerdown",e=>{
-
-const r=canvas.getBoundingClientRect()
-
-const x=e.clientX-r.left
-const y=e.clientY-r.top
-
-if(modo=="crear"){
-
-drawMode=true
-
-startX=x
-startY=y
-
+function metrosAPx(m){
+  return m * PX_POR_METRO;
 }
 
-if(modo=="editar"){
-
-for(let i=estancias.length-1;i>=0;i--){
-
-const s=estancias[i]
-
-if(x>s.x && x<s.x+s.w && y>s.y && y<s.y+s.h){
-
-activa=i
-
-moving=true
-
-offsetX=x-s.x
-offsetY=y-s.y
-
-anchoInput.value=(s.w/100).toFixed(2)
-altoInput.value=(s.h/100).toFixed(2)
-
-draw()
-
-return
-
+function rectNormalizado(x1,y1,x2,y2){
+  return {
+    x: Math.min(x1, x2),
+    y: Math.min(y1, y2),
+    w: Math.abs(x2 - x1),
+    h: Math.abs(y2 - y1)
+  };
 }
 
+function puntoDentro(x,y,r){
+  return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
 }
 
-activa=-1
-draw()
-
+function buscarEstancia(x,y){
+  for(let i = estancias.length - 1; i >= 0; i--){
+    if(puntoDentro(x, y, estancias[i])) return i;
+  }
+  return -1;
 }
 
-})
+function actualizarUI(){
+  btnEstancia.classList.toggle("activo", modo === "estancia");
+  btnEditar.classList.toggle("activo", modo === "editar");
 
-canvas.addEventListener("pointermove",e=>{
-
-const r=canvas.getBoundingClientRect()
-
-const x=e.clientX-r.left
-const y=e.clientY-r.top
-
-if(drawMode){
-
-draw()
-
-ctx.strokeStyle="#f0842f"
-ctx.lineWidth=2
-
-ctx.strokeRect(startX,startY,x-startX,y-startY)
-
+  if(activa !== -1){
+    panelMedidas.classList.add("visible");
+    inputAncho.value = pxAMetros(estancias[activa].w).toFixed(2);
+    inputAlto.value = pxAMetros(estancias[activa].h).toFixed(2);
+  }else{
+    panelMedidas.classList.remove("visible");
+  }
 }
 
-if(moving && activa!=-1){
-
-const s=estancias[activa]
-
-s.x=x-offsetX
-s.y=y-offsetY
-
-draw()
-
+function dibujarTexto(r){
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "12px Arial";
+  ctx.fillText(pxAMetros(r.w).toFixed(2).replace(".", ",") + " m", r.x + 8, r.y + 18);
+  ctx.fillText(pxAMetros(r.h).toFixed(2).replace(".", ",") + " m", r.x + 8, r.y + 34);
 }
 
-})
+function dibujarRect(r, seleccionada){
+  ctx.fillStyle = seleccionada ? "rgba(240,132,47,0.22)" : "rgba(0,227,138,0.10)";
+  ctx.fillRect(r.x, r.y, r.w, r.h);
 
-canvas.addEventListener("pointerup",e=>{
+  ctx.strokeStyle = seleccionada ? "#f0842f" : "#78f1af";
+  ctx.lineWidth = seleccionada ? 3 : 2;
+  ctx.strokeRect(r.x, r.y, r.w, r.h);
 
-const r=canvas.getBoundingClientRect()
-
-const x=e.clientX-r.left
-const y=e.clientY-r.top
-
-if(drawMode){
-
-drawMode=false
-
-const w=x-startX
-const h=y-startY
-
-if(Math.abs(w)>20 && Math.abs(h)>20){
-
-estancias.push({
-x:startX,
-y:startY,
-w:w,
-h:h
-})
-
+  dibujarTexto(r);
 }
 
-draw()
+function dibujar(){
+  ctx.clearRect(0, 0, W, H);
 
+  for(let i = 0; i < estancias.length; i++){
+    dibujarRect(estancias[i], i === activa);
+  }
+
+  if(dibujando){
+    const r = rectNormalizado(inicioX, inicioY, actualX, actualY);
+
+    ctx.fillStyle = "rgba(240,132,47,0.10)";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+
+    ctx.strokeStyle = "#f0842f";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+    dibujarTexto(r);
+  }
+
+  actualizarUI();
 }
 
-moving=false
+btnEstancia.addEventListener("click", function(){
+  modo = "estancia";
+  setInfo("Modo estancia activo. Toca, arrastra y suelta.");
+  dibujar();
+});
 
-})
+btnEditar.addEventListener("click", function(){
+  modo = "editar";
+  setInfo("Modo editar activo. Toca una estancia para seleccionarla y arrástrala.");
+  dibujar();
+});
 
-function draw(){
+btnBorrar.addEventListener("click", function(){
+  if(activa === -1){
+    setInfo("No hay estancia activa.");
+    return;
+  }
 
-ctx.clearRect(0,0,W,H)
+  estancias.splice(activa, 1);
 
-for(let i=0;i<estancias.length;i++){
+  if(estancias.length === 0){
+    activa = -1;
+  }else if(activa >= estancias.length){
+    activa = estancias.length - 1;
+  }
 
-const s=estancias[i]
+  setInfo("Estancia activa borrada.");
+  dibujar();
+});
 
-ctx.fillStyle=i==activa?"rgba(240,132,47,0.25)":"rgba(0,255,150,0.15)"
+btnLimpiar.addEventListener("click", function(){
+  estancias = [];
+  activa = -1;
+  dibujando = false;
+  moviendo = false;
+  setInfo("Plano limpiado.");
+  dibujar();
+});
 
-ctx.fillRect(s.x,s.y,s.w,s.h)
+btnAplicar.addEventListener("click", function(){
+  if(activa === -1) return;
 
-ctx.strokeStyle=i==activa?"#f0842f":"#6df5b2"
+  const ancho = Number(String(inputAncho.value).replace(",", "."));
+  const alto = Number(String(inputAlto.value).replace(",", "."));
 
-ctx.lineWidth=3
+  if(!Number.isFinite(ancho) || !Number.isFinite(alto) || ancho <= 0 || alto <= 0){
+    setInfo("Medidas no válidas.");
+    return;
+  }
 
-ctx.strokeRect(s.x,s.y,s.w,s.h)
+  estancias[activa].w = metrosAPx(ancho);
+  estancias[activa].h = metrosAPx(alto);
 
-ctx.fillStyle="white"
+  setInfo(
+    "Medidas aplicadas.\n" +
+    "Ancho: " + ancho.toFixed(2).replace(".", ",") + " m\n" +
+    "Alto: " + alto.toFixed(2).replace(".", ",") + " m"
+  );
 
-ctx.font="14px Arial"
+  dibujar();
+});
 
-ctx.fillText((s.w/100).toFixed(2)+" m",s.x+10,s.y+20)
-ctx.fillText((s.h/100).toFixed(2)+" m",s.x+10,s.y+38)
+canvas.addEventListener("pointerdown", function(ev){
+  const p = pos(ev);
 
-}
+  if(modo === "estancia"){
+    dibujando = true;
+    inicioX = p.x;
+    inicioY = p.y;
+    actualX = p.x;
+    actualY = p.y;
+    dibujar();
+    return;
+  }
 
-}
+  if(modo === "editar"){
+    const idx = buscarEstancia(p.x, p.y);
 
+    if(idx === -1){
+      activa = -1;
+      moviendo = false;
+      setInfo("No has tocado ninguna estancia.");
+      dibujar();
+      return;
+    }
+
+    activa = idx;
+    moviendo = true;
+    offsetX = p.x - estancias[idx].x;
+    offsetY = p.y - estancias[idx].y;
+
+    setInfo("Estancia seleccionada. Arrastra para mover.");
+    dibujar();
+  }
+});
+
+canvas.addEventListener("pointermove", function(ev){
+  const p = pos(ev);
+
+  if(dibujando){
+    actualX = p.x;
+    actualY = p.y;
+    dibujar();
+    return;
+  }
+
+  if(moviendo && activa !== -1){
+    estancias[activa].x = p.x - offsetX;
+    estancias[activa].y = p.y - offsetY;
+    dibujar();
+  }
+});
+
+canvas.addEventListener("pointerup", function(ev){
+  const p = pos(ev);
+
+  if(dibujando){
+    actualX = p.x;
+    actualY = p.y;
+
+    const r = rectNormalizado(inicioX, inicioY, actualX, actualY);
+    dibujando = false;
+
+    if(r.w > 20 && r.h > 20){
+      estancias.push(r);
+      activa = estancias.length - 1;
+
+      setInfo(
+        "Estancia creada.\n" +
+        "Ancho: " + pxAMetros(r.w).toFixed(2).replace(".", ",") + " m\n" +
+        "Alto: " + pxAMetros(r.h).toFixed(2).replace(".", ",") + " m"
+      );
+    }else{
+      setInfo("La estancia era demasiado pequeña.");
+    }
+
+    dibujar();
+  }
+
+  if(moviendo){
+    moviendo = false;
+    setInfo("Estancia movida.");
+    dibujar();
+  }
+});
+
+canvas.addEventListener("pointercancel", function(){
+  dibujando = false;
+  moviendo = false;
+  dibujar();
+});
+
+window.addEventListener("resize", ajustarCanvas);
+window.addEventListener("orientationchange", ajustarCanvas);
+
+ajustarCanvas();
+setInfo("ALLCALOR listo. Pulsa Estancia para crear o Editar para mover.");
 </script>
 
 </body>
