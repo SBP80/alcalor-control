@@ -9,7 +9,6 @@
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
 }
-
 html,body{
   margin:0;
   padding:0;
@@ -21,12 +20,10 @@ html,body{
   color:#fff;
   touch-action:none;
 }
-
 body{
   display:flex;
   flex-direction:column;
 }
-
 header{
   flex:0 0 auto;
   background:#1f1f1f;
@@ -35,7 +32,6 @@ header{
   font-weight:700;
   font-size:20px;
 }
-
 #barra{
   flex:0 0 auto;
   background:#2a2a2a;
@@ -44,7 +40,6 @@ header{
   gap:8px;
   flex-wrap:wrap;
 }
-
 button{
   appearance:none;
   border:none;
@@ -55,22 +50,18 @@ button{
   font-size:16px;
   border-radius:10px;
 }
-
 button.activo{
   background:#2f8f46;
 }
-
 button.sec{
   background:#4b5563;
 }
-
 #zonaCanvas{
   flex:1 1 auto;
   min-height:0;
   position:relative;
   background:#1b1b1b;
 }
-
 #canvas{
   display:block;
   width:100%;
@@ -78,7 +69,6 @@ button.sec{
   background:#1b1b1b;
   touch-action:none;
 }
-
 #info{
   flex:0 0 auto;
   background:#1f1f1f;
@@ -124,7 +114,7 @@ const info = document.getElementById("info");
 let canvasW = 0;
 let canvasH = 0;
 
-let modo = "ninguno"; // ninguno | estancia | mover
+let modo = "ninguno";
 let estancias = [];
 let activa = -1;
 
