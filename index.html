@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ALLCALOR V7</title>
+<title>ALLCALOR V7.2</title>
 
 <style>
 *{
@@ -191,6 +191,17 @@ function setInfo(txt){
   info.textContent = txt;
 }
 
+function estadoSeleccion(){
+  if(activa === -1) return "Sin estancia seleccionada";
+  if(indiceVerticeActivo !== -1) return "Vértice " + (indiceVerticeActivo + 1) + " seleccionado";
+  if(ladoActivo !== -1) return "Lado " + (ladoActivo + 1) + " seleccionado";
+  return "Estancia seleccionada";
+}
+
+function mensajeBase(txt){
+  setInfo(txt + "\n" + estadoSeleccion());
+}
+
 function ajustarCanvas(){
   const r = zonaCanvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -285,24 +296,6 @@ function distanciaPuntoASegmento(px, py, ax, ay, bx, by){
   return Math.hypot(px - cx, py - cy);
 }
 
-function proyeccionEnSegmento(px, py, ax, ay, bx, by){
-  const abx = bx - ax;
-  const aby = by - ay;
-  const apx = px - ax;
-  const apy = py - ay;
-  const ab2 = abx * abx + aby * aby;
-  if(ab2 === 0) return {x:ax, y:ay, t:0};
-
-  let t = (apx * abx + apy * aby) / ab2;
-  t = Math.max(0, Math.min(1, t));
-
-  return {
-    x: ax + abx * t,
-    y: ay + aby * t,
-    t
-  };
-}
-
 function buscarVerticeCercano(x, y){
   if(activa === -1) return -1;
   const pts = estancias[activa];
@@ -366,20 +359,60 @@ function actualizarBotones(){
   }
 }
 
-function dibujarLadosYMedidas(pts){
+function dibujarVertice(x, y, seleccionado){
+  if(seleccionado){
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 209, 102, 0.25)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#111";
+    ctx.fill();
+  }else{
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+function dibujarLadosYMedidas(pts, seleccionada){
   for(let i = 0; i < pts.length; i++){
     const a = pts[i];
     const b = pts[(i + 1) % pts.length];
     const mx = (a.x + b.x) / 2;
     const my = (a.y + b.y) / 2;
 
-    if(activa !== -1 && ladoActivo === i){
+    if(seleccionada && ladoActivo === i){
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
       ctx.strokeStyle = "#ffd166";
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffd166";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffd166";
+      ctx.fill();
     }
 
     ctx.fillStyle = "#ffffff";
@@ -405,13 +438,11 @@ function dibujarPoligono(pts, seleccionada){
   ctx.lineWidth = seleccionada ? 3 : 2;
   ctx.stroke();
 
-  dibujarLadosYMedidas(pts);
+  dibujarLadosYMedidas(pts, seleccionada);
 
   for(let i = 0; i < pts.length; i++){
-    ctx.beginPath();
-    ctx.arc(pts[i].x, pts[i].y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
+    const esVerticeActivo = seleccionada && indiceVerticeActivo === i;
+    dibujarVertice(pts[i].x, pts[i].y, esVerticeActivo);
   }
 
   const c = centroide(pts);
@@ -425,10 +456,7 @@ function dibujarPoligonoAbierto(pts){
   if(pts.length === 0) return;
 
   if(pts.length === 1){
-    ctx.beginPath();
-    ctx.arc(pts[0].x, pts[0].y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
+    dibujarVertice(pts[0].x, pts[0].y, false);
     return;
   }
 
@@ -443,10 +471,7 @@ function dibujarPoligonoAbierto(pts){
   ctx.stroke();
 
   for(let i = 0; i < pts.length; i++){
-    ctx.beginPath();
-    ctx.arc(pts[i].x, pts[i].y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
+    dibujarVertice(pts[i].x, pts[i].y, false);
   }
 
   for(let i = 0; i < pts.length - 1; i++){
@@ -479,33 +504,34 @@ btnPoligono.addEventListener("click", function(){
   moviendoEstancia = false;
   moviendoLado = false;
   indiceVerticeActivo = -1;
-  setInfo("Modo polígono activo. Toca para añadir puntos.");
+  mensajeBase("Modo polígono activo. Toca para añadir puntos.");
   dibujar();
 });
 
 btnCerrar.addEventListener("click", function(){
   if(poligonoActual.length < 3){
-    setInfo("Necesitas al menos 3 puntos para cerrar la estancia.");
+    mensajeBase("Necesitas al menos 3 puntos para cerrar la estancia.");
     return;
   }
 
   estancias.push(poligonoActual.map(p => ({x:p.x, y:p.y})));
   activa = estancias.length - 1;
   ladoActivo = -1;
+  indiceVerticeActivo = -1;
   poligonoActual = [];
-  setInfo("Estancia cerrada.");
+  mensajeBase("Estancia cerrada.");
   dibujar();
 });
 
 btnEditar.addEventListener("click", function(){
   modo = "editar";
-  setInfo("Modo editar activo. Toca dentro para seleccionar, arrastra dentro para mover, arrastra vértice o arrastra lado.");
+  mensajeBase("Modo editar activo. Toca dentro para seleccionar. Arrastra estancia, vértice o lado.");
   dibujar();
 });
 
 btnMasVertice.addEventListener("click", function(){
   if(activa === -1 || ladoActivo === -1){
-    setInfo("Selecciona una estancia y un lado.");
+    mensajeBase("Selecciona una estancia y un lado.");
     return;
   }
 
@@ -516,32 +542,33 @@ btnMasVertice.addEventListener("click", function(){
   const my = (a.y + b.y) / 2;
 
   pts.splice(ladoActivo + 1, 0, {x:mx, y:my});
-  setInfo("Vértice añadido.");
+  indiceVerticeActivo = ladoActivo + 1;
+  mensajeBase("Vértice añadido.");
   dibujar();
 });
 
 btnMenosVertice.addEventListener("click", function(){
   if(activa === -1 || indiceVerticeActivo === -1){
-    setInfo("Selecciona un vértice.");
+    mensajeBase("Selecciona un vértice.");
     return;
   }
 
   const pts = estancias[activa];
   if(pts.length <= 3){
-    setInfo("La estancia debe mantener al menos 3 vértices.");
+    mensajeBase("La estancia debe mantener al menos 3 vértices.");
     return;
   }
 
   pts.splice(indiceVerticeActivo, 1);
   indiceVerticeActivo = -1;
   ladoActivo = -1;
-  setInfo("Vértice borrado.");
+  mensajeBase("Vértice borrado.");
   dibujar();
 });
 
 btnBorrar.addEventListener("click", function(){
   if(activa === -1){
-    setInfo("No hay estancia activa.");
+    mensajeBase("No hay estancia activa.");
     return;
   }
 
@@ -552,7 +579,7 @@ btnBorrar.addEventListener("click", function(){
   moviendoEstancia = false;
   moviendoLado = false;
   indiceVerticeActivo = -1;
-  setInfo("Estancia activa borrada.");
+  mensajeBase("Estancia activa borrada.");
   dibujar();
 });
 
@@ -565,7 +592,7 @@ btnLimpiar.addEventListener("click", function(){
   moviendoEstancia = false;
   moviendoLado = false;
   indiceVerticeActivo = -1;
-  setInfo("Plano limpiado.");
+  mensajeBase("Plano limpiado.");
   dibujar();
 });
 
@@ -574,7 +601,7 @@ btnAplicarLado.addEventListener("click", function(){
 
   const valorM = Number(String(inputLado.value).replace(",", "."));
   if(!Number.isFinite(valorM) || valorM <= 0){
-    setInfo("Medida de lado no válida.");
+    mensajeBase("Medida de lado no válida.");
     return;
   }
 
@@ -587,7 +614,7 @@ btnAplicarLado.addEventListener("click", function(){
   const len = Math.hypot(dx, dy);
 
   if(len === 0){
-    setInfo("No se puede aplicar medida a un lado de longitud cero.");
+    mensajeBase("No se puede aplicar medida a un lado de longitud cero.");
     return;
   }
 
@@ -598,7 +625,7 @@ btnAplicarLado.addEventListener("click", function(){
   b.x = a.x + ux * nuevaLen;
   b.y = a.y + uy * nuevaLen;
 
-  setInfo("Medida de lado aplicada: " + valorM.toFixed(2).replace(".", ",") + " m");
+  mensajeBase("Medida de lado aplicada: " + valorM.toFixed(2).replace(".", ",") + " m");
   dibujar();
 });
 
@@ -608,7 +635,7 @@ canvas.addEventListener("pointerdown", function(ev){
 
   if(modo === "poligono"){
     poligonoActual.push({x:p.x, y:p.y});
-    setInfo("Punto añadido. Puntos actuales: " + poligonoActual.length);
+    mensajeBase("Punto añadido. Puntos actuales: " + poligonoActual.length);
     dibujar();
     return;
   }
@@ -617,13 +644,13 @@ canvas.addEventListener("pointerdown", function(ev){
     const idx = buscarEstanciaPorPunto(p.x, p.y);
     activa = idx;
     ladoActivo = -1;
+    indiceVerticeActivo = -1;
 
     if(activa === -1){
       arrastrandoVertice = false;
       moviendoEstancia = false;
       moviendoLado = false;
-      indiceVerticeActivo = -1;
-      setInfo("No has tocado ninguna estancia.");
+      mensajeBase("No has tocado ninguna estancia.");
       dibujar();
       return;
     }
@@ -634,8 +661,7 @@ canvas.addEventListener("pointerdown", function(ev){
       arrastrandoVertice = true;
       moviendoEstancia = false;
       moviendoLado = false;
-      ladoActivo = -1;
-      setInfo("Arrastrando vértice.");
+      mensajeBase("Arrastrando vértice " + (v + 1) + ".");
       dibujar();
       return;
     }
@@ -647,8 +673,7 @@ canvas.addEventListener("pointerdown", function(ev){
       moviendoEstancia = false;
       arrastrandoVertice = false;
       ultimoPuntoLado = {x:p.x, y:p.y};
-      indiceVerticeActivo = -1;
-      setInfo("Arrastrando lado.");
+      mensajeBase("Arrastrando lado " + (l + 1) + ".");
       dibujar();
       return;
     }
@@ -656,9 +681,8 @@ canvas.addEventListener("pointerdown", function(ev){
     moviendoEstancia = true;
     arrastrandoVertice = false;
     moviendoLado = false;
-    indiceVerticeActivo = -1;
     ultimoPuntoMover = {x:p.x, y:p.y};
-    setInfo("Estancia seleccionada. Arrastra para moverla.");
+    mensajeBase("Estancia seleccionada. Arrastra para moverla.");
     dibujar();
   }
 });
@@ -694,7 +718,7 @@ canvas.addEventListener("pointermove", function(ev){
 canvas.addEventListener("pointerup", function(){
   if(arrastrandoVertice){
     arrastrandoVertice = false;
-    setInfo("Vértice movido.");
+    mensajeBase("Vértice movido.");
     dibujar();
     return;
   }
@@ -702,7 +726,7 @@ canvas.addEventListener("pointerup", function(){
   if(moviendoLado){
     moviendoLado = false;
     ultimoPuntoLado = null;
-    setInfo("Lado movido.");
+    mensajeBase("Lado movido.");
     dibujar();
     return;
   }
@@ -710,7 +734,7 @@ canvas.addEventListener("pointerup", function(){
   if(moviendoEstancia){
     moviendoEstancia = false;
     ultimoPuntoMover = null;
-    setInfo("Estancia movida.");
+    mensajeBase("Estancia movida.");
     dibujar();
   }
 });
@@ -719,7 +743,6 @@ canvas.addEventListener("pointercancel", function(){
   arrastrandoVertice = false;
   moviendoEstancia = false;
   moviendoLado = false;
-  indiceVerticeActivo = -1;
   ultimoPuntoMover = null;
   ultimoPuntoLado = null;
   dibujar();
@@ -729,7 +752,7 @@ window.addEventListener("resize", ajustarCanvas);
 window.addEventListener("orientationchange", ajustarCanvas);
 
 ajustarCanvas();
-setInfo("Modo polígono activo. Toca para añadir puntos.");
+mensajeBase("Modo polígono activo. Toca para añadir puntos.");
 </script>
 
 </body>
