@@ -3,423 +3,1064 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ALLCALOR V8</title>
+<title>ALLCALOR V8 ESTABLE</title>
 
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
 html,body{
-margin:0;
-padding:0;
-width:100%;
-height:100%;
-overflow:hidden;
-background:#111;
-color:#fff;
-font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111;
+  color:#fff;
+  font-family:Arial, Helvetica, sans-serif;
 }
 
 body{
-display:flex;
-flex-direction:column;
-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
 }
 
 #barra{
-flex:0 0 auto;
-background:#1f1f1f;
-padding:10px;
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-border-bottom:1px solid #333;
+  flex:0 0 auto;
+  background:#1f1f1f;
+  padding:10px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  border-bottom:1px solid #333;
 }
 
 button{
-border:none;
-border-radius:10px;
-padding:12px 16px;
-font-size:16px;
-font-weight:700;
-background:#f0842f;
-color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:16px;
+  font-weight:700;
+  background:#f0842f;
+  color:#fff;
 }
 
-button.sec{background:#5a616c}
-button.activo{background:#2f8f46}
+button.sec{
+  background:#5a616c;
+}
+
+button.activo{
+  background:#2f8f46;
+}
 
 #panel{
-flex:0 0 auto;
-display:none;
-gap:10px;
-align-items:center;
-flex-wrap:wrap;
-padding:10px;
-background:#252525;
-border-bottom:1px solid #333;
+  flex:0 0 auto;
+  display:none;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:10px;
+  background:#252525;
+  border-bottom:1px solid #333;
 }
 
-#panel.visible{display:flex}
+#panel.visible{
+  display:flex;
+}
 
 .bloque{
-display:flex;
-align-items:center;
-gap:8px;
-background:#1a1a1a;
-padding:8px 10px;
-border-radius:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#1a1a1a;
+  padding:8px 10px;
+  border-radius:10px;
 }
 
-.bloque span{font-size:15px}
+.bloque span{
+  font-size:15px;
+}
 
 .bloque input{
-width:110px;
-padding:8px;
-font-size:18px;
-border:none;
-border-radius:8px;
-background:#fff;
-color:#111;
+  width:110px;
+  padding:8px;
+  font-size:18px;
+  border:none;
+  border-radius:8px;
+  background:#fff;
+  color:#111;
 }
 
 #zonaCanvas{
-flex:1 1 auto;
-min-height:0;
-background:#181818;
+  flex:1 1 auto;
+  min-height:0;
+  position:relative;
+  background:#181818;
 }
 
 #canvas{
-width:100%;
-height:100%;
-display:block;
-touch-action:none;
+  width:100%;
+  height:100%;
+  display:block;
+  background:#181818;
+  touch-action:none;
 }
 
 #info{
-flex:0 0 auto;
-padding:8px 10px;
-font-size:13px;
-line-height:1.35;
-background:#1f1f1f;
-border-top:1px solid #333;
-white-space:pre-line;
+  flex:0 0 auto;
+  padding:8px 10px;
+  font-size:13px;
+  line-height:1.35;
+  background:#1f1f1f;
+  border-top:1px solid #333;
+  white-space:pre-line;
 }
 </style>
 </head>
-
 <body>
 
 <div id="barra">
-<button id="btnPoligono">Polígono</button>
-<button id="btnCerrar">Cerrar estancia</button>
-<button id="btnEditar">Editar</button>
-<button id="btnPuerta">Puerta</button>
-<button id="btnBorrar" class="sec">Borrar activa</button>
-<button id="btnLimpiar" class="sec">Limpiar</button>
+  <button id="btnPoligono">Polígono</button>
+  <button id="btnCerrar">Cerrar estancia</button>
+  <button id="btnEditar">Editar</button>
+  <button id="btnMasVertice">+ Vértice</button>
+  <button id="btnMenosVertice">- Vértice</button>
+  <button id="btnPuerta">+ Puerta</button>
+  <button id="btnQuitarPuerta">- Puerta</button>
+  <button id="btnBorrar" class="sec">Borrar activa</button>
+  <button id="btnLimpiar" class="sec">Limpiar</button>
 </div>
 
 <div id="panel">
-<div class="bloque">
-<span>Lado</span>
-<input id="ladoInput" type="number" step="0.01">
-<span>m</span>
-</div>
-<button id="aplicarLado">Aplicar</button>
+  <div class="bloque">
+    <span>Lado</span>
+    <input id="inputLado" type="number" step="0.01" inputmode="decimal">
+    <span>m</span>
+  </div>
+  <button id="btnAplicarLado">Aplicar lado</button>
 
-<div class="bloque">
-<span>Puerta</span>
-<input id="puertaInput" type="number" step="0.01">
-<span>m</span>
-</div>
-<button id="aplicarPuerta">Aplicar</button>
-
-<button id="girarPuerta">Cambiar apertura</button>
+  <div class="bloque">
+    <span>Puerta</span>
+    <input id="inputPuerta" type="number" step="0.01" inputmode="decimal">
+    <span>m</span>
+  </div>
+  <button id="btnAplicarPuerta">Aplicar puerta</button>
+  <button id="btnGirarPuerta">Cambiar apertura</button>
 </div>
 
 <div id="zonaCanvas">
-<canvas id="canvas"></canvas>
+  <canvas id="canvas"></canvas>
 </div>
 
-<div id="info">Modo polígono activo</div>
+<div id="info">Modo polígono activo. Toca para añadir puntos.</div>
 
 <script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const zonaCanvas = document.getElementById("zonaCanvas");
+const info = document.getElementById("info");
 
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
-const zonaCanvas=document.getElementById("zonaCanvas")
-const info=document.getElementById("info")
+const btnPoligono = document.getElementById("btnPoligono");
+const btnCerrar = document.getElementById("btnCerrar");
+const btnEditar = document.getElementById("btnEditar");
+const btnMasVertice = document.getElementById("btnMasVertice");
+const btnMenosVertice = document.getElementById("btnMenosVertice");
+const btnPuerta = document.getElementById("btnPuerta");
+const btnQuitarPuerta = document.getElementById("btnQuitarPuerta");
+const btnBorrar = document.getElementById("btnBorrar");
+const btnLimpiar = document.getElementById("btnLimpiar");
 
-const btnPoligono=document.getElementById("btnPoligono")
-const btnCerrar=document.getElementById("btnCerrar")
-const btnEditar=document.getElementById("btnEditar")
-const btnPuerta=document.getElementById("btnPuerta")
-const btnBorrar=document.getElementById("btnBorrar")
-const btnLimpiar=document.getElementById("btnLimpiar")
+const panel = document.getElementById("panel");
+const inputLado = document.getElementById("inputLado");
+const inputPuerta = document.getElementById("inputPuerta");
+const btnAplicarLado = document.getElementById("btnAplicarLado");
+const btnAplicarPuerta = document.getElementById("btnAplicarPuerta");
+const btnGirarPuerta = document.getElementById("btnGirarPuerta");
 
-const panel=document.getElementById("panel")
-const ladoInput=document.getElementById("ladoInput")
-const puertaInput=document.getElementById("puertaInput")
+let W = 0;
+let H = 0;
 
-const aplicarLado=document.getElementById("aplicarLado")
-const aplicarPuerta=document.getElementById("aplicarPuerta")
-const girarPuerta=document.getElementById("girarPuerta")
+let modo = "poligono";
+let estancias = [];
+let puertas = [];
+let poligonoActual = [];
 
-let W=0,H=0
+let activa = -1;
+let ladoActivo = -1;
+let indiceVerticeActivo = -1;
+let puertaActiva = -1;
 
-let modo="poligono"
-let estancias=[]
-let puertas=[]
+let arrastrandoVertice = false;
+let moviendoLado = false;
+let moviendoEstancia = false;
+let moviendoPuerta = false;
 
-let poligonoActual=[]
+let ultimoPuntoMover = null;
+let ultimoPuntoLado = null;
 
-let activa=-1
-let ladoActivo=-1
+let tipoSeleccion = "ninguna";
+let toquePendiente = false;
+let inicioToque = null;
 
-let PX=100
+const PX_POR_METRO = 100;
+const RADIO_VERTICE = 28;
+const UMBRAL_LADO = 28;
+const UMBRAL_ARRASTRE = 8;
+const UMBRAL_PUERTA = 22;
 
-function resize(){
-const r=zonaCanvas.getBoundingClientRect()
-W=r.width
-H=r.height
-canvas.width=W*devicePixelRatio
-canvas.height=H*devicePixelRatio
-canvas.style.width=W+"px"
-canvas.style.height=H+"px"
-ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)
-draw()
+function setInfo(txt){
+  info.textContent = txt;
+}
+
+function pxAMetros(px){
+  return px / PX_POR_METRO;
+}
+
+function metrosAPx(m){
+  return m * PX_POR_METRO;
+}
+
+function formatM(px){
+  return pxAMetros(px).toFixed(2).replace(".", ",") + " m";
+}
+
+function mensaje(txt){
+  setInfo(txt + "\n" + estadoSeleccion());
+}
+
+function estadoSeleccion(){
+  if(activa === -1) return "Sin estancia seleccionada";
+  if(tipoSeleccion === "puerta" && puertaActiva !== -1) return "Puerta seleccionada";
+  if(tipoSeleccion === "vertice" && indiceVerticeActivo !== -1) return "Vértice " + (indiceVerticeActivo + 1) + " seleccionado";
+  if(tipoSeleccion === "lado" && ladoActivo !== -1) return "Lado " + (ladoActivo + 1) + " seleccionado";
+  if(tipoSeleccion === "estancia") return "Estancia seleccionada";
+  return "Estancia seleccionada";
+}
+
+function ajustarCanvas(){
+  const r = zonaCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  W = Math.max(1, Math.round(r.width));
+  H = Math.max(1, Math.round(r.height));
+
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  dibujar();
 }
 
 function pos(ev){
-const r=canvas.getBoundingClientRect()
-return{
-x:ev.clientX-r.left,
-y:ev.clientY-r.top
-}
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: ev.clientX - r.left,
+    y: ev.clientY - r.top
+  };
 }
 
 function dist(a,b){
-return Math.hypot(a.x-b.x,a.y-b.y)
+  return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-function m(px){return (px/PX).toFixed(2)}
-
-function inside(x,y,p){
-let inside=false
-for(let i=0,j=p.length-1;i<p.length;j=i++){
-const xi=p[i].x,yi=p[i].y
-const xj=p[j].x,yj=p[j].y
-const intersect=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
-if(intersect)inside=!inside
-}
-return inside
+function areaPoligono(pts){
+  let area = 0;
+  for(let i = 0; i < pts.length; i++){
+    const j = (i + 1) % pts.length;
+    area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+  }
+  return Math.abs(area / 2);
 }
 
-function sideHit(x,y,poly){
-for(let i=0;i<poly.length;i++){
-const a=poly[i]
-const b=poly[(i+1)%poly.length]
-const d=lineDist(x,y,a.x,a.y,b.x,b.y)
-if(d<20)return i
-}
-return -1
-}
-
-function lineDist(px,py,x1,y1,x2,y2){
-const A=px-x1
-const B=py-y1
-const C=x2-x1
-const D=y2-y1
-const dot=A*C+B*D
-const len=C*C+D*D
-let t=dot/len
-t=Math.max(0,Math.min(1,t))
-const x=x1+t*C
-const y=y1+t*D
-return Math.hypot(px-x,py-y)
+function centroide(pts){
+  let sx = 0;
+  let sy = 0;
+  for(const p of pts){
+    sx += p.x;
+    sy += p.y;
+  }
+  return { x: sx / pts.length, y: sy / pts.length };
 }
 
-function drawDoor(d){
+function puntoEnPoligono(x, y, pts){
+  let dentro = false;
+  for(let i = 0, j = pts.length - 1; i < pts.length; j = i++){
+    const xi = pts[i].x, yi = pts[i].y;
+    const xj = pts[j].x, yj = pts[j].y;
+    const intersecta =
+      ((yi > y) !== (yj > y)) &&
+      (x < (xj - xi) * (y - yi) / ((yj - yi) || 0.0000001) + xi);
 
-const a=d.a
-const b=d.b
-
-const dx=b.x-a.x
-const dy=b.y-a.y
-
-const len=Math.hypot(dx,dy)
-
-const ux=dx/len
-const uy=dy/len
-
-const cx=a.x+ux*d.pos
-const cy=a.y+uy*d.pos
-
-const w=d.width*PX
-
-const hx=ux*w/2
-const hy=uy*w/2
-
-const x1=cx-hx
-const y1=cy-hy
-const x2=cx+hx
-const y2=cy+hy
-
-ctx.lineWidth=4
-ctx.strokeStyle="#fff"
-ctx.beginPath()
-ctx.moveTo(x1,y1)
-ctx.lineTo(x2,y2)
-ctx.stroke()
-
-const nx=-uy
-const ny=ux
-
-const dir=d.flip? -1:1
-
-const arcR=w
-
-ctx.beginPath()
-ctx.strokeStyle="#aaa"
-ctx.arc(cx,cy,arcR,
-Math.atan2(y1-cy,x1-cx),
-Math.atan2(y1-cy,x1-cx)+dir*Math.PI/2)
-ctx.stroke()
-
+    if(intersecta) dentro = !dentro;
+  }
+  return dentro;
 }
 
-function drawPoly(p,sel){
+function distanciaPuntoASegmento(px, py, ax, ay, bx, by){
+  const abx = bx - ax;
+  const aby = by - ay;
+  const apx = px - ax;
+  const apy = py - ay;
+  const ab2 = abx * abx + aby * aby;
+  if(ab2 === 0) return Math.hypot(px - ax, py - ay);
 
-ctx.beginPath()
-ctx.moveTo(p[0].x,p[0].y)
-for(let i=1;i<p.length;i++)ctx.lineTo(p[i].x,p[i].y)
-ctx.closePath()
+  let t = (apx * abx + apy * aby) / ab2;
+  t = Math.max(0, Math.min(1, t));
 
-ctx.fillStyle=sel?"rgba(240,132,47,.2)":"rgba(0,227,138,.1)"
-ctx.fill()
+  const cx = ax + abx * t;
+  const cy = ay + aby * t;
 
-ctx.strokeStyle=sel?"#f0842f":"#78f1af"
-ctx.lineWidth=2
-ctx.stroke()
-
-for(let i=0;i<p.length;i++){
-const a=p[i]
-const b=p[(i+1)%p.length]
-ctx.fillStyle="#fff"
-ctx.font="12px Arial"
-ctx.fillText(m(dist(a,b))+" m",(a.x+b.x)/2,(a.y+b.y)/2)
+  return Math.hypot(px - cx, py - cy);
 }
 
+function buscarEstanciaPorPunto(x, y){
+  for(let i = estancias.length - 1; i >= 0; i--){
+    if(puntoEnPoligono(x, y, estancias[i])) return i;
+  }
+  return -1;
 }
 
-function draw(){
-
-ctx.clearRect(0,0,W,H)
-
-for(let i=0;i<estancias.length;i++){
-drawPoly(estancias[i],i===activa)
+function buscarVerticeCercano(x, y){
+  if(activa === -1) return -1;
+  const pts = estancias[activa];
+  for(let i = 0; i < pts.length; i++){
+    if(Math.hypot(pts[i].x - x, pts[i].y - y) <= RADIO_VERTICE){
+      return i;
+    }
+  }
+  return -1;
 }
 
-for(const d of puertas){
-drawDoor(d)
+function buscarLadoCercano(x, y){
+  if(activa === -1) return -1;
+  const pts = estancias[activa];
+  for(let i = 0; i < pts.length; i++){
+    const a = pts[i];
+    const b = pts[(i + 1) % pts.length];
+    const d = distanciaPuntoASegmento(x, y, a.x, a.y, b.x, b.y);
+    if(d <= UMBRAL_LADO) return i;
+  }
+  return -1;
 }
 
-if(poligonoActual.length){
-ctx.beginPath()
-ctx.moveTo(poligonoActual[0].x,poligonoActual[0].y)
-for(let i=1;i<poligonoActual.length;i++)
-ctx.lineTo(poligonoActual[i].x,poligonoActual[i].y)
-ctx.strokeStyle="#f0842f"
-ctx.stroke()
+function getSegmento(estanciaIndex, ladoIndex){
+  const pts = estancias[estanciaIndex];
+  return {
+    a: pts[ladoIndex],
+    b: pts[(ladoIndex + 1) % pts.length]
+  };
 }
 
+function puertaCentro(puerta){
+  const seg = getSegmento(puerta.estancia, puerta.lado);
+  const dx = seg.b.x - seg.a.x;
+  const dy = seg.b.y - seg.a.y;
+  const len = Math.hypot(dx, dy);
+  if(len === 0) return {x:seg.a.x, y:seg.a.y};
+
+  const ux = dx / len;
+  const uy = dy / len;
+
+  return {
+    x: seg.a.x + ux * puerta.offsetPx,
+    y: seg.a.y + uy * puerta.offsetPx
+  };
 }
 
-canvas.addEventListener("pointerdown",e=>{
-
-const p=pos(e)
-
-if(modo==="poligono"){
-poligonoActual.push(p)
-draw()
-return
+function buscarPuertaCercana(x, y){
+  for(let i = puertas.length - 1; i >= 0; i--){
+    const c = puertaCentro(puertas[i]);
+    if(Math.hypot(c.x - x, c.y - y) <= UMBRAL_PUERTA){
+      return i;
+    }
+  }
+  return -1;
 }
 
-for(let i=estancias.length-1;i>=0;i--){
-if(inside(p.x,p.y,estancias[i])){
-activa=i
-ladoActivo=sideHit(p.x,p.y,estancias[i])
-panel.classList.add("visible")
-draw()
-return
-}
-}
+function aplicarSeleccion(sel){
+  activa = sel.estancia;
+  tipoSeleccion = sel.tipo;
+  indiceVerticeActivo = -1;
+  ladoActivo = -1;
+  puertaActiva = -1;
 
-})
-
-btnCerrar.onclick=()=>{
-if(poligonoActual.length<3)return
-estancias.push(poligonoActual)
-poligonoActual=[]
-draw()
+  if(sel.tipo === "vertice") indiceVerticeActivo = sel.indice;
+  if(sel.tipo === "lado") ladoActivo = sel.indice;
+  if(sel.tipo === "puerta") puertaActiva = sel.indice;
 }
 
-btnEditar.onclick=()=>{
-modo="editar"
-info.textContent="Modo editar"
+function detectarSeleccion(x, y){
+  const puertaIdx = buscarPuertaCercana(x, y);
+  if(puertaIdx !== -1){
+    return {estancia: puertas[puertaIdx].estancia, tipo: "puerta", indice: puertaIdx};
+  }
+
+  const idx = buscarEstanciaPorPunto(x, y);
+  if(idx === -1){
+    return {estancia:-1, tipo:"ninguna", indice:-1};
+  }
+
+  activa = idx;
+
+  const v = buscarVerticeCercano(x, y);
+  if(v !== -1){
+    return {estancia:idx, tipo:"vertice", indice:v};
+  }
+
+  const l = buscarLadoCercano(x, y);
+  if(l !== -1){
+    return {estancia:idx, tipo:"lado", indice:l};
+  }
+
+  return {estancia:idx, tipo:"estancia", indice:-1};
 }
 
-btnPoligono.onclick=()=>{
-modo="poligono"
-info.textContent="Modo polígono"
+function limpiarArrastres(){
+  arrastrandoVertice = false;
+  moviendoLado = false;
+  moviendoEstancia = false;
+  moviendoPuerta = false;
+  ultimoPuntoMover = null;
+  ultimoPuntoLado = null;
 }
 
-btnPuerta.onclick=()=>{
-
-if(activa==-1||ladoActivo==-1)return
-
-const poly=estancias[activa]
-
-const a=poly[ladoActivo]
-const b=poly[(ladoActivo+1)%poly.length]
-
-const len=dist(a,b)
-
-puertas.push({
-a,b,
-pos:len/2,
-width:0.82,
-flip:false
-})
-
-draw()
-
+function moverEstanciaCompleta(indice, dx, dy){
+  const pts = estancias[indice];
+  for(const p of pts){
+    p.x += dx;
+    p.y += dy;
+  }
 }
 
-aplicarPuerta.onclick=()=>{
-const v=parseFloat(puertaInput.value)
-if(!v)return
-const d=puertas[puertas.length-1]
-d.width=v
-draw()
+function moverLadoCompleto(indiceEstancia, indiceLado, dx, dy){
+  const pts = estancias[indiceEstancia];
+  const a = pts[indiceLado];
+  const b = pts[(indiceLado + 1) % pts.length];
+  a.x += dx;
+  a.y += dy;
+  b.x += dx;
+  b.y += dy;
 }
 
-girarPuerta.onclick=()=>{
-const d=puertas[puertas.length-1]
-d.flip=!d.flip
-draw()
+function actualizarBotones(){
+  btnPoligono.classList.toggle("activo", modo === "poligono");
+  btnEditar.classList.toggle("activo", modo === "editar");
+
+  const visible = (activa !== -1 && ladoActivo !== -1) || puertaActiva !== -1;
+  panel.classList.toggle("visible", visible);
+
+  if(activa !== -1 && ladoActivo !== -1){
+    const seg = getSegmento(activa, ladoActivo);
+    inputLado.value = pxAMetros(dist(seg.a, seg.b)).toFixed(2);
+  }
+
+  if(puertaActiva !== -1){
+    inputPuerta.value = puertas[puertaActiva].widthM.toFixed(2);
+  } else {
+    inputPuerta.value = "";
+  }
 }
 
-btnLimpiar.onclick=()=>{
-estancias=[]
-puertas=[]
-poligonoActual=[]
-activa=-1
-draw()
+function dibujarVertice(x, y, seleccionado){
+  if(seleccionado){
+    ctx.beginPath();
+    ctx.arc(x, y, 16, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 209, 102, 0.25)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = "#111";
+    ctx.fill();
+  }else{
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
 }
 
-window.addEventListener("resize",resize)
-resize()
+function dibujarLadosYMedidas(pts, seleccionada){
+  for(let i = 0; i < pts.length; i++){
+    const a = pts[i];
+    const b = pts[(i + 1) % pts.length];
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
 
+    if(seleccionada && ladoActivo === i){
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = "#ffd166";
+      ctx.lineWidth = 8;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffd166";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffd166";
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "12px Arial";
+    ctx.fillText(formatM(dist(a,b)), mx + 4, my - 4);
+  }
+}
+
+function dibujarPoligono(pts, seleccionada){
+  if(pts.length < 2) return;
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i = 1; i < pts.length; i++){
+    ctx.lineTo(pts[i].x, pts[i].y);
+  }
+  ctx.closePath();
+
+  ctx.fillStyle = seleccionada ? "rgba(240,132,47,0.22)" : "rgba(0,227,138,0.10)";
+  ctx.fill();
+
+  ctx.strokeStyle = seleccionada ? "#f0842f" : "#78f1af";
+  ctx.lineWidth = seleccionada ? 3 : 2;
+  ctx.stroke();
+
+  dibujarLadosYMedidas(pts, seleccionada);
+
+  for(let i = 0; i < pts.length; i++){
+    const esVerticeActivo = seleccionada && indiceVerticeActivo === i;
+    dibujarVertice(pts[i].x, pts[i].y, esVerticeActivo);
+  }
+
+  const c = centroide(pts);
+  const areaM2 = (areaPoligono(pts) / 10000).toFixed(2).replace(".", ",");
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "14px Arial";
+  ctx.fillText(areaM2 + " m²", c.x - 20, c.y);
+}
+
+function dibujarPoligonoAbierto(pts){
+  if(pts.length === 0) return;
+
+  if(pts.length === 1){
+    dibujarVertice(pts[0].x, pts[0].y, false);
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i = 1; i < pts.length; i++){
+    ctx.lineTo(pts[i].x, pts[i].y);
+  }
+
+  ctx.strokeStyle = "#f0842f";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  for(let i = 0; i < pts.length; i++){
+    dibujarVertice(pts[i].x, pts[i].y, false);
+  }
+
+  for(let i = 0; i < pts.length - 1; i++){
+    const a = pts[i];
+    const b = pts[i + 1];
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "12px Arial";
+    ctx.fillText(formatM(dist(a,b)), mx + 4, my - 4);
+  }
+}
+
+function dibujarPuerta(d, seleccionada){
+  const seg = getSegmento(d.estancia, d.lado);
+  const dx = seg.b.x - seg.a.x;
+  const dy = seg.b.y - seg.a.y;
+  const len = Math.hypot(dx, dy);
+  if(len === 0) return;
+
+  const ux = dx / len;
+  const uy = dy / len;
+  const nx = -uy;
+  const ny = ux;
+
+  const wpx = metrosAPx(d.widthM);
+  const half = wpx / 2;
+
+  const cx = seg.a.x + ux * d.offsetPx;
+  const cy = seg.a.y + uy * d.offsetPx;
+
+  const x1 = cx - ux * half;
+  const y1 = cy - uy * half;
+  const x2 = cx + ux * half;
+  const y2 = cy + uy * half;
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = seleccionada ? "#ffd166" : "#ffffff";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  const hingeX = d.flip ? x2 : x1;
+  const hingeY = d.flip ? y2 : y1;
+
+  const leafX = d.flip ? x1 : x2;
+  const leafY = d.flip ? y1 : y2;
+
+  const dir = d.apertura === "interior" ? 1 : -1;
+
+  ctx.beginPath();
+  ctx.moveTo(hingeX, hingeY);
+  ctx.lineTo(hingeX + nx * dir * wpx, hingeY + ny * dir * wpx);
+  ctx.strokeStyle = seleccionada ? "#ffd166" : "#f0842f";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.beginPath();
+  const ang1 = Math.atan2(leafY - hingeY, leafX - hingeX);
+  const ang2 = Math.atan2((hingeY + ny * dir * wpx) - hingeY, (hingeX + nx * dir * wpx) - hingeX);
+  ctx.arc(hingeX, hingeY, wpx, ang1, ang2, dir < 0);
+  ctx.strokeStyle = seleccionada ? "#ffd166" : "#999";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  if(seleccionada){
+    ctx.beginPath();
+    ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fill();
+  }
+}
+
+function dibujar(){
+  ctx.clearRect(0, 0, W, H);
+
+  for(let i = 0; i < estancias.length; i++){
+    dibujarPoligono(estancias[i], i === activa);
+  }
+
+  for(let i = 0; i < puertas.length; i++){
+    dibujarPuerta(puertas[i], i === puertaActiva);
+  }
+
+  dibujarPoligonoAbierto(poligonoActual);
+  actualizarBotones();
+}
+
+btnPoligono.addEventListener("click", function(){
+  modo = "poligono";
+  activa = -1;
+  ladoActivo = -1;
+  indiceVerticeActivo = -1;
+  puertaActiva = -1;
+  tipoSeleccion = "ninguna";
+  toquePendiente = false;
+  limpiarArrastres();
+  mensaje("Modo polígono activo. Toca para añadir puntos.");
+  dibujar();
+});
+
+btnCerrar.addEventListener("click", function(){
+  if(poligonoActual.length < 3){
+    mensaje("Necesitas al menos 3 puntos para cerrar la estancia.");
+    return;
+  }
+
+  estancias.push(poligonoActual.map(p => ({x:p.x, y:p.y})));
+  activa = estancias.length - 1;
+  ladoActivo = -1;
+  indiceVerticeActivo = -1;
+  puertaActiva = -1;
+  tipoSeleccion = "estancia";
+  poligonoActual = [];
+  mensaje("Estancia cerrada.");
+  dibujar();
+});
+
+btnEditar.addEventListener("click", function(){
+  modo = "editar";
+  mensaje("Modo editar activo. Primer toque selecciona. Después arrastra.");
+  dibujar();
+});
+
+btnMasVertice.addEventListener("click", function(){
+  if(activa === -1 || ladoActivo === -1){
+    mensaje("Selecciona una estancia y un lado.");
+    return;
+  }
+
+  const pts = estancias[activa];
+  const a = pts[ladoActivo];
+  const b = pts[(ladoActivo + 1) % pts.length];
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+
+  pts.splice(ladoActivo + 1, 0, {x:mx, y:my});
+  indiceVerticeActivo = ladoActivo + 1;
+  puertaActiva = -1;
+  tipoSeleccion = "vertice";
+  mensaje("Vértice añadido.");
+  dibujar();
+});
+
+btnMenosVertice.addEventListener("click", function(){
+  if(activa === -1 || indiceVerticeActivo === -1){
+    mensaje("Selecciona un vértice.");
+    return;
+  }
+
+  const pts = estancias[activa];
+  if(pts.length <= 3){
+    mensaje("La estancia debe mantener al menos 3 vértices.");
+    return;
+  }
+
+  pts.splice(indiceVerticeActivo, 1);
+  indiceVerticeActivo = -1;
+  ladoActivo = -1;
+  puertaActiva = -1;
+  tipoSeleccion = "estancia";
+  mensaje("Vértice borrado.");
+  dibujar();
+});
+
+btnPuerta.addEventListener("click", function(){
+  if(activa === -1 || ladoActivo === -1){
+    mensaje("Selecciona una estancia y un lado.");
+    return;
+  }
+
+  const seg = getSegmento(activa, ladoActivo);
+  const len = dist(seg.a, seg.b);
+  const widthM = 0.82;
+  const widthPx = metrosAPx(widthM);
+
+  if(widthPx >= len){
+    mensaje("Ese lado es demasiado corto para la puerta.");
+    return;
+  }
+
+  puertas.push({
+    estancia: activa,
+    lado: ladoActivo,
+    widthM: widthM,
+    offsetPx: len / 2,
+    flip: false,
+    apertura: "interior"
+  });
+
+  puertaActiva = puertas.length - 1;
+  tipoSeleccion = "puerta";
+  inputPuerta.value = widthM.toFixed(2);
+  mensaje("Puerta añadida.");
+  dibujar();
+});
+
+btnQuitarPuerta.addEventListener("click", function(){
+  if(puertaActiva === -1){
+    mensaje("No hay puerta seleccionada.");
+    return;
+  }
+
+  puertas.splice(puertaActiva, 1);
+  puertaActiva = -1;
+  tipoSeleccion = "estancia";
+  mensaje("Puerta borrada.");
+  dibujar();
+});
+
+btnBorrar.addEventListener("click", function(){
+  if(activa === -1){
+    mensaje("No hay estancia activa.");
+    return;
+  }
+
+  puertas = puertas.filter(p => p.estancia !== activa).map(p => {
+    if(p.estancia > activa) p.estancia -= 1;
+    return p;
+  });
+
+  estancias.splice(activa, 1);
+  activa = -1;
+  ladoActivo = -1;
+  indiceVerticeActivo = -1;
+  puertaActiva = -1;
+  tipoSeleccion = "ninguna";
+  toquePendiente = false;
+  limpiarArrastres();
+  mensaje("Estancia activa borrada.");
+  dibujar();
+});
+
+btnLimpiar.addEventListener("click", function(){
+  estancias = [];
+  puertas = [];
+  poligonoActual = [];
+  activa = -1;
+  ladoActivo = -1;
+  indiceVerticeActivo = -1;
+  puertaActiva = -1;
+  tipoSeleccion = "ninguna";
+  toquePendiente = false;
+  limpiarArrastres();
+  mensaje("Plano limpiado.");
+  dibujar();
+});
+
+btnAplicarLado.addEventListener("click", function(){
+  if(activa === -1 || ladoActivo === -1) return;
+
+  const valorM = Number(String(inputLado.value).replace(",", "."));
+  if(!Number.isFinite(valorM) || valorM <= 0){
+    mensaje("Medida de lado no válida.");
+    return;
+  }
+
+  const pts = estancias[activa];
+  const a = pts[ladoActivo];
+  const b = pts[(ladoActivo + 1) % pts.length];
+
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy);
+
+  if(len === 0){
+    mensaje("No se puede aplicar medida a un lado de longitud cero.");
+    return;
+  }
+
+  const nuevaLen = metrosAPx(valorM);
+  const ux = dx / len;
+  const uy = dy / len;
+
+  b.x = a.x + ux * nuevaLen;
+  b.y = a.y + uy * nuevaLen;
+
+  mensaje("Medida de lado aplicada: " + valorM.toFixed(2).replace(".", ",") + " m");
+  dibujar();
+});
+
+btnAplicarPuerta.addEventListener("click", function(){
+  if(puertaActiva === -1){
+    mensaje("No hay puerta seleccionada.");
+    return;
+  }
+
+  const valorM = Number(String(inputPuerta.value).replace(",", "."));
+  if(!Number.isFinite(valorM) || valorM <= 0){
+    mensaje("Medida de puerta no válida.");
+    return;
+  }
+
+  const p = puertas[puertaActiva];
+  const seg = getSegmento(p.estancia, p.lado);
+  const len = dist(seg.a, seg.b);
+
+  if(metrosAPx(valorM) >= len){
+    mensaje("La puerta no cabe en ese lado.");
+    return;
+  }
+
+  p.widthM = valorM;
+  mensaje("Ancho de puerta aplicado: " + valorM.toFixed(2).replace(".", ",") + " m");
+  dibujar();
+});
+
+btnGirarPuerta.addEventListener("click", function(){
+  if(puertaActiva === -1){
+    mensaje("No hay puerta seleccionada.");
+    return;
+  }
+
+  const p = puertas[puertaActiva];
+  if(p.apertura === "interior"){
+    p.apertura = "exterior";
+  }else{
+    p.apertura = "interior";
+    p.flip = !p.flip;
+  }
+
+  mensaje("Apertura cambiada.");
+  dibujar();
+});
+
+canvas.addEventListener("pointerdown", function(ev){
+  const p = pos(ev);
+  canvas.setPointerCapture(ev.pointerId);
+
+  if(modo === "poligono"){
+    poligonoActual.push({x:p.x, y:p.y});
+    mensaje("Punto añadido. Puntos actuales: " + poligonoActual.length);
+    dibujar();
+    return;
+  }
+
+  if(modo === "editar"){
+    limpiarArrastres();
+    toquePendiente = true;
+    inicioToque = {x:p.x, y:p.y};
+
+    const sel = detectarSeleccion(p.x, p.y);
+
+    if(sel.estancia === -1){
+      activa = -1;
+      ladoActivo = -1;
+      indiceVerticeActivo = -1;
+      puertaActiva = -1;
+      tipoSeleccion = "ninguna";
+      mensaje("No has tocado ninguna estancia.");
+      dibujar();
+      return;
+    }
+
+    aplicarSeleccion(sel);
+    mensaje("Selección lista. Arrastra para actuar.");
+    dibujar();
+  }
+});
+
+canvas.addEventListener("pointermove", function(ev){
+  const p = pos(ev);
+
+  if(modo !== "editar") return;
+  if(activa === -1 && puertaActiva === -1) return;
+
+  if(toquePendiente && inicioToque){
+    const d = Math.hypot(p.x - inicioToque.x, p.y - inicioToque.y);
+    if(d > UMBRAL_ARRASTRE){
+      toquePendiente = false;
+
+      if(tipoSeleccion === "puerta" && puertaActiva !== -1){
+        moviendoPuerta = true;
+        mensaje("Arrastrando puerta.");
+      }else if(tipoSeleccion === "vertice" && indiceVerticeActivo !== -1){
+        arrastrandoVertice = true;
+        mensaje("Arrastrando vértice " + (indiceVerticeActivo + 1) + ".");
+      }else if(tipoSeleccion === "lado" && ladoActivo !== -1){
+        moviendoLado = true;
+        ultimoPuntoLado = {x:p.x, y:p.y};
+        mensaje("Arrastrando lado " + (ladoActivo + 1) + ".");
+      }else if(tipoSeleccion === "estancia"){
+        moviendoEstancia = true;
+        ultimoPuntoMover = {x:p.x, y:p.y};
+        mensaje("Arrastrando estancia.");
+      }
+    }
+  }
+
+  if(moviendoPuerta && puertaActiva !== -1){
+    const d = puertas[puertaActiva];
+    const seg = getSegmento(d.estancia, d.lado);
+    const dx = seg.b.x - seg.a.x;
+    const dy = seg.b.y - seg.a.y;
+    const len = Math.hypot(dx, dy);
+    if(len > 0){
+      const ux = dx / len;
+      const uy = dy / len;
+      const proj = ((p.x - seg.a.x) * ux) + ((p.y - seg.a.y) * uy);
+      const half = metrosAPx(d.widthM) / 2;
+      d.offsetPx = Math.max(half, Math.min(len - half, proj));
+      dibujar();
+    }
+    return;
+  }
+
+  if(arrastrandoVertice && indiceVerticeActivo !== -1){
+    estancias[activa][indiceVerticeActivo].x = p.x;
+    estancias[activa][indiceVerticeActivo].y = p.y;
+    dibujar();
+    return;
+  }
+
+  if(moviendoLado && ladoActivo !== -1 && ultimoPuntoLado){
+    const dx = p.x - ultimoPuntoLado.x;
+    const dy = p.y - ultimoPuntoLado.y;
+    moverLadoCompleto(activa, ladoActivo, dx, dy);
+    ultimoPuntoLado = {x:p.x, y:p.y};
+    dibujar();
+    return;
+  }
+
+  if(moviendoEstancia && ultimoPuntoMover){
+    const dx = p.x - ultimoPuntoMover.x;
+    const dy = p.y - ultimoPuntoMover.y;
+    moverEstanciaCompleta(activa, dx, dy);
+    ultimoPuntoMover = {x:p.x, y:p.y};
+    dibujar();
+  }
+});
+
+canvas.addEventListener("pointerup", function(){
+  toquePendiente = false;
+  inicioToque = null;
+
+  if(moviendoPuerta){
+    moviendoPuerta = false;
+    mensaje("Puerta movida.");
+    dibujar();
+    return;
+  }
+
+  if(arrastrandoVertice){
+    arrastrandoVertice = false;
+    mensaje("Vértice movido.");
+    dibujar();
+    return;
+  }
+
+  if(moviendoLado){
+    moviendoLado = false;
+    ultimoPuntoLado = null;
+    mensaje("Lado movido.");
+    dibujar();
+    return;
+  }
+
+  if(moviendoEstancia){
+    moviendoEstancia = false;
+    ultimoPuntoMover = null;
+    mensaje("Estancia movida.");
+    dibujar();
+    return;
+  }
+
+  dibujar();
+});
+
+canvas.addEventListener("pointercancel", function(){
+  toquePendiente = false;
+  inicioToque = null;
+  limpiarArrastres();
+  dibujar();
+});
+
+window.addEventListener("resize", ajustarCanvas);
+window.addEventListener("orientationchange", ajustarCanvas);
+
+ajustarCanvas();
+mensaje("Modo polígono activo. Toca para añadir puntos.");
 </script>
+
 </body>
 </html>
