@@ -2,320 +2,146 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>ALLCALOR v8.1</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ALLCALOR V9</title>
 <style>
-
-*{
-box-sizing:border-box;
--webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-margin:0;
-padding:0;
-height:100%;
-background:#111;
-color:#fff;
-font-family:Arial;
-overflow:hidden;
-}
-
-body{
-display:flex;
-flex-direction:column;
-height:100dvh;
-}
-
-#barra{
-background:#1f1f1f;
-padding:10px;
-display:flex;
-flex-wrap:wrap;
-gap:8px;
-}
-
-button{
-border:none;
-padding:12px 16px;
-border-radius:10px;
-font-weight:bold;
-font-size:15px;
-background:#f0842f;
-color:#fff;
-}
-
-button.sec{
-background:#666;
-}
-
-button.activo{
-background:#2f8f46;
-}
-
-#panel{
-display:none;
-background:#252525;
-padding:10px;
-flex-wrap:wrap;
-gap:10px;
-}
-
-#panel.visible{
-display:flex;
-}
-
-input{
-width:110px;
-padding:8px;
-border:none;
-border-radius:8px;
-font-size:18px;
-}
-
-#canvas{
-flex:1;
-background:#181818;
-touch-action:none;
-}
-
-#info{
-background:#1f1f1f;
-padding:8px;
-font-size:13px;
-}
-
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;background:#111;color:#fff;font-family:Arial;overflow:hidden}
+body{display:flex;flex-direction:column;height:100dvh}
+#barra{background:#1f1f1f;padding:10px;display:flex;flex-wrap:wrap;gap:8px}
+button{border:none;padding:12px 16px;border-radius:10px;font-weight:bold;font-size:15px;background:#f0842f;color:#fff}
+button.sec{background:#666}
+button.activo{background:#2f8f46}
+#canvas{flex:1;background:#181818;touch-action:none}
+#info{background:#1f1f1f;padding:8px;font-size:13px}
 </style>
 </head>
 
 <body>
 
 <div id="barra">
-
 <button id="btnPoligono">Polígono</button>
 <button id="btnCerrar">Cerrar estancia</button>
 <button id="btnEditar">Editar</button>
-<button id="btnPuerta">+ Puerta</button>
-<button id="btnBorrar" class="sec">Borrar activa</button>
 <button id="btnLimpiar" class="sec">Limpiar</button>
-
-</div>
-
-<div id="panel">
-
-<label>Ancho puerta</label>
-<input id="puertaAncho" type="number" step="0.01">
-
-<label>Apertura</label>
-<select id="tipoPuerta">
-<option value="int_i">Interior izquierda</option>
-<option value="int_d">Interior derecha</option>
-<option value="ext_i">Exterior izquierda</option>
-<option value="ext_d">Exterior derecha</option>
-<option value="cor_i">Corredera izquierda</option>
-<option value="cor_d">Corredera derecha</option>
-</select>
-
-<button id="aplicarPuerta">Aplicar</button>
-
 </div>
 
 <canvas id="canvas"></canvas>
-
 <div id="info">Modo polígono</div>
 
 <script>
 
+// canvas
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
-let W=window.innerWidth
-let H=window.innerHeight
+function resize(){
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+draw()
+}
+window.addEventListener("resize",resize)
+resize()
 
-canvas.width=W
-canvas.height=H
+// cámara
+let zoom=80
+let camX=0
+let camY=0
 
-let PX=100
+function worldToScreen(x,y){
+return{
+x:(x-camX)*zoom+canvas.width/2,
+y:(y-camY)*zoom+canvas.height/2
+}
+}
 
+function screenToWorld(x,y){
+return{
+x:(x-canvas.width/2)/zoom+camX,
+y:(y-canvas.height/2)/zoom+camY
+}
+}
+
+// estado
 let modo="poligono"
-
 let estancias=[]
-let puertas=[]
-
 let poly=[]
 let activa=-1
-let ladoActivo=-1
-let puertaActiva=-1
 
-function pos(e){
-
-const r=canvas.getBoundingClientRect()
-
-return{
-x:e.clientX-r.left,
-y:e.clientY-r.top
-}
-
-}
-
+// utilidades
 function dist(a,b){
 return Math.hypot(a.x-b.x,a.y-b.y)
 }
 
 function m(px){
-return (px/PX).toFixed(2)
+return px.toFixed(2)
 }
 
 function inside(x,y,p){
-
 let inside=false
-
 for(let i=0,j=p.length-1;i<p.length;j=i++){
-
-const xi=p[i].x
-const yi=p[i].y
-
-const xj=p[j].x
-const yj=p[j].y
-
+const xi=p[i].x,yi=p[i].y
+const xj=p[j].x,yj=p[j].y
 const intersect=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
-
 if(intersect)inside=!inside
-
 }
-
 return inside
-
 }
 
-function lineDist(px,py,x1,y1,x2,y2){
+// detectar cruce de segmentos
+function intersect(a,b,c,d){
 
-const A=px-x1
-const B=py-y1
-const C=x2-x1
-const D=y2-y1
-
-const dot=A*C+B*D
-const len=C*C+D*D
-
-let t=dot/len
-
-t=Math.max(0,Math.min(1,t))
-
-const x=x1+t*C
-const y=y1+t*D
-
-return Math.hypot(px-x,py-y)
-
+function ccw(p1,p2,p3){
+return (p3.y-p1.y)*(p2.x-p1.x)>(p2.y-p1.y)*(p3.x-p1.x)
 }
 
-function sideHit(x,y,poly){
-
-for(let i=0;i<poly.length;i++){
-
-const a=poly[i]
-const b=poly[(i+1)%poly.length]
-
-const d=lineDist(x,y,a.x,a.y,b.x,b.y)
-
-if(d<20)return i
-
+return ccw(a,c,d)!=ccw(b,c,d)&&ccw(a,b,c)!=ccw(a,b,d)
 }
 
-return -1
+// evitar polígonos cruzados
+function validaNuevoPunto(p){
 
+if(poly.length<2)return true
+
+const a=poly[poly.length-1]
+
+for(let i=0;i<poly.length-2;i++){
+const b=poly[i]
+const c=poly[i+1]
+
+if(intersect(a,p,b,c))return false
 }
 
-function drawDoor(d){
-
-const a=d.a
-const b=d.b
-
-const dx=b.x-a.x
-const dy=b.y-a.y
-
-const len=Math.hypot(dx,dy)
-
-const ux=dx/len
-const uy=dy/len
-
-const cx=a.x+ux*d.pos
-const cy=a.y+uy*d.pos
-
-const w=d.width*PX
-
-const hx=ux*w/2
-const hy=uy*w/2
-
-const x1=cx-hx
-const y1=cy-hy
-
-const x2=cx+hx
-const y2=cy+hy
-
-ctx.lineWidth=6
-ctx.strokeStyle="#fff"
-
-ctx.beginPath()
-ctx.moveTo(x1,y1)
-ctx.lineTo(x2,y2)
-ctx.stroke()
-
-const nx=-uy
-const ny=ux
-
-const dir=d.flip?-1:1
-
-if(d.type.startsWith("cor")){
-
-ctx.strokeStyle="#00d4ff"
-ctx.beginPath()
-ctx.moveTo(x1,y1)
-ctx.lineTo(x1+nx*w,y1+ny*w)
-ctx.stroke()
-
-return
-
+return true
 }
 
-ctx.beginPath()
-
-ctx.strokeStyle="#aaa"
-
-ctx.arc(cx,cy,w,
-Math.atan2(y1-cy,x1-cx),
-Math.atan2(y1-cy,x1-cx)+dir*Math.PI/2)
-
-ctx.stroke()
-
-}
-
+// dibujo
 function draw(){
 
-ctx.clearRect(0,0,W,H)
+ctx.clearRect(0,0,canvas.width,canvas.height)
 
+// estancias
 for(let i=0;i<estancias.length;i++){
 
 const p=estancias[i]
 
 ctx.beginPath()
 
-ctx.moveTo(p[0].x,p[0].y)
+let s=worldToScreen(p[0].x,p[0].y)
+ctx.moveTo(s.x,s.y)
 
-for(let j=1;j<p.length;j++)
-ctx.lineTo(p[j].x,p[j].y)
+for(let j=1;j<p.length;j++){
+s=worldToScreen(p[j].x,p[j].y)
+ctx.lineTo(s.x,s.y)
+}
 
 ctx.closePath()
 
-ctx.fillStyle=i===activa?"rgba(240,132,47,.2)":"rgba(0,227,138,.1)"
-
+ctx.fillStyle=i===activa?"rgba(240,132,47,.25)":"rgba(0,227,138,.1)"
 ctx.fill()
 
 ctx.strokeStyle=i===activa?"#f0842f":"#78f1af"
-
 ctx.lineWidth=2
-
 ctx.stroke()
 
 for(let j=0;j<p.length;j++){
@@ -323,26 +149,32 @@ for(let j=0;j<p.length;j++){
 const a=p[j]
 const b=p[(j+1)%p.length]
 
+const mid={
+x:(a.x+b.x)/2,
+y:(a.y+b.y)/2
+}
+
+const ms=worldToScreen(mid.x,mid.y)
+
 ctx.fillStyle="#fff"
-
-ctx.fillText(m(dist(a,b))+" m",
-(a.x+b.x)/2,
-(a.y+b.y)/2)
+ctx.fillText(m(dist(a,b))+" m",ms.x,ms.y)
 
 }
 
 }
 
-for(const d of puertas)drawDoor(d)
-
+// polígono abierto
 if(poly.length){
 
 ctx.beginPath()
 
-ctx.moveTo(poly[0].x,poly[0].y)
+let s=worldToScreen(poly[0].x,poly[0].y)
+ctx.moveTo(s.x,s.y)
 
-for(let i=1;i<poly.length;i++)
-ctx.lineTo(poly[i].x,poly[i].y)
+for(let i=1;i<poly.length;i++){
+s=worldToScreen(poly[i].x,poly[i].y)
+ctx.lineTo(s.x,s.y)
+}
 
 ctx.strokeStyle="#f0842f"
 ctx.stroke()
@@ -351,34 +183,77 @@ ctx.stroke()
 
 }
 
+// interacción
+let pointers=new Map()
+
 canvas.addEventListener("pointerdown",e=>{
+canvas.setPointerCapture(e.pointerId)
+pointers.set(e.pointerId,{x:e.clientX,y:e.clientY})
+})
 
-const p=pos(e)
+canvas.addEventListener("pointermove",e=>{
 
-if(modo==="poligono"){
+if(!pointers.has(e.pointerId))return
 
-poly.push(p)
+pointers.set(e.pointerId,{x:e.clientX,y:e.clientY})
+
+if(pointers.size==2){
+
+const pts=[...pointers.values()]
+
+const dx=pts[0].x-pts[1].x
+const dy=pts[0].y-pts[1].y
+
+const distNow=Math.hypot(dx,dy)
+
+if(!window.lastDist)window.lastDist=distNow
+
+const delta=distNow/window.lastDist
+
+zoom*=delta
+
+zoom=Math.max(20,Math.min(400,zoom))
+
+window.lastDist=distNow
+
 draw()
-return
-
-}
-
-for(let i=estancias.length-1;i>=0;i--){
-
-if(inside(p.x,p.y,estancias[i])){
-
-activa=i
-ladoActivo=sideHit(p.x,p.y,estancias[i])
-
-draw()
-return
-
-}
-
 }
 
 })
 
+canvas.addEventListener("pointerup",e=>{
+pointers.delete(e.pointerId)
+window.lastDist=null
+})
+
+// click
+canvas.addEventListener("click",e=>{
+
+const p=screenToWorld(e.clientX,e.clientY)
+
+if(modo==="poligono"){
+
+if(validaNuevoPunto(p)){
+poly.push(p)
+}else{
+document.getElementById("info").innerText="La pared se cruzaría"
+}
+
+draw()
+return
+}
+
+for(let i=estancias.length-1;i>=0;i--){
+if(inside(p.x,p.y,estancias[i])){
+activa=i
+draw()
+return
+}
+}
+
+})
+
+// botones
 document.getElementById("btnCerrar").onclick=()=>{
 
 if(poly.length<3)return
@@ -389,44 +264,23 @@ draw()
 
 }
 
-document.getElementById("btnEditar").onclick=()=>{
-
-modo="editar"
-
-}
-
 document.getElementById("btnPoligono").onclick=()=>{
-
 modo="poligono"
-
 }
 
-document.getElementById("btnPuerta").onclick=()=>{
+document.getElementById("btnEditar").onclick=()=>{
+modo="editar"
+}
 
-if(activa==-1||ladoActivo==-1)return
-
-const poly=estancias[activa]
-
-const a=poly[ladoActivo]
-const b=poly[(ladoActivo+1)%poly.length]
-
-const len=dist(a,b)
-
-puertas.push({
-a,b,
-pos:len/2,
-width:0.82,
-flip:false,
-type:"int_i"
-})
-
+document.getElementById("btnLimpiar").onclick=()=>{
+estancias=[]
+poly=[]
+activa=-1
 draw()
-
 }
 
 draw()
 
 </script>
-
 </body>
 </html>
