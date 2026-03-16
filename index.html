@@ -4,454 +4,427 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ALLCALOR</title>
+
 <style>
+
 *{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
 }
+
 html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#111;
-  color:#fff;
-  touch-action:none;
+margin:0;
+padding:0;
+height:100dvh;
+width:100%;
+overflow:hidden;
+background:#111;
+font-family:Arial;
+color:white;
+display:flex;
+flex-direction:column;
 }
-body{
-  display:flex;
-  flex-direction:column;
-}
-header{
-  flex:0 0 auto;
-  background:#1f1f1f;
-  padding:18px 12px;
-  text-align:center;
-  font-weight:700;
-  font-size:20px;
-}
+
+/* BARRA SUPERIOR */
+
 #barra{
-  flex:0 0 auto;
-  background:#2a2a2a;
-  padding:10px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
+
+background:#1f1f1f;
+
+display:flex;
+gap:6px;
+
+padding:6px;
+
+flex-wrap:wrap;
+
 }
+
+/* BOTONES */
+
 button{
-  appearance:none;
-  border:none;
-  background:#f0842f;
-  color:#fff;
-  padding:12px 16px;
-  font-weight:700;
-  font-size:16px;
-  border-radius:10px;
+
+border:none;
+
+background:#f0842f;
+
+color:white;
+
+font-size:14px;
+
+font-weight:bold;
+
+padding:8px 10px;
+
+border-radius:6px;
+
 }
+
 button.activo{
-  background:#2f8f46;
+background:#2f8f46;
 }
+
 button.sec{
-  background:#4b5563;
+background:#4b5563;
 }
+
+/* AREA DIBUJO */
+
 #zonaCanvas{
-  flex:1 1 auto;
-  min-height:0;
-  position:relative;
-  background:#1b1b1b;
+
+flex:1;
+
+width:100%;
+
+position:relative;
+
+background:#1b1b1b;
+
 }
+
 #canvas{
-  display:block;
-  width:100%;
-  height:100%;
-  background:#1b1b1b;
-  touch-action:none;
+
+width:100%;
+
+height:100%;
+
+display:block;
+
 }
+
+/* INFORMACION */
+
 #info{
-  flex:0 0 auto;
-  background:#1f1f1f;
-  padding:10px 12px;
-  font-size:14px;
-  line-height:1.35;
-  border-top:1px solid #333;
-  white-space:pre-line;
+
+background:#1f1f1f;
+
+padding:6px 10px;
+
+font-size:12px;
+
+border-top:1px solid #333;
+
+white-space:pre-line;
+
 }
+
 </style>
 </head>
+
 <body>
 
-<header>ALLCALOR ENGINE v3</header>
-
 <div id="barra">
-  <button id="btnEstancia">Nueva estancia</button>
-  <button id="btnMover">Mover</button>
-  <button id="btnBorrarActiva">Borrar activa</button>
-  <button id="btnBorrarUltima" class="sec">Borrar última</button>
-  <button id="btnLimpiar" class="sec">Limpiar todo</button>
+
+<button id="btnEstancia">Estancia</button>
+
+<button id="btnMover">Mover</button>
+
+<button id="btnBorrarActiva">Borrar</button>
+
+<button id="btnBorrarUltima" class="sec">Última</button>
+
+<button id="btnLimpiar" class="sec">Limpiar</button>
+
 </div>
 
 <div id="zonaCanvas">
-  <canvas id="canvas"></canvas>
+
+<canvas id="canvas"></canvas>
+
 </div>
 
-<div id="info">Carga correcta.
-Pulsa “Nueva estancia” para dibujar o “Mover” para recolocar.</div>
+<div id="info">ALLCALOR listo</div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const zonaCanvas = document.getElementById("zonaCanvas");
 
-const btnEstancia = document.getElementById("btnEstancia");
-const btnMover = document.getElementById("btnMover");
-const btnBorrarActiva = document.getElementById("btnBorrarActiva");
-const btnBorrarUltima = document.getElementById("btnBorrarUltima");
-const btnLimpiar = document.getElementById("btnLimpiar");
-const info = document.getElementById("info");
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
 
-let canvasW = 0;
-let canvasH = 0;
+const zonaCanvas=document.getElementById("zonaCanvas")
 
-let modo = "ninguno";
-let estancias = [];
-let activa = -1;
+const btnEstancia=document.getElementById("btnEstancia")
+const btnMover=document.getElementById("btnMover")
+const btnBorrarActiva=document.getElementById("btnBorrarActiva")
+const btnBorrarUltima=document.getElementById("btnBorrarUltima")
+const btnLimpiar=document.getElementById("btnLimpiar")
 
-let dibujando = false;
-let moviendo = false;
+const info=document.getElementById("info")
 
-let inicioX = 0;
-let inicioY = 0;
-let actualX = 0;
-let actualY = 0;
+let modo="ninguno"
 
-let offsetMoveX = 0;
-let offsetMoveY = 0;
+let estancias=[]
+let activa=-1
 
-function ponerInfo(texto){
-  info.textContent = texto;
-}
+let dibujando=false
+let moviendo=false
+
+let inicioX=0
+let inicioY=0
+let actualX=0
+let actualY=0
+
+let offsetMoveX=0
+let offsetMoveY=0
+
+let canvasW=0
+let canvasH=0
 
 function ajustarCanvas(){
-  const r = zonaCanvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
 
-  canvasW = Math.max(1, Math.round(r.width));
-  canvasH = Math.max(1, Math.round(r.height));
+const r=zonaCanvas.getBoundingClientRect()
 
-  canvas.width = Math.round(canvasW * dpr);
-  canvas.height = Math.round(canvasH * dpr);
-  canvas.style.width = canvasW + "px";
-  canvas.style.height = canvasH + "px";
+const dpr=window.devicePixelRatio||1
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  dibujar();
+canvasW=r.width
+canvasH=r.height
+
+canvas.width=canvasW*dpr
+canvas.height=canvasH*dpr
+
+canvas.style.width=canvasW+"px"
+canvas.style.height=canvasH+"px"
+
+ctx.setTransform(dpr,0,0,dpr,0,0)
+
+dibujar()
+
 }
 
-function obtenerPosicionDesdeEvento(ev){
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: ev.clientX - r.left,
-    y: ev.clientY - r.top
-  };
+function pos(e){
+
+const r=canvas.getBoundingClientRect()
+
+return{
+
+x:e.clientX-r.left,
+y:e.clientY-r.top
+
 }
 
-function rectNormalizado(x1, y1, x2, y2){
-  return {
-    x: Math.min(x1, x2),
-    y: Math.min(y1, y2),
-    w: Math.abs(x2 - x1),
-    h: Math.abs(y2 - y1)
-  };
 }
 
-function metrosDesdePx(px){
-  return px / 100;
+function rectNorm(x1,y1,x2,y2){
+
+return{
+
+x:Math.min(x1,x2),
+y:Math.min(y1,y2),
+w:Math.abs(x2-x1),
+h:Math.abs(y2-y1)
+
 }
 
-function dentroRect(px, py, r){
-  return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
 }
 
-function buscarEstanciaEnPunto(x, y){
-  for(let i = estancias.length - 1; i >= 0; i--){
-    if(dentroRect(x, y, estancias[i])) return i;
-  }
-  return -1;
+function metros(px){
+
+return px/100
+
 }
 
-function dibujarTextoRect(rect){
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "12px Arial";
-  ctx.fillText(metrosDesdePx(rect.w).toFixed(2).replace(".", ",") + " m", rect.x + 8, rect.y + 18);
-  ctx.fillText(metrosDesdePx(rect.h).toFixed(2).replace(".", ",") + " m", rect.x + 8, rect.y + 36);
+function dentro(px,py,r){
+
+return px>=r.x && px<=r.x+r.w && py>=r.y && py<=r.y+r.h
+
 }
 
-function dibujarRect(rect, seleccionada){
-  ctx.fillStyle = seleccionada ? "rgba(240,132,47,0.18)" : "rgba(0,227,138,0.10)";
-  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+function buscar(x,y){
 
-  ctx.strokeStyle = seleccionada ? "#f0842f" : "#6af2a6";
-  ctx.lineWidth = seleccionada ? 3 : 2;
-  ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+for(let i=estancias.length-1;i>=0;i--){
 
-  dibujarTextoRect(rect);
+if(dentro(x,y,estancias[i]))return i
 
-  if(seleccionada){
-    ctx.beginPath();
-    ctx.arc(rect.x, rect.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffd166";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(rect.x + rect.w, rect.y + rect.h, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ff5d5d";
-    ctx.fill();
-  }
 }
 
-function actualizarBotones(){
-  btnEstancia.classList.toggle("activo", modo === "estancia");
-  btnMover.classList.toggle("activo", modo === "mover");
+return -1
+
+}
+
+function textoRect(r){
+
+ctx.fillStyle="#fff"
+
+ctx.font="12px Arial"
+
+ctx.fillText(metros(r.w).toFixed(2)+" m",r.x+8,r.y+18)
+ctx.fillText(metros(r.h).toFixed(2)+" m",r.x+8,r.y+32)
+
+}
+
+function dibujarRect(r,sel){
+
+ctx.fillStyle=sel?"rgba(240,132,47,0.18)":"rgba(0,227,138,0.10)"
+
+ctx.fillRect(r.x,r.y,r.w,r.h)
+
+ctx.strokeStyle=sel?"#f0842f":"#6af2a6"
+
+ctx.lineWidth=sel?3:2
+
+ctx.strokeRect(r.x,r.y,r.w,r.h)
+
+textoRect(r)
+
 }
 
 function dibujar(){
-  ctx.clearRect(0, 0, canvasW, canvasH);
 
-  for(let i = 0; i < estancias.length; i++){
-    dibujarRect(estancias[i], i === activa);
-  }
+ctx.clearRect(0,0,canvasW,canvasH)
 
-  if(dibujando){
-    const rect = rectNormalizado(inicioX, inicioY, actualX, actualY);
+for(let i=0;i<estancias.length;i++){
 
-    ctx.fillStyle = "rgba(240,132,47,0.14)";
-    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+dibujarRect(estancias[i],i===activa)
 
-    ctx.strokeStyle = "#f0842f";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-
-    dibujarTextoRect(rect);
-  }
-
-  actualizarBotones();
 }
 
-function textoEstadoBase(){
-  const total = estancias.length;
-  const txtActiva = activa === -1 ? "ninguna" : String(activa + 1);
-  return "Modo: " + modo + "\nEstancias: " + total + "\nActiva: " + txtActiva;
+if(dibujando){
+
+const r=rectNorm(inicioX,inicioY,actualX,actualY)
+
+ctx.strokeStyle="#f0842f"
+
+ctx.lineWidth=2
+
+ctx.strokeRect(r.x,r.y,r.w,r.h)
+
+textoRect(r)
+
 }
 
-btnEstancia.addEventListener("click", function(){
-  modo = "estancia";
-  ponerInfo("Modo estancia activo.\nToca el área oscura, arrastra y suelta.\n\n" + textoEstadoBase());
-  dibujar();
-});
-
-btnMover.addEventListener("click", function(){
-  modo = "mover";
-  ponerInfo("Modo mover activo.\nToca una estancia para seleccionarla y arrástrala.\n\n" + textoEstadoBase());
-  dibujar();
-});
-
-btnBorrarActiva.addEventListener("click", function(){
-  if(activa === -1){
-    ponerInfo("No hay estancia activa.\n\n" + textoEstadoBase());
-    return;
-  }
-
-  estancias.splice(activa, 1);
-
-  if(estancias.length === 0){
-    activa = -1;
-  } else if(activa >= estancias.length){
-    activa = estancias.length - 1;
-  }
-
-  ponerInfo("Estancia activa borrada.\n\n" + textoEstadoBase());
-  dibujar();
-});
-
-btnBorrarUltima.addEventListener("click", function(){
-  if(estancias.length > 0){
-    estancias.pop();
-    if(activa >= estancias.length) activa = estancias.length - 1;
-    if(estancias.length === 0) activa = -1;
-    ponerInfo("Última estancia borrada.\n\n" + textoEstadoBase());
-    dibujar();
-  }else{
-    ponerInfo("No hay estancias para borrar.\n\n" + textoEstadoBase());
-  }
-});
-
-btnLimpiar.addEventListener("click", function(){
-  estancias = [];
-  activa = -1;
-  dibujando = false;
-  moviendo = false;
-  ponerInfo("Plano limpiado.\n\n" + textoEstadoBase());
-  dibujar();
-});
-
-function iniciarDibujo(ev){
-  if(modo !== "estancia") return;
-  ev.preventDefault();
-
-  const p = obtenerPosicionDesdeEvento(ev);
-
-  dibujando = true;
-  inicioX = p.x;
-  inicioY = p.y;
-  actualX = p.x;
-  actualY = p.y;
-
-  ponerInfo(
-    "Dibujando estancia...\n" +
-    "inicio: " + Math.round(inicioX) + ", " + Math.round(inicioY) + "\n\n" +
-    textoEstadoBase()
-  );
-
-  dibujar();
 }
 
-function moverDibujo(ev){
-  if(!dibujando) return;
-  ev.preventDefault();
+btnEstancia.onclick=()=>{
 
-  const p = obtenerPosicionDesdeEvento(ev);
-  actualX = p.x;
-  actualY = p.y;
-  dibujar();
+modo="estancia"
+
 }
 
-function terminarDibujo(ev){
-  if(!dibujando) return;
-  ev.preventDefault();
+btnMover.onclick=()=>{
 
-  const p = obtenerPosicionDesdeEvento(ev);
-  actualX = p.x;
-  actualY = p.y;
+modo="mover"
 
-  const rect = rectNormalizado(inicioX, inicioY, actualX, actualY);
-  dibujando = false;
-
-  if(rect.w >= 20 && rect.h >= 20){
-    estancias.push(rect);
-    activa = estancias.length - 1;
-    ponerInfo(
-      "Estancia creada.\n" +
-      "Ancho: " + metrosDesdePx(rect.w).toFixed(2).replace(".", ",") + " m\n" +
-      "Alto: " + metrosDesdePx(rect.h).toFixed(2).replace(".", ",") + " m\n\n" +
-      textoEstadoBase()
-    );
-  }else{
-    ponerInfo("La estancia era demasiado pequeña.\n\n" + textoEstadoBase());
-  }
-
-  dibujar();
 }
 
-function iniciarMover(ev){
-  if(modo !== "mover") return;
-  ev.preventDefault();
+btnBorrarActiva.onclick=()=>{
 
-  const p = obtenerPosicionDesdeEvento(ev);
-  const idx = buscarEstanciaEnPunto(p.x, p.y);
+if(activa===-1)return
 
-  if(idx === -1){
-    activa = -1;
-    ponerInfo("No has tocado ninguna estancia.\n\n" + textoEstadoBase());
-    dibujar();
-    return;
-  }
+estancias.splice(activa,1)
 
-  activa = idx;
-  moviendo = true;
-  offsetMoveX = p.x - estancias[idx].x;
-  offsetMoveY = p.y - estancias[idx].y;
+activa=-1
 
-  ponerInfo(
-    "Estancia seleccionada: " + (activa + 1) + "\n" +
-    "Arrastra para mover.\n\n" +
-    textoEstadoBase()
-  );
+dibujar()
 
-  dibujar();
 }
 
-function moverEstancia(ev){
-  if(!moviendo || activa === -1) return;
-  ev.preventDefault();
+btnBorrarUltima.onclick=()=>{
 
-  const p = obtenerPosicionDesdeEvento(ev);
-  const r = estancias[activa];
+estancias.pop()
 
-  r.x = p.x - offsetMoveX;
-  r.y = p.y - offsetMoveY;
+dibujar()
 
-  dibujar();
 }
 
-function terminarMover(ev){
-  if(!moviendo) return;
-  ev.preventDefault();
+btnLimpiar.onclick=()=>{
 
-  moviendo = false;
+estancias=[]
 
-  if(activa !== -1){
-    const r = estancias[activa];
-    ponerInfo(
-      "Estancia movida.\n" +
-      "x: " + Math.round(r.x) + "  y: " + Math.round(r.y) + "\n\n" +
-      textoEstadoBase()
-    );
-  }else{
-    ponerInfo(textoEstadoBase());
-  }
+activa=-1
 
-  dibujar();
+dibujar()
+
 }
 
-canvas.addEventListener("pointerdown", function(ev){
-  if(modo === "estancia"){
-    iniciarDibujo(ev);
-  }else if(modo === "mover"){
-    iniciarMover(ev);
-  }
-});
+canvas.addEventListener("pointerdown",e=>{
 
-canvas.addEventListener("pointermove", function(ev){
-  if(dibujando){
-    moverDibujo(ev);
-  }else if(moviendo){
-    moverEstancia(ev);
-  }
-});
+const p=pos(e)
 
-canvas.addEventListener("pointerup", function(ev){
-  if(dibujando){
-    terminarDibujo(ev);
-  }else if(moviendo){
-    terminarMover(ev);
-  }
-});
+if(modo==="estancia"){
 
-canvas.addEventListener("pointercancel", function(ev){
-  if(dibujando){
-    terminarDibujo(ev);
-  }else if(moviendo){
-    terminarMover(ev);
-  }
-});
+dibujando=true
 
-window.addEventListener("resize", ajustarCanvas);
-window.addEventListener("orientationchange", ajustarCanvas);
+inicioX=p.x
+inicioY=p.y
 
-ajustarCanvas();
-ponerInfo("Carga correcta.\nPulsa “Nueva estancia” para dibujar o “Mover” para recolocar.\n\n" + textoEstadoBase());
+actualX=p.x
+actualY=p.y
+
+}
+
+if(modo==="mover"){
+
+const i=buscar(p.x,p.y)
+
+if(i!==-1){
+
+activa=i
+
+moviendo=true
+
+offsetMoveX=p.x-estancias[i].x
+offsetMoveY=p.y-estancias[i].y
+
+}
+
+}
+
+})
+
+canvas.addEventListener("pointermove",e=>{
+
+const p=pos(e)
+
+if(dibujando){
+
+actualX=p.x
+actualY=p.y
+
+dibujar()
+
+}
+
+if(moviendo){
+
+const r=estancias[activa]
+
+r.x=p.x-offsetMoveX
+r.y=p.y-offsetMoveY
+
+dibujar()
+
+}
+
+})
+
+canvas.addEventListener("pointerup",e=>{
+
+if(dibujando){
+
+const r=rectNorm(inicioX,inicioY,actualX,actualY)
+
+dibujando=false
+
+if(r.w>20 && r.h>20){
+
+estancias.push(r)
+
+activa=estancias.length-1
+
+}
+
+dibujar()
+
+}
+
+moviendo=false
+
+})
+
+window.addEventListener("resize",ajustarCanvas)
+
+ajustarCanvas()
+
 </script>
+
 </body>
 </html>
