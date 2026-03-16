@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ALLCALOR V6</title>
+<title>ALLCALOR V7</title>
 
 <style>
 *{
@@ -126,6 +126,8 @@ button.activo{
   <button id="btnPoligono">Polígono</button>
   <button id="btnCerrar">Cerrar estancia</button>
   <button id="btnEditar">Editar</button>
+  <button id="btnMasVertice">+ Vértice</button>
+  <button id="btnMenosVertice">- Vértice</button>
   <button id="btnBorrar" class="sec">Borrar activa</button>
   <button id="btnLimpiar" class="sec">Limpiar</button>
 </div>
@@ -154,6 +156,8 @@ const info = document.getElementById("info");
 const btnPoligono = document.getElementById("btnPoligono");
 const btnCerrar = document.getElementById("btnCerrar");
 const btnEditar = document.getElementById("btnEditar");
+const btnMasVertice = document.getElementById("btnMasVertice");
+const btnMenosVertice = document.getElementById("btnMenosVertice");
 const btnBorrar = document.getElementById("btnBorrar");
 const btnLimpiar = document.getElementById("btnLimpiar");
 
@@ -175,7 +179,9 @@ let indiceVerticeActivo = -1;
 let moviendoEstancia = false;
 let ultimoPuntoMover = null;
 
+let moviendoLado = false;
 let ladoActivo = -1;
+let ultimoPuntoLado = null;
 
 const PX_POR_METRO = 100;
 const RADIO_VERTICE = 16;
@@ -279,6 +285,24 @@ function distanciaPuntoASegmento(px, py, ax, ay, bx, by){
   return Math.hypot(px - cx, py - cy);
 }
 
+function proyeccionEnSegmento(px, py, ax, ay, bx, by){
+  const abx = bx - ax;
+  const aby = by - ay;
+  const apx = px - ax;
+  const apy = py - ay;
+  const ab2 = abx * abx + aby * aby;
+  if(ab2 === 0) return {x:ax, y:ay, t:0};
+
+  let t = (apx * abx + apy * aby) / ab2;
+  t = Math.max(0, Math.min(1, t));
+
+  return {
+    x: ax + abx * t,
+    y: ay + aby * t,
+    t
+  };
+}
+
 function buscarVerticeCercano(x, y){
   if(activa === -1) return -1;
   const pts = estancias[activa];
@@ -315,6 +339,16 @@ function moverEstanciaCompleta(indice, dx, dy){
     p.x += dx;
     p.y += dy;
   }
+}
+
+function moverLadoCompleto(indiceEstancia, indiceLado, dx, dy){
+  const pts = estancias[indiceEstancia];
+  const a = pts[indiceLado];
+  const b = pts[(indiceLado + 1) % pts.length];
+  a.x += dx;
+  a.y += dy;
+  b.x += dx;
+  b.y += dy;
 }
 
 function actualizarBotones(){
@@ -443,6 +477,7 @@ btnPoligono.addEventListener("click", function(){
   ladoActivo = -1;
   arrastrandoVertice = false;
   moviendoEstancia = false;
+  moviendoLado = false;
   indiceVerticeActivo = -1;
   setInfo("Modo polígono activo. Toca para añadir puntos.");
   dibujar();
@@ -464,7 +499,43 @@ btnCerrar.addEventListener("click", function(){
 
 btnEditar.addEventListener("click", function(){
   modo = "editar";
-  setInfo("Modo editar activo. Toca dentro de una estancia para seleccionarla. Arrastra dentro para moverla o arrastra un vértice.");
+  setInfo("Modo editar activo. Toca dentro para seleccionar, arrastra dentro para mover, arrastra vértice o arrastra lado.");
+  dibujar();
+});
+
+btnMasVertice.addEventListener("click", function(){
+  if(activa === -1 || ladoActivo === -1){
+    setInfo("Selecciona una estancia y un lado.");
+    return;
+  }
+
+  const pts = estancias[activa];
+  const a = pts[ladoActivo];
+  const b = pts[(ladoActivo + 1) % pts.length];
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+
+  pts.splice(ladoActivo + 1, 0, {x:mx, y:my});
+  setInfo("Vértice añadido.");
+  dibujar();
+});
+
+btnMenosVertice.addEventListener("click", function(){
+  if(activa === -1 || indiceVerticeActivo === -1){
+    setInfo("Selecciona un vértice.");
+    return;
+  }
+
+  const pts = estancias[activa];
+  if(pts.length <= 3){
+    setInfo("La estancia debe mantener al menos 3 vértices.");
+    return;
+  }
+
+  pts.splice(indiceVerticeActivo, 1);
+  indiceVerticeActivo = -1;
+  ladoActivo = -1;
+  setInfo("Vértice borrado.");
   dibujar();
 });
 
@@ -479,6 +550,7 @@ btnBorrar.addEventListener("click", function(){
   ladoActivo = -1;
   arrastrandoVertice = false;
   moviendoEstancia = false;
+  moviendoLado = false;
   indiceVerticeActivo = -1;
   setInfo("Estancia activa borrada.");
   dibujar();
@@ -491,6 +563,7 @@ btnLimpiar.addEventListener("click", function(){
   ladoActivo = -1;
   arrastrandoVertice = false;
   moviendoEstancia = false;
+  moviendoLado = false;
   indiceVerticeActivo = -1;
   setInfo("Plano limpiado.");
   dibujar();
@@ -548,6 +621,7 @@ canvas.addEventListener("pointerdown", function(ev){
     if(activa === -1){
       arrastrandoVertice = false;
       moviendoEstancia = false;
+      moviendoLado = false;
       indiceVerticeActivo = -1;
       setInfo("No has tocado ninguna estancia.");
       dibujar();
@@ -559,15 +633,30 @@ canvas.addEventListener("pointerdown", function(ev){
       indiceVerticeActivo = v;
       arrastrandoVertice = true;
       moviendoEstancia = false;
-      ladoActivo = buscarLadoCercano(p.x, p.y);
+      moviendoLado = false;
+      ladoActivo = -1;
       setInfo("Arrastrando vértice.");
       dibujar();
       return;
     }
 
-    ladoActivo = buscarLadoCercano(p.x, p.y);
+    const l = buscarLadoCercano(p.x, p.y);
+    if(l !== -1){
+      ladoActivo = l;
+      moviendoLado = true;
+      moviendoEstancia = false;
+      arrastrandoVertice = false;
+      ultimoPuntoLado = {x:p.x, y:p.y};
+      indiceVerticeActivo = -1;
+      setInfo("Arrastrando lado.");
+      dibujar();
+      return;
+    }
+
     moviendoEstancia = true;
     arrastrandoVertice = false;
+    moviendoLado = false;
+    indiceVerticeActivo = -1;
     ultimoPuntoMover = {x:p.x, y:p.y};
     setInfo("Estancia seleccionada. Arrastra para moverla.");
     dibujar();
@@ -584,6 +673,15 @@ canvas.addEventListener("pointermove", function(ev){
     return;
   }
 
+  if(moviendoLado && activa !== -1 && ladoActivo !== -1 && ultimoPuntoLado){
+    const dx = p.x - ultimoPuntoLado.x;
+    const dy = p.y - ultimoPuntoLado.y;
+    moverLadoCompleto(activa, ladoActivo, dx, dy);
+    ultimoPuntoLado = {x:p.x, y:p.y};
+    dibujar();
+    return;
+  }
+
   if(moviendoEstancia && activa !== -1 && ultimoPuntoMover){
     const dx = p.x - ultimoPuntoMover.x;
     const dy = p.y - ultimoPuntoMover.y;
@@ -596,8 +694,15 @@ canvas.addEventListener("pointermove", function(ev){
 canvas.addEventListener("pointerup", function(){
   if(arrastrandoVertice){
     arrastrandoVertice = false;
-    indiceVerticeActivo = -1;
     setInfo("Vértice movido.");
+    dibujar();
+    return;
+  }
+
+  if(moviendoLado){
+    moviendoLado = false;
+    ultimoPuntoLado = null;
+    setInfo("Lado movido.");
     dibujar();
     return;
   }
@@ -613,8 +718,10 @@ canvas.addEventListener("pointerup", function(){
 canvas.addEventListener("pointercancel", function(){
   arrastrandoVertice = false;
   moviendoEstancia = false;
+  moviendoLado = false;
   indiceVerticeActivo = -1;
   ultimoPuntoMover = null;
+  ultimoPuntoLado = null;
   dibujar();
 });
 
