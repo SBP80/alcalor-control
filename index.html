@@ -3,822 +3,423 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ALLCALOR V7.3</title>
+<title>ALLCALOR V8</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
 html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#111;
-  color:#fff;
-  font-family:Arial, Helvetica, sans-serif;
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#111;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
-  display:flex;
-  flex-direction:column;
-  height:100dvh;
+display:flex;
+flex-direction:column;
+height:100dvh;
 }
 
 #barra{
-  flex:0 0 auto;
-  background:#1f1f1f;
-  padding:10px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  border-bottom:1px solid #333;
+flex:0 0 auto;
+background:#1f1f1f;
+padding:10px;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+border-bottom:1px solid #333;
 }
 
 button{
-  border:none;
-  border-radius:10px;
-  padding:12px 16px;
-  font-size:16px;
-  font-weight:700;
-  background:#f0842f;
-  color:#fff;
+border:none;
+border-radius:10px;
+padding:12px 16px;
+font-size:16px;
+font-weight:700;
+background:#f0842f;
+color:#fff;
 }
 
-button.sec{
-  background:#5a616c;
+button.sec{background:#5a616c}
+button.activo{background:#2f8f46}
+
+#panel{
+flex:0 0 auto;
+display:none;
+gap:10px;
+align-items:center;
+flex-wrap:wrap;
+padding:10px;
+background:#252525;
+border-bottom:1px solid #333;
 }
 
-button.activo{
-  background:#2f8f46;
+#panel.visible{display:flex}
+
+.bloque{
+display:flex;
+align-items:center;
+gap:8px;
+background:#1a1a1a;
+padding:8px 10px;
+border-radius:10px;
 }
 
-#panelMedidas{
-  flex:0 0 auto;
-  display:none;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-  padding:10px;
-  background:#252525;
-  border-bottom:1px solid #333;
-}
+.bloque span{font-size:15px}
 
-#panelMedidas.visible{
-  display:flex;
-}
-
-.bloqueCampo{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  background:#1a1a1a;
-  padding:8px 10px;
-  border-radius:10px;
-}
-
-.bloqueCampo span{
-  font-size:15px;
-}
-
-.bloqueCampo input{
-  width:110px;
-  padding:8px;
-  font-size:18px;
-  border:none;
-  border-radius:8px;
-  background:#fff;
-  color:#111;
+.bloque input{
+width:110px;
+padding:8px;
+font-size:18px;
+border:none;
+border-radius:8px;
+background:#fff;
+color:#111;
 }
 
 #zonaCanvas{
-  flex:1 1 auto;
-  min-height:0;
-  position:relative;
-  background:#181818;
+flex:1 1 auto;
+min-height:0;
+background:#181818;
 }
 
 #canvas{
-  width:100%;
-  height:100%;
-  display:block;
-  background:#181818;
-  touch-action:none;
+width:100%;
+height:100%;
+display:block;
+touch-action:none;
 }
 
 #info{
-  flex:0 0 auto;
-  padding:8px 10px;
-  font-size:13px;
-  line-height:1.35;
-  background:#1f1f1f;
-  border-top:1px solid #333;
-  white-space:pre-line;
+flex:0 0 auto;
+padding:8px 10px;
+font-size:13px;
+line-height:1.35;
+background:#1f1f1f;
+border-top:1px solid #333;
+white-space:pre-line;
 }
 </style>
 </head>
+
 <body>
 
 <div id="barra">
-  <button id="btnPoligono">Polígono</button>
-  <button id="btnCerrar">Cerrar estancia</button>
-  <button id="btnEditar">Editar</button>
-  <button id="btnMasVertice">+ Vértice</button>
-  <button id="btnMenosVertice">- Vértice</button>
-  <button id="btnBorrar" class="sec">Borrar activa</button>
-  <button id="btnLimpiar" class="sec">Limpiar</button>
+<button id="btnPoligono">Polígono</button>
+<button id="btnCerrar">Cerrar estancia</button>
+<button id="btnEditar">Editar</button>
+<button id="btnPuerta">Puerta</button>
+<button id="btnBorrar" class="sec">Borrar activa</button>
+<button id="btnLimpiar" class="sec">Limpiar</button>
 </div>
 
-<div id="panelMedidas">
-  <div class="bloqueCampo">
-    <span>Lado</span>
-    <input id="inputLado" type="number" step="0.01" inputmode="decimal">
-    <span>m</span>
-  </div>
-  <button id="btnAplicarLado">Aplicar lado</button>
+<div id="panel">
+<div class="bloque">
+<span>Lado</span>
+<input id="ladoInput" type="number" step="0.01">
+<span>m</span>
+</div>
+<button id="aplicarLado">Aplicar</button>
+
+<div class="bloque">
+<span>Puerta</span>
+<input id="puertaInput" type="number" step="0.01">
+<span>m</span>
+</div>
+<button id="aplicarPuerta">Aplicar</button>
+
+<button id="girarPuerta">Cambiar apertura</button>
 </div>
 
 <div id="zonaCanvas">
-  <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
 </div>
 
-<div id="info">Modo polígono activo. Toca para añadir puntos.</div>
+<div id="info">Modo polígono activo</div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const zonaCanvas = document.getElementById("zonaCanvas");
-const info = document.getElementById("info");
 
-const btnPoligono = document.getElementById("btnPoligono");
-const btnCerrar = document.getElementById("btnCerrar");
-const btnEditar = document.getElementById("btnEditar");
-const btnMasVertice = document.getElementById("btnMasVertice");
-const btnMenosVertice = document.getElementById("btnMenosVertice");
-const btnBorrar = document.getElementById("btnBorrar");
-const btnLimpiar = document.getElementById("btnLimpiar");
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
+const zonaCanvas=document.getElementById("zonaCanvas")
+const info=document.getElementById("info")
 
-const panelMedidas = document.getElementById("panelMedidas");
-const inputLado = document.getElementById("inputLado");
-const btnAplicarLado = document.getElementById("btnAplicarLado");
+const btnPoligono=document.getElementById("btnPoligono")
+const btnCerrar=document.getElementById("btnCerrar")
+const btnEditar=document.getElementById("btnEditar")
+const btnPuerta=document.getElementById("btnPuerta")
+const btnBorrar=document.getElementById("btnBorrar")
+const btnLimpiar=document.getElementById("btnLimpiar")
 
-let W = 0;
-let H = 0;
+const panel=document.getElementById("panel")
+const ladoInput=document.getElementById("ladoInput")
+const puertaInput=document.getElementById("puertaInput")
 
-let modo = "poligono";
-let estancias = [];
-let poligonoActual = [];
-let activa = -1;
+const aplicarLado=document.getElementById("aplicarLado")
+const aplicarPuerta=document.getElementById("aplicarPuerta")
+const girarPuerta=document.getElementById("girarPuerta")
 
-let arrastrandoVertice = false;
-let indiceVerticeActivo = -1;
+let W=0,H=0
 
-let moviendoEstancia = false;
-let ultimoPuntoMover = null;
+let modo="poligono"
+let estancias=[]
+let puertas=[]
 
-let moviendoLado = false;
-let ladoActivo = -1;
-let ultimoPuntoLado = null;
+let poligonoActual=[]
 
-let tipoSeleccion = "ninguna";
-let toquePendiente = false;
-let inicioToque = null;
-let permiteArrastre = false;
+let activa=-1
+let ladoActivo=-1
 
-const PX_POR_METRO = 100;
-const RADIO_VERTICE = 28;
-const UMBRAL_LADO = 28;
-const UMBRAL_ARRASTRE = 8;
+let PX=100
 
-function setInfo(txt){
-  info.textContent = txt;
-}
-
-function estadoSeleccion(){
-  if(activa === -1) return "Sin estancia seleccionada";
-  if(tipoSeleccion === "vertice" && indiceVerticeActivo !== -1){
-    return "Vértice " + (indiceVerticeActivo + 1) + " seleccionado";
-  }
-  if(tipoSeleccion === "lado" && ladoActivo !== -1){
-    return "Lado " + (ladoActivo + 1) + " seleccionado";
-  }
-  if(tipoSeleccion === "estancia"){
-    return "Estancia seleccionada";
-  }
-  return "Estancia seleccionada";
-}
-
-function mensaje(txt){
-  setInfo(txt + "\n" + estadoSeleccion());
-}
-
-function ajustarCanvas(){
-  const r = zonaCanvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-
-  W = Math.max(1, Math.round(r.width));
-  H = Math.max(1, Math.round(r.height));
-
-  canvas.width = Math.round(W * dpr);
-  canvas.height = Math.round(H * dpr);
-  canvas.style.width = W + "px";
-  canvas.style.height = H + "px";
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  dibujar();
+function resize(){
+const r=zonaCanvas.getBoundingClientRect()
+W=r.width
+H=r.height
+canvas.width=W*devicePixelRatio
+canvas.height=H*devicePixelRatio
+canvas.style.width=W+"px"
+canvas.style.height=H+"px"
+ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)
+draw()
 }
 
 function pos(ev){
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: ev.clientX - r.left,
-    y: ev.clientY - r.top
-  };
+const r=canvas.getBoundingClientRect()
+return{
+x:ev.clientX-r.left,
+y:ev.clientY-r.top
+}
 }
 
-function distancia(a,b){
-  return Math.hypot(a.x - b.x, a.y - b.y);
+function dist(a,b){
+return Math.hypot(a.x-b.x,a.y-b.y)
 }
 
-function pxAMetros(px){
-  return px / PX_POR_METRO;
+function m(px){return (px/PX).toFixed(2)}
+
+function inside(x,y,p){
+let inside=false
+for(let i=0,j=p.length-1;i<p.length;j=i++){
+const xi=p[i].x,yi=p[i].y
+const xj=p[j].x,yj=p[j].y
+const intersect=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)
+if(intersect)inside=!inside
+}
+return inside
 }
 
-function metrosAPx(m){
-  return m * PX_POR_METRO;
+function sideHit(x,y,poly){
+for(let i=0;i<poly.length;i++){
+const a=poly[i]
+const b=poly[(i+1)%poly.length]
+const d=lineDist(x,y,a.x,a.y,b.x,b.y)
+if(d<20)return i
+}
+return -1
 }
 
-function formatM(px){
-  return pxAMetros(px).toFixed(2).replace(".", ",") + " m";
+function lineDist(px,py,x1,y1,x2,y2){
+const A=px-x1
+const B=py-y1
+const C=x2-x1
+const D=y2-y1
+const dot=A*C+B*D
+const len=C*C+D*D
+let t=dot/len
+t=Math.max(0,Math.min(1,t))
+const x=x1+t*C
+const y=y1+t*D
+return Math.hypot(px-x,py-y)
 }
 
-function areaPoligono(pts){
-  let area = 0;
-  for(let i = 0; i < pts.length; i++){
-    const j = (i + 1) % pts.length;
-    area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
-  }
-  return Math.abs(area / 2);
+function drawDoor(d){
+
+const a=d.a
+const b=d.b
+
+const dx=b.x-a.x
+const dy=b.y-a.y
+
+const len=Math.hypot(dx,dy)
+
+const ux=dx/len
+const uy=dy/len
+
+const cx=a.x+ux*d.pos
+const cy=a.y+uy*d.pos
+
+const w=d.width*PX
+
+const hx=ux*w/2
+const hy=uy*w/2
+
+const x1=cx-hx
+const y1=cy-hy
+const x2=cx+hx
+const y2=cy+hy
+
+ctx.lineWidth=4
+ctx.strokeStyle="#fff"
+ctx.beginPath()
+ctx.moveTo(x1,y1)
+ctx.lineTo(x2,y2)
+ctx.stroke()
+
+const nx=-uy
+const ny=ux
+
+const dir=d.flip? -1:1
+
+const arcR=w
+
+ctx.beginPath()
+ctx.strokeStyle="#aaa"
+ctx.arc(cx,cy,arcR,
+Math.atan2(y1-cy,x1-cx),
+Math.atan2(y1-cy,x1-cx)+dir*Math.PI/2)
+ctx.stroke()
+
 }
 
-function centroide(pts){
-  let sx = 0;
-  let sy = 0;
-  for(const p of pts){
-    sx += p.x;
-    sy += p.y;
-  }
-  return {
-    x: sx / pts.length,
-    y: sy / pts.length
-  };
+function drawPoly(p,sel){
+
+ctx.beginPath()
+ctx.moveTo(p[0].x,p[0].y)
+for(let i=1;i<p.length;i++)ctx.lineTo(p[i].x,p[i].y)
+ctx.closePath()
+
+ctx.fillStyle=sel?"rgba(240,132,47,.2)":"rgba(0,227,138,.1)"
+ctx.fill()
+
+ctx.strokeStyle=sel?"#f0842f":"#78f1af"
+ctx.lineWidth=2
+ctx.stroke()
+
+for(let i=0;i<p.length;i++){
+const a=p[i]
+const b=p[(i+1)%p.length]
+ctx.fillStyle="#fff"
+ctx.font="12px Arial"
+ctx.fillText(m(dist(a,b))+" m",(a.x+b.x)/2,(a.y+b.y)/2)
 }
 
-function puntoEnPoligono(x, y, pts){
-  let dentro = false;
-  for(let i = 0, j = pts.length - 1; i < pts.length; j = i++){
-    const xi = pts[i].x, yi = pts[i].y;
-    const xj = pts[j].x, yj = pts[j].y;
-
-    const intersecta =
-      ((yi > y) !== (yj > y)) &&
-      (x < (xj - xi) * (y - yi) / ((yj - yi) || 0.0000001) + xi);
-
-    if(intersecta) dentro = !dentro;
-  }
-  return dentro;
 }
 
-function distanciaPuntoASegmento(px, py, ax, ay, bx, by){
-  const abx = bx - ax;
-  const aby = by - ay;
-  const apx = px - ax;
-  const apy = py - ay;
-  const ab2 = abx * abx + aby * aby;
-  if(ab2 === 0) return Math.hypot(px - ax, py - ay);
+function draw(){
 
-  let t = (apx * abx + apy * aby) / ab2;
-  t = Math.max(0, Math.min(1, t));
+ctx.clearRect(0,0,W,H)
 
-  const cx = ax + abx * t;
-  const cy = ay + aby * t;
-
-  return Math.hypot(px - cx, py - cy);
+for(let i=0;i<estancias.length;i++){
+drawPoly(estancias[i],i===activa)
 }
 
-function buscarVerticeCercano(x, y){
-  if(activa === -1) return -1;
-  const pts = estancias[activa];
-  for(let i = 0; i < pts.length; i++){
-    if(Math.hypot(pts[i].x - x, pts[i].y - y) <= RADIO_VERTICE){
-      return i;
-    }
-  }
-  return -1;
+for(const d of puertas){
+drawDoor(d)
 }
 
-function buscarLadoCercano(x, y){
-  if(activa === -1) return -1;
-  const pts = estancias[activa];
-  for(let i = 0; i < pts.length; i++){
-    const a = pts[i];
-    const b = pts[(i + 1) % pts.length];
-    const d = distanciaPuntoASegmento(x, y, a.x, a.y, b.x, b.y);
-    if(d <= UMBRAL_LADO) return i;
-  }
-  return -1;
+if(poligonoActual.length){
+ctx.beginPath()
+ctx.moveTo(poligonoActual[0].x,poligonoActual[0].y)
+for(let i=1;i<poligonoActual.length;i++)
+ctx.lineTo(poligonoActual[i].x,poligonoActual[i].y)
+ctx.strokeStyle="#f0842f"
+ctx.stroke()
 }
 
-function buscarEstanciaPorPunto(x, y){
-  for(let i = estancias.length - 1; i >= 0; i--){
-    if(puntoEnPoligono(x, y, estancias[i])) return i;
-  }
-  return -1;
 }
 
-function detectarSeleccion(x, y){
-  const idx = buscarEstanciaPorPunto(x, y);
-  if(idx === -1){
-    return {estancia:-1, tipo:"ninguna", indice:-1};
-  }
+canvas.addEventListener("pointerdown",e=>{
 
-  activa = idx;
+const p=pos(e)
 
-  const v = buscarVerticeCercano(x, y);
-  if(v !== -1){
-    return {estancia:idx, tipo:"vertice", indice:v};
-  }
-
-  const l = buscarLadoCercano(x, y);
-  if(l !== -1){
-    return {estancia:idx, tipo:"lado", indice:l};
-  }
-
-  return {estancia:idx, tipo:"estancia", indice:-1};
+if(modo==="poligono"){
+poligonoActual.push(p)
+draw()
+return
 }
 
-function aplicarSeleccion(sel){
-  activa = sel.estancia;
-  tipoSeleccion = sel.tipo;
-  indiceVerticeActivo = -1;
-  ladoActivo = -1;
-
-  if(sel.tipo === "vertice"){
-    indiceVerticeActivo = sel.indice;
-  }else if(sel.tipo === "lado"){
-    ladoActivo = sel.indice;
-  }
+for(let i=estancias.length-1;i>=0;i--){
+if(inside(p.x,p.y,estancias[i])){
+activa=i
+ladoActivo=sideHit(p.x,p.y,estancias[i])
+panel.classList.add("visible")
+draw()
+return
+}
 }
 
-function limpiarArrastres(){
-  arrastrandoVertice = false;
-  moviendoLado = false;
-  moviendoEstancia = false;
-  ultimoPuntoMover = null;
-  ultimoPuntoLado = null;
+})
+
+btnCerrar.onclick=()=>{
+if(poligonoActual.length<3)return
+estancias.push(poligonoActual)
+poligonoActual=[]
+draw()
 }
 
-function moverEstanciaCompleta(indice, dx, dy){
-  const pts = estancias[indice];
-  for(const p of pts){
-    p.x += dx;
-    p.y += dy;
-  }
+btnEditar.onclick=()=>{
+modo="editar"
+info.textContent="Modo editar"
 }
 
-function moverLadoCompleto(indiceEstancia, indiceLado, dx, dy){
-  const pts = estancias[indiceEstancia];
-  const a = pts[indiceLado];
-  const b = pts[(indiceLado + 1) % pts.length];
-  a.x += dx;
-  a.y += dy;
-  b.x += dx;
-  b.y += dy;
+btnPoligono.onclick=()=>{
+modo="poligono"
+info.textContent="Modo polígono"
 }
 
-function actualizarBotones(){
-  btnPoligono.classList.toggle("activo", modo === "poligono");
-  btnEditar.classList.toggle("activo", modo === "editar");
+btnPuerta.onclick=()=>{
 
-  if(activa !== -1 && ladoActivo !== -1){
-    panelMedidas.classList.add("visible");
-    const pts = estancias[activa];
-    const a = pts[ladoActivo];
-    const b = pts[(ladoActivo + 1) % pts.length];
-    inputLado.value = pxAMetros(distancia(a,b)).toFixed(2);
-  }else{
-    panelMedidas.classList.remove("visible");
-  }
+if(activa==-1||ladoActivo==-1)return
+
+const poly=estancias[activa]
+
+const a=poly[ladoActivo]
+const b=poly[(ladoActivo+1)%poly.length]
+
+const len=dist(a,b)
+
+puertas.push({
+a,b,
+pos:len/2,
+width:0.82,
+flip:false
+})
+
+draw()
+
 }
 
-function dibujarVertice(x, y, seleccionado){
-  if(seleccionado){
-    ctx.beginPath();
-    ctx.arc(x, y, 16, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 209, 102, 0.25)";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x, y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffd166";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#111";
-    ctx.fill();
-  }else{
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.strokeStyle = "#111";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
+aplicarPuerta.onclick=()=>{
+const v=parseFloat(puertaInput.value)
+if(!v)return
+const d=puertas[puertas.length-1]
+d.width=v
+draw()
 }
 
-function dibujarLadosYMedidas(pts, seleccionada){
-  for(let i = 0; i < pts.length; i++){
-    const a = pts[i];
-    const b = pts[(i + 1) % pts.length];
-    const mx = (a.x + b.x) / 2;
-    const my = (a.y + b.y) / 2;
-
-    if(seleccionada && ladoActivo === i){
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = "#ffd166";
-      ctx.lineWidth = 8;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(a.x, a.y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffd166";
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffd166";
-      ctx.fill();
-    }
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "12px Arial";
-    ctx.fillText(formatM(distancia(a,b)), mx + 4, my - 4);
-  }
+girarPuerta.onclick=()=>{
+const d=puertas[puertas.length-1]
+d.flip=!d.flip
+draw()
 }
 
-function dibujarPoligono(pts, seleccionada){
-  if(pts.length < 2) return;
-
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for(let i = 1; i < pts.length; i++){
-    ctx.lineTo(pts[i].x, pts[i].y);
-  }
-  ctx.closePath();
-
-  ctx.fillStyle = seleccionada ? "rgba(240,132,47,0.22)" : "rgba(0,227,138,0.10)";
-  ctx.fill();
-
-  ctx.strokeStyle = seleccionada ? "#f0842f" : "#78f1af";
-  ctx.lineWidth = seleccionada ? 3 : 2;
-  ctx.stroke();
-
-  dibujarLadosYMedidas(pts, seleccionada);
-
-  for(let i = 0; i < pts.length; i++){
-    const esVerticeActivo = seleccionada && indiceVerticeActivo === i;
-    dibujarVertice(pts[i].x, pts[i].y, esVerticeActivo);
-  }
-
-  const c = centroide(pts);
-  const areaM2 = (areaPoligono(pts) / 10000).toFixed(2).replace(".", ",");
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "14px Arial";
-  ctx.fillText(areaM2 + " m²", c.x - 20, c.y);
+btnLimpiar.onclick=()=>{
+estancias=[]
+puertas=[]
+poligonoActual=[]
+activa=-1
+draw()
 }
 
-function dibujarPoligonoAbierto(pts){
-  if(pts.length === 0) return;
+window.addEventListener("resize",resize)
+resize()
 
-  if(pts.length === 1){
-    dibujarVertice(pts[0].x, pts[0].y, false);
-    return;
-  }
-
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for(let i = 1; i < pts.length; i++){
-    ctx.lineTo(pts[i].x, pts[i].y);
-  }
-
-  ctx.strokeStyle = "#f0842f";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  for(let i = 0; i < pts.length; i++){
-    dibujarVertice(pts[i].x, pts[i].y, false);
-  }
-
-  for(let i = 0; i < pts.length - 1; i++){
-    const a = pts[i];
-    const b = pts[i + 1];
-    const mx = (a.x + b.x) / 2;
-    const my = (a.y + b.y) / 2;
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "12px Arial";
-    ctx.fillText(formatM(distancia(a,b)), mx + 4, my - 4);
-  }
-}
-
-function dibujar(){
-  ctx.clearRect(0, 0, W, H);
-
-  for(let i = 0; i < estancias.length; i++){
-    dibujarPoligono(estancias[i], i === activa);
-  }
-
-  dibujarPoligonoAbierto(poligonoActual);
-  actualizarBotones();
-}
-
-btnPoligono.addEventListener("click", function(){
-  modo = "poligono";
-  activa = -1;
-  ladoActivo = -1;
-  indiceVerticeActivo = -1;
-  tipoSeleccion = "ninguna";
-  toquePendiente = false;
-  limpiarArrastres();
-  mensaje("Modo polígono activo. Toca para añadir puntos.");
-  dibujar();
-});
-
-btnCerrar.addEventListener("click", function(){
-  if(poligonoActual.length < 3){
-    mensaje("Necesitas al menos 3 puntos para cerrar la estancia.");
-    return;
-  }
-
-  estancias.push(poligonoActual.map(p => ({x:p.x, y:p.y})));
-  activa = estancias.length - 1;
-  ladoActivo = -1;
-  indiceVerticeActivo = -1;
-  tipoSeleccion = "estancia";
-  poligonoActual = [];
-  mensaje("Estancia cerrada.");
-  dibujar();
-});
-
-btnEditar.addEventListener("click", function(){
-  modo = "editar";
-  mensaje("Modo editar activo. Primer toque selecciona. Después arrastra.");
-  dibujar();
-});
-
-btnMasVertice.addEventListener("click", function(){
-  if(activa === -1 || ladoActivo === -1){
-    mensaje("Selecciona una estancia y un lado.");
-    return;
-  }
-
-  const pts = estancias[activa];
-  const a = pts[ladoActivo];
-  const b = pts[(ladoActivo + 1) % pts.length];
-  const mx = (a.x + b.x) / 2;
-  const my = (a.y + b.y) / 2;
-
-  pts.splice(ladoActivo + 1, 0, {x:mx, y:my});
-  indiceVerticeActivo = ladoActivo + 1;
-  tipoSeleccion = "vertice";
-  mensaje("Vértice añadido.");
-  dibujar();
-});
-
-btnMenosVertice.addEventListener("click", function(){
-  if(activa === -1 || indiceVerticeActivo === -1){
-    mensaje("Selecciona un vértice.");
-    return;
-  }
-
-  const pts = estancias[activa];
-  if(pts.length <= 3){
-    mensaje("La estancia debe mantener al menos 3 vértices.");
-    return;
-  }
-
-  pts.splice(indiceVerticeActivo, 1);
-  indiceVerticeActivo = -1;
-  ladoActivo = -1;
-  tipoSeleccion = "estancia";
-  mensaje("Vértice borrado.");
-  dibujar();
-});
-
-btnBorrar.addEventListener("click", function(){
-  if(activa === -1){
-    mensaje("No hay estancia activa.");
-    return;
-  }
-
-  estancias.splice(activa, 1);
-  activa = -1;
-  ladoActivo = -1;
-  indiceVerticeActivo = -1;
-  tipoSeleccion = "ninguna";
-  toquePendiente = false;
-  limpiarArrastres();
-  mensaje("Estancia activa borrada.");
-  dibujar();
-});
-
-btnLimpiar.addEventListener("click", function(){
-  estancias = [];
-  poligonoActual = [];
-  activa = -1;
-  ladoActivo = -1;
-  indiceVerticeActivo = -1;
-  tipoSeleccion = "ninguna";
-  toquePendiente = false;
-  limpiarArrastres();
-  mensaje("Plano limpiado.");
-  dibujar();
-});
-
-btnAplicarLado.addEventListener("click", function(){
-  if(activa === -1 || ladoActivo === -1) return;
-
-  const valorM = Number(String(inputLado.value).replace(",", "."));
-  if(!Number.isFinite(valorM) || valorM <= 0){
-    mensaje("Medida de lado no válida.");
-    return;
-  }
-
-  const pts = estancias[activa];
-  const a = pts[ladoActivo];
-  const b = pts[(ladoActivo + 1) % pts.length];
-
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const len = Math.hypot(dx, dy);
-
-  if(len === 0){
-    mensaje("No se puede aplicar medida a un lado de longitud cero.");
-    return;
-  }
-
-  const nuevaLen = metrosAPx(valorM);
-  const ux = dx / len;
-  const uy = dy / len;
-
-  b.x = a.x + ux * nuevaLen;
-  b.y = a.y + uy * nuevaLen;
-
-  mensaje("Medida de lado aplicada: " + valorM.toFixed(2).replace(".", ",") + " m");
-  dibujar();
-});
-
-canvas.addEventListener("pointerdown", function(ev){
-  const p = pos(ev);
-  canvas.setPointerCapture(ev.pointerId);
-
-  if(modo === "poligono"){
-    poligonoActual.push({x:p.x, y:p.y});
-    mensaje("Punto añadido. Puntos actuales: " + poligonoActual.length);
-    dibujar();
-    return;
-  }
-
-  if(modo === "editar"){
-    limpiarArrastres();
-    toquePendiente = true;
-    inicioToque = {x:p.x, y:p.y};
-    permiteArrastre = false;
-
-    const sel = detectarSeleccion(p.x, p.y);
-
-    if(sel.estancia === -1){
-      activa = -1;
-      ladoActivo = -1;
-      indiceVerticeActivo = -1;
-      tipoSeleccion = "ninguna";
-      mensaje("No has tocado ninguna estancia.");
-      dibujar();
-      return;
-    }
-
-    aplicarSeleccion(sel);
-    mensaje("Selección lista. Arrastra para actuar.");
-    dibujar();
-  }
-});
-
-canvas.addEventListener("pointermove", function(ev){
-  const p = pos(ev);
-
-  if(modo !== "editar") return;
-  if(activa === -1) return;
-
-  if(toquePendiente && inicioToque){
-    const d = Math.hypot(p.x - inicioToque.x, p.y - inicioToque.y);
-    if(d > UMBRAL_ARRASTRE){
-      toquePendiente = false;
-      permiteArrastre = true;
-
-      if(tipoSeleccion === "vertice" && indiceVerticeActivo !== -1){
-        arrastrandoVertice = true;
-        mensaje("Arrastrando vértice " + (indiceVerticeActivo + 1) + ".");
-      }else if(tipoSeleccion === "lado" && ladoActivo !== -1){
-        moviendoLado = true;
-        ultimoPuntoLado = {x:p.x, y:p.y};
-        mensaje("Arrastrando lado " + (ladoActivo + 1) + ".");
-      }else if(tipoSeleccion === "estancia"){
-        moviendoEstancia = true;
-        ultimoPuntoMover = {x:p.x, y:p.y};
-        mensaje("Arrastrando estancia.");
-      }
-    }
-  }
-
-  if(arrastrandoVertice && indiceVerticeActivo !== -1){
-    estancias[activa][indiceVerticeActivo].x = p.x;
-    estancias[activa][indiceVerticeActivo].y = p.y;
-    dibujar();
-    return;
-  }
-
-  if(moviendoLado && ladoActivo !== -1 && ultimoPuntoLado){
-    const dx = p.x - ultimoPuntoLado.x;
-    const dy = p.y - ultimoPuntoLado.y;
-    moverLadoCompleto(activa, ladoActivo, dx, dy);
-    ultimoPuntoLado = {x:p.x, y:p.y};
-    dibujar();
-    return;
-  }
-
-  if(moviendoEstancia && ultimoPuntoMover){
-    const dx = p.x - ultimoPuntoMover.x;
-    const dy = p.y - ultimoPuntoMover.y;
-    moverEstanciaCompleta(activa, dx, dy);
-    ultimoPuntoMover = {x:p.x, y:p.y};
-    dibujar();
-  }
-});
-
-canvas.addEventListener("pointerup", function(){
-  toquePendiente = false;
-  inicioToque = null;
-  permiteArrastre = false;
-
-  if(arrastrandoVertice){
-    arrastrandoVertice = false;
-    mensaje("Vértice movido.");
-    dibujar();
-    return;
-  }
-
-  if(moviendoLado){
-    moviendoLado = false;
-    ultimoPuntoLado = null;
-    mensaje("Lado movido.");
-    dibujar();
-    return;
-  }
-
-  if(moviendoEstancia){
-    moviendoEstancia = false;
-    ultimoPuntoMover = null;
-    mensaje("Estancia movida.");
-    dibujar();
-    return;
-  }
-
-  dibujar();
-});
-
-canvas.addEventListener("pointercancel", function(){
-  toquePendiente = false;
-  inicioToque = null;
-  permiteArrastre = false;
-  limpiarArrastres();
-  dibujar();
-});
-
-window.addEventListener("resize", ajustarCanvas);
-window.addEventListener("orientationchange", ajustarCanvas);
-
-ajustarCanvas();
-mensaje("Modo polígono activo. Toca para añadir puntos.");
 </script>
-
 </body>
 </html>
