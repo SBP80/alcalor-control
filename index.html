@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ALLCALOR V5 ESTABLE</title>
+<title>ALLCALOR V6</title>
 
 <style>
 *{
@@ -56,6 +56,44 @@ button.activo{
   background:#2f8f46;
 }
 
+#panelMedidas{
+  flex:0 0 auto;
+  display:none;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:10px;
+  background:#252525;
+  border-bottom:1px solid #333;
+}
+
+#panelMedidas.visible{
+  display:flex;
+}
+
+.bloqueCampo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#1a1a1a;
+  padding:8px 10px;
+  border-radius:10px;
+}
+
+.bloqueCampo span{
+  font-size:15px;
+}
+
+.bloqueCampo input{
+  width:110px;
+  padding:8px;
+  font-size:18px;
+  border:none;
+  border-radius:8px;
+  background:#fff;
+  color:#111;
+}
+
 #zonaCanvas{
   flex:1 1 auto;
   min-height:0;
@@ -92,6 +130,15 @@ button.activo{
   <button id="btnLimpiar" class="sec">Limpiar</button>
 </div>
 
+<div id="panelMedidas">
+  <div class="bloqueCampo">
+    <span>Lado</span>
+    <input id="inputLado" type="number" step="0.01" inputmode="decimal">
+    <span>m</span>
+  </div>
+  <button id="btnAplicarLado">Aplicar lado</button>
+</div>
+
 <div id="zonaCanvas">
   <canvas id="canvas"></canvas>
 </div>
@@ -110,6 +157,10 @@ const btnEditar = document.getElementById("btnEditar");
 const btnBorrar = document.getElementById("btnBorrar");
 const btnLimpiar = document.getElementById("btnLimpiar");
 
+const panelMedidas = document.getElementById("panelMedidas");
+const inputLado = document.getElementById("inputLado");
+const btnAplicarLado = document.getElementById("btnAplicarLado");
+
 let W = 0;
 let H = 0;
 
@@ -120,6 +171,15 @@ let activa = -1;
 
 let arrastrandoVertice = false;
 let indiceVerticeActivo = -1;
+
+let moviendoEstancia = false;
+let ultimoPuntoMover = null;
+
+let ladoActivo = -1;
+
+const PX_POR_METRO = 100;
+const RADIO_VERTICE = 16;
+const UMBRAL_LADO = 18;
 
 function setInfo(txt){
   info.textContent = txt;
@@ -154,7 +214,15 @@ function distancia(a,b){
 }
 
 function pxAMetros(px){
-  return (px / 100).toFixed(2).replace(".", ",") + " m";
+  return px / PX_POR_METRO;
+}
+
+function metrosAPx(m){
+  return m * PX_POR_METRO;
+}
+
+function formatM(px){
+  return pxAMetros(px).toFixed(2).replace(".", ",") + " m";
 }
 
 function areaPoligono(pts){
@@ -194,13 +262,42 @@ function puntoEnPoligono(x, y, pts){
   return dentro;
 }
 
+function distanciaPuntoASegmento(px, py, ax, ay, bx, by){
+  const abx = bx - ax;
+  const aby = by - ay;
+  const apx = px - ax;
+  const apy = py - ay;
+  const ab2 = abx * abx + aby * aby;
+  if(ab2 === 0) return Math.hypot(px - ax, py - ay);
+
+  let t = (apx * abx + apy * aby) / ab2;
+  t = Math.max(0, Math.min(1, t));
+
+  const cx = ax + abx * t;
+  const cy = ay + aby * t;
+
+  return Math.hypot(px - cx, py - cy);
+}
+
 function buscarVerticeCercano(x, y){
   if(activa === -1) return -1;
   const pts = estancias[activa];
   for(let i = 0; i < pts.length; i++){
-    if(Math.hypot(pts[i].x - x, pts[i].y - y) <= 16){
+    if(Math.hypot(pts[i].x - x, pts[i].y - y) <= RADIO_VERTICE){
       return i;
     }
+  }
+  return -1;
+}
+
+function buscarLadoCercano(x, y){
+  if(activa === -1) return -1;
+  const pts = estancias[activa];
+  for(let i = 0; i < pts.length; i++){
+    const a = pts[i];
+    const b = pts[(i + 1) % pts.length];
+    const d = distanciaPuntoASegmento(x, y, a.x, a.y, b.x, b.y);
+    if(d <= UMBRAL_LADO) return i;
   }
   return -1;
 }
@@ -210,6 +307,51 @@ function buscarEstanciaPorPunto(x, y){
     if(puntoEnPoligono(x, y, estancias[i])) return i;
   }
   return -1;
+}
+
+function moverEstanciaCompleta(indice, dx, dy){
+  const pts = estancias[indice];
+  for(const p of pts){
+    p.x += dx;
+    p.y += dy;
+  }
+}
+
+function actualizarBotones(){
+  btnPoligono.classList.toggle("activo", modo === "poligono");
+  btnEditar.classList.toggle("activo", modo === "editar");
+
+  if(activa !== -1 && ladoActivo !== -1){
+    panelMedidas.classList.add("visible");
+    const pts = estancias[activa];
+    const a = pts[ladoActivo];
+    const b = pts[(ladoActivo + 1) % pts.length];
+    inputLado.value = pxAMetros(distancia(a,b)).toFixed(2);
+  }else{
+    panelMedidas.classList.remove("visible");
+  }
+}
+
+function dibujarLadosYMedidas(pts){
+  for(let i = 0; i < pts.length; i++){
+    const a = pts[i];
+    const b = pts[(i + 1) % pts.length];
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+
+    if(activa !== -1 && ladoActivo === i){
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = "#ffd166";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "12px Arial";
+    ctx.fillText(formatM(distancia(a,b)), mx + 4, my - 4);
+  }
 }
 
 function dibujarPoligono(pts, seleccionada){
@@ -229,6 +371,8 @@ function dibujarPoligono(pts, seleccionada){
   ctx.lineWidth = seleccionada ? 3 : 2;
   ctx.stroke();
 
+  dibujarLadosYMedidas(pts);
+
   for(let i = 0; i < pts.length; i++){
     ctx.beginPath();
     ctx.arc(pts[i].x, pts[i].y, 5, 0, Math.PI * 2);
@@ -239,7 +383,7 @@ function dibujarPoligono(pts, seleccionada){
   const c = centroide(pts);
   const areaM2 = (areaPoligono(pts) / 10000).toFixed(2).replace(".", ",");
   ctx.fillStyle = "#ffffff";
-  ctx.font = "12px Arial";
+  ctx.font = "14px Arial";
   ctx.fillText(areaM2 + " m²", c.x - 20, c.y);
 }
 
@@ -278,13 +422,8 @@ function dibujarPoligonoAbierto(pts){
     const my = (a.y + b.y) / 2;
     ctx.fillStyle = "#ffffff";
     ctx.font = "12px Arial";
-    ctx.fillText(pxAMetros(distancia(a,b)), mx + 4, my - 4);
+    ctx.fillText(formatM(distancia(a,b)), mx + 4, my - 4);
   }
-}
-
-function actualizarBotones(){
-  btnPoligono.classList.toggle("activo", modo === "poligono");
-  btnEditar.classList.toggle("activo", modo === "editar");
 }
 
 function dibujar(){
@@ -301,7 +440,9 @@ function dibujar(){
 btnPoligono.addEventListener("click", function(){
   modo = "poligono";
   activa = -1;
+  ladoActivo = -1;
   arrastrandoVertice = false;
+  moviendoEstancia = false;
   indiceVerticeActivo = -1;
   setInfo("Modo polígono activo. Toca para añadir puntos.");
   dibujar();
@@ -315,6 +456,7 @@ btnCerrar.addEventListener("click", function(){
 
   estancias.push(poligonoActual.map(p => ({x:p.x, y:p.y})));
   activa = estancias.length - 1;
+  ladoActivo = -1;
   poligonoActual = [];
   setInfo("Estancia cerrada.");
   dibujar();
@@ -322,7 +464,7 @@ btnCerrar.addEventListener("click", function(){
 
 btnEditar.addEventListener("click", function(){
   modo = "editar";
-  setInfo("Modo editar activo. Toca dentro de una estancia para seleccionarla. Arrastra un vértice para moverlo.");
+  setInfo("Modo editar activo. Toca dentro de una estancia para seleccionarla. Arrastra dentro para moverla o arrastra un vértice.");
   dibujar();
 });
 
@@ -334,7 +476,9 @@ btnBorrar.addEventListener("click", function(){
 
   estancias.splice(activa, 1);
   activa = -1;
+  ladoActivo = -1;
   arrastrandoVertice = false;
+  moviendoEstancia = false;
   indiceVerticeActivo = -1;
   setInfo("Estancia activa borrada.");
   dibujar();
@@ -344,9 +488,44 @@ btnLimpiar.addEventListener("click", function(){
   estancias = [];
   poligonoActual = [];
   activa = -1;
+  ladoActivo = -1;
   arrastrandoVertice = false;
+  moviendoEstancia = false;
   indiceVerticeActivo = -1;
   setInfo("Plano limpiado.");
+  dibujar();
+});
+
+btnAplicarLado.addEventListener("click", function(){
+  if(activa === -1 || ladoActivo === -1) return;
+
+  const valorM = Number(String(inputLado.value).replace(",", "."));
+  if(!Number.isFinite(valorM) || valorM <= 0){
+    setInfo("Medida de lado no válida.");
+    return;
+  }
+
+  const pts = estancias[activa];
+  const a = pts[ladoActivo];
+  const b = pts[(ladoActivo + 1) % pts.length];
+
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy);
+
+  if(len === 0){
+    setInfo("No se puede aplicar medida a un lado de longitud cero.");
+    return;
+  }
+
+  const nuevaLen = metrosAPx(valorM);
+  const ux = dx / len;
+  const uy = dy / len;
+
+  b.x = a.x + ux * nuevaLen;
+  b.y = a.y + uy * nuevaLen;
+
+  setInfo("Medida de lado aplicada: " + valorM.toFixed(2).replace(".", ",") + " m");
   dibujar();
 });
 
@@ -364,8 +543,12 @@ canvas.addEventListener("pointerdown", function(ev){
   if(modo === "editar"){
     const idx = buscarEstanciaPorPunto(p.x, p.y);
     activa = idx;
+    ladoActivo = -1;
 
     if(activa === -1){
+      arrastrandoVertice = false;
+      moviendoEstancia = false;
+      indiceVerticeActivo = -1;
       setInfo("No has tocado ninguna estancia.");
       dibujar();
       return;
@@ -375,23 +558,39 @@ canvas.addEventListener("pointerdown", function(ev){
     if(v !== -1){
       indiceVerticeActivo = v;
       arrastrandoVertice = true;
+      moviendoEstancia = false;
+      ladoActivo = buscarLadoCercano(p.x, p.y);
       setInfo("Arrastrando vértice.");
-    }else{
-      indiceVerticeActivo = -1;
-      setInfo("Estancia seleccionada.");
+      dibujar();
+      return;
     }
 
+    ladoActivo = buscarLadoCercano(p.x, p.y);
+    moviendoEstancia = true;
+    arrastrandoVertice = false;
+    ultimoPuntoMover = {x:p.x, y:p.y};
+    setInfo("Estancia seleccionada. Arrastra para moverla.");
     dibujar();
   }
 });
 
 canvas.addEventListener("pointermove", function(ev){
-  if(!arrastrandoVertice || activa === -1 || indiceVerticeActivo === -1) return;
-
   const p = pos(ev);
-  estancias[activa][indiceVerticeActivo].x = p.x;
-  estancias[activa][indiceVerticeActivo].y = p.y;
-  dibujar();
+
+  if(arrastrandoVertice && activa !== -1 && indiceVerticeActivo !== -1){
+    estancias[activa][indiceVerticeActivo].x = p.x;
+    estancias[activa][indiceVerticeActivo].y = p.y;
+    dibujar();
+    return;
+  }
+
+  if(moviendoEstancia && activa !== -1 && ultimoPuntoMover){
+    const dx = p.x - ultimoPuntoMover.x;
+    const dy = p.y - ultimoPuntoMover.y;
+    moverEstanciaCompleta(activa, dx, dy);
+    ultimoPuntoMover = {x:p.x, y:p.y};
+    dibujar();
+  }
 });
 
 canvas.addEventListener("pointerup", function(){
@@ -400,12 +599,22 @@ canvas.addEventListener("pointerup", function(){
     indiceVerticeActivo = -1;
     setInfo("Vértice movido.");
     dibujar();
+    return;
+  }
+
+  if(moviendoEstancia){
+    moviendoEstancia = false;
+    ultimoPuntoMover = null;
+    setInfo("Estancia movida.");
+    dibujar();
   }
 });
 
 canvas.addEventListener("pointercancel", function(){
   arrastrandoVertice = false;
+  moviendoEstancia = false;
   indiceVerticeActivo = -1;
+  ultimoPuntoMover = null;
   dibujar();
 });
 
