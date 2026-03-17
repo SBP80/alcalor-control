@@ -8,14 +8,14 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #111;
+    font-family: Arial;
+    background: #0b0b0b;
     color: white;
 }
 
 .header {
     padding: 15px;
-    font-size: 22px;
+    font-size: 20px;
     border-bottom: 2px solid orange;
 }
 
@@ -28,43 +28,43 @@ body {
     padding: 15px;
     background: orange;
     border: none;
-    font-weight: bold;
     font-size: 18px;
+    margin-bottom: 15px;
     cursor: pointer;
-    color: #111;
-}
-
-.clientes {
-    margin-top: 20px;
 }
 
 .cliente {
-    background: #1c1c1c;
+    background: #1a1a1a;
     padding: 15px;
-    border-radius: 5px;
     margin-bottom: 10px;
-}
-
-.cliente strong {
-    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
 }
 </style>
 </head>
+
 <body>
 
-<div class="header">
-    ALLCALOR PRO
-</div>
+<div class="header">ALLCALOR PRO</div>
 
 <div class="container">
-    <button class="btn" onclick="nuevoCliente()">+ Nuevo cliente</button>
-    <div class="clientes" id="listaClientes"></div>
+
+<button class="btn" onclick="nuevoCliente()">+ Nuevo cliente</button>
+
+<div class="clientes"></div>
+
 </div>
 
 <script>
+
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
+function guardar() {
+    localStorage.setItem("clientes", JSON.stringify(clientes));
+}
+
 function nuevoCliente() {
+
     let nombre = prompt("Nombre del cliente:");
     if (!nombre) return;
 
@@ -73,40 +73,47 @@ function nuevoCliente() {
     let notas = prompt("Notas:");
 
     clientes.push({
-        nombre: nombre.trim(),
-        telefono: telefono || "",
-        direccion: direccion || "",
-        notas: notas || ""
+        id: Date.now(),
+        nombre,
+        telefono,
+        direccion,
+        notas
     });
 
     guardar();
     mostrarClientes();
 }
 
-function guardar() {
-    localStorage.setItem("clientes", JSON.stringify(clientes));
-}
-
 function mostrarClientes() {
-    const contenedor = document.getElementById("listaClientes");
+
+    const contenedor = document.querySelector(".clientes");
     contenedor.innerHTML = "";
 
     clientes.forEach(cliente => {
-        const div = document.createElement("div");
+
+        let div = document.createElement("div");
         div.className = "cliente";
 
         div.innerHTML = `
             <strong>${cliente.nombre}</strong><br>
-            📞 ${cliente.telefono}<br>
-            📍 ${cliente.direccion}<br>
-            📝 ${cliente.notas}
+            📞 ${cliente.telefono || ""}<br>
+            📍 ${cliente.direccion || ""}<br>
+            📝 ${cliente.notas || ""}
         `;
+
+        div.onclick = () => abrirCliente(cliente.id);
 
         contenedor.appendChild(div);
     });
 }
 
+function abrirCliente(id) {
+    localStorage.setItem("clienteActivo", id);
+    window.location.href = "cliente.html";
+}
+
 mostrarClientes();
+
 </script>
 
 </body>
