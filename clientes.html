@@ -41,9 +41,11 @@ body {
 .cliente {
     background: #1c1c1c;
     padding: 15px;
-    border-bottom: 1px solid #333;
     border-radius: 5px;
     margin-bottom: 10px;
+}
+
+.cliente strong {
     font-size: 18px;
 }
 </style>
@@ -64,11 +66,25 @@ let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
 function nuevoCliente() {
     let nombre = prompt("Nombre del cliente:");
+    if (!nombre) return;
 
-    if (nombre && nombre.trim() !== "") {
-        clientes.push(nombre.trim());
-        mostrarClientes();
-    }
+    let telefono = prompt("Teléfono:");
+    let direccion = prompt("Dirección:");
+    let notas = prompt("Notas:");
+
+    clientes.push({
+        nombre: nombre.trim(),
+        telefono: telefono || "",
+        direccion: direccion || "",
+        notas: notas || ""
+    });
+
+    guardar();
+    mostrarClientes();
+}
+
+function guardar() {
+    localStorage.setItem("clientes", JSON.stringify(clientes));
 }
 
 function mostrarClientes() {
@@ -78,11 +94,16 @@ function mostrarClientes() {
     clientes.forEach(cliente => {
         const div = document.createElement("div");
         div.className = "cliente";
-        div.textContent = cliente;
+
+        div.innerHTML = `
+            <strong>${cliente.nombre}</strong><br>
+            📞 ${cliente.telefono}<br>
+            📍 ${cliente.direccion}<br>
+            📝 ${cliente.notas}
+        `;
+
         contenedor.appendChild(div);
     });
-
-    localStorage.setItem("clientes", JSON.stringify(clientes));
 }
 
 mostrarClientes();
