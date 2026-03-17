@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cliente</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0b0b0b;
+    color: white;
+}
+
+.header {
+    padding: 15px;
+    font-size: 20px;
+    border-bottom: 2px solid orange;
+}
+
+.container {
+    padding: 15px;
+}
+
+.card {
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: orange;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Ficha cliente</div>
+
+<div class="container">
+
+<div id="datos" class="card"></div>
+
+<button class="btn" onclick="volver()">⬅ Volver</button>
+
+</div>
+
+<script>
+
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let id = localStorage.getItem("clienteActivo");
+
+let cliente = clientes.find(c => c.id == id);
+
+const contenedor = document.getElementById("datos");
+
+if (cliente) {
+    contenedor.innerHTML = `
+        <h2>${cliente.nombre}</h2>
+        <p>📞 ${cliente.telefono || ""}</p>
+        <p>📍 ${cliente.direccion || ""}</p>
+        <p>📝 ${cliente.notas || ""}</p>
+    `;
+} else {
+    contenedor.innerHTML = "Cliente no encontrado";
+}
+
+function volver() {
+    window.location.href = "clientes.html";
+}
+
+</script>
+
+</body>
+</html>
