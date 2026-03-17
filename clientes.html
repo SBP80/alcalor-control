@@ -39,6 +39,19 @@ body {
     margin-bottom: 10px;
     border-radius: 10px;
     cursor: pointer;
+    position: relative;
+}
+
+.eliminar {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: red;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
 }
 </style>
 </head>
@@ -84,6 +97,18 @@ function nuevoCliente() {
     mostrarClientes();
 }
 
+function eliminarCliente(id) {
+
+    let confirmar = confirm("¿Seguro que quieres eliminar este cliente?");
+
+    if (!confirmar) return;
+
+    clientes = clientes.filter(c => c.id !== id);
+
+    guardar();
+    mostrarClientes();
+}
+
 function mostrarClientes() {
 
     const contenedor = document.querySelector(".clientes");
@@ -95,13 +120,21 @@ function mostrarClientes() {
         div.className = "cliente";
 
         div.innerHTML = `
+            <button class="eliminar">X</button>
             <strong>${cliente.nombre}</strong><br>
             📞 ${cliente.telefono || ""}<br>
             📍 ${cliente.direccion || ""}<br>
             📝 ${cliente.notas || ""}
         `;
 
+        // abrir cliente
         div.onclick = () => abrirCliente(cliente.id);
+
+        // eliminar sin abrir
+        div.querySelector(".eliminar").onclick = (e) => {
+            e.stopPropagation();
+            eliminarCliente(cliente.id);
+        };
 
         contenedor.appendChild(div);
     });
