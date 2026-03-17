@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obras</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0b0b0b;
+    color: white;
+}
+
+.header {
+    padding: 15px;
+    font-size: 20px;
+    border-bottom: 2px solid orange;
+}
+
+.container {
+    padding: 15px;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: orange;
+    border: none;
+    font-size: 18px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.card {
+    background: #1a1a1a;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Obras del cliente</div>
+
+<div class="container">
+
+<button class="btn" onclick="nuevaObra()">+ Nueva obra</button>
+
+<div id="lista"></div>
+
+<button class="btn" onclick="volver()">⬅ Volver</button>
+
+</div>
+
+<script>
+
+let clienteId = localStorage.getItem("clienteActivo");
+
+let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+
+function guardar() {
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+}
+
+function nuevaObra() {
+
+    let nombre = prompt("Nombre de la obra (ej: Vivienda Calle Mayor)");
+    if (!nombre) return;
+
+    obras.push({
+        id: Date.now(),
+        nombre
+    });
+
+    guardar();
+    mostrar();
+}
+
+function mostrar() {
+
+    const contenedor = document.getElementById("lista");
+    contenedor.innerHTML = "";
+
+    obras.forEach(o => {
+
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = o.nombre;
+
+        contenedor.appendChild(div);
+    });
+}
+
+function volver() {
+    window.location.href = "cliente.html";
+}
+
+mostrar();
+
+</script>
+
+</body>
+</html>
