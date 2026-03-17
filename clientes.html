@@ -31,6 +31,7 @@ body {
     font-weight: bold;
     font-size: 18px;
     cursor: pointer;
+    color: #111;
 }
 
 .clientes {
@@ -43,11 +44,10 @@ body {
     border-bottom: 1px solid #333;
     border-radius: 5px;
     margin-bottom: 10px;
+    font-size: 18px;
 }
 </style>
-
 </head>
-
 <body>
 
 <div class="header">
@@ -55,21 +55,18 @@ body {
 </div>
 
 <div class="container">
-
     <button class="btn" onclick="nuevoCliente()">+ Nuevo cliente</button>
-
     <div class="clientes" id="listaClientes"></div>
-
 </div>
 
 <script>
-let clientes = [];
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
 function nuevoCliente() {
     let nombre = prompt("Nombre del cliente:");
 
     if (nombre && nombre.trim() !== "") {
-        clientes.push(nombre);
+        clientes.push(nombre.trim());
         mostrarClientes();
     }
 }
@@ -84,7 +81,11 @@ function mostrarClientes() {
         div.textContent = cliente;
         contenedor.appendChild(div);
     });
+
+    localStorage.setItem("clientes", JSON.stringify(clientes));
 }
+
+mostrarClientes();
 </script>
 
 </body>
