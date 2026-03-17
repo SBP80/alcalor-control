@@ -52,14 +52,12 @@ body {
 
 <div id="lista"></div>
 
-<button class="btn" onclick="volver()">⬅ Volver</button>
+<button class="btn" onclick="volverAClientes()">⬅ Volver a clientes</button>
 
 </div>
 
 <script>
-
 let clienteId = localStorage.getItem("clienteActivo");
-
 let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 
 function guardar() {
@@ -67,13 +65,12 @@ function guardar() {
 }
 
 function nuevaObra() {
-
     let nombre = prompt("Nombre de la obra (ej: Vivienda Calle Mayor)");
-    if (!nombre) return;
+    if (!nombre || nombre.trim() === "") return;
 
     obras.push({
         id: Date.now(),
-        nombre
+        nombre: nombre.trim()
     });
 
     guardar();
@@ -81,26 +78,22 @@ function nuevaObra() {
 }
 
 function mostrar() {
-
     const contenedor = document.getElementById("lista");
     contenedor.innerHTML = "";
 
     obras.forEach(o => {
-
         let div = document.createElement("div");
         div.className = "card";
         div.innerHTML = o.nombre;
-
         contenedor.appendChild(div);
     });
 }
 
-function volver() {
-    window.location.href = "cliente.html";
+function volverAClientes() {
+    window.location.href = "clientes.html";
 }
 
 mostrar();
-
 </script>
 
 </body>
