@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano</title>
+
+<style>
+body {
+    margin: 0;
+    background: #0b0b0b;
+    color: white;
+    font-family: Arial;
+}
+
+.header {
+    padding: 15px;
+    border-bottom: 2px solid orange;
+    font-size: 20px;
+}
+
+.canvas-container {
+    padding: 10px;
+}
+
+canvas {
+    background: #111;
+    border: 1px solid #333;
+    touch-action: none;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: orange;
+    border: none;
+    margin-top: 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Plano</div>
+
+<div class="canvas-container">
+    <canvas id="canvas"></canvas>
+
+    <button class="btn" onclick="cerrar()">Cerrar estancia</button>
+    <button class="btn" onclick="guardar()">Guardar plano</button>
+    <button class="btn" onclick="limpiar()">Limpiar</button>
+    <button class="btn" onclick="volver()">Volver</button>
+</div>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth - 20;
+canvas.height = window.innerHeight - 200;
+
+let clienteId = localStorage.getItem("clienteActivo");
+let obraId = localStorage.getItem("obraActiva");
+
+let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+let obra = obras.find(o => o.id == obraId);
+
+if (!obra.plano) obra.plano = { puntos: [] };
+
+let puntos = obra.plano.puntos;
+
+canvas.addEventListener("click", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    puntos.push({x, y});
+    dibujar();
+});
+
+function dibujar() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "orange";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    puntos.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    });
+
+    ctx.stroke();
+
+    puntos.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "orange";
+        ctx.fill();
+    });
+}
+
+function cerrar() {
+    if (puntos.length < 3) return;
+
+    ctx.beginPath();
+    ctx.moveTo(puntos[0].x, puntos[0].y);
+    puntos.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.closePath();
+    ctx.stroke();
+}
+
+function guardar() {
+    obra.plano.puntos = puntos;
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+    alert("Plano guardado");
+}
+
+function limpiar() {
+    puntos = [];
+    obra.plano.puntos = [];
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+    dibujar();
+}
+
+function volver() {
+    window.location.href = "obra.html";
+}
+
+dibujar();
+
+</script>
+
+</body>
+</html>
