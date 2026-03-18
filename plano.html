@@ -60,14 +60,16 @@ canvas {
 <div class="header">Plano</div>
 
 <div class="canvas-container">
-    <div class="info" id="info">Sin estancias</div>
+    <div class="info" id="info">Sin datos</div>
 
     <canvas id="canvas"></canvas>
 
     <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
     <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
+    <button class="btn" onclick="definirEscala()">Definir escala real</button>
     <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
     <button class="btn" onclick="limpiarActual()">Limpiar actual</button>
+    <button class="btn" onclick="guardarPlano()">Guardar plano</button>
     <button class="btn" onclick="volver()">Volver</button>
 </div>
 
@@ -78,7 +80,7 @@ const info = document.getElementById("info");
 
 function ajustarCanvas() {
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 320;
+    canvas.height = window.innerHeight - 360;
 }
 ajustarCanvas();
 
@@ -94,7 +96,10 @@ if (!obra) {
 }
 
 if (!obra.plano) {
-    obra.plano = { estancias: [] };
+    obra.plano = {
+        estancias: [],
+        metrosPorPixel: null
+    };
 }
 
 if (!Array.isArray(obra.plano.estancias)) {
@@ -102,11 +107,17 @@ if (!Array.isArray(obra.plano.estancias)) {
 }
 
 let estancias = obra.plano.estancias;
+let metrosPorPixel = obra.plano.metrosPorPixel || null;
+
 let puntos = [];
 let cerrado = false;
 
 function guardarMemoria() {
-    obra.plano.estancias = estancias;
+    obra.plano = {
+        estancias: estancias,
+        metrosPorPixel: metrosPorPixel
+    };
+
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
@@ -126,84 +137,173 @@ function obtenerPosicion(evento) {
     };
 }
 
-function dibujar() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function distancia(p1, p2) {
+    return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+}
 
+function puntoMedio(p1, p2) {
+    return {
+        x: (p1.x + p2.x) / 2,
+        y: (p1.y + p2.y) / 2
+    };
+}
+
+function centroide(puntosLocal) {
+    let sx = 0;
+    let sy = 0;
+
+    for (const p of puntosLocal) {
+        sx += p.x;
+        sy += p.y;
+    }
+
+    return {
+        x: sx / puntosLocal.length,
+        y: sy / puntosLocal.length
+    };
+}
+
+function calcularAreaPixels(puntosLocal) {
+    if (!puntosLocal || puntosLocal.length < 3) return 0;
+
+    let area = 0;
+
+    for (let i = 0; i < puntosLocal.length; i++) {
+        const j = (i + 1) % puntosLocal.length;
+        area += puntosLocal[i].x * puntosLocal[j].y;
+        area -= puntosLocal[j].x * puntosLocal[i].y;
+    }
+
+    return Math.abs(area / 2);
+}
+
+function calcularSuperficieReal(puntosLocal) {
+    if (!metrosPorPixel) return 0;
+    return calcularAreaPixels(puntosLocal) * metrosPorPixel * metrosPorPixel;
+}
+
+function dibujarMedidas(puntosLocal, estaCerrada, colorTexto) {
+    if (!metrosPorPixel || !puntosLocal || puntosLocal.length < 2) return;
+
+    ctx.fillStyle = colorTexto;
+    ctx.font = "12px Arial";
+
+    const totalLados = estaCerrada ? puntosLocal.length : puntosLocal.length - 1;
+
+    for (let i = 0; i < totalLados; i++) {
+        const j = (i + 1) % puntosLocal.length;
+        const p1 = puntosLocal[i];
+        const p2 = puntosLocal[j];
+        const medio = puntoMedio(p1, p2);
+        const metros = distancia(p1, p2) * metrosPorPixel;
+
+        ctx.fillText(metros.toFixed(2) + " m", medio.x + 6, medio.y - 6);
+    }
+}
+
+function dibujarEstanciaGuardada(est) {
+    if (!est.puntos || est.puntos.length < 3) return;
+
+    ctx.beginPath();
+    est.puntos.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    });
+    ctx.closePath();
+
+    ctx.strokeStyle = "orange";
     ctx.lineWidth = 2;
-    ctx.font = "14px Arial";
+    ctx.stroke();
 
-    // estancias guardadas
-    estancias.forEach(est => {
-        if (!est.puntos || est.puntos.length < 2) return;
+    ctx.fillStyle = "rgba(255,165,0,0.10)";
+    ctx.fill();
 
+    est.puntos.forEach(p => {
         ctx.beginPath();
-        est.puntos.forEach((p, i) => {
-            if (i === 0) ctx.moveTo(p.x, p.y);
-            else ctx.lineTo(p.x, p.y);
-        });
-        ctx.closePath();
-
-        ctx.strokeStyle = "orange";
-        ctx.stroke();
-
-        ctx.fillStyle = "rgba(255,165,0,0.08)";
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "orange";
         ctx.fill();
-
-        est.puntos.forEach(p => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = "orange";
-            ctx.fill();
-        });
-
-        if (est.nombre) {
-            const p = est.puntos[0];
-            ctx.fillStyle = "white";
-            ctx.fillText(est.nombre, p.x + 8, p.y - 8);
-        }
     });
 
-    // estancia actual
-    if (puntos.length > 0) {
-        ctx.beginPath();
-        puntos.forEach((p, i) => {
-            if (i === 0) ctx.moveTo(p.x, p.y);
-            else ctx.lineTo(p.x, p.y);
-        });
+    const c = centroide(est.puntos);
 
-        if (cerrado && puntos.length >= 3) {
-            ctx.closePath();
-            ctx.fillStyle = "rgba(255,255,255,0.06)";
-            ctx.fill();
-        }
+    ctx.fillStyle = "white";
+    ctx.font = "16px Arial";
+    ctx.fillText(est.nombre || "Estancia", c.x - 20, c.y - 10);
 
-        ctx.strokeStyle = "white";
-        ctx.stroke();
-
-        puntos.forEach((p, i) => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = "white";
-            ctx.fill();
-
-            ctx.fillStyle = "white";
-            ctx.fillText(String(i + 1), p.x + 8, p.y - 8);
-        });
+    if (metrosPorPixel) {
+        const sup = calcularSuperficieReal(est.puntos);
+        ctx.font = "13px Arial";
+        ctx.fillText(sup.toFixed(2) + " m²", c.x - 20, c.y + 10);
     }
 
+    dibujarMedidas(est.puntos, true, "white");
+}
+
+function dibujarEstanciaActual() {
+    if (puntos.length === 0) return;
+
+    ctx.beginPath();
+    puntos.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    });
+
+    if (cerrado && puntos.length >= 3) {
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255,255,255,0.06)";
+        ctx.fill();
+    }
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    puntos.forEach((p, i) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+        ctx.fillText(String(i + 1), p.x + 8, p.y - 8);
+    });
+
+    dibujarMedidas(puntos, cerrado, "white");
+}
+
+function actualizarInfo() {
     let texto = "Estancias guardadas: " + estancias.length;
 
+    texto += cerrado ? "<br>Estancia actual cerrada" : "<br>Estancia actual abierta";
+
     if (puntos.length > 0) {
-        texto += "<br>Puntos de la estancia actual: " + puntos.length;
+        texto += "<br>Puntos actuales: " + puntos.length;
     }
 
-    if (cerrado) {
-        texto += "<br>Estancia actual cerrada";
+    if (metrosPorPixel) {
+        texto += "<br>Escala definida";
     } else {
-        texto += "<br>Estancia actual abierta";
+        texto += "<br>Escala sin definir";
+    }
+
+    if (cerrado && metrosPorPixel && puntos.length >= 3) {
+        texto += "<br>Superficie actual: " + calcularSuperficieReal(puntos).toFixed(2) + " m²";
     }
 
     info.innerHTML = texto;
+}
+
+function dibujar() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const est of estancias) {
+        dibujarEstanciaGuardada(est);
+    }
+
+    dibujarEstanciaActual();
+    actualizarInfo();
 }
 
 function anadirPunto(evento) {
@@ -216,6 +316,12 @@ function anadirPunto(evento) {
     if (evento.cancelable) evento.preventDefault();
 }
 
+function nuevaEstancia() {
+    puntos = [];
+    cerrado = false;
+    dibujar();
+}
+
 function cerrarEstancia() {
     if (puntos.length < 3) {
         alert("Necesitas al menos 3 puntos");
@@ -224,6 +330,35 @@ function cerrarEstancia() {
 
     cerrado = true;
     dibujar();
+}
+
+function definirEscala() {
+    if (puntos.length < 2) {
+        alert("Necesitas al menos 2 puntos en la estancia actual");
+        return;
+    }
+
+    const valor = prompt("Introduce la medida real del primer lado en metros (entre punto 1 y punto 2):");
+    if (!valor) return;
+
+    const metrosReales = parseFloat(valor.replace(",", "."));
+
+    if (!metrosReales || metrosReales <= 0) {
+        alert("Medida no válida");
+        return;
+    }
+
+    const pixeles = distancia(puntos[0], puntos[1]);
+
+    if (!pixeles || pixeles <= 0) {
+        alert("No se pudo calcular la escala");
+        return;
+    }
+
+    metrosPorPixel = metrosReales / pixeles;
+    guardarMemoria();
+    dibujar();
+    alert("Escala guardada correctamente");
 }
 
 function guardarEstancia() {
@@ -246,16 +381,15 @@ function guardarEstancia() {
     dibujar();
 }
 
-function nuevaEstancia() {
+function limpiarActual() {
     puntos = [];
     cerrado = false;
     dibujar();
 }
 
-function limpiarActual() {
-    puntos = [];
-    cerrado = false;
-    dibujar();
+function guardarPlano() {
+    guardarMemoria();
+    alert("Plano guardado");
 }
 
 function volver() {
