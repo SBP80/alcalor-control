@@ -56,6 +56,11 @@ canvas {
 .btn-sec {
     background: #d6a13b;
 }
+
+.btn-danger {
+    background: #c93b2f;
+    color: white;
+}
 </style>
 </head>
 
@@ -73,6 +78,7 @@ canvas {
     <button class="btn" onclick="definirEscala()">Definir escala real</button>
     <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
     <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
+    <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia seleccionada</button>
     <button class="btn btn-sec" onclick="deseleccionar()">Deseleccionar</button>
     <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
     <button class="btn" onclick="guardarPlano()">Guardar plano</button>
@@ -86,7 +92,7 @@ const info = document.getElementById("info");
 
 function ajustarCanvas() {
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 400;
+    canvas.height = window.innerHeight - 450;
 }
 ajustarCanvas();
 
@@ -127,7 +133,6 @@ let seleccion = {
 let arrastrando = false;
 let ultimoX = 0;
 let ultimoY = 0;
-let huboMovimiento = false;
 
 const RADIO_PUNTO = 14;
 
@@ -470,6 +475,33 @@ function borrarUltimoPunto() {
     dibujar();
 }
 
+function eliminarEstanciaSeleccionada() {
+    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
+        const nombre = estancias[seleccion.estanciaIndex]?.nombre || "esta estancia";
+        const ok = confirm('Eliminar "' + nombre + '"?');
+        if (!ok) return;
+
+        estancias.splice(seleccion.estanciaIndex, 1);
+        guardarMemoria();
+        deseleccionar();
+        dibujar();
+        return;
+    }
+
+    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
+        const ok = confirm("Eliminar la estancia actual?");
+        if (!ok) return;
+
+        puntos = [];
+        cerrado = false;
+        deseleccionar();
+        dibujar();
+        return;
+    }
+
+    alert("Primero selecciona una estancia");
+}
+
 function limpiarActual() {
     puntos = [];
     cerrado = false;
@@ -490,9 +522,7 @@ function empezarInteraccion(evento) {
     const pos = obtenerPosicion(evento);
     ultimoX = pos.x;
     ultimoY = pos.y;
-    huboMovimiento = false;
 
-    // 1. punto de estancia actual
     let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
     if (idx >= 0) {
         seleccion.tipo = "puntoActual";
@@ -504,7 +534,6 @@ function empezarInteraccion(evento) {
         return;
     }
 
-    // 2. punto de estancias guardadas
     for (let i = estancias.length - 1; i >= 0; i--) {
         idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
         if (idx >= 0) {
@@ -518,7 +547,6 @@ function empezarInteraccion(evento) {
         }
     }
 
-    // 3. estancia actual cerrada
     if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
         seleccion.tipo = "estanciaActual";
         seleccion.estanciaIndex = -1;
@@ -529,7 +557,6 @@ function empezarInteraccion(evento) {
         return;
     }
 
-    // 4. estancia guardada
     for (let i = estancias.length - 1; i >= 0; i--) {
         if (puntoDentroPoligono(pos.x, pos.y, estancias[i].puntos)) {
             seleccion.tipo = "estanciaGuardada";
@@ -542,7 +569,6 @@ function empezarInteraccion(evento) {
         }
     }
 
-    // 5. si no hay selección y la actual no está cerrada, añadir punto
     if (!cerrado) {
         puntos.push({ x: pos.x, y: pos.y });
         seleccion.tipo = "puntoActual";
@@ -562,10 +588,6 @@ function moverInteraccion(evento) {
     const pos = obtenerPosicion(evento);
     const dx = pos.x - ultimoX;
     const dy = pos.y - ultimoY;
-
-    if (dx !== 0 || dy !== 0) {
-        huboMovimiento = true;
-    }
 
     if (seleccion.tipo === "puntoActual") {
         puntos[seleccion.puntoIndex].x += dx;
