@@ -8,7 +8,7 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #0b0b0b;
     color: white;
 }
@@ -31,6 +31,8 @@ body {
     font-size: 18px;
     margin-bottom: 15px;
     cursor: pointer;
+    color: #111;
+    font-weight: bold;
 }
 
 .card {
@@ -38,6 +40,20 @@ body {
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 10px;
+    position: relative;
+}
+
+.eliminar {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #b30000;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -48,15 +64,17 @@ body {
 
 <div class="container">
 
-<button class="btn" onclick="nuevaObra()">+ Nueva obra</button>
+    <button class="btn" onclick="nuevaObra()">+ Nueva obra</button>
 
-<div id="lista"></div>
+    <div id="lista"></div>
 
-<button class="btn" onclick="volverAClientes()">⬅ Volver a clientes</button>
+    <button class="btn" onclick="volverAFichaCliente()">Volver a ficha cliente</button>
 
 </div>
 
 <script>
+const PIN_ADMIN = "1234";
+
 let clienteId = localStorage.getItem("clienteActivo");
 let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 
@@ -65,7 +83,7 @@ function guardar() {
 }
 
 function nuevaObra() {
-    let nombre = prompt("Nombre de la obra (ej: Vivienda Calle Mayor)");
+    let nombre = prompt("Nombre de la obra:");
     if (!nombre || nombre.trim() === "") return;
 
     obras.push({
@@ -77,6 +95,27 @@ function nuevaObra() {
     mostrar();
 }
 
+function pedirPin() {
+    let pin = prompt("Introduce PIN de administrador:");
+    if (pin === null) return false;
+    return pin === PIN_ADMIN;
+}
+
+function eliminarObra(id) {
+    let confirmar = confirm("¿Seguro que quieres eliminar esta obra?");
+    if (!confirmar) return;
+
+    let pinCorrecto = pedirPin();
+    if (!pinCorrecto) {
+        alert("PIN incorrecto");
+        return;
+    }
+
+    obras = obras.filter(o => o.id !== id);
+    guardar();
+    mostrar();
+}
+
 function mostrar() {
     const contenedor = document.getElementById("lista");
     contenedor.innerHTML = "";
@@ -84,13 +123,23 @@ function mostrar() {
     obras.forEach(o => {
         let div = document.createElement("div");
         div.className = "card";
-        div.innerHTML = o.nombre;
+
+        div.innerHTML = `
+            <button class="eliminar">X</button>
+            <strong>${o.nombre}</strong>
+        `;
+
+        div.querySelector(".eliminar").onclick = (e) => {
+            e.stopPropagation();
+            eliminarObra(o.id);
+        };
+
         contenedor.appendChild(div);
     });
 }
 
-function volverAClientes() {
-    window.location.href = "clientes.html";
+function volverAFichaCliente() {
+    window.location.href = "cliente.html";
 }
 
 mostrar();
