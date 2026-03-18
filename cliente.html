@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cliente</title>
+<title>Ficha cliente</title>
 
 <style>
 body {
     margin: 0;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #0b0b0b;
     color: white;
 }
@@ -38,6 +38,8 @@ body {
     font-size: 18px;
     cursor: pointer;
     margin-bottom: 10px;
+    color: #111;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -48,14 +50,14 @@ body {
 
 <div class="container">
 
-<div id="datos" class="card"></div>
+    <div id="datos" class="card"></div>
 
-<button class="btn" onclick="volver()">⬅ Volver</button>
+    <button class="btn" onclick="irAObras()">Obras</button>
+    <button class="btn" onclick="volverAClientes()">Volver a clientes</button>
 
 </div>
 
 <script>
-
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 let id = localStorage.getItem("clienteActivo");
 
@@ -74,10 +76,13 @@ if (cliente) {
     contenedor.innerHTML = "Cliente no encontrado";
 }
 
-function volver() {
+function irAObras() {
     window.location.href = "obras.html";
 }
 
+function volverAClientes() {
+    window.location.href = "clientes.html";
+}
 </script>
 
 </body>
