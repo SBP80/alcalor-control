@@ -41,10 +41,13 @@ body {
     border: none;
     border-radius: 6px;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
 .textarea {
     min-height: 100px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
 }
 
 .btn {
@@ -62,16 +65,23 @@ body {
 .foto, .doc {
     position: relative;
     margin-bottom: 10px;
+    background: #1a1a1a;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .foto img {
     width: 100%;
     border-radius: 8px;
+    display: block;
 }
 
 .doc a {
     color: white;
     text-decoration: underline;
+    word-break: break-word;
+    display: inline-block;
+    padding-right: 50px;
 }
 
 .borrar {
@@ -83,6 +93,8 @@ body {
     color: white;
     padding: 5px 10px;
     cursor: pointer;
+    border-radius: 6px;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -93,33 +105,72 @@ body {
 
 <div class="container">
 
-<!-- DATOS -->
-<input class="input" id="nombre" placeholder="Nombre obra">
-<input class="input" id="direccion" placeholder="Dirección">
-<input class="input" id="tipo" placeholder="Tipo de obra">
-<input class="input" id="estado" placeholder="Estado">
-<input class="input" id="inicio" placeholder="Fecha inicio">
-<input class="input" id="fin" placeholder="Fecha fin">
-<input class="input" id="tecnicos" placeholder="Técnicos">
-<input class="input" id="responsable" placeholder="Responsable">
-<textarea class="textarea" id="notas" placeholder="Notas"></textarea>
+    <div class="campo">
+        <label class="label" for="nombre">Nombre de obra</label>
+        <input class="input" id="nombre">
+    </div>
 
-<button class="btn" onclick="guardar()">Guardar datos</button>
+    <div class="campo">
+        <label class="label" for="direccion">Dirección</label>
+        <input class="input" id="direccion">
+    </div>
 
-<!-- FOTOS -->
-<input type="file" accept="image/*" onchange="subirFoto(event)">
-<div id="fotos"></div>
+    <div class="campo">
+        <label class="label" for="tipo">Tipo de obra</label>
+        <input class="input" id="tipo">
+    </div>
 
-<!-- DOCUMENTOS -->
-<input type="file" onchange="subirDoc(event)">
-<div id="docs"></div>
+    <div class="campo">
+        <label class="label" for="estado">Estado</label>
+        <input class="input" id="estado">
+    </div>
 
-<button class="btn" onclick="volver()">Volver</button>
+    <div class="campo">
+        <label class="label" for="inicio">Fecha inicio</label>
+        <input class="input" id="inicio">
+    </div>
+
+    <div class="campo">
+        <label class="label" for="fin">Fecha fin</label>
+        <input class="input" id="fin">
+    </div>
+
+    <div class="campo">
+        <label class="label" for="tecnicos">Técnicos</label>
+        <input class="input" id="tecnicos">
+    </div>
+
+    <div class="campo">
+        <label class="label" for="responsable">Responsable</label>
+        <input class="input" id="responsable">
+    </div>
+
+    <div class="campo">
+        <label class="label" for="notas">Notas</label>
+        <textarea class="textarea" id="notas"></textarea>
+    </div>
+
+    <button class="btn" onclick="guardar()">Guardar datos</button>
+
+    <div class="campo">
+        <label class="label" for="inputFoto">Subir foto</label>
+        <input id="inputFoto" type="file" accept="image/*" onchange="subirFoto(event)">
+    </div>
+
+    <div id="fotos"></div>
+
+    <div class="campo">
+        <label class="label" for="inputDoc">Subir documento</label>
+        <input id="inputDoc" type="file" onchange="subirDoc(event)">
+    </div>
+
+    <div id="docs"></div>
+
+    <button class="btn" onclick="volver()">Volver</button>
 
 </div>
 
 <script>
-
 const PIN = "1234";
 
 let clienteId = localStorage.getItem("clienteActivo");
@@ -128,10 +179,16 @@ let obraId = localStorage.getItem("obraActiva");
 let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 let obra = obras.find(o => o.id == obraId);
 
-if (!obra.fotos) obra.fotos = [];
-if (!obra.docs) obra.docs = [];
+if (!obra) {
+    alert("Obra no encontrada");
+}
+
+if (obra && !obra.fotos) obra.fotos = [];
+if (obra && !obra.docs) obra.docs = [];
 
 function guardar() {
+    if (!obra) return;
+
     obra.nombre = document.getElementById("nombre").value;
     obra.direccion = document.getElementById("direccion").value;
     obra.tipo = document.getElementById("tipo").value;
@@ -146,6 +203,8 @@ function guardar() {
 }
 
 function cargar() {
+    if (!obra) return;
+
     document.getElementById("nombre").value = obra.nombre || "";
     document.getElementById("direccion").value = obra.direccion || "";
     document.getElementById("tipo").value = obra.tipo || "";
@@ -161,13 +220,19 @@ function cargar() {
 }
 
 function subirFoto(e) {
-    const file = e.target.files[0];
+    if (!obra) return;
+
+    const input = e.target;
+    const file = input.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
 
     reader.onload = function(evt) {
         obra.fotos.push(evt.target.result);
         guardar();
         mostrarFotos();
+        input.value = "";
     };
 
     reader.readAsDataURL(file);
@@ -176,6 +241,8 @@ function subirFoto(e) {
 function mostrarFotos() {
     const contenedor = document.getElementById("fotos");
     contenedor.innerHTML = "";
+
+    if (!obra || !obra.fotos) return;
 
     obra.fotos.forEach((f, i) => {
         let div = document.createElement("div");
@@ -196,15 +263,24 @@ function borrarFoto(i) {
     if (!confirm("Eliminar foto?")) return;
 
     let pin = prompt("PIN:");
-    if (pin !== PIN) return alert("PIN incorrecto");
+    if (pin !== PIN) {
+        alert("PIN incorrecto");
+        return;
+    }
 
     obra.fotos.splice(i, 1);
     guardar();
     mostrarFotos();
+    document.getElementById("inputFoto").value = "";
 }
 
 function subirDoc(e) {
-    const file = e.target.files[0];
+    if (!obra) return;
+
+    const input = e.target;
+    const file = input.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
 
     reader.onload = function(evt) {
@@ -212,8 +288,10 @@ function subirDoc(e) {
             nombre: file.name,
             data: evt.target.result
         });
+
         guardar();
         mostrarDocs();
+        input.value = "";
     };
 
     reader.readAsDataURL(file);
@@ -222,6 +300,8 @@ function subirDoc(e) {
 function mostrarDocs() {
     const contenedor = document.getElementById("docs");
     contenedor.innerHTML = "";
+
+    if (!obra || !obra.docs) return;
 
     obra.docs.forEach((d, i) => {
         let div = document.createElement("div");
@@ -242,11 +322,15 @@ function borrarDoc(i) {
     if (!confirm("Eliminar documento?")) return;
 
     let pin = prompt("PIN:");
-    if (pin !== PIN) return alert("PIN incorrecto");
+    if (pin !== PIN) {
+        alert("PIN incorrecto");
+        return;
+    }
 
     obra.docs.splice(i, 1);
     guardar();
     mostrarDocs();
+    document.getElementById("inputDoc").value = "";
 }
 
 function volver() {
@@ -254,7 +338,6 @@ function volver() {
 }
 
 cargar();
-
 </script>
 
 </body>
