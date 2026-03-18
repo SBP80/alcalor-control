@@ -41,6 +41,7 @@ body {
     margin-bottom: 10px;
     border-radius: 10px;
     position: relative;
+    cursor: pointer;
 }
 
 .eliminar {
@@ -64,15 +65,16 @@ body {
 
 <div class="container">
 
-    <button class="btn" onclick="nuevaObra()">+ Nueva obra</button>
+<button class="btn" onclick="nuevaObra()">+ Nueva obra</button>
 
-    <div id="lista"></div>
+<div id="lista"></div>
 
-    <button class="btn" onclick="volverAFichaCliente()">Volver a ficha cliente</button>
+<button class="btn" onclick="volverAFichaCliente()">Volver a ficha cliente</button>
 
 </div>
 
 <script>
+
 const PIN_ADMIN = "1234";
 
 let clienteId = localStorage.getItem("clienteActivo");
@@ -129,6 +131,13 @@ function mostrar() {
             <strong>${o.nombre}</strong>
         `;
 
+        // entrar en ficha de obra
+        div.onclick = () => {
+            localStorage.setItem("obraActiva", o.id);
+            window.location.href = "obra.html";
+        };
+
+        // eliminar obra
         div.querySelector(".eliminar").onclick = (e) => {
             e.stopPropagation();
             eliminarObra(o.id);
@@ -143,6 +152,7 @@ function volverAFichaCliente() {
 }
 
 mostrar();
+
 </script>
 
 </body>
