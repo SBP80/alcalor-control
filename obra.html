@@ -59,11 +59,7 @@ body {
     font-weight: bold;
 }
 
-.fotos {
-    margin-top: 15px;
-}
-
-.foto {
+.foto, .doc {
     position: relative;
     margin-bottom: 10px;
 }
@@ -71,6 +67,11 @@ body {
 .foto img {
     width: 100%;
     border-radius: 8px;
+}
+
+.doc a {
+    color: white;
+    text-decoration: underline;
 }
 
 .borrar {
@@ -92,6 +93,7 @@ body {
 
 <div class="container">
 
+<!-- DATOS -->
 <input class="input" id="nombre" placeholder="Nombre obra">
 <input class="input" id="direccion" placeholder="Dirección">
 <input class="input" id="tipo" placeholder="Tipo de obra">
@@ -102,11 +104,15 @@ body {
 <input class="input" id="responsable" placeholder="Responsable">
 <textarea class="textarea" id="notas" placeholder="Notas"></textarea>
 
-<button class="btn" onclick="guardar()">Guardar</button>
+<button class="btn" onclick="guardar()">Guardar datos</button>
 
+<!-- FOTOS -->
 <input type="file" accept="image/*" onchange="subirFoto(event)">
+<div id="fotos"></div>
 
-<div class="fotos" id="fotos"></div>
+<!-- DOCUMENTOS -->
+<input type="file" onchange="subirDoc(event)">
+<div id="docs"></div>
 
 <button class="btn" onclick="volver()">Volver</button>
 
@@ -123,6 +129,7 @@ let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 let obra = obras.find(o => o.id == obraId);
 
 if (!obra.fotos) obra.fotos = [];
+if (!obra.docs) obra.docs = [];
 
 function guardar() {
     obra.nombre = document.getElementById("nombre").value;
@@ -150,6 +157,7 @@ function cargar() {
     document.getElementById("notas").value = obra.notas || "";
 
     mostrarFotos();
+    mostrarDocs();
 }
 
 function subirFoto(e) {
@@ -185,8 +193,7 @@ function mostrarFotos() {
 }
 
 function borrarFoto(i) {
-    let ok = confirm("Eliminar foto?");
-    if (!ok) return;
+    if (!confirm("Eliminar foto?")) return;
 
     let pin = prompt("PIN:");
     if (pin !== PIN) return alert("PIN incorrecto");
@@ -194,6 +201,52 @@ function borrarFoto(i) {
     obra.fotos.splice(i, 1);
     guardar();
     mostrarFotos();
+}
+
+function subirDoc(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(evt) {
+        obra.docs.push({
+            nombre: file.name,
+            data: evt.target.result
+        });
+        guardar();
+        mostrarDocs();
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function mostrarDocs() {
+    const contenedor = document.getElementById("docs");
+    contenedor.innerHTML = "";
+
+    obra.docs.forEach((d, i) => {
+        let div = document.createElement("div");
+        div.className = "doc";
+
+        div.innerHTML = `
+            <a href="${d.data}" target="_blank">${d.nombre}</a>
+            <button class="borrar">X</button>
+        `;
+
+        div.querySelector(".borrar").onclick = () => borrarDoc(i);
+
+        contenedor.appendChild(div);
+    });
+}
+
+function borrarDoc(i) {
+    if (!confirm("Eliminar documento?")) return;
+
+    let pin = prompt("PIN:");
+    if (pin !== PIN) return alert("PIN incorrecto");
+
+    obra.docs.splice(i, 1);
+    guardar();
+    mostrarDocs();
 }
 
 function volver() {
