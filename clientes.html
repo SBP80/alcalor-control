@@ -84,14 +84,16 @@ function nuevoCliente() {
     let nombre = prompt("Nombre del cliente:");
     if (!nombre || nombre.trim() === "") return;
 
-    let telefono = prompt("Teléfono:") || "";
+    let telefonos = prompt("Teléfonos (separa varios con coma):") || "";
+    let email = prompt("Email:") || "";
     let direccion = prompt("Dirección:") || "";
     let notas = prompt("Notas:") || "";
 
     clientes.push({
         id: Date.now(),
         nombre: nombre.trim(),
-        telefono: telefono.trim(),
+        telefonos: telefonos.trim(),
+        email: email.trim(),
         direccion: direccion.trim(),
         notas: notas.trim()
     });
@@ -136,10 +138,14 @@ function mostrarClientes() {
         let div = document.createElement("div");
         div.className = "cliente";
 
+        const telefonosTexto = cliente.telefonos || cliente.telefono || "";
+        const emailTexto = cliente.email || "";
+
         div.innerHTML = `
             <button class="eliminar">X</button>
             <strong>${cliente.nombre}</strong><br>
-            📞 ${cliente.telefono || ""}<br>
+            📞 ${telefonosTexto}<br>
+            ✉️ ${emailTexto}<br>
             📍 ${cliente.direccion || ""}<br>
             📝 ${cliente.notas || ""}
         `;
