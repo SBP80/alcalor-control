@@ -35,7 +35,7 @@ body {
     color: orange;
 }
 
-.input, .textarea {
+.input, .textarea, .select {
     width: 100%;
     padding: 12px;
     border: none;
@@ -117,12 +117,27 @@ body {
 
     <div class="campo">
         <label class="label" for="tipo">Tipo de obra</label>
-        <input class="input" id="tipo">
+        <select class="select" id="tipo">
+            <option value="">Seleccionar</option>
+            <option>Suelo radiante</option>
+            <option>Aerotermia</option>
+            <option>Radiadores</option>
+            <option>Fancoils</option>
+            <option>Híbrido</option>
+            <option>Otro</option>
+        </select>
     </div>
 
     <div class="campo">
         <label class="label" for="estado">Estado</label>
-        <input class="input" id="estado">
+        <select class="select" id="estado">
+            <option value="">Seleccionar</option>
+            <option>Presupuesto</option>
+            <option>Aceptado</option>
+            <option>En ejecución</option>
+            <option>Parado</option>
+            <option>Terminado</option>
+        </select>
     </div>
 
     <div class="campo">
