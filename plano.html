@@ -13,11 +13,9 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* HEADER */
 .header {
     padding: 12px 15px;
     border-bottom: 2px solid orange;
-    font-size: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -26,82 +24,54 @@ body {
 .header-btn {
     background: orange;
     border: none;
-    color: #111;
-    font-weight: bold;
-    padding: 10px 14px;
+    padding: 10px;
     border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
+    font-weight: bold;
 }
 
-/* CONTENIDO */
 .wrap {
     padding: 10px;
     position: relative;
 }
 
 .info {
-    padding: 10px;
     background: #141414;
-    border: 1px solid #2a2a2a;
-    margin-bottom: 10px;
+    padding: 10px;
     border-radius: 8px;
-    font-size: 14px;
+    margin-bottom: 10px;
 }
 
-/* PANEL LATERAL */
 .tools {
     position: absolute;
     top: 60px;
     right: 10px;
-    width: 260px;
-    max-height: 75vh;
-    overflow-y: auto;
+    width: 200px;
     background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
     padding: 10px;
+    border-radius: 10px;
     display: none;
-    z-index: 10;
 }
 
 .tools.abierto {
     display: block;
 }
 
-/* CANVAS */
 canvas {
-    background: #111;
-    border: 1px solid #333;
-    display: block;
     width: 100%;
-    touch-action: none;
+    background: #111;
 }
 
-/* BOTONES */
 .btn {
     width: 100%;
-    padding: 12px;
-    background: orange;
-    border: none;
-    margin-top: 8px;
-    font-size: 15px;
-    cursor: pointer;
-    color: #111;
-    font-weight: bold;
-    border-radius: 8px;
-}
-
-.btn-sec { background: #d6a13b; }
-.btn-danger { background: #c93b2f; color: white; }
-
-.subtitulo {
+    padding: 10px;
     margin-top: 6px;
-    margin-bottom: 6px;
-    font-size: 13px;
-    color: orange;
+    border-radius: 6px;
+    border: none;
     font-weight: bold;
 }
+
+.orange { background: orange; }
+.red { background: #c93b2f; color:white; }
 </style>
 </head>
 
@@ -114,103 +84,68 @@ canvas {
 </div>
 
 <div class="wrap">
+    <div id="info" class="info"></div>
 
-    <div class="info" id="info"></div>
-
-    <div class="tools" id="tools">
-        <div class="subtitulo">Plano</div>
-        <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
-        <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
-        <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
-        <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
-        <button class="btn btn-sec" onclick="definirEscala()">Definir escala</button>
-        <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia</button>
-        <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
-        <button class="btn" onclick="guardarPlano()">Guardar plano</button>
+    <div id="tools" class="tools">
+        <button class="btn orange" onclick="nuevaEstancia()">Nueva</button>
+        <button class="btn orange" onclick="cerrarEstancia()">Cerrar</button>
+        <button class="btn orange" onclick="guardarEstancia()">Guardar</button>
+        <button class="btn" onclick="borrarUltimo()">Borrar punto</button>
+        <button class="btn" onclick="escala()">Escala</button>
+        <button class="btn red" onclick="eliminar()">Eliminar</button>
     </div>
 
     <canvas id="canvas"></canvas>
-
 </div>
-
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const info = document.getElementById("info");
 const tools = document.getElementById("tools");
+const info = document.getElementById("info");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - 150;
+
+let puntos = [];
+let estancias = [];
+let cerrado = false;
+let escalaMetro = null;
+
+let seleccion = -1;
+let arrastrando = false;
+let lastX = 0;
+let lastY = 0;
 
 function toggleTools(){
     tools.classList.toggle("abierto");
 }
 
-function ajustarCanvas(){
-    canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 160;
-}
-ajustarCanvas();
-
-/* DATOS */
-let clienteId = localStorage.getItem("clienteActivo");
-let obraId = localStorage.getItem("obraActiva");
-
-let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
-let obra = obras.find(o => o.id == obraId);
-
-if(!obra.plano){
-    obra.plano = { estancias:[], metrosPorPixel:null };
-}
-
-let estancias = obra.plano.estancias;
-let metrosPorPixel = obra.plano.metrosPorPixel;
-
-let puntos = [];
-let cerrado = false;
-
-let seleccion = { tipo:null, estanciaIndex:-1, puntoIndex:-1 };
-
-let arrastrando = false;
-let ultimoX=0, ultimoY=0;
-
-const RADIO = 14;
-
-/* UTIL */
-function guardar(){
-    localStorage.setItem("obras_"+clienteId,JSON.stringify(obras));
-}
-
-function pos(e){
-    const r = canvas.getBoundingClientRect();
-    if(e.touches){
-        return {x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
-    }
-    return {x:e.clientX-r.left,y:e.clientY-r.top};
+function volver(){
+    window.location.href="obra.html";
 }
 
 function distancia(a,b){
     return Math.hypot(b.x-a.x,b.y-a.y);
 }
-
-function dentro(x,y,poly){
-    let d=false;
-    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-        let xi=poly[i].x, yi=poly[i].y;
-        let xj=poly[j].x, yj=poly[j].y;
-        let c=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi||1)+xi);
-        if(c)d=!d;
-    }
-    return d;
-}
-
-/* DIBUJO */
 function dibujar(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     estancias.forEach((e,i)=>{
         ctx.beginPath();
-        e.puntos.forEach((p,j)=> j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+        e.forEach((p,j)=> j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
         ctx.closePath();
         ctx.strokeStyle="orange";
         ctx.stroke();
+
+        if(escalaMetro){
+            for(let i=0;i<e.length;i++){
+                let j=(i+1)%e.length;
+                let m=distancia(e[i],e[j])*escalaMetro;
+                ctx.fillText(m.toFixed(2)+"m",
+                    (e[i].x+e[j].x)/2,
+                    (e[i].y+e[j].y)/2);
+            }
+        }
     });
 
     if(puntos.length){
@@ -220,93 +155,66 @@ function dibujar(){
         ctx.strokeStyle="white";
         ctx.stroke();
     }
-
-    actualizarInfo();
 }
 
-function actualizarInfo(){
-    if(seleccion.tipo && seleccion.estanciaIndex>=0){
-        let e=estancias[seleccion.estanciaIndex];
-        info.innerHTML="Estancia: "+e.nombre+"<br>Lados: "+e.puntos.length;
-    }else{
-        info.innerHTML="Estancias: "+estancias.length;
-    }
-}
-
-/* ACCIONES */
 function nuevaEstancia(){
-    puntos=[];cerrado=false;seleccion.tipo=null;dibujar();
+    puntos=[];cerrado=false;
 }
 
 function cerrarEstancia(){
-    if(puntos.length<3)return alert("mínimo 3 puntos");
-    cerrado=true;dibujar();
+    if(puntos.length<3)return;
+    cerrado=true;
 }
 
 function guardarEstancia(){
     if(!cerrado)return;
-    let n=prompt("Nombre");
-    if(!n)return;
-    estancias.push({nombre:n,puntos:[...puntos]});
+    estancias.push([...puntos]);
     puntos=[];cerrado=false;
-    guardar();dibujar();
 }
 
-function eliminarEstanciaSeleccionada(){
-    if(seleccion.estanciaIndex<0)return alert("Selecciona una estancia");
-    if(!confirm("Eliminar?"))return;
-    estancias.splice(seleccion.estanciaIndex,1);
-    seleccion.tipo=null;
-    guardar();dibujar();
+function borrarUltimo(){
+    puntos.pop();
 }
 
-function limpiarActual(){puntos=[];cerrado=false;dibujar();}
-function borrarUltimoPunto(){puntos.pop();dibujar();}
-function guardarPlano(){guardar();alert("Guardado");}
-function definirEscala(){alert("ya lo activaremos luego");}
-function volver(){window.location.href="obra.html";}
+function escala(){
+    if(puntos.length<2)return;
+    let m=prompt("metros reales lado 1");
+    escalaMetro = m / distancia(puntos[0],puntos[1]);
+}
 
-/* INTERACCIÓN */
-canvas.addEventListener("mousedown",e=>{
-    let p=pos(e);
-    ultimoX=p.x;ultimoY=p.y;
+function eliminar(){
+    estancias.pop();
+}
 
-    for(let i=estancias.length-1;i>=0;i--){
-        if(dentro(p.x,p.y,estancias[i].puntos)){
-            seleccion.tipo="estancia";
-            seleccion.estanciaIndex=i;
-            arrastrando=true;
-            dibujar();return;
-        }
-    }
-
+canvas.onclick=(e)=>{
     if(!cerrado){
-        puntos.push(p);
-        dibujar();
+        puntos.push({x:e.offsetX,y:e.offsetY});
     }
-});
+    dibujar();
+};
 
-canvas.addEventListener("mousemove",e=>{
+canvas.onmousedown=(e)=>{
+    arrastrando=true;
+    lastX=e.offsetX;
+    lastY=e.offsetY;
+};
+
+canvas.onmousemove=(e)=>{
     if(!arrastrando)return;
-    let p=pos(e);
-    let dx=p.x-ultimoX, dy=p.y-ultimoY;
+    let dx=e.offsetX-lastX;
+    let dy=e.offsetY-lastY;
 
-    let est=estancias[seleccion.estanciaIndex];
-    est.puntos.forEach(pt=>{
-        pt.x+=dx; pt.y+=dy;
+    puntos.forEach(p=>{
+        p.x+=dx;
+        p.y+=dy;
     });
 
-    ultimoX=p.x;ultimoY=p.y;
-    guardar();dibujar();
-});
+    lastX=e.offsetX;
+    lastY=e.offsetY;
+    dibujar();
+};
 
-canvas.addEventListener("mouseup",()=>arrastrando=false);
-
-canvas.addEventListener("touchstart",e=>canvas.dispatchEvent(new MouseEvent("mousedown",{clientX:e.touches[0].clientX,clientY:e.touches[0].clientY})),{passive:false});
-canvas.addEventListener("touchmove",e=>canvas.dispatchEvent(new MouseEvent("mousemove",{clientX:e.touches[0].clientX,clientY:e.touches[0].clientY})),{passive:false});
-canvas.addEventListener("touchend",()=>arrastrando=false);
-
-window.addEventListener("resize",()=>{ajustarCanvas();dibujar();});
+canvas.onmouseup=()=>arrastrando=false;
 
 dibujar();
 </script>
