@@ -52,6 +52,10 @@ canvas {
     color: #111;
     font-weight: bold;
 }
+
+.btn-sec {
+    background: #d6a13b;
+}
 </style>
 </head>
 
@@ -68,7 +72,9 @@ canvas {
     <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
     <button class="btn" onclick="definirEscala()">Definir escala real</button>
     <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
-    <button class="btn" onclick="limpiarActual()">Limpiar actual</button>
+    <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
+    <button class="btn btn-sec" onclick="deseleccionar()">Deseleccionar</button>
+    <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
     <button class="btn" onclick="guardarPlano()">Guardar plano</button>
     <button class="btn" onclick="volver()">Volver</button>
 </div>
@@ -80,7 +86,7 @@ const info = document.getElementById("info");
 
 function ajustarCanvas() {
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 360;
+    canvas.height = window.innerHeight - 400;
 }
 ajustarCanvas();
 
@@ -112,12 +118,24 @@ let metrosPorPixel = obra.plano.metrosPorPixel || null;
 let puntos = [];
 let cerrado = false;
 
+let seleccion = {
+    tipo: null,
+    estanciaIndex: -1,
+    puntoIndex: -1
+};
+
+let arrastrando = false;
+let ultimoX = 0;
+let ultimoY = 0;
+let huboMovimiento = false;
+
+const RADIO_PUNTO = 14;
+
 function guardarMemoria() {
     obra.plano = {
         estancias: estancias,
         metrosPorPixel: metrosPorPixel
     };
-
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
@@ -182,6 +200,40 @@ function calcularSuperficieReal(puntosLocal) {
     return calcularAreaPixels(puntosLocal) * metrosPorPixel * metrosPorPixel;
 }
 
+function puntoDentroPoligono(x, y, poligono) {
+    let dentro = false;
+
+    for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
+        const xi = poligono[i].x;
+        const yi = poligono[i].y;
+        const xj = poligono[j].x;
+        const yj = poligono[j].y;
+
+        const cruza = ((yi > y) !== (yj > y)) &&
+            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 0.000001) + xi);
+
+        if (cruza) dentro = !dentro;
+    }
+
+    return dentro;
+}
+
+function buscarPuntoEnLista(x, y, listaPuntos) {
+    for (let i = 0; i < listaPuntos.length; i++) {
+        const p = listaPuntos[i];
+        const d = Math.hypot(p.x - x, p.y - y);
+        if (d <= RADIO_PUNTO) return i;
+    }
+    return -1;
+}
+
+function deseleccionar() {
+    seleccion.tipo = null;
+    seleccion.estanciaIndex = -1;
+    seleccion.puntoIndex = -1;
+    dibujar();
+}
+
 function dibujarMedidas(puntosLocal, estaCerrada, colorTexto) {
     if (!metrosPorPixel || !puntosLocal || puntosLocal.length < 2) return;
 
@@ -201,8 +253,13 @@ function dibujarMedidas(puntosLocal, estaCerrada, colorTexto) {
     }
 }
 
-function dibujarEstanciaGuardada(est) {
+function dibujarEstanciaGuardada(est, index) {
     if (!est.puntos || est.puntos.length < 3) return;
+
+    const seleccionada = (
+        (seleccion.tipo === "estanciaGuardada" && seleccion.estanciaIndex === index) ||
+        (seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === index)
+    );
 
     ctx.beginPath();
     est.puntos.forEach((p, i) => {
@@ -211,17 +268,21 @@ function dibujarEstanciaGuardada(est) {
     });
     ctx.closePath();
 
-    ctx.strokeStyle = "orange";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = seleccionada ? "white" : "orange";
+    ctx.lineWidth = seleccionada ? 3 : 2;
     ctx.stroke();
 
-    ctx.fillStyle = "rgba(255,165,0,0.10)";
+    ctx.fillStyle = seleccionada ? "rgba(255,255,255,0.12)" : "rgba(255,165,0,0.10)";
     ctx.fill();
 
-    est.puntos.forEach(p => {
+    est.puntos.forEach((p, i) => {
+        const esPuntoSel = seleccion.tipo === "puntoGuardado" &&
+                           seleccion.estanciaIndex === index &&
+                           seleccion.puntoIndex === i;
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = "orange";
+        ctx.arc(p.x, p.y, esPuntoSel ? 7 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = esPuntoSel ? "white" : "orange";
         ctx.fill();
     });
 
@@ -243,6 +304,8 @@ function dibujarEstanciaGuardada(est) {
 function dibujarEstanciaActual() {
     if (puntos.length === 0) return;
 
+    const seleccionada = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
+
     ctx.beginPath();
     puntos.forEach((p, i) => {
         if (i === 0) ctx.moveTo(p.x, p.y);
@@ -251,18 +314,20 @@ function dibujarEstanciaActual() {
 
     if (cerrado && puntos.length >= 3) {
         ctx.closePath();
-        ctx.fillStyle = "rgba(255,255,255,0.06)";
+        ctx.fillStyle = seleccionada ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.06)";
         ctx.fill();
     }
 
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = seleccionada ? "white" : "#dddddd";
+    ctx.lineWidth = seleccionada ? 3 : 2;
     ctx.stroke();
 
     puntos.forEach((p, i) => {
+        const esPuntoSel = seleccion.tipo === "puntoActual" && seleccion.puntoIndex === i;
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
+        ctx.arc(p.x, p.y, esPuntoSel ? 7 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = esPuntoSel ? "orange" : "white";
         ctx.fill();
 
         ctx.fillStyle = "white";
@@ -292,33 +357,40 @@ function actualizarInfo() {
         texto += "<br>Superficie actual: " + calcularSuperficieReal(puntos).toFixed(2) + " m²";
     }
 
+    if (seleccion.tipo === "puntoActual") {
+        texto += "<br>Punto actual seleccionado: " + (seleccion.puntoIndex + 1);
+    }
+
+    if (seleccion.tipo === "puntoGuardado") {
+        texto += "<br>Punto seleccionado en estancia: " + estancias[seleccion.estanciaIndex].nombre;
+    }
+
+    if (seleccion.tipo === "estanciaActual") {
+        texto += "<br>Estancia actual seleccionada";
+    }
+
+    if (seleccion.tipo === "estanciaGuardada") {
+        texto += "<br>Estancia seleccionada: " + estancias[seleccion.estanciaIndex].nombre;
+    }
+
     info.innerHTML = texto;
 }
 
 function dibujar() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (const est of estancias) {
-        dibujarEstanciaGuardada(est);
+    for (let i = 0; i < estancias.length; i++) {
+        dibujarEstanciaGuardada(estancias[i], i);
     }
 
     dibujarEstanciaActual();
     actualizarInfo();
 }
 
-function anadirPunto(evento) {
-    if (cerrado) return;
-
-    const pos = obtenerPosicion(evento);
-    puntos.push({ x: pos.x, y: pos.y });
-    dibujar();
-
-    if (evento.cancelable) evento.preventDefault();
-}
-
 function nuevaEstancia() {
     puntos = [];
     cerrado = false;
+    deseleccionar();
     dibujar();
 }
 
@@ -378,12 +450,30 @@ function guardarEstancia() {
     guardarMemoria();
     puntos = [];
     cerrado = false;
+    deseleccionar();
+    dibujar();
+}
+
+function borrarUltimoPunto() {
+    if (puntos.length === 0) return;
+
+    puntos.pop();
+
+    if (puntos.length < 3) {
+        cerrado = false;
+    }
+
+    if (seleccion.tipo === "puntoActual" && seleccion.puntoIndex >= puntos.length) {
+        deseleccionar();
+    }
+
     dibujar();
 }
 
 function limpiarActual() {
     puntos = [];
     cerrado = false;
+    deseleccionar();
     dibujar();
 }
 
@@ -396,8 +486,143 @@ function volver() {
     window.location.href = "obra.html";
 }
 
-canvas.addEventListener("click", anadirPunto);
-canvas.addEventListener("touchstart", anadirPunto, { passive: false });
+function empezarInteraccion(evento) {
+    const pos = obtenerPosicion(evento);
+    ultimoX = pos.x;
+    ultimoY = pos.y;
+    huboMovimiento = false;
+
+    // 1. punto de estancia actual
+    let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
+    if (idx >= 0) {
+        seleccion.tipo = "puntoActual";
+        seleccion.estanciaIndex = -1;
+        seleccion.puntoIndex = idx;
+        arrastrando = true;
+        dibujar();
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    // 2. punto de estancias guardadas
+    for (let i = estancias.length - 1; i >= 0; i--) {
+        idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
+        if (idx >= 0) {
+            seleccion.tipo = "puntoGuardado";
+            seleccion.estanciaIndex = i;
+            seleccion.puntoIndex = idx;
+            arrastrando = true;
+            dibujar();
+            if (evento.cancelable) evento.preventDefault();
+            return;
+        }
+    }
+
+    // 3. estancia actual cerrada
+    if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
+        seleccion.tipo = "estanciaActual";
+        seleccion.estanciaIndex = -1;
+        seleccion.puntoIndex = -1;
+        arrastrando = true;
+        dibujar();
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    // 4. estancia guardada
+    for (let i = estancias.length - 1; i >= 0; i--) {
+        if (puntoDentroPoligono(pos.x, pos.y, estancias[i].puntos)) {
+            seleccion.tipo = "estanciaGuardada";
+            seleccion.estanciaIndex = i;
+            seleccion.puntoIndex = -1;
+            arrastrando = true;
+            dibujar();
+            if (evento.cancelable) evento.preventDefault();
+            return;
+        }
+    }
+
+    // 5. si no hay selección y la actual no está cerrada, añadir punto
+    if (!cerrado) {
+        puntos.push({ x: pos.x, y: pos.y });
+        seleccion.tipo = "puntoActual";
+        seleccion.estanciaIndex = -1;
+        seleccion.puntoIndex = puntos.length - 1;
+        dibujar();
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    deseleccionar();
+}
+
+function moverInteraccion(evento) {
+    if (!arrastrando || !seleccion.tipo) return;
+
+    const pos = obtenerPosicion(evento);
+    const dx = pos.x - ultimoX;
+    const dy = pos.y - ultimoY;
+
+    if (dx !== 0 || dy !== 0) {
+        huboMovimiento = true;
+    }
+
+    if (seleccion.tipo === "puntoActual") {
+        puntos[seleccion.puntoIndex].x += dx;
+        puntos[seleccion.puntoIndex].y += dy;
+    }
+
+    if (seleccion.tipo === "puntoGuardado") {
+        const est = estancias[seleccion.estanciaIndex];
+        est.puntos[seleccion.puntoIndex].x += dx;
+        est.puntos[seleccion.puntoIndex].y += dy;
+        guardarMemoria();
+    }
+
+    if (seleccion.tipo === "estanciaActual") {
+        for (const p of puntos) {
+            p.x += dx;
+            p.y += dy;
+        }
+    }
+
+    if (seleccion.tipo === "estanciaGuardada") {
+        const est = estancias[seleccion.estanciaIndex];
+        for (const p of est.puntos) {
+            p.x += dx;
+            p.y += dy;
+        }
+        guardarMemoria();
+    }
+
+    ultimoX = pos.x;
+    ultimoY = pos.y;
+
+    dibujar();
+    if (evento.cancelable) evento.preventDefault();
+}
+
+function terminarInteraccion(evento) {
+    if (!arrastrando) return;
+
+    arrastrando = false;
+
+    if (seleccion.tipo === "puntoGuardado" || seleccion.tipo === "estanciaGuardada") {
+        guardarMemoria();
+    }
+
+    if (evento && evento.cancelable) evento.preventDefault();
+}
+
+canvas.addEventListener("mousedown", empezarInteraccion);
+canvas.addEventListener("mousemove", moverInteraccion);
+canvas.addEventListener("mouseup", terminarInteraccion);
+canvas.addEventListener("mouseleave", terminarInteraccion);
+
+canvas.addEventListener("touchstart", empezarInteraccion, { passive: false });
+canvas.addEventListener("touchmove", moverInteraccion, { passive: false });
+canvas.addEventListener("touchend", terminarInteraccion, { passive: false });
+canvas.addEventListener("touchcancel", terminarInteraccion, { passive: false });
 
 window.addEventListener("resize", function() {
     ajustarCanvas();
