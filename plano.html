@@ -60,14 +60,13 @@ canvas {
 <div class="header">Plano</div>
 
 <div class="canvas-container">
-    <div class="info" id="estadoPlano">
-        Plano sin cerrar
-    </div>
+    <div class="info" id="estadoPlano">Plano sin cerrar</div>
 
     <canvas id="canvas"></canvas>
 
     <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
     <button class="btn" onclick="definirEscala()">Definir escala real</button>
+    <button class="btn" onclick="borrarUltimoPunto()">Borrar último punto</button>
     <button class="btn" onclick="guardarPlano()">Guardar plano</button>
     <button class="btn" onclick="limpiarPlano()">Limpiar</button>
     <button class="btn" onclick="volver()">Volver</button>
@@ -80,7 +79,7 @@ const estadoPlano = document.getElementById("estadoPlano");
 
 function ajustarCanvas() {
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 320;
+    canvas.height = window.innerHeight - 360;
 }
 ajustarCanvas();
 
@@ -109,6 +108,10 @@ let cerrado = obra.plano.cerrado === true;
 let metrosPorPixel = obra.plano.metrosPorPixel || null;
 let superficie = obra.plano.superficie || 0;
 
+let puntoSeleccionado = -1;
+let arrastrando = false;
+const radioSeleccion = 12;
+
 function guardarEnMemoria() {
     obra.plano = {
         puntos: puntos,
@@ -118,21 +121,33 @@ function guardarEnMemoria() {
     };
 
     obra.superficiePlano = superficie;
-
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
-canvas.addEventListener("click", function(e) {
-    if (cerrado) return;
-
+function obtenerPosicion(evento) {
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    puntos.push({ x, y });
-    guardarEnMemoria();
-    dibujar();
-});
+    if (evento.touches && evento.touches.length > 0) {
+        return {
+            x: evento.touches[0].clientX - rect.left,
+            y: evento.touches[0].clientY - rect.top
+        };
+    }
+
+    return {
+        x: evento.clientX - rect.left,
+        y: evento.clientY - rect.top
+    };
+}
+
+function buscarPunto(x, y) {
+    for (let i = 0; i < puntos.length; i++) {
+        const p = puntos[i];
+        const d = Math.hypot(p.x - x, p.y - y);
+        if (d <= radioSeleccion) return i;
+    }
+    return -1;
+}
 
 function distancia(p1, p2) {
     return Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -149,7 +164,6 @@ function calcularSuperficiePixels() {
     if (puntos.length < 3) return 0;
 
     let area = 0;
-
     for (let i = 0; i < puntos.length; i++) {
         const j = (i + 1) % puntos.length;
         area += puntos[i].x * puntos[j].y;
@@ -182,6 +196,10 @@ function actualizarEstado() {
         texto += "<br>Superficie: " + superficie.toFixed(2) + " m²";
     }
 
+    if (puntoSeleccionado >= 0) {
+        texto += "<br>Punto seleccionado: " + (puntoSeleccionado + 1);
+    }
+
     estadoPlano.innerHTML = texto;
 }
 
@@ -198,8 +216,8 @@ function dibujarLongitudes() {
         const p1 = puntos[i];
         const p2 = puntos[j];
         const medio = puntoMedio(p1, p2);
-
         const metros = distancia(p1, p2) * metrosPorPixel;
+
         ctx.fillText(metros.toFixed(2) + " m", medio.x + 6, medio.y - 6);
     }
 }
@@ -230,11 +248,17 @@ function dibujar() {
 
     ctx.stroke();
 
-    for (const p of puntos) {
+    for (let i = 0; i < puntos.length; i++) {
+        const p = puntos[i];
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = "orange";
+        ctx.arc(p.x, p.y, i === puntoSeleccionado ? 7 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = i === puntoSeleccionado ? "white" : "orange";
         ctx.fill();
+
+        ctx.fillStyle = "orange";
+        ctx.font = "12px Arial";
+        ctx.fillText(String(i + 1), p.x + 8, p.y - 8);
     }
 
     dibujarLongitudes();
@@ -260,25 +284,21 @@ function definirEscala() {
     }
 
     const largoReal = prompt("Introduce la medida real del primer lado en metros (entre el punto 1 y el 2):");
-
     if (!largoReal) return;
 
     const metrosReales = parseFloat(largoReal.replace(",", "."));
-
     if (!metrosReales || metrosReales <= 0) {
         alert("Medida no válida");
         return;
     }
 
     const pixeles = distancia(puntos[0], puntos[1]);
-
     if (pixeles <= 0) {
         alert("No se puede calcular la escala");
         return;
     }
 
     metrosPorPixel = metrosReales / pixeles;
-
     recalcularSuperficieReal();
     guardarEnMemoria();
     dibujar();
@@ -292,11 +312,29 @@ function guardarPlano() {
     alert("Plano guardado");
 }
 
+function borrarUltimoPunto() {
+    if (puntos.length === 0) return;
+
+    puntos.pop();
+
+    if (puntos.length < 3) {
+        cerrado = false;
+    }
+
+    puntoSeleccionado = -1;
+    recalcularSuperficieReal();
+    guardarEnMemoria();
+    dibujar();
+}
+
 function limpiarPlano() {
     puntos = [];
     cerrado = false;
     metrosPorPixel = null;
     superficie = 0;
+    puntoSeleccionado = -1;
+    arrastrando = false;
+
     guardarEnMemoria();
     dibujar();
 }
@@ -304,6 +342,63 @@ function limpiarPlano() {
 function volver() {
     window.location.href = "obra.html";
 }
+
+function iniciarInteraccion(e) {
+    const pos = obtenerPosicion(e);
+    const indice = buscarPunto(pos.x, pos.y);
+
+    if (indice >= 0) {
+        puntoSeleccionado = indice;
+        arrastrando = true;
+        dibujar();
+        e.preventDefault();
+        return;
+    }
+
+    if (cerrado) {
+        puntoSeleccionado = -1;
+        dibujar();
+        return;
+    }
+
+    puntos.push({ x: pos.x, y: pos.y });
+    puntoSeleccionado = puntos.length - 1;
+    guardarEnMemoria();
+    dibujar();
+    e.preventDefault();
+}
+
+function moverInteraccion(e) {
+    if (!arrastrando || puntoSeleccionado < 0) return;
+
+    const pos = obtenerPosicion(e);
+    puntos[puntoSeleccionado].x = pos.x;
+    puntos[puntoSeleccionado].y = pos.y;
+
+    recalcularSuperficieReal();
+    guardarEnMemoria();
+    dibujar();
+    e.preventDefault();
+}
+
+function finInteraccion(e) {
+    if (arrastrando) {
+        arrastrando = false;
+        recalcularSuperficieReal();
+        guardarEnMemoria();
+        dibujar();
+    }
+}
+
+canvas.addEventListener("mousedown", iniciarInteraccion);
+canvas.addEventListener("mousemove", moverInteraccion);
+canvas.addEventListener("mouseup", finInteraccion);
+canvas.addEventListener("mouseleave", finInteraccion);
+
+canvas.addEventListener("touchstart", iniciarInteraccion, { passive: false });
+canvas.addEventListener("touchmove", moverInteraccion, { passive: false });
+canvas.addEventListener("touchend", finInteraccion);
+canvas.addEventListener("touchcancel", finInteraccion);
 
 window.addEventListener("resize", function() {
     ajustarCanvas();
