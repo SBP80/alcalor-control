@@ -14,12 +14,31 @@ body {
 }
 
 .header {
-    padding: 15px;
+    padding: 12px 15px;
     border-bottom: 2px solid orange;
     font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
-.canvas-container {
+.header-titulo {
+    font-weight: bold;
+}
+
+.header-btn {
+    background: orange;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wrap {
     padding: 10px;
 }
 
@@ -30,7 +49,20 @@ body {
     margin-bottom: 10px;
     border-radius: 8px;
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.45;
+}
+
+.tools {
+    display: none;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.tools.abierto {
+    display: block;
 }
 
 canvas {
@@ -43,14 +75,15 @@ canvas {
 
 .btn {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     background: orange;
     border: none;
-    margin-top: 10px;
-    font-size: 18px;
+    margin-top: 8px;
+    font-size: 16px;
     cursor: pointer;
     color: #111;
     font-weight: bold;
+    border-radius: 8px;
 }
 
 .btn-sec {
@@ -61,38 +94,59 @@ canvas {
     background: #c93b2f;
     color: white;
 }
+
+.subtitulo {
+    margin-top: 4px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: orange;
+    font-weight: bold;
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">Plano</div>
+<div class="header">
+    <button class="header-btn" onclick="volver()">Volver</button>
+    <div class="header-titulo">Plano</div>
+    <button class="header-btn" onclick="toggleTools()">Herramientas</button>
+</div>
 
-<div class="canvas-container">
-    <div class="info" id="info">Sin datos</div>
+<div class="wrap">
+    <div class="info" id="info">Cargando...</div>
+
+    <div class="tools" id="tools">
+        <div class="subtitulo">Dibujo y edición</div>
+        <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
+        <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
+        <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
+        <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
+        <button class="btn btn-sec" onclick="definirEscala()">Definir escala real</button>
+        <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia seleccionada</button>
+        <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
+        <button class="btn" onclick="guardarPlano()">Guardar plano</button>
+    </div>
 
     <canvas id="canvas"></canvas>
-
-    <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
-    <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
-    <button class="btn" onclick="definirEscala()">Definir escala real</button>
-    <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
-    <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
-    <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia seleccionada</button>
-    <button class="btn btn-sec" onclick="deseleccionar()">Deseleccionar</button>
-    <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
-    <button class="btn" onclick="guardarPlano()">Guardar plano</button>
-    <button class="btn" onclick="volver()">Volver</button>
 </div>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
+const tools = document.getElementById("tools");
+
+function toggleTools() {
+    tools.classList.toggle("abierto");
+    ajustarCanvas();
+    dibujar();
+}
 
 function ajustarCanvas() {
+    const toolsAltura = tools.classList.contains("abierto") ? tools.offsetHeight + 10 : 0;
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 450;
+    canvas.height = window.innerHeight - 180 - toolsAltura;
 }
 ajustarCanvas();
 
@@ -232,11 +286,25 @@ function buscarPuntoEnLista(x, y, listaPuntos) {
     return -1;
 }
 
-function deseleccionar() {
+function limpiarSeleccion() {
     seleccion.tipo = null;
     seleccion.estanciaIndex = -1;
     seleccion.puntoIndex = -1;
-    dibujar();
+}
+
+function obtenerEstanciaSeleccionada() {
+    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
+        return estancias[seleccion.estanciaIndex] || null;
+    }
+
+    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
+        return {
+            nombre: "Estancia actual",
+            puntos: puntos
+        };
+    }
+
+    return null;
 }
 
 function dibujarMedidas(puntosLocal, estaCerrada, colorTexto) {
@@ -344,38 +412,48 @@ function dibujarEstanciaActual() {
 }
 
 function actualizarInfo() {
-    let texto = "Estancias guardadas: " + estancias.length;
+    const estanciaSel = obtenerEstanciaSeleccionada();
 
-    texto += cerrado ? "<br>Estancia actual cerrada" : "<br>Estancia actual abierta";
+    if (!estanciaSel) {
+        let total = 0;
+        for (const est of estancias) {
+            total += calcularSuperficieReal(est.puntos);
+        }
 
-    if (puntos.length > 0) {
-        texto += "<br>Puntos actuales: " + puntos.length;
+        let texto = "Resumen del plano";
+        texto += "<br>Estancias guardadas: " + estancias.length;
+        texto += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
+
+        if (total > 0) {
+            texto += "<br>Superficie total: " + total.toFixed(2) + " m²";
+        }
+
+        if (puntos.length > 0) {
+            texto += "<br>Estancia actual en edición: sí";
+            texto += "<br>Puntos actuales: " + puntos.length;
+            texto += "<br>Estado: " + (cerrado ? "cerrada" : "abierta");
+        }
+
+        info.innerHTML = texto;
+        return;
     }
 
-    if (metrosPorPixel) {
-        texto += "<br>Escala definida";
-    } else {
-        texto += "<br>Escala sin definir";
+    const sup = calcularSuperficieReal(estanciaSel.puntos);
+    let texto = "Datos de la estancia seleccionada";
+    texto += "<br>Nombre: " + (estanciaSel.nombre || "Sin nombre");
+    texto += "<br>Lados: " + estanciaSel.puntos.length;
+
+    if (sup > 0) {
+        texto += "<br>Superficie: " + sup.toFixed(2) + " m²";
     }
 
-    if (cerrado && metrosPorPixel && puntos.length >= 3) {
-        texto += "<br>Superficie actual: " + calcularSuperficieReal(puntos).toFixed(2) + " m²";
-    }
-
-    if (seleccion.tipo === "puntoActual") {
-        texto += "<br>Punto actual seleccionado: " + (seleccion.puntoIndex + 1);
-    }
-
-    if (seleccion.tipo === "puntoGuardado") {
-        texto += "<br>Punto seleccionado en estancia: " + estancias[seleccion.estanciaIndex].nombre;
-    }
-
-    if (seleccion.tipo === "estanciaActual") {
-        texto += "<br>Estancia actual seleccionada";
-    }
-
-    if (seleccion.tipo === "estanciaGuardada") {
-        texto += "<br>Estancia seleccionada: " + estancias[seleccion.estanciaIndex].nombre;
+    if (metrosPorPixel && estanciaSel.puntos.length >= 2) {
+        texto += "<br>Longitudes:";
+        for (let i = 0; i < estanciaSel.puntos.length; i++) {
+            const j = (i + 1) % estanciaSel.puntos.length;
+            const m = distancia(estanciaSel.puntos[i], estanciaSel.puntos[j]) * metrosPorPixel;
+            texto += "<br>- Lado " + (i + 1) + ": " + m.toFixed(2) + " m";
+        }
     }
 
     info.innerHTML = texto;
@@ -395,7 +473,7 @@ function dibujar() {
 function nuevaEstancia() {
     puntos = [];
     cerrado = false;
-    deseleccionar();
+    limpiarSeleccion();
     dibujar();
 }
 
@@ -455,7 +533,7 @@ function guardarEstancia() {
     guardarMemoria();
     puntos = [];
     cerrado = false;
-    deseleccionar();
+    limpiarSeleccion();
     dibujar();
 }
 
@@ -469,7 +547,7 @@ function borrarUltimoPunto() {
     }
 
     if (seleccion.tipo === "puntoActual" && seleccion.puntoIndex >= puntos.length) {
-        deseleccionar();
+        limpiarSeleccion();
     }
 
     dibujar();
@@ -483,7 +561,7 @@ function eliminarEstanciaSeleccionada() {
 
         estancias.splice(seleccion.estanciaIndex, 1);
         guardarMemoria();
-        deseleccionar();
+        limpiarSeleccion();
         dibujar();
         return;
     }
@@ -494,7 +572,7 @@ function eliminarEstanciaSeleccionada() {
 
         puntos = [];
         cerrado = false;
-        deseleccionar();
+        limpiarSeleccion();
         dibujar();
         return;
     }
@@ -505,7 +583,7 @@ function eliminarEstanciaSeleccionada() {
 function limpiarActual() {
     puntos = [];
     cerrado = false;
-    deseleccionar();
+    limpiarSeleccion();
     dibujar();
 }
 
@@ -579,7 +657,8 @@ function empezarInteraccion(evento) {
         return;
     }
 
-    deseleccionar();
+    limpiarSeleccion();
+    dibujar();
 }
 
 function moverInteraccion(evento) {
