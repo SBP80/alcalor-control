@@ -8,7 +8,7 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #0b0b0b;
     color: white;
 }
@@ -23,11 +23,13 @@ body {
     padding: 15px;
 }
 
-.card {
-    background: #1a1a1a;
-    padding: 15px;
-    border-radius: 10px;
+.input {
+    width: 100%;
+    padding: 12px;
     margin-bottom: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
 }
 
 .btn {
@@ -36,7 +38,7 @@ body {
     background: orange;
     border: none;
     font-size: 18px;
-    margin-bottom: 10px;
+    margin-top: 10px;
     cursor: pointer;
     color: #111;
     font-weight: bold;
@@ -50,9 +52,17 @@ body {
 
 <div class="container">
 
-<div id="datos" class="card"></div>
+<input class="input" id="nombre" placeholder="Nombre obra">
+<input class="input" id="direccion" placeholder="Dirección">
+<input class="input" id="tipo" placeholder="Tipo de obra">
+<input class="input" id="estado" placeholder="Estado">
+<input class="input" id="inicio" placeholder="Fecha inicio">
+<input class="input" id="fin" placeholder="Fecha fin">
+<input class="input" id="tecnicos" placeholder="Técnicos">
+<input class="input" id="responsable" placeholder="Responsable">
+<input class="input" id="notas" placeholder="Notas">
 
-<button class="btn" onclick="editar()">Editar</button>
+<button class="btn" onclick="guardar()">Guardar</button>
 <button class="btn" onclick="volver()">Volver a obras</button>
 
 </div>
@@ -66,51 +76,43 @@ let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 
 let obra = obras.find(o => o.id == obraId);
 
+function cargar() {
+
+    if (!obra) return;
+
+    document.getElementById("nombre").value = obra.nombre || "";
+    document.getElementById("direccion").value = obra.direccion || "";
+    document.getElementById("tipo").value = obra.tipo || "";
+    document.getElementById("estado").value = obra.estado || "";
+    document.getElementById("inicio").value = obra.inicio || "";
+    document.getElementById("fin").value = obra.fin || "";
+    document.getElementById("tecnicos").value = obra.tecnicos || "";
+    document.getElementById("responsable").value = obra.responsable || "";
+    document.getElementById("notas").value = obra.notas || "";
+}
+
 function guardar() {
+
+    obra.nombre = document.getElementById("nombre").value;
+    obra.direccion = document.getElementById("direccion").value;
+    obra.tipo = document.getElementById("tipo").value;
+    obra.estado = document.getElementById("estado").value;
+    obra.inicio = document.getElementById("inicio").value;
+    obra.fin = document.getElementById("fin").value;
+    obra.tecnicos = document.getElementById("tecnicos").value;
+    obra.responsable = document.getElementById("responsable").value;
+    obra.notas = document.getElementById("notas").value;
+
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-}
 
-function mostrar() {
-    const contenedor = document.getElementById("datos");
-
-    if (!obra) {
-        contenedor.innerHTML = "Obra no encontrada";
-        return;
-    }
-
-    contenedor.innerHTML = `
-        <h2>${obra.nombre}</h2>
-        <p>📍 ${obra.direccion || "-"}</p>
-        <p>🏗️ ${obra.tipo || "-"}</p>
-        <p>📊 ${obra.estado || "-"}</p>
-        <p>📅 Inicio: ${obra.inicio || "-"}</p>
-        <p>📅 Fin: ${obra.fin || "-"}</p>
-        <p>👷 Técnicos: ${obra.tecnicos || "-"}</p>
-        <p>👤 Responsable: ${obra.responsable || "-"}</p>
-        <p>📝 ${obra.notas || "-"}</p>
-    `;
-}
-
-function editar() {
-
-    obra.direccion = prompt("Dirección:", obra.direccion || "");
-    obra.tipo = prompt("Tipo de obra:", obra.tipo || "");
-    obra.estado = prompt("Estado:", obra.estado || "");
-    obra.inicio = prompt("Fecha inicio:", obra.inicio || "");
-    obra.fin = prompt("Fecha fin:", obra.fin || "");
-    obra.tecnicos = prompt("Técnicos:", obra.tecnicos || "");
-    obra.responsable = prompt("Responsable:", obra.responsable || "");
-    obra.notas = prompt("Notas:", obra.notas || "");
-
-    guardar();
-    mostrar();
+    alert("Guardado correctamente");
 }
 
 function volver() {
     window.location.href = "obras.html";
 }
 
-mostrar();
+cargar();
 
 </script>
 
