@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obra</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0b0b0b;
+    color: white;
+}
+
+.header {
+    padding: 15px;
+    font-size: 20px;
+    border-bottom: 2px solid orange;
+}
+
+.container {
+    padding: 15px;
+}
+
+.card {
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: orange;
+    border: none;
+    font-size: 18px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    color: #111;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Ficha de obra</div>
+
+<div class="container">
+
+<div id="datos" class="card"></div>
+
+<button class="btn" onclick="editar()">Editar</button>
+<button class="btn" onclick="volver()">Volver a obras</button>
+
+</div>
+
+<script>
+
+let clienteId = localStorage.getItem("clienteActivo");
+let obraId = localStorage.getItem("obraActiva");
+
+let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+
+let obra = obras.find(o => o.id == obraId);
+
+function guardar() {
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+}
+
+function mostrar() {
+    const contenedor = document.getElementById("datos");
+
+    if (!obra) {
+        contenedor.innerHTML = "Obra no encontrada";
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <h2>${obra.nombre}</h2>
+        <p>📍 ${obra.direccion || "-"}</p>
+        <p>🏗️ ${obra.tipo || "-"}</p>
+        <p>📊 ${obra.estado || "-"}</p>
+        <p>📅 Inicio: ${obra.inicio || "-"}</p>
+        <p>📅 Fin: ${obra.fin || "-"}</p>
+        <p>👷 Técnicos: ${obra.tecnicos || "-"}</p>
+        <p>👤 Responsable: ${obra.responsable || "-"}</p>
+        <p>📝 ${obra.notas || "-"}</p>
+    `;
+}
+
+function editar() {
+
+    obra.direccion = prompt("Dirección:", obra.direccion || "");
+    obra.tipo = prompt("Tipo de obra:", obra.tipo || "");
+    obra.estado = prompt("Estado:", obra.estado || "");
+    obra.inicio = prompt("Fecha inicio:", obra.inicio || "");
+    obra.fin = prompt("Fecha fin:", obra.fin || "");
+    obra.tecnicos = prompt("Técnicos:", obra.tecnicos || "");
+    obra.responsable = prompt("Responsable:", obra.responsable || "");
+    obra.notas = prompt("Notas:", obra.notas || "");
+
+    guardar();
+    mostrar();
+}
+
+function volver() {
+    window.location.href = "obras.html";
+}
+
+mostrar();
+
+</script>
+
+</body>
+</html>
