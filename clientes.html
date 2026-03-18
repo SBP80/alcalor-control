@@ -8,7 +8,7 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #0b0b0b;
     color: white;
 }
@@ -31,6 +31,8 @@ body {
     font-size: 18px;
     margin-bottom: 15px;
     cursor: pointer;
+    color: #111;
+    font-weight: bold;
 }
 
 .cliente {
@@ -46,12 +48,13 @@ body {
     position: absolute;
     right: 10px;
     top: 10px;
-    background: red;
+    background: #b30000;
     border: none;
     color: white;
-    padding: 5px 10px;
+    padding: 8px 12px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -62,13 +65,14 @@ body {
 
 <div class="container">
 
-<button class="btn" onclick="nuevoCliente()">+ Nuevo cliente</button>
+    <button class="btn" onclick="nuevoCliente()">+ Nuevo cliente</button>
 
-<div class="clientes"></div>
+    <div class="clientes"></div>
 
 </div>
 
 <script>
+const PIN_ADMIN = "1234";
 
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
@@ -77,45 +81,58 @@ function guardar() {
 }
 
 function nuevoCliente() {
-
     let nombre = prompt("Nombre del cliente:");
-    if (!nombre) return;
+    if (!nombre || nombre.trim() === "") return;
 
-    let telefono = prompt("Teléfono:");
-    let direccion = prompt("Dirección:");
-    let notas = prompt("Notas:");
+    let telefono = prompt("Teléfono:") || "";
+    let direccion = prompt("Dirección:") || "";
+    let notas = prompt("Notas:") || "";
 
     clientes.push({
         id: Date.now(),
-        nombre,
-        telefono,
-        direccion,
-        notas
+        nombre: nombre.trim(),
+        telefono: telefono.trim(),
+        direccion: direccion.trim(),
+        notas: notas.trim()
     });
 
     guardar();
     mostrarClientes();
 }
 
+function pedirPin() {
+    let pin = prompt("Introduce PIN de administrador:");
+    if (pin === null) return false;
+    return pin === PIN_ADMIN;
+}
+
 function eliminarCliente(id) {
-
     let confirmar = confirm("¿Seguro que quieres eliminar este cliente?");
-
     if (!confirmar) return;
 
-    clientes = clientes.filter(c => c.id !== id);
+    let pinCorrecto = pedirPin();
+    if (!pinCorrecto) {
+        alert("PIN incorrecto");
+        return;
+    }
 
+    clientes = clientes.filter(c => c.id !== id);
     guardar();
+
+    localStorage.removeItem("obras_" + id);
+
+    if (localStorage.getItem("clienteActivo") == id) {
+        localStorage.removeItem("clienteActivo");
+    }
+
     mostrarClientes();
 }
 
 function mostrarClientes() {
-
     const contenedor = document.querySelector(".clientes");
     contenedor.innerHTML = "";
 
     clientes.forEach(cliente => {
-
         let div = document.createElement("div");
         div.className = "cliente";
 
@@ -127,10 +144,8 @@ function mostrarClientes() {
             📝 ${cliente.notas || ""}
         `;
 
-        // abrir cliente
         div.onclick = () => abrirCliente(cliente.id);
 
-        // eliminar sin abrir
         div.querySelector(".eliminar").onclick = (e) => {
             e.stopPropagation();
             eliminarCliente(cliente.id);
@@ -146,7 +161,6 @@ function abrirCliente(id) {
 }
 
 mostrarClientes();
-
 </script>
 
 </body>
