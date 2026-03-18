@@ -13,6 +13,7 @@ body {
     font-family: Arial, sans-serif;
 }
 
+/* HEADER */
 .header {
     padding: 12px 15px;
     border-bottom: 2px solid orange;
@@ -20,11 +21,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
-}
-
-.header-titulo {
-    font-weight: bold;
 }
 
 .header-btn {
@@ -38,8 +34,10 @@ body {
     cursor: pointer;
 }
 
+/* CONTENIDO */
 .wrap {
     padding: 10px;
+    position: relative;
 }
 
 .info {
@@ -49,22 +47,29 @@ body {
     margin-bottom: 10px;
     border-radius: 8px;
     font-size: 14px;
-    line-height: 1.45;
 }
 
+/* PANEL LATERAL */
 .tools {
-    display: none;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    width: 260px;
+    max-height: 75vh;
+    overflow-y: auto;
     background: #141414;
     border: 1px solid #2a2a2a;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px;
-    margin-bottom: 10px;
+    display: none;
+    z-index: 10;
 }
 
 .tools.abierto {
     display: block;
 }
 
+/* CANVAS */
 canvas {
     background: #111;
     border: 1px solid #333;
@@ -73,31 +78,26 @@ canvas {
     touch-action: none;
 }
 
+/* BOTONES */
 .btn {
     width: 100%;
-    padding: 14px;
+    padding: 12px;
     background: orange;
     border: none;
     margin-top: 8px;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
     color: #111;
     font-weight: bold;
     border-radius: 8px;
 }
 
-.btn-sec {
-    background: #d6a13b;
-}
-
-.btn-danger {
-    background: #c93b2f;
-    color: white;
-}
+.btn-sec { background: #d6a13b; }
+.btn-danger { background: #c93b2f; color: white; }
 
 .subtitulo {
-    margin-top: 4px;
-    margin-bottom: 8px;
+    margin-top: 6px;
+    margin-bottom: 6px;
     font-size: 13px;
     color: orange;
     font-weight: bold;
@@ -109,26 +109,28 @@ canvas {
 
 <div class="header">
     <button class="header-btn" onclick="volver()">Volver</button>
-    <div class="header-titulo">Plano</div>
+    <div>Plano</div>
     <button class="header-btn" onclick="toggleTools()">Herramientas</button>
 </div>
 
 <div class="wrap">
-    <div class="info" id="info">Cargando...</div>
+
+    <div class="info" id="info"></div>
 
     <div class="tools" id="tools">
-        <div class="subtitulo">Dibujo y edición</div>
+        <div class="subtitulo">Plano</div>
         <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
         <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
         <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
         <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
-        <button class="btn btn-sec" onclick="definirEscala()">Definir escala real</button>
-        <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia seleccionada</button>
+        <button class="btn btn-sec" onclick="definirEscala()">Definir escala</button>
+        <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia</button>
         <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
         <button class="btn" onclick="guardarPlano()">Guardar plano</button>
     </div>
 
     <canvas id="canvas"></canvas>
+
 </div>
 
 <script>
@@ -137,598 +139,174 @@ const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
 const tools = document.getElementById("tools");
 
-function toggleTools() {
+function toggleTools(){
     tools.classList.toggle("abierto");
-    ajustarCanvas();
-    dibujar();
 }
 
-function ajustarCanvas() {
-    const toolsAltura = tools.classList.contains("abierto") ? tools.offsetHeight + 10 : 0;
+function ajustarCanvas(){
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 180 - toolsAltura;
+    canvas.height = window.innerHeight - 160;
 }
 ajustarCanvas();
 
+/* DATOS */
 let clienteId = localStorage.getItem("clienteActivo");
 let obraId = localStorage.getItem("obraActiva");
 
 let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 let obra = obras.find(o => o.id == obraId);
 
-if (!obra) {
-    alert("Obra no encontrada");
-    window.location.href = "obras.html";
-}
-
-if (!obra.plano) {
-    obra.plano = {
-        estancias: [],
-        metrosPorPixel: null
-    };
-}
-
-if (!Array.isArray(obra.plano.estancias)) {
-    obra.plano.estancias = [];
+if(!obra.plano){
+    obra.plano = { estancias:[], metrosPorPixel:null };
 }
 
 let estancias = obra.plano.estancias;
-let metrosPorPixel = obra.plano.metrosPorPixel || null;
+let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let puntos = [];
 let cerrado = false;
 
-let seleccion = {
-    tipo: null,
-    estanciaIndex: -1,
-    puntoIndex: -1
-};
+let seleccion = { tipo:null, estanciaIndex:-1, puntoIndex:-1 };
 
 let arrastrando = false;
-let ultimoX = 0;
-let ultimoY = 0;
+let ultimoX=0, ultimoY=0;
 
-const RADIO_PUNTO = 14;
+const RADIO = 14;
 
-function guardarMemoria() {
-    obra.plano = {
-        estancias: estancias,
-        metrosPorPixel: metrosPorPixel
-    };
-    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+/* UTIL */
+function guardar(){
+    localStorage.setItem("obras_"+clienteId,JSON.stringify(obras));
 }
 
-function obtenerPosicion(evento) {
-    const rect = canvas.getBoundingClientRect();
-
-    if (evento.touches && evento.touches.length > 0) {
-        return {
-            x: evento.touches[0].clientX - rect.left,
-            y: evento.touches[0].clientY - rect.top
-        };
+function pos(e){
+    const r = canvas.getBoundingClientRect();
+    if(e.touches){
+        return {x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
     }
-
-    return {
-        x: evento.clientX - rect.left,
-        y: evento.clientY - rect.top
-    };
+    return {x:e.clientX-r.left,y:e.clientY-r.top};
 }
 
-function distancia(p1, p2) {
-    return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+function distancia(a,b){
+    return Math.hypot(b.x-a.x,b.y-a.y);
 }
 
-function puntoMedio(p1, p2) {
-    return {
-        x: (p1.x + p2.x) / 2,
-        y: (p1.y + p2.y) / 2
-    };
-}
-
-function centroide(puntosLocal) {
-    let sx = 0;
-    let sy = 0;
-
-    for (const p of puntosLocal) {
-        sx += p.x;
-        sy += p.y;
+function dentro(x,y,poly){
+    let d=false;
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+        let xi=poly[i].x, yi=poly[i].y;
+        let xj=poly[j].x, yj=poly[j].y;
+        let c=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi||1)+xi);
+        if(c)d=!d;
     }
-
-    return {
-        x: sx / puntosLocal.length,
-        y: sy / puntosLocal.length
-    };
+    return d;
 }
 
-function calcularAreaPixels(puntosLocal) {
-    if (!puntosLocal || puntosLocal.length < 3) return 0;
+/* DIBUJO */
+function dibujar(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    let area = 0;
-
-    for (let i = 0; i < puntosLocal.length; i++) {
-        const j = (i + 1) % puntosLocal.length;
-        area += puntosLocal[i].x * puntosLocal[j].y;
-        area -= puntosLocal[j].x * puntosLocal[i].y;
-    }
-
-    return Math.abs(area / 2);
-}
-
-function calcularSuperficieReal(puntosLocal) {
-    if (!metrosPorPixel) return 0;
-    return calcularAreaPixels(puntosLocal) * metrosPorPixel * metrosPorPixel;
-}
-
-function puntoDentroPoligono(x, y, poligono) {
-    let dentro = false;
-
-    for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
-        const xi = poligono[i].x;
-        const yi = poligono[i].y;
-        const xj = poligono[j].x;
-        const yj = poligono[j].y;
-
-        const cruza = ((yi > y) !== (yj > y)) &&
-            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 0.000001) + xi);
-
-        if (cruza) dentro = !dentro;
-    }
-
-    return dentro;
-}
-
-function buscarPuntoEnLista(x, y, listaPuntos) {
-    for (let i = 0; i < listaPuntos.length; i++) {
-        const p = listaPuntos[i];
-        const d = Math.hypot(p.x - x, p.y - y);
-        if (d <= RADIO_PUNTO) return i;
-    }
-    return -1;
-}
-
-function limpiarSeleccion() {
-    seleccion.tipo = null;
-    seleccion.estanciaIndex = -1;
-    seleccion.puntoIndex = -1;
-}
-
-function obtenerEstanciaSeleccionada() {
-    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-        return estancias[seleccion.estanciaIndex] || null;
-    }
-
-    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
-        return {
-            nombre: "Estancia actual",
-            puntos: puntos
-        };
-    }
-
-    return null;
-}
-
-function dibujarMedidas(puntosLocal, estaCerrada, colorTexto) {
-    if (!metrosPorPixel || !puntosLocal || puntosLocal.length < 2) return;
-
-    ctx.fillStyle = colorTexto;
-    ctx.font = "12px Arial";
-
-    const totalLados = estaCerrada ? puntosLocal.length : puntosLocal.length - 1;
-
-    for (let i = 0; i < totalLados; i++) {
-        const j = (i + 1) % puntosLocal.length;
-        const p1 = puntosLocal[i];
-        const p2 = puntosLocal[j];
-        const medio = puntoMedio(p1, p2);
-        const metros = distancia(p1, p2) * metrosPorPixel;
-
-        ctx.fillText(metros.toFixed(2) + " m", medio.x + 6, medio.y - 6);
-    }
-}
-
-function dibujarEstanciaGuardada(est, index) {
-    if (!est.puntos || est.puntos.length < 3) return;
-
-    const seleccionada = (
-        (seleccion.tipo === "estanciaGuardada" && seleccion.estanciaIndex === index) ||
-        (seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === index)
-    );
-
-    ctx.beginPath();
-    est.puntos.forEach((p, i) => {
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-    });
-    ctx.closePath();
-
-    ctx.strokeStyle = seleccionada ? "white" : "orange";
-    ctx.lineWidth = seleccionada ? 3 : 2;
-    ctx.stroke();
-
-    ctx.fillStyle = seleccionada ? "rgba(255,255,255,0.12)" : "rgba(255,165,0,0.10)";
-    ctx.fill();
-
-    est.puntos.forEach((p, i) => {
-        const esPuntoSel = seleccion.tipo === "puntoGuardado" &&
-                           seleccion.estanciaIndex === index &&
-                           seleccion.puntoIndex === i;
-
+    estancias.forEach((e,i)=>{
         ctx.beginPath();
-        ctx.arc(p.x, p.y, esPuntoSel ? 7 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = esPuntoSel ? "white" : "orange";
-        ctx.fill();
-    });
-
-    const c = centroide(est.puntos);
-
-    ctx.fillStyle = "white";
-    ctx.font = "16px Arial";
-    ctx.fillText(est.nombre || "Estancia", c.x - 20, c.y - 10);
-
-    if (metrosPorPixel) {
-        const sup = calcularSuperficieReal(est.puntos);
-        ctx.font = "13px Arial";
-        ctx.fillText(sup.toFixed(2) + " m²", c.x - 20, c.y + 10);
-    }
-
-    dibujarMedidas(est.puntos, true, "white");
-}
-
-function dibujarEstanciaActual() {
-    if (puntos.length === 0) return;
-
-    const seleccionada = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
-
-    ctx.beginPath();
-    puntos.forEach((p, i) => {
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-    });
-
-    if (cerrado && puntos.length >= 3) {
+        e.puntos.forEach((p,j)=> j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
         ctx.closePath();
-        ctx.fillStyle = seleccionada ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.06)";
-        ctx.fill();
-    }
-
-    ctx.strokeStyle = seleccionada ? "white" : "#dddddd";
-    ctx.lineWidth = seleccionada ? 3 : 2;
-    ctx.stroke();
-
-    puntos.forEach((p, i) => {
-        const esPuntoSel = seleccion.tipo === "puntoActual" && seleccion.puntoIndex === i;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, esPuntoSel ? 7 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = esPuntoSel ? "orange" : "white";
-        ctx.fill();
-
-        ctx.fillStyle = "white";
-        ctx.font = "12px Arial";
-        ctx.fillText(String(i + 1), p.x + 8, p.y - 8);
+        ctx.strokeStyle="orange";
+        ctx.stroke();
     });
 
-    dibujarMedidas(puntos, cerrado, "white");
-}
-
-function actualizarInfo() {
-    const estanciaSel = obtenerEstanciaSeleccionada();
-
-    if (!estanciaSel) {
-        let total = 0;
-        for (const est of estancias) {
-            total += calcularSuperficieReal(est.puntos);
-        }
-
-        let texto = "Resumen del plano";
-        texto += "<br>Estancias guardadas: " + estancias.length;
-        texto += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
-
-        if (total > 0) {
-            texto += "<br>Superficie total: " + total.toFixed(2) + " m²";
-        }
-
-        if (puntos.length > 0) {
-            texto += "<br>Estancia actual en edición: sí";
-            texto += "<br>Puntos actuales: " + puntos.length;
-            texto += "<br>Estado: " + (cerrado ? "cerrada" : "abierta");
-        }
-
-        info.innerHTML = texto;
-        return;
+    if(puntos.length){
+        ctx.beginPath();
+        puntos.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+        if(cerrado)ctx.closePath();
+        ctx.strokeStyle="white";
+        ctx.stroke();
     }
 
-    const sup = calcularSuperficieReal(estanciaSel.puntos);
-    let texto = "Datos de la estancia seleccionada";
-    texto += "<br>Nombre: " + (estanciaSel.nombre || "Sin nombre");
-    texto += "<br>Lados: " + estanciaSel.puntos.length;
-
-    if (sup > 0) {
-        texto += "<br>Superficie: " + sup.toFixed(2) + " m²";
-    }
-
-    if (metrosPorPixel && estanciaSel.puntos.length >= 2) {
-        texto += "<br>Longitudes:";
-        for (let i = 0; i < estanciaSel.puntos.length; i++) {
-            const j = (i + 1) % estanciaSel.puntos.length;
-            const m = distancia(estanciaSel.puntos[i], estanciaSel.puntos[j]) * metrosPorPixel;
-            texto += "<br>- Lado " + (i + 1) + ": " + m.toFixed(2) + " m";
-        }
-    }
-
-    info.innerHTML = texto;
-}
-
-function dibujar() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < estancias.length; i++) {
-        dibujarEstanciaGuardada(estancias[i], i);
-    }
-
-    dibujarEstanciaActual();
     actualizarInfo();
 }
 
-function nuevaEstancia() {
-    puntos = [];
-    cerrado = false;
-    limpiarSeleccion();
-    dibujar();
+function actualizarInfo(){
+    if(seleccion.tipo && seleccion.estanciaIndex>=0){
+        let e=estancias[seleccion.estanciaIndex];
+        info.innerHTML="Estancia: "+e.nombre+"<br>Lados: "+e.puntos.length;
+    }else{
+        info.innerHTML="Estancias: "+estancias.length;
+    }
 }
 
-function cerrarEstancia() {
-    if (puntos.length < 3) {
-        alert("Necesitas al menos 3 puntos");
-        return;
-    }
-
-    cerrado = true;
-    dibujar();
+/* ACCIONES */
+function nuevaEstancia(){
+    puntos=[];cerrado=false;seleccion.tipo=null;dibujar();
 }
 
-function definirEscala() {
-    if (puntos.length < 2) {
-        alert("Necesitas al menos 2 puntos en la estancia actual");
-        return;
-    }
-
-    const valor = prompt("Introduce la medida real del primer lado en metros (entre punto 1 y punto 2):");
-    if (!valor) return;
-
-    const metrosReales = parseFloat(valor.replace(",", "."));
-
-    if (!metrosReales || metrosReales <= 0) {
-        alert("Medida no válida");
-        return;
-    }
-
-    const pixeles = distancia(puntos[0], puntos[1]);
-
-    if (!pixeles || pixeles <= 0) {
-        alert("No se pudo calcular la escala");
-        return;
-    }
-
-    metrosPorPixel = metrosReales / pixeles;
-    guardarMemoria();
-    dibujar();
-    alert("Escala guardada correctamente");
+function cerrarEstancia(){
+    if(puntos.length<3)return alert("mínimo 3 puntos");
+    cerrado=true;dibujar();
 }
 
-function guardarEstancia() {
-    if (!cerrado || puntos.length < 3) {
-        alert("Primero cierra la estancia");
-        return;
+function guardarEstancia(){
+    if(!cerrado)return;
+    let n=prompt("Nombre");
+    if(!n)return;
+    estancias.push({nombre:n,puntos:[...puntos]});
+    puntos=[];cerrado=false;
+    guardar();dibujar();
+}
+
+function eliminarEstanciaSeleccionada(){
+    if(seleccion.estanciaIndex<0)return alert("Selecciona una estancia");
+    if(!confirm("Eliminar?"))return;
+    estancias.splice(seleccion.estanciaIndex,1);
+    seleccion.tipo=null;
+    guardar();dibujar();
+}
+
+function limpiarActual(){puntos=[];cerrado=false;dibujar();}
+function borrarUltimoPunto(){puntos.pop();dibujar();}
+function guardarPlano(){guardar();alert("Guardado");}
+function definirEscala(){alert("ya lo activaremos luego");}
+function volver(){window.location.href="obra.html";}
+
+/* INTERACCIÓN */
+canvas.addEventListener("mousedown",e=>{
+    let p=pos(e);
+    ultimoX=p.x;ultimoY=p.y;
+
+    for(let i=estancias.length-1;i>=0;i--){
+        if(dentro(p.x,p.y,estancias[i].puntos)){
+            seleccion.tipo="estancia";
+            seleccion.estanciaIndex=i;
+            arrastrando=true;
+            dibujar();return;
+        }
     }
 
-    let nombre = prompt("Nombre estancia:");
-    if (!nombre || nombre.trim() === "") return;
+    if(!cerrado){
+        puntos.push(p);
+        dibujar();
+    }
+});
 
-    estancias.push({
-        nombre: nombre.trim(),
-        puntos: JSON.parse(JSON.stringify(puntos))
+canvas.addEventListener("mousemove",e=>{
+    if(!arrastrando)return;
+    let p=pos(e);
+    let dx=p.x-ultimoX, dy=p.y-ultimoY;
+
+    let est=estancias[seleccion.estanciaIndex];
+    est.puntos.forEach(pt=>{
+        pt.x+=dx; pt.y+=dy;
     });
 
-    guardarMemoria();
-    puntos = [];
-    cerrado = false;
-    limpiarSeleccion();
-    dibujar();
-}
-
-function borrarUltimoPunto() {
-    if (puntos.length === 0) return;
-
-    puntos.pop();
-
-    if (puntos.length < 3) {
-        cerrado = false;
-    }
-
-    if (seleccion.tipo === "puntoActual" && seleccion.puntoIndex >= puntos.length) {
-        limpiarSeleccion();
-    }
-
-    dibujar();
-}
-
-function eliminarEstanciaSeleccionada() {
-    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-        const nombre = estancias[seleccion.estanciaIndex]?.nombre || "esta estancia";
-        const ok = confirm('Eliminar "' + nombre + '"?');
-        if (!ok) return;
-
-        estancias.splice(seleccion.estanciaIndex, 1);
-        guardarMemoria();
-        limpiarSeleccion();
-        dibujar();
-        return;
-    }
-
-    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
-        const ok = confirm("Eliminar la estancia actual?");
-        if (!ok) return;
-
-        puntos = [];
-        cerrado = false;
-        limpiarSeleccion();
-        dibujar();
-        return;
-    }
-
-    alert("Primero selecciona una estancia");
-}
-
-function limpiarActual() {
-    puntos = [];
-    cerrado = false;
-    limpiarSeleccion();
-    dibujar();
-}
-
-function guardarPlano() {
-    guardarMemoria();
-    alert("Plano guardado");
-}
-
-function volver() {
-    window.location.href = "obra.html";
-}
-
-function empezarInteraccion(evento) {
-    const pos = obtenerPosicion(evento);
-    ultimoX = pos.x;
-    ultimoY = pos.y;
-
-    let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
-    if (idx >= 0) {
-        seleccion.tipo = "puntoActual";
-        seleccion.estanciaIndex = -1;
-        seleccion.puntoIndex = idx;
-        arrastrando = true;
-        dibujar();
-        if (evento.cancelable) evento.preventDefault();
-        return;
-    }
-
-    for (let i = estancias.length - 1; i >= 0; i--) {
-        idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
-        if (idx >= 0) {
-            seleccion.tipo = "puntoGuardado";
-            seleccion.estanciaIndex = i;
-            seleccion.puntoIndex = idx;
-            arrastrando = true;
-            dibujar();
-            if (evento.cancelable) evento.preventDefault();
-            return;
-        }
-    }
-
-    if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
-        seleccion.tipo = "estanciaActual";
-        seleccion.estanciaIndex = -1;
-        seleccion.puntoIndex = -1;
-        arrastrando = true;
-        dibujar();
-        if (evento.cancelable) evento.preventDefault();
-        return;
-    }
-
-    for (let i = estancias.length - 1; i >= 0; i--) {
-        if (puntoDentroPoligono(pos.x, pos.y, estancias[i].puntos)) {
-            seleccion.tipo = "estanciaGuardada";
-            seleccion.estanciaIndex = i;
-            seleccion.puntoIndex = -1;
-            arrastrando = true;
-            dibujar();
-            if (evento.cancelable) evento.preventDefault();
-            return;
-        }
-    }
-
-    if (!cerrado) {
-        puntos.push({ x: pos.x, y: pos.y });
-        seleccion.tipo = "puntoActual";
-        seleccion.estanciaIndex = -1;
-        seleccion.puntoIndex = puntos.length - 1;
-        dibujar();
-        if (evento.cancelable) evento.preventDefault();
-        return;
-    }
-
-    limpiarSeleccion();
-    dibujar();
-}
-
-function moverInteraccion(evento) {
-    if (!arrastrando || !seleccion.tipo) return;
-
-    const pos = obtenerPosicion(evento);
-    const dx = pos.x - ultimoX;
-    const dy = pos.y - ultimoY;
-
-    if (seleccion.tipo === "puntoActual") {
-        puntos[seleccion.puntoIndex].x += dx;
-        puntos[seleccion.puntoIndex].y += dy;
-    }
-
-    if (seleccion.tipo === "puntoGuardado") {
-        const est = estancias[seleccion.estanciaIndex];
-        est.puntos[seleccion.puntoIndex].x += dx;
-        est.puntos[seleccion.puntoIndex].y += dy;
-        guardarMemoria();
-    }
-
-    if (seleccion.tipo === "estanciaActual") {
-        for (const p of puntos) {
-            p.x += dx;
-            p.y += dy;
-        }
-    }
-
-    if (seleccion.tipo === "estanciaGuardada") {
-        const est = estancias[seleccion.estanciaIndex];
-        for (const p of est.puntos) {
-            p.x += dx;
-            p.y += dy;
-        }
-        guardarMemoria();
-    }
-
-    ultimoX = pos.x;
-    ultimoY = pos.y;
-
-    dibujar();
-    if (evento.cancelable) evento.preventDefault();
-}
-
-function terminarInteraccion(evento) {
-    if (!arrastrando) return;
-
-    arrastrando = false;
-
-    if (seleccion.tipo === "puntoGuardado" || seleccion.tipo === "estanciaGuardada") {
-        guardarMemoria();
-    }
-
-    if (evento && evento.cancelable) evento.preventDefault();
-}
-
-canvas.addEventListener("mousedown", empezarInteraccion);
-canvas.addEventListener("mousemove", moverInteraccion);
-canvas.addEventListener("mouseup", terminarInteraccion);
-canvas.addEventListener("mouseleave", terminarInteraccion);
-
-canvas.addEventListener("touchstart", empezarInteraccion, { passive: false });
-canvas.addEventListener("touchmove", moverInteraccion, { passive: false });
-canvas.addEventListener("touchend", terminarInteraccion, { passive: false });
-canvas.addEventListener("touchcancel", terminarInteraccion, { passive: false });
-
-window.addEventListener("resize", function() {
-    ajustarCanvas();
-    dibujar();
+    ultimoX=p.x;ultimoY=p.y;
+    guardar();dibujar();
 });
+
+canvas.addEventListener("mouseup",()=>arrastrando=false);
+
+canvas.addEventListener("touchstart",e=>canvas.dispatchEvent(new MouseEvent("mousedown",{clientX:e.touches[0].clientX,clientY:e.touches[0].clientY})),{passive:false});
+canvas.addEventListener("touchmove",e=>canvas.dispatchEvent(new MouseEvent("mousemove",{clientX:e.touches[0].clientX,clientY:e.touches[0].clientY})),{passive:false});
+canvas.addEventListener("touchend",()=>arrastrando=false);
+
+window.addEventListener("resize",()=>{ajustarCanvas();dibujar();});
 
 dibujar();
 </script>
