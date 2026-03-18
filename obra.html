@@ -96,6 +96,15 @@ body {
     border-radius: 6px;
     font-weight: bold;
 }
+
+.bloque-calculo {
+    margin-top: 18px;
+    margin-bottom: 18px;
+    padding: 12px;
+    background: #141414;
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
+}
 </style>
 </head>
 
@@ -160,6 +169,39 @@ body {
         <input class="input" id="responsable">
     </div>
 
+    <div class="bloque-calculo">
+
+        <div class="campo">
+            <label class="label" for="superficie">Superficie (m²)</label>
+            <input class="input" id="superficie" type="number" step="0.01" oninput="calcular()">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="paso">Paso tubo (cm)</label>
+            <select class="select" id="paso" onchange="calcular()">
+                <option value="10">10</option>
+                <option value="15" selected>15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label class="label" for="metros">Metros de tubo</label>
+            <input class="input" id="metros" readonly>
+        </div>
+
+        <div class="campo">
+            <label class="label" for="circuitos">Nº de circuitos</label>
+            <input class="input" id="circuitos" readonly>
+        </div>
+
+        <div class="campo">
+            <label class="label" for="mCircuito">Metros por circuito</label>
+            <input class="input" id="mCircuito" readonly>
+        </div>
+
+    </div>
+
     <div class="campo">
         <label class="label" for="notas">Notas</label>
         <textarea class="textarea" id="notas"></textarea>
@@ -213,6 +255,46 @@ function guardar() {
     obra.tecnicos = document.getElementById("tecnicos").value;
     obra.responsable = document.getElementById("responsable").value;
     obra.notas = document.getElementById("notas").value;
+    obra.superficie = parseFloat(document.getElementById("superficie").value) || 0;
+    obra.paso = parseFloat(document.getElementById("paso").value) || 15;
+
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+    alert("Guardado correctamente");
+}
+
+function calcular() {
+    if (!obra) return;
+
+    let superficie = parseFloat(document.getElementById("superficie").value);
+    let paso = parseFloat(document.getElementById("paso").value);
+
+    if (!superficie || !paso) {
+        document.getElementById("metros").value = "";
+        document.getElementById("circuitos").value = "";
+        document.getElementById("mCircuito").value = "";
+        obra.superficie = superficie || 0;
+        obra.paso = paso || 15;
+        obra.metros = 0;
+        obra.circuitos = 0;
+        obra.mCircuito = 0;
+        localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+        return;
+    }
+
+    let metros = superficie * (100 / paso);
+    let maxCircuito = 100;
+    let circuitos = Math.ceil(metros / maxCircuito);
+    let mCircuito = metros / circuitos;
+
+    document.getElementById("metros").value = metros.toFixed(0);
+    document.getElementById("circuitos").value = circuitos;
+    document.getElementById("mCircuito").value = mCircuito.toFixed(1);
+
+    obra.superficie = superficie;
+    obra.paso = paso;
+    obra.metros = metros;
+    obra.circuitos = circuitos;
+    obra.mCircuito = mCircuito;
 
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
@@ -229,6 +311,18 @@ function cargar() {
     document.getElementById("tecnicos").value = obra.tecnicos || "";
     document.getElementById("responsable").value = obra.responsable || "";
     document.getElementById("notas").value = obra.notas || "";
+    document.getElementById("superficie").value = obra.superficie || "";
+    document.getElementById("paso").value = obra.paso || "15";
+
+    if (obra.metros) {
+        document.getElementById("metros").value = obra.metros.toFixed(0);
+        document.getElementById("circuitos").value = obra.circuitos;
+        document.getElementById("mCircuito").value = obra.mCircuito.toFixed(1);
+    } else {
+        document.getElementById("metros").value = "";
+        document.getElementById("circuitos").value = "";
+        document.getElementById("mCircuito").value = "";
+    }
 
     mostrarFotos();
     mostrarDocs();
@@ -245,7 +339,7 @@ function subirFoto(e) {
 
     reader.onload = function(evt) {
         obra.fotos.push(evt.target.result);
-        guardar();
+        localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
         mostrarFotos();
         input.value = "";
     };
@@ -284,7 +378,7 @@ function borrarFoto(i) {
     }
 
     obra.fotos.splice(i, 1);
-    guardar();
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
     mostrarFotos();
     document.getElementById("inputFoto").value = "";
 }
@@ -304,7 +398,7 @@ function subirDoc(e) {
             data: evt.target.result
         });
 
-        guardar();
+        localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
         mostrarDocs();
         input.value = "";
     };
@@ -343,7 +437,7 @@ function borrarDoc(i) {
     }
 
     obra.docs.splice(i, 1);
-    guardar();
+    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
     mostrarDocs();
     document.getElementById("inputDoc").value = "";
 }
