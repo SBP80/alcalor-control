@@ -30,6 +30,7 @@ body {
     margin-bottom: 10px;
     border-radius: 8px;
     font-size: 14px;
+    line-height: 1.4;
 }
 
 canvas {
@@ -59,11 +60,14 @@ canvas {
 <div class="header">Plano</div>
 
 <div class="canvas-container">
-    <div class="info" id="estadoPlano">Plano sin cerrar</div>
+    <div class="info" id="estadoPlano">
+        Plano sin cerrar
+    </div>
 
     <canvas id="canvas"></canvas>
 
     <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
+    <button class="btn" onclick="definirEscala()">Definir escala real</button>
     <button class="btn" onclick="guardarPlano()">Guardar plano</button>
     <button class="btn" onclick="limpiarPlano()">Limpiar</button>
     <button class="btn" onclick="volver()">Volver</button>
@@ -76,7 +80,7 @@ const estadoPlano = document.getElementById("estadoPlano");
 
 function ajustarCanvas() {
     canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 260;
+    canvas.height = window.innerHeight - 320;
 }
 ajustarCanvas();
 
@@ -94,18 +98,27 @@ if (!obra) {
 if (!obra.plano) {
     obra.plano = {
         puntos: [],
-        cerrado: false
+        cerrado: false,
+        metrosPorPixel: null,
+        superficie: 0
     };
 }
 
 let puntos = Array.isArray(obra.plano.puntos) ? obra.plano.puntos : [];
 let cerrado = obra.plano.cerrado === true;
+let metrosPorPixel = obra.plano.metrosPorPixel || null;
+let superficie = obra.plano.superficie || 0;
 
 function guardarEnMemoria() {
     obra.plano = {
         puntos: puntos,
-        cerrado: cerrado
+        cerrado: cerrado,
+        metrosPorPixel: metrosPorPixel,
+        superficie: superficie
     };
+
+    obra.superficiePlano = superficie;
+
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
@@ -121,8 +134,74 @@ canvas.addEventListener("click", function(e) {
     dibujar();
 });
 
+function distancia(p1, p2) {
+    return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+}
+
+function puntoMedio(p1, p2) {
+    return {
+        x: (p1.x + p2.x) / 2,
+        y: (p1.y + p2.y) / 2
+    };
+}
+
+function calcularSuperficiePixels() {
+    if (puntos.length < 3) return 0;
+
+    let area = 0;
+
+    for (let i = 0; i < puntos.length; i++) {
+        const j = (i + 1) % puntos.length;
+        area += puntos[i].x * puntos[j].y;
+        area -= puntos[j].x * puntos[i].y;
+    }
+
+    return Math.abs(area / 2);
+}
+
+function recalcularSuperficieReal() {
+    if (!cerrado || !metrosPorPixel) {
+        superficie = 0;
+        return;
+    }
+
+    const areaPx = calcularSuperficiePixels();
+    superficie = areaPx * metrosPorPixel * metrosPorPixel;
+}
+
 function actualizarEstado() {
-    estadoPlano.textContent = cerrado ? "Estancia cerrada" : "Plano sin cerrar";
+    let texto = cerrado ? "Estancia cerrada" : "Plano sin cerrar";
+
+    if (metrosPorPixel) {
+        texto += "<br>Escala definida";
+    } else {
+        texto += "<br>Escala sin definir";
+    }
+
+    if (superficie > 0) {
+        texto += "<br>Superficie: " + superficie.toFixed(2) + " m²";
+    }
+
+    estadoPlano.innerHTML = texto;
+}
+
+function dibujarLongitudes() {
+    if (!metrosPorPixel) return;
+
+    ctx.fillStyle = "white";
+    ctx.font = "12px Arial";
+
+    const totalLados = cerrado ? puntos.length : puntos.length - 1;
+
+    for (let i = 0; i < totalLados; i++) {
+        const j = (i + 1) % puntos.length;
+        const p1 = puntos[i];
+        const p2 = puntos[j];
+        const medio = puntoMedio(p1, p2);
+
+        const metros = distancia(p1, p2) * metrosPorPixel;
+        ctx.fillText(metros.toFixed(2) + " m", medio.x + 6, medio.y - 6);
+    }
 }
 
 function dibujar() {
@@ -158,6 +237,7 @@ function dibujar() {
         ctx.fill();
     }
 
+    dibujarLongitudes();
     actualizarEstado();
 }
 
@@ -168,11 +248,46 @@ function cerrarEstancia() {
     }
 
     cerrado = true;
+    recalcularSuperficieReal();
     guardarEnMemoria();
     dibujar();
 }
 
+function definirEscala() {
+    if (puntos.length < 2) {
+        alert("Necesitas al menos 2 puntos");
+        return;
+    }
+
+    const largoReal = prompt("Introduce la medida real del primer lado en metros (entre el punto 1 y el 2):");
+
+    if (!largoReal) return;
+
+    const metrosReales = parseFloat(largoReal.replace(",", "."));
+
+    if (!metrosReales || metrosReales <= 0) {
+        alert("Medida no válida");
+        return;
+    }
+
+    const pixeles = distancia(puntos[0], puntos[1]);
+
+    if (pixeles <= 0) {
+        alert("No se puede calcular la escala");
+        return;
+    }
+
+    metrosPorPixel = metrosReales / pixeles;
+
+    recalcularSuperficieReal();
+    guardarEnMemoria();
+    dibujar();
+
+    alert("Escala guardada correctamente");
+}
+
 function guardarPlano() {
+    recalcularSuperficieReal();
     guardarEnMemoria();
     alert("Plano guardado");
 }
@@ -180,6 +295,8 @@ function guardarPlano() {
 function limpiarPlano() {
     puntos = [];
     cerrado = false;
+    metrosPorPixel = null;
+    superficie = 0;
     guardarEnMemoria();
     dibujar();
 }
@@ -193,6 +310,7 @@ window.addEventListener("resize", function() {
     dibujar();
 });
 
+recalcularSuperficieReal();
 dibujar();
 </script>
 
