@@ -14,23 +14,28 @@ body {
 }
 
 .header {
-    padding: 12px;
+    padding: 12px 15px;
     border-bottom: 2px solid orange;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+}
+
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .header-btn {
     background: orange;
     border: none;
-    padding: 10px;
+    color: #111;
     font-weight: bold;
+    padding: 10px 14px;
     border-radius: 8px;
-}
-
-.titulo {
-    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
 }
 
 .wrap {
@@ -59,10 +64,13 @@ body {
     border-radius: 8px;
     border: none;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
 .textarea {
     min-height: 80px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
 }
 
 .boton-crear {
@@ -73,6 +81,7 @@ body {
     border: none;
     border-radius: 10px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .oculto {
@@ -84,108 +93,171 @@ body {
 
 <div class="header">
     <button class="header-btn" onclick="volver()">Volver</button>
-    <div class="titulo">Nuevo cliente</div>
+    <div class="header-titulo">Nuevo cliente</div>
     <div></div>
 </div>
 
 <div class="wrap">
 
-<div class="bloque">
-    <label class="label">Tipo</label>
-    <select id="tipo" class="select" onchange="cambiarTipo()">
-        <option value="particular">Particular</option>
-        <option value="empresa">Empresa</option>
-    </select>
+    <div class="bloque">
+        <label class="label">Tipo</label>
+        <select id="tipoCliente" class="select" onchange="cambiarTipo()">
+            <option value="particular">Particular</option>
+            <option value="empresa">Empresa</option>
+        </select>
 
-    <label class="label">Nombre / Comercial</label>
-    <input id="nombre" class="input">
+        <label class="label">Nombre / nombre comercial</label>
+        <input id="nombre" class="input">
 
-    <div id="empresaBloque">
-        <label class="label">Empresa / Razón social</label>
-        <input id="empresa" class="input">
+        <div id="bloqueEmpresa" class="oculto">
+            <label class="label">Empresa / razón social</label>
+            <input id="empresa" class="input">
 
-        <label class="label">Contacto</label>
-        <input id="contacto" class="input">
+            <label class="label">Persona de contacto</label>
+            <input id="contacto" class="input">
+        </div>
+
+        <div id="bloqueDni">
+            <label class="label">DNI</label>
+            <input id="dni" class="input">
+        </div>
+
+        <div id="bloqueCif" class="oculto">
+            <label class="label">CIF</label>
+            <input id="cif" class="input">
+        </div>
     </div>
 
-    <div id="dniBloque">
-        <label class="label">DNI</label>
-        <input id="dni" class="input">
+    <div class="bloque">
+        <label class="label">Teléfonos (uno por línea)</label>
+        <textarea id="telefonos" class="textarea"></textarea>
+
+        <label class="label">Emails (uno por línea)</label>
+        <textarea id="emails" class="textarea"></textarea>
     </div>
 
-    <div id="cifBloque" class="oculto">
-        <label class="label">CIF</label>
-        <input id="cif" class="input">
+    <div class="bloque">
+        <label class="label">Tipo de vía</label>
+        <select id="tipoVia" class="select">
+            <option value="">Seleccionar</option>
+            <option>Calle</option>
+            <option>Avenida</option>
+            <option>Paseo</option>
+            <option>Plaza</option>
+            <option>Camino</option>
+            <option>Rúa</option>
+            <option>Carretera</option>
+            <option>Urbanización</option>
+            <option>Otro</option>
+        </select>
+
+        <label class="label">Nombre de vía</label>
+        <input id="nombreVia" class="input">
+
+        <label class="label">Número</label>
+        <input id="numero" class="input">
+
+        <label class="label">Portal</label>
+        <input id="portal" class="input">
+
+        <label class="label">Escalera</label>
+        <input id="escalera" class="input">
+
+        <label class="label">Piso</label>
+        <input id="piso" class="input">
+
+        <label class="label">Puerta</label>
+        <input id="puerta" class="input">
+
+        <label class="label">Población</label>
+        <input id="poblacion" class="input">
+
+        <label class="label">Código postal</label>
+        <input id="cp" class="input">
+
+        <label class="label">Provincia</label>
+        <input id="provincia" class="input">
+
+        <label class="label">Observaciones de dirección</label>
+        <textarea id="observacionesDireccion" class="textarea"></textarea>
     </div>
-</div>
 
-<div class="bloque">
-    <label class="label">Teléfonos (uno por línea)</label>
-    <textarea id="telefonos" class="textarea"></textarea>
+    <div class="bloque">
+        <label class="label">Notas</label>
+        <textarea id="notas" class="textarea"></textarea>
+    </div>
 
-    <label class="label">Emails (uno por línea)</label>
-    <textarea id="emails" class="textarea"></textarea>
-</div>
-
-<div class="bloque">
-    <label class="label">Dirección</label>
-
-    <select id="tipoVia" class="select">
-        <option>Calle</option>
-        <option>Avenida</option>
-        <option>Paseo</option>
-        <option>Plaza</option>
-    </select>
-
-    <input id="nombreVia" class="input" placeholder="Nombre vía">
-    <input id="numero" class="input" placeholder="Número">
-    <input id="poblacion" class="input" placeholder="Población">
-    <input id="cp" class="input" placeholder="Código postal">
-    <input id="provincia" class="input" placeholder="Provincia">
-</div>
-
-<button class="boton-crear" onclick="crearCliente()">
-CREAR CLIENTE
-</button>
+    <button class="boton-crear" onclick="crearCliente()">CREAR CLIENTE</button>
 
 </div>
 
 <script>
 function cambiarTipo() {
-    let tipo = document.getElementById("tipo").value;
+    const tipo = document.getElementById("tipoCliente").value;
 
-    document.getElementById("dniBloque").style.display = tipo === "particular" ? "block" : "none";
-    document.getElementById("cifBloque").style.display = tipo === "empresa" ? "block" : "none";
-    document.getElementById("empresaBloque").style.display = tipo === "empresa" ? "block" : "none";
+    document.getElementById("bloqueDni").style.display = tipo === "particular" ? "block" : "none";
+    document.getElementById("bloqueCif").style.display = tipo === "empresa" ? "block" : "none";
+    document.getElementById("bloqueEmpresa").style.display = tipo === "empresa" ? "block" : "none";
+}
+
+function obtenerDireccionCompleta() {
+    const partes = [
+        document.getElementById("tipoVia").value,
+        document.getElementById("nombreVia").value,
+        document.getElementById("numero").value,
+        document.getElementById("portal").value ? "Portal " + document.getElementById("portal").value : "",
+        document.getElementById("escalera").value ? "Escalera " + document.getElementById("escalera").value : "",
+        document.getElementById("piso").value ? "Piso " + document.getElementById("piso").value : "",
+        document.getElementById("puerta").value ? "Puerta " + document.getElementById("puerta").value : "",
+        document.getElementById("poblacion").value,
+        document.getElementById("cp").value,
+        document.getElementById("provincia").value
+    ].filter(Boolean);
+
+    return partes.join(", ").trim();
 }
 
 function crearCliente() {
-    let nombre = document.getElementById("nombre").value;
+    const nombre = document.getElementById("nombre").value.trim();
     if (!nombre) {
         alert("Nombre obligatorio");
         return;
     }
 
-    let cliente = {
+    const emailsTexto = document.getElementById("emails").value.trim();
+    const primerEmail = emailsTexto
+        .split("\n")
+        .map(e => e.trim())
+        .filter(Boolean)[0] || "";
+
+    const cliente = {
         id: Date.now(),
-        tipo: document.getElementById("tipo").value,
+        tipoCliente: document.getElementById("tipoCliente").value,
         nombre: nombre,
-        empresa: document.getElementById("empresa").value,
-        contacto: document.getElementById("contacto").value,
-        dni: document.getElementById("dni").value,
-        cif: document.getElementById("cif").value,
-        telefonos: document.getElementById("telefonos").value,
-        emails: document.getElementById("emails").value,
+        empresa: document.getElementById("empresa").value.trim(),
+        contacto: document.getElementById("contacto").value.trim(),
+        dni: document.getElementById("dni").value.trim(),
+        cif: document.getElementById("cif").value.trim(),
+        telefonos: document.getElementById("telefonos").value.trim(),
+        emails: emailsTexto,
+        email: primerEmail,
         tipoVia: document.getElementById("tipoVia").value,
-        nombreVia: document.getElementById("nombreVia").value,
-        numero: document.getElementById("numero").value,
-        poblacion: document.getElementById("poblacion").value,
-        cp: document.getElementById("cp").value,
-        provincia: document.getElementById("provincia").value,
+        nombreVia: document.getElementById("nombreVia").value.trim(),
+        numero: document.getElementById("numero").value.trim(),
+        portal: document.getElementById("portal").value.trim(),
+        escalera: document.getElementById("escalera").value.trim(),
+        piso: document.getElementById("piso").value.trim(),
+        puerta: document.getElementById("puerta").value.trim(),
+        poblacion: document.getElementById("poblacion").value.trim(),
+        cp: document.getElementById("cp").value.trim(),
+        provincia: document.getElementById("provincia").value.trim(),
+        observacionesDireccion: document.getElementById("observacionesDireccion").value.trim(),
+        direccion: obtenerDireccionCompleta(),
+        notas: document.getElementById("notas").value.trim(),
         fechaCreacion: new Date().toISOString()
     };
 
-    let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+    const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
     clientes.push(cliente);
     localStorage.setItem("clientes", JSON.stringify(clientes));
 
@@ -195,6 +267,8 @@ function crearCliente() {
 function volver() {
     window.location.href = "clientes.html";
 }
+
+cambiarTipo();
 </script>
 
 </body>
