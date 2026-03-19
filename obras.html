@@ -14,33 +14,114 @@ body {
 }
 
 .header {
-    padding: 15px;
-    font-size: 20px;
+    padding: 12px 15px;
     border-bottom: 2px solid orange;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
-.container {
-    padding: 15px;
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-btn {
+    background: orange;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wrap {
+    padding: 10px;
+    position: relative;
+}
+
+.tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+}
+
+.tools.abierto {
+    display: block;
+}
+
+.subtitulo {
+    margin: 4px 0 6px 0;
+    font-size: 12px;
+    color: orange;
+    font-weight: bold;
+}
+
+.info {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.mensaje {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+}
+
+.buscador {
+    margin-bottom: 10px;
+}
+
+.input-busqueda {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
 }
 
 .btn {
     width: 100%;
-    padding: 15px;
+    padding: 11px;
     background: orange;
     border: none;
-    font-size: 18px;
-    margin-bottom: 15px;
+    margin-top: 7px;
+    font-size: 14px;
     cursor: pointer;
     color: #111;
     font-weight: bold;
+    border-radius: 8px;
 }
 
-.card {
+.obra {
     background: #1a1a1a;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 10px;
     position: relative;
+    border: 1px solid #252525;
     cursor: pointer;
 }
 
@@ -56,45 +137,133 @@ body {
     border-radius: 6px;
     font-weight: bold;
 }
+
+.obra-numero {
+    font-size: 12px;
+    color: #bdbdbd;
+    margin-bottom: 6px;
+}
+
+.obra-nombre {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding-right: 55px;
+}
+
+.obra-nombre a {
+    color: white;
+    text-decoration: none;
+}
+
+.obra-nombre a:hover {
+    text-decoration: underline;
+}
+
+.linea {
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+.grid-datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.fecha {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #bdbdbd;
+}
+
+@media (max-width: 560px) {
+    .grid-datos {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 </head>
-
 <body>
 
-<div class="header">Obras del cliente</div>
+<div class="header">
+    <button class="header-btn" onclick="volver()">Volver</button>
+    <div class="header-titulo">Obras</div>
+    <button class="header-btn" onclick="toggleTools()">Menú</button>
+</div>
 
-<div class="container">
+<div class="wrap">
 
-<button class="btn" onclick="nuevaObra()">+ Nueva obra</button>
+    <div id="mensaje" class="mensaje"></div>
+    <div id="info" class="info"></div>
 
-<div id="lista"></div>
+    <div class="buscador">
+        <input
+            id="busqueda"
+            class="input-busqueda"
+            type="text"
+            placeholder="Buscar por nº, nombre, dirección, estado, tipo, técnicos o fecha"
+            oninput="mostrarObras()"
+        >
+    </div>
 
-<button class="btn" onclick="volverAFichaCliente()">Volver a ficha cliente</button>
+    <div class="tools" id="tools">
+        <div class="subtitulo">Acciones</div>
+        <button class="btn" onclick="nuevaObra()">Nueva obra</button>
+    </div>
+
+    <div id="listaObras"></div>
 
 </div>
 
 <script>
-
 const PIN_ADMIN = "1234";
 
-let clienteId = localStorage.getItem("clienteActivo");
+const tools = document.getElementById("tools");
+const mensaje = document.getElementById("mensaje");
+const info = document.getElementById("info");
+const inputBusqueda = document.getElementById("busqueda");
+
+const clienteId = localStorage.getItem("clienteActivo");
+
 let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+
+function toggleTools() {
+    tools.classList.toggle("abierto");
+}
+
+function mostrarMensaje(texto) {
+    mensaje.textContent = texto;
+    mensaje.style.display = "block";
+    setTimeout(() => {
+        mensaje.style.display = "none";
+    }, 2000);
+}
 
 function guardar() {
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
-function nuevaObra() {
-    let nombre = prompt("Nombre de la obra:");
-    if (!nombre || nombre.trim() === "") return;
+function formatearFecha(fechaISO) {
+    if (!fechaISO) return "-";
+    const fecha = new Date(fechaISO);
+    if (isNaN(fecha.getTime())) return "-";
 
-    obras.push({
-        id: Date.now(),
-        nombre: nombre.trim()
-    });
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    const hora = String(fecha.getHours()).padStart(2, "0");
+    const minutos = String(fecha.getMinutes()).padStart(2, "0");
 
-    guardar();
-    mostrar();
+    return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
+}
+
+function actualizarInfo() {
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const visibles = filtrarObras(textoBusqueda).length;
+    info.innerHTML = "Total de obras: " + obras.length + " | Mostradas: " + visibles;
 }
 
 function pedirPin() {
@@ -103,11 +272,45 @@ function pedirPin() {
     return pin === PIN_ADMIN;
 }
 
+function nuevaObra() {
+    const nombre = prompt("Nombre de la obra:");
+    if (!nombre || nombre.trim() === "") return;
+
+    const nueva = {
+        id: Date.now(),
+        nombre: nombre.trim(),
+        direccion: "",
+        tipo: "",
+        estado: "",
+        inicio: "",
+        fin: "",
+        tecnicos: "",
+        responsable: "",
+        superficie: 0,
+        paso: 15,
+        metros: 0,
+        circuitos: 0,
+        mCircuito: 0,
+        notas: "",
+        fotos: [],
+        docs: [],
+        fechaCreacion: new Date().toISOString()
+    };
+
+    obras.push(nueva);
+    guardar();
+    tools.classList.remove("abierto");
+    mostrarObras();
+    mostrarMensaje("Obra creada");
+
+    abrirObra(nueva.id);
+}
+
 function eliminarObra(id) {
-    let confirmar = confirm("¿Seguro que quieres eliminar esta obra?");
+    const confirmar = confirm("¿Seguro que quieres eliminar esta obra?");
     if (!confirmar) return;
 
-    let pinCorrecto = pedirPin();
+    const pinCorrecto = pedirPin();
     if (!pinCorrecto) {
         alert("PIN incorrecto");
         return;
@@ -115,44 +318,106 @@ function eliminarObra(id) {
 
     obras = obras.filter(o => o.id !== id);
     guardar();
-    mostrar();
+
+    if (localStorage.getItem("obraActiva") == id) {
+        localStorage.removeItem("obraActiva");
+    }
+
+    mostrarObras();
+    mostrarMensaje("Obra eliminada");
 }
 
-function mostrar() {
-    const contenedor = document.getElementById("lista");
+function obtenerNumeroObra(index) {
+    return index + 1;
+}
+
+function filtrarObras(textoBusqueda) {
+    if (!textoBusqueda) return obras;
+
+    return obras.filter((obra, index) => {
+        const numero = String(obtenerNumeroObra(index)).toLowerCase();
+        const nombre = (obra.nombre || "").toLowerCase();
+        const direccion = (obra.direccion || "").toLowerCase();
+        const estado = (obra.estado || "").toLowerCase();
+        const tipo = (obra.tipo || "").toLowerCase();
+        const tecnicos = (obra.tecnicos || "").toLowerCase();
+        const fecha = formatearFecha(obra.fechaCreacion).toLowerCase();
+
+        return (
+            numero.includes(textoBusqueda) ||
+            nombre.includes(textoBusqueda) ||
+            direccion.includes(textoBusqueda) ||
+            estado.includes(textoBusqueda) ||
+            tipo.includes(textoBusqueda) ||
+            tecnicos.includes(textoBusqueda) ||
+            fecha.includes(textoBusqueda)
+        );
+    });
+}
+
+function abrirObra(id) {
+    localStorage.setItem("obraActiva", id);
+    window.location.href = "obra.html";
+}
+
+function volver() {
+    window.location.href = "cliente.html";
+}
+
+function mostrarObras() {
+    const contenedor = document.getElementById("listaObras");
     contenedor.innerHTML = "";
 
-    obras.forEach(o => {
-        let div = document.createElement("div");
-        div.className = "card";
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const obrasFiltradas = filtrarObras(textoBusqueda);
+
+    obrasFiltradas.forEach((obraFiltrada) => {
+        const indexReal = obras.findIndex(o => o.id === obraFiltrada.id);
+        const numeroObra = obtenerNumeroObra(indexReal);
+
+        const div = document.createElement("div");
+        div.className = "obra";
 
         div.innerHTML = `
             <button class="eliminar">X</button>
-            <strong>${o.nombre}</strong>
+
+            <div class="obra-numero">Obra ${numeroObra}</div>
+
+            <div class="obra-nombre">
+                <a href="#" onclick="event.preventDefault(); event.stopPropagation(); abrirObra(${obraFiltrada.id})">
+                    ${obraFiltrada.nombre || "Sin nombre"}
+                </a>
+            </div>
+
+            ${obraFiltrada.direccion ? `<div class="linea">📍 ${obraFiltrada.direccion}</div>` : ""}
+            ${obraFiltrada.estado ? `<div class="linea">Estado: ${obraFiltrada.estado}</div>` : ""}
+            ${obraFiltrada.tipo ? `<div class="linea">Tipo: ${obraFiltrada.tipo}</div>` : ""}
+            ${obraFiltrada.tecnicos ? `<div class="linea">Técnicos: ${obraFiltrada.tecnicos}</div>` : ""}
+
+            <div class="grid-datos">
+                ${obraFiltrada.superficie ? `<div>Superficie: ${Number(obraFiltrada.superficie).toFixed(2)} m²</div>` : ""}
+                ${obraFiltrada.circuitos ? `<div>Circuitos: ${obraFiltrada.circuitos}</div>` : ""}
+                ${obraFiltrada.metros ? `<div>Metros tubo: ${Number(obraFiltrada.metros).toFixed(0)}</div>` : ""}
+                ${obraFiltrada.mCircuito ? `<div>m/circuito: ${Number(obraFiltrada.mCircuito).toFixed(1)}</div>` : ""}
+            </div>
+
+            <div class="fecha">Creada: ${formatearFecha(obraFiltrada.fechaCreacion)}</div>
         `;
 
-        // entrar en ficha de obra
-        div.onclick = () => {
-            localStorage.setItem("obraActiva", o.id);
-            window.location.href = "obra.html";
-        };
+        div.onclick = () => abrirObra(obraFiltrada.id);
 
-        // eliminar obra
         div.querySelector(".eliminar").onclick = (e) => {
             e.stopPropagation();
-            eliminarObra(o.id);
+            eliminarObra(obraFiltrada.id);
         };
 
         contenedor.appendChild(div);
     });
+
+    actualizarInfo();
 }
 
-function volverAFichaCliente() {
-    window.location.href = "cliente.html";
-}
-
-mostrar();
-
+mostrarObras();
 </script>
 
 </body>
