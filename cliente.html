@@ -14,75 +14,513 @@ body {
 }
 
 .header {
-    padding: 15px;
-    font-size: 20px;
+    padding: 12px 15px;
     border-bottom: 2px solid orange;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
-.container {
-    padding: 15px;
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
 }
 
-.card {
-    background: #1a1a1a;
-    padding: 15px;
+.header-btn {
+    background: orange;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wrap {
+    padding: 10px;
+    position: relative;
+}
+
+.tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #141414;
+    border: 1px solid #2a2a2a;
     border-radius: 10px;
-    margin-bottom: 15px;
+    padding: 8px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+}
+
+.tools.abierto {
+    display: block;
+}
+
+.subtitulo {
+    margin: 4px 0 6px 0;
+    font-size: 12px;
+    color: orange;
+    font-weight: bold;
 }
 
 .btn {
     width: 100%;
-    padding: 15px;
+    padding: 11px;
     background: orange;
     border: none;
-    font-size: 18px;
+    margin-top: 7px;
+    font-size: 14px;
     cursor: pointer;
-    margin-bottom: 10px;
     color: #111;
     font-weight: bold;
+    border-radius: 8px;
+}
+
+.btn-sec {
+    background: #d6a13b;
+}
+
+.info {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.mensaje {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+}
+
+.campo {
+    margin-bottom: 14px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: orange;
+}
+
+.input, .textarea, .select {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+}
+
+.bloque {
+    margin-bottom: 18px;
+    padding: 12px;
+    background: #141414;
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
+}
+
+.linea-telefono,
+.linea-email,
+.linea-mapa {
+    display: block;
+    margin-bottom: 8px;
+    padding: 10px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.linea-vacia {
+    color: #bbb;
+    font-size: 14px;
+}
+
+.oculto {
+    display: none;
 }
 </style>
 </head>
-
 <body>
 
-<div class="header">Ficha cliente</div>
+<div class="header">
+    <button class="header-btn" onclick="volver()">Volver</button>
+    <div class="header-titulo">Ficha cliente</div>
+    <button class="header-btn" onclick="toggleTools()">Menú</button>
+</div>
 
-<div class="container">
+<div class="wrap">
 
-    <div id="datos" class="card"></div>
+    <div id="mensaje" class="mensaje"></div>
+    <div id="info" class="info"></div>
 
-    <button class="btn" onclick="irAObras()">Obras</button>
-    <button class="btn" onclick="volverAClientes()">Volver a clientes</button>
+    <div class="tools" id="tools">
+        <div class="subtitulo">Acciones</div>
+        <button class="btn" onclick="guardarCliente()">Guardar</button>
+        <button class="btn" onclick="irAObras()">Obras</button>
+    </div>
+
+    <div class="bloque">
+        <div class="campo">
+            <label class="label" for="tipoCliente">Tipo de cliente</label>
+            <select class="select" id="tipoCliente" onchange="actualizarVisibilidadTipo()">
+                <option value="particular">Particular</option>
+                <option value="empresa">Empresa</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label class="label" for="nombre">Nombre / nombre comercial</label>
+            <input class="input" id="nombre">
+        </div>
+
+        <div class="campo" id="bloqueEmpresa">
+            <label class="label" for="empresa">Empresa / razón social</label>
+            <input class="input" id="empresa">
+        </div>
+
+        <div class="campo" id="bloqueContacto">
+            <label class="label" for="contacto">Persona de contacto</label>
+            <input class="input" id="contacto">
+        </div>
+
+        <div class="campo" id="bloqueDni">
+            <label class="label" for="dni">DNI</label>
+            <input class="input" id="dni">
+        </div>
+
+        <div class="campo" id="bloqueCif">
+            <label class="label" for="cif">CIF</label>
+            <input class="input" id="cif">
+        </div>
+    </div>
+
+    <div class="bloque">
+        <div class="campo">
+            <label class="label" for="telefonos">Teléfonos (uno por línea)</label>
+            <textarea class="textarea" id="telefonos"></textarea>
+        </div>
+
+        <div class="campo">
+            <label class="label" for="email">Email</label>
+            <input class="input" id="email">
+        </div>
+
+        <div class="campo">
+            <label class="label">Teléfonos directos</label>
+            <div id="telefonosDirectos" class="linea-vacia">Sin teléfonos</div>
+        </div>
+
+        <div class="campo">
+            <label class="label">Email directo</label>
+            <div id="emailDirecto" class="linea-vacia">Sin email</div>
+        </div>
+    </div>
+
+    <div class="bloque">
+        <div class="campo">
+            <label class="label" for="tipoVia">Tipo de vía</label>
+            <select class="select" id="tipoVia">
+                <option value="">Seleccionar</option>
+                <option>Calle</option>
+                <option>Avenida</option>
+                <option>Paseo</option>
+                <option>Plaza</option>
+                <option>Camino</option>
+                <option>Rúa</option>
+                <option>Carretera</option>
+                <option>Urbanización</option>
+                <option>Otro</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label class="label" for="nombreVia">Nombre de vía</label>
+            <input class="input" id="nombreVia">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="numero">Número</label>
+            <input class="input" id="numero">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="portal">Portal</label>
+            <input class="input" id="portal">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="escalera">Escalera</label>
+            <input class="input" id="escalera">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="piso">Piso</label>
+            <input class="input" id="piso">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="puerta">Puerta</label>
+            <input class="input" id="puerta">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="poblacion">Población</label>
+            <input class="input" id="poblacion">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="cp">Código postal</label>
+            <input class="input" id="cp">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="provincia">Provincia</label>
+            <input class="input" id="provincia">
+        </div>
+
+        <div class="campo">
+            <label class="label" for="observacionesDireccion">Observaciones de dirección</label>
+            <textarea class="textarea" id="observacionesDireccion"></textarea>
+        </div>
+
+        <div class="campo">
+            <label class="label">Abrir navegación</label>
+            <div id="bloqueMapas">
+                <div class="linea-vacia">Completa la dirección para abrir mapas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bloque">
+        <div class="campo">
+            <label class="label" for="notas">Notas</label>
+            <textarea class="textarea" id="notas"></textarea>
+        </div>
+    </div>
 
 </div>
 
 <script>
+const tools = document.getElementById("tools");
+const mensaje = document.getElementById("mensaje");
+const info = document.getElementById("info");
+
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 let id = localStorage.getItem("clienteActivo");
-
 let cliente = clientes.find(c => c.id == id);
 
-const contenedor = document.getElementById("datos");
+if (!cliente) {
+    alert("Cliente no encontrado");
+}
 
-if (cliente) {
+function toggleTools() {
+    tools.classList.toggle("abierto");
+}
+
+function mostrarMensaje(texto) {
+    mensaje.textContent = texto;
+    mensaje.style.display = "block";
+    setTimeout(() => {
+        mensaje.style.display = "none";
+    }, 2000);
+}
+
+function actualizarVisibilidadTipo() {
+    const tipo = document.getElementById("tipoCliente").value;
+
+    document.getElementById("bloqueDni").style.display = tipo === "particular" ? "block" : "none";
+    document.getElementById("bloqueCif").style.display = tipo === "empresa" ? "block" : "none";
+    document.getElementById("bloqueEmpresa").style.display = tipo === "empresa" ? "block" : "none";
+    document.getElementById("bloqueContacto").style.display = tipo === "empresa" ? "block" : "none";
+}
+
+function obtenerDireccionCompleta() {
+    const partes = [
+        document.getElementById("tipoVia").value,
+        document.getElementById("nombreVia").value,
+        document.getElementById("numero").value,
+        document.getElementById("portal").value ? "Portal " + document.getElementById("portal").value : "",
+        document.getElementById("escalera").value ? "Escalera " + document.getElementById("escalera").value : "",
+        document.getElementById("piso").value ? "Piso " + document.getElementById("piso").value : "",
+        document.getElementById("puerta").value ? "Puerta " + document.getElementById("puerta").value : "",
+        document.getElementById("poblacion").value,
+        document.getElementById("cp").value,
+        document.getElementById("provincia").value
+    ].filter(Boolean);
+
+    return partes.join(", ").trim();
+}
+
+function actualizarTelefonosDirectos() {
+    const contenedor = document.getElementById("telefonosDirectos");
+    const texto = document.getElementById("telefonos").value.trim();
+
+    if (!texto) {
+        contenedor.innerHTML = '<div class="linea-vacia">Sin teléfonos</div>';
+        return;
+    }
+
+    const telefonos = texto
+        .split("\n")
+        .map(t => t.trim())
+        .filter(Boolean);
+
+    if (telefonos.length === 0) {
+        contenedor.innerHTML = '<div class="linea-vacia">Sin teléfonos</div>';
+        return;
+    }
+
+    contenedor.innerHTML = telefonos.map(t =>
+        '<a class="linea-telefono" href="tel:' + t.replace(/\s+/g, '') + '">📞 ' + t + '</a>'
+    ).join("");
+}
+
+function actualizarEmailDirecto() {
+    const contenedor = document.getElementById("emailDirecto");
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        contenedor.innerHTML = '<div class="linea-vacia">Sin email</div>';
+        return;
+    }
+
+    contenedor.innerHTML = '<a class="linea-email" href="mailto:' + email + '">✉️ ' + email + '</a>';
+}
+
+function actualizarMapas() {
+    const contenedor = document.getElementById("bloqueMapas");
+    const direccion = obtenerDireccionCompleta();
+
+    if (!direccion) {
+        contenedor.innerHTML = '<div class="linea-vacia">Completa la dirección para abrir mapas</div>';
+        return;
+    }
+
+    const encoded = encodeURIComponent(direccion);
+
+    const apple = 'http://maps.apple.com/?q=' + encoded;
+    const google = 'https://www.google.com/maps/search/?api=1&query=' + encoded;
+    const waze = 'https://waze.com/ul?q=' + encoded;
+
     contenedor.innerHTML = `
-        <h2>${cliente.nombre}</h2>
-        <p>📞 ${cliente.telefono || ""}</p>
-        <p>📍 ${cliente.direccion || ""}</p>
-        <p>📝 ${cliente.notas || ""}</p>
+        <a class="linea-mapa" href="${apple}" target="_blank">🗺️ Apple Mapas</a>
+        <a class="linea-mapa" href="${google}" target="_blank">📍 Google Maps</a>
+        <a class="linea-mapa" href="${waze}" target="_blank">🚗 Waze</a>
     `;
-} else {
-    contenedor.innerHTML = "Cliente no encontrado";
+}
+
+function guardarCliente() {
+    if (!cliente) return;
+
+    cliente.tipoCliente = document.getElementById("tipoCliente").value;
+    cliente.nombre = document.getElementById("nombre").value;
+    cliente.empresa = document.getElementById("empresa").value;
+    cliente.contacto = document.getElementById("contacto").value;
+    cliente.dni = document.getElementById("dni").value;
+    cliente.cif = document.getElementById("cif").value;
+    cliente.telefonos = document.getElementById("telefonos").value;
+    cliente.email = document.getElementById("email").value;
+    cliente.tipoVia = document.getElementById("tipoVia").value;
+    cliente.nombreVia = document.getElementById("nombreVia").value;
+    cliente.numero = document.getElementById("numero").value;
+    cliente.portal = document.getElementById("portal").value;
+    cliente.escalera = document.getElementById("escalera").value;
+    cliente.piso = document.getElementById("piso").value;
+    cliente.puerta = document.getElementById("puerta").value;
+    cliente.poblacion = document.getElementById("poblacion").value;
+    cliente.cp = document.getElementById("cp").value;
+    cliente.provincia = document.getElementById("provincia").value;
+    cliente.observacionesDireccion = document.getElementById("observacionesDireccion").value;
+    cliente.notas = document.getElementById("notas").value;
+
+    cliente.direccion = obtenerDireccionCompleta();
+
+    localStorage.setItem("clientes", JSON.stringify(clientes));
+
+    actualizarTelefonosDirectos();
+    actualizarEmailDirecto();
+    actualizarMapas();
+
+    mostrarMensaje("Cliente guardado");
+    tools.classList.remove("abierto");
+}
+
+function cargarCliente() {
+    if (!cliente) return;
+
+    document.getElementById("tipoCliente").value = cliente.tipoCliente || "particular";
+    document.getElementById("nombre").value = cliente.nombre || "";
+    document.getElementById("empresa").value = cliente.empresa || "";
+    document.getElementById("contacto").value = cliente.contacto || "";
+    document.getElementById("dni").value = cliente.dni || "";
+    document.getElementById("cif").value = cliente.cif || "";
+    document.getElementById("telefonos").value = (cliente.telefonos || cliente.telefono || "").replace(/,\s*/g, "\n");
+    document.getElementById("email").value = cliente.email || "";
+    document.getElementById("tipoVia").value = cliente.tipoVia || "";
+    document.getElementById("nombreVia").value = cliente.nombreVia || "";
+    document.getElementById("numero").value = cliente.numero || "";
+    document.getElementById("portal").value = cliente.portal || "";
+    document.getElementById("escalera").value = cliente.escalera || "";
+    document.getElementById("piso").value = cliente.piso || "";
+    document.getElementById("puerta").value = cliente.puerta || "";
+    document.getElementById("poblacion").value = cliente.poblacion || "";
+    document.getElementById("cp").value = cliente.cp || "";
+    document.getElementById("provincia").value = cliente.provincia || "";
+    document.getElementById("observacionesDireccion").value = cliente.observacionesDireccion || "";
+    document.getElementById("notas").value = cliente.notas || "";
+
+    actualizarVisibilidadTipo();
+    actualizarTelefonosDirectos();
+    actualizarEmailDirecto();
+    actualizarMapas();
+
+    info.innerHTML = "Cliente activo: " + (cliente.nombre || "-");
 }
 
 function irAObras() {
     window.location.href = "obras.html";
 }
 
-function volverAClientes() {
+function volver() {
     window.location.href = "clientes.html";
 }
+
+document.getElementById("telefonos").addEventListener("input", actualizarTelefonosDirectos);
+document.getElementById("email").addEventListener("input", actualizarEmailDirecto);
+
+[
+    "tipoVia", "nombreVia", "numero", "portal", "escalera",
+    "piso", "puerta", "poblacion", "cp", "provincia"
+].forEach(idCampo => {
+    document.getElementById(idCampo).addEventListener("input", actualizarMapas);
+    document.getElementById(idCampo).addEventListener("change", actualizarMapas);
+});
+
+cargarCliente();
 </script>
 
 </body>
