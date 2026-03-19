@@ -165,10 +165,6 @@ body {
     text-decoration: underline;
 }
 
-.linea-normal {
-    margin-bottom: 5px;
-}
-
 .obras {
     margin-top: 8px;
     font-size: 13px;
@@ -207,7 +203,7 @@ body {
 
     <div class="tools" id="tools">
         <div class="subtitulo">Acciones</div>
-        <button class="btn" onclick="nuevoCliente()">Nuevo cliente</button>
+        <button class="btn" onclick="window.location.href='nuevo-cliente.html'">Nuevo cliente</button>
     </div>
 
     <div class="clientes" id="listaClientes"></div>
@@ -265,6 +261,17 @@ function obtenerTelefonos(cliente) {
         .filter(Boolean);
 }
 
+function obtenerEmails(cliente) {
+    let emailsTexto = cliente.emails || cliente.email || "";
+    if (!emailsTexto) return [];
+
+    return emailsTexto
+        .replace(/\r/g, "")
+        .split(/\n|,/)
+        .map(e => e.trim())
+        .filter(Boolean);
+}
+
 function obtenerDireccionMapa(cliente) {
     if (cliente.direccion && cliente.direccion.trim()) {
         return cliente.direccion.trim();
@@ -295,32 +302,6 @@ function actualizarInfo() {
     const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
     const visibles = filtrarClientes(textoBusqueda).length;
     info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
-}
-
-function nuevoCliente() {
-    let nombre = prompt("Nombre del cliente:");
-    if (!nombre || nombre.trim() === "") return;
-
-    let telefonos = prompt("Teléfonos (separa varios con coma):") || "";
-    let email = prompt("Email:") || "";
-    let direccion = prompt("Dirección:") || "";
-    let notas = prompt("Notas:") || "";
-
-    clientes.push({
-        id: Date.now(),
-        nombre: nombre.trim(),
-        telefonos: telefonos.trim(),
-        email: email.trim(),
-        direccion: direccion.trim(),
-        notas: notas.trim(),
-        fechaCreacion: new Date().toISOString()
-    });
-
-    guardar();
-    mostrarClientes();
-    actualizarInfo();
-    tools.classList.remove("abierto");
-    mostrarMensaje("Cliente creado");
 }
 
 function pedirPin() {
@@ -359,7 +340,7 @@ function filtrarClientes(textoBusqueda) {
     return clientes.filter(cliente => {
         const nombre = (cliente.nombre || "").toLowerCase();
         const telefonos = (cliente.telefonos || cliente.telefono || "").toLowerCase();
-        const email = (cliente.email || "").toLowerCase();
+        const emails = (cliente.emails || cliente.email || "").toLowerCase();
         const direccion = obtenerDireccionMapa(cliente).toLowerCase();
         const fecha = formatearFecha(cliente.fechaCreacion).toLowerCase();
         const numeroObras = String(contarObras(cliente.id)).toLowerCase();
@@ -367,7 +348,7 @@ function filtrarClientes(textoBusqueda) {
         return (
             nombre.includes(textoBusqueda) ||
             telefonos.includes(textoBusqueda) ||
-            email.includes(textoBusqueda) ||
+            emails.includes(textoBusqueda) ||
             direccion.includes(textoBusqueda) ||
             fecha.includes(textoBusqueda) ||
             numeroObras.includes(textoBusqueda)
@@ -383,10 +364,7 @@ function abrirCliente(id) {
 function elegirMapa(direccion) {
     if (!direccion) return;
 
-    const opcion = prompt(
-        "Elige mapa:\\n1 - Apple Mapas\\n2 - Google Maps\\n3 - Waze"
-    );
-
+    const opcion = prompt("Elige mapa:\\n1 - Apple Mapas\\n2 - Google Maps\\n3 - Waze");
     if (opcion === null) return;
 
     const encoded = encodeURIComponent(direccion);
@@ -418,20 +396,18 @@ function mostrarClientes() {
         div.className = "cliente";
 
         const telefonos = obtenerTelefonos(cliente);
-        const emailTexto = cliente.email || "";
+        const emails = obtenerEmails(cliente);
         const fechaTexto = formatearFecha(cliente.fechaCreacion);
         const direccionMapa = obtenerDireccionMapa(cliente);
         const obras = contarObras(cliente.id);
 
-        const telefonosHtml = telefonos.length
-            ? telefonos.map(t =>
-                `<a class="linea-enlace" href="tel:${t.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${t}</a>`
-              ).join("")
-            : "";
+        const telefonosHtml = telefonos.map(t =>
+            `<a class="linea-enlace" href="tel:${t.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${t}</a>`
+        ).join("");
 
-        const emailHtml = emailTexto
-            ? `<a class="linea-enlace" href="mailto:${emailTexto}" onclick="event.stopPropagation()">✉️ ${emailTexto}</a>`
-            : "";
+        const emailsHtml = emails.map(e =>
+            `<a class="linea-enlace" href="mailto:${e}" onclick="event.stopPropagation()">✉️ ${e}</a>`
+        ).join("");
 
         const direccionHtml = direccionMapa
             ? `<a class="linea-enlace" href="#" onclick="event.stopPropagation(); elegirMapa(${JSON.stringify(direccionMapa)})">📍 ${direccionMapa}</a>`
@@ -445,7 +421,7 @@ function mostrarClientes() {
             </div>
 
             ${telefonosHtml}
-            ${emailHtml}
+            ${emailsHtml}
             ${direccionHtml}
 
             <div class="obras">Obras: ${obras}</div>
