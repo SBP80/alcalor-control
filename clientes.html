@@ -135,7 +135,7 @@ body {
 <body>
 
 <div class="header">
-    <button class="header-btn" onclick="volver()">Volver</button>
+    <div></div>
     <div class="header-titulo">Clientes</div>
     <button class="header-btn" onclick="toggleTools()">Menú</button>
 </div>
@@ -272,10 +272,6 @@ function mostrarClientes() {
 function abrirCliente(id) {
     localStorage.setItem("clienteActivo", id);
     window.location.href = "cliente.html";
-}
-
-function volver() {
-    window.location.href = "index.html";
 }
 
 mostrarClientes();
