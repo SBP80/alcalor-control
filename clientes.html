@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALLCALOR PRO</title>
+<title>Clientes</title>
 
 <style>
 body {
@@ -14,25 +14,92 @@ body {
 }
 
 .header {
-    padding: 15px;
-    font-size: 20px;
+    padding: 12px 15px;
     border-bottom: 2px solid orange;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
-.container {
-    padding: 15px;
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-btn {
+    background: orange;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wrap {
+    padding: 10px;
+    position: relative;
+}
+
+.tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+}
+
+.tools.abierto {
+    display: block;
+}
+
+.subtitulo {
+    margin: 4px 0 6px 0;
+    font-size: 12px;
+    color: orange;
+    font-weight: bold;
+}
+
+.info {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.mensaje {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
 }
 
 .btn {
     width: 100%;
-    padding: 15px;
+    padding: 11px;
     background: orange;
     border: none;
-    font-size: 18px;
-    margin-bottom: 15px;
+    margin-top: 7px;
+    font-size: 14px;
     cursor: pointer;
     color: #111;
     font-weight: bold;
+    border-radius: 8px;
 }
 
 .cliente {
@@ -42,6 +109,7 @@ body {
     border-radius: 10px;
     cursor: pointer;
     position: relative;
+    border: 1px solid #252525;
 }
 
 .eliminar {
@@ -56,25 +124,60 @@ body {
     border-radius: 6px;
     font-weight: bold;
 }
+
+.nombre {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
 </style>
 </head>
-
 <body>
 
-<div class="header">ALLCALOR PRO</div>
+<div class="header">
+    <button class="header-btn" onclick="volver()">Volver</button>
+    <div class="header-titulo">Clientes</div>
+    <button class="header-btn" onclick="toggleTools()">Menú</button>
+</div>
 
-<div class="container">
+<div class="wrap">
 
-    <button class="btn" onclick="nuevoCliente()">+ Nuevo cliente</button>
+    <div id="mensaje" class="mensaje"></div>
+    <div id="info" class="info"></div>
 
-    <div class="clientes"></div>
+    <div class="tools" id="tools">
+        <div class="subtitulo">Acciones</div>
+        <button class="btn" onclick="nuevoCliente()">Nuevo cliente</button>
+    </div>
+
+    <div class="clientes" id="listaClientes"></div>
 
 </div>
 
 <script>
 const PIN_ADMIN = "1234";
 
+const tools = document.getElementById("tools");
+const mensaje = document.getElementById("mensaje");
+const info = document.getElementById("info");
+
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+function toggleTools() {
+    tools.classList.toggle("abierto");
+}
+
+function mostrarMensaje(texto) {
+    mensaje.textContent = texto;
+    mensaje.style.display = "block";
+    setTimeout(() => {
+        mensaje.style.display = "none";
+    }, 2000);
+}
+
+function actualizarInfo() {
+    info.innerHTML = "Total de clientes: " + clientes.length;
+}
 
 function guardar() {
     localStorage.setItem("clientes", JSON.stringify(clientes));
@@ -100,6 +203,9 @@ function nuevoCliente() {
 
     guardar();
     mostrarClientes();
+    actualizarInfo();
+    tools.classList.remove("abierto");
+    mostrarMensaje("Cliente creado");
 }
 
 function pedirPin() {
@@ -128,14 +234,16 @@ function eliminarCliente(id) {
     }
 
     mostrarClientes();
+    actualizarInfo();
+    mostrarMensaje("Cliente eliminado");
 }
 
 function mostrarClientes() {
-    const contenedor = document.querySelector(".clientes");
+    const contenedor = document.getElementById("listaClientes");
     contenedor.innerHTML = "";
 
     clientes.forEach(cliente => {
-        let div = document.createElement("div");
+        const div = document.createElement("div");
         div.className = "cliente";
 
         const telefonosTexto = cliente.telefonos || cliente.telefono || "";
@@ -143,7 +251,7 @@ function mostrarClientes() {
 
         div.innerHTML = `
             <button class="eliminar">X</button>
-            <strong>${cliente.nombre}</strong><br>
+            <div class="nombre">${cliente.nombre}</div>
             📞 ${telefonosTexto}<br>
             ✉️ ${emailTexto}<br>
             📍 ${cliente.direccion || ""}<br>
@@ -166,7 +274,12 @@ function abrirCliente(id) {
     window.location.href = "cliente.html";
 }
 
+function volver() {
+    window.location.href = "index.html";
+}
+
 mostrarClientes();
+actualizarInfo();
 </script>
 
 </body>
