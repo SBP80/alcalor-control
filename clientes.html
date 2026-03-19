@@ -140,15 +140,24 @@ body {
 .nombre {
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     padding-right: 55px;
+}
+
+.nombre a {
+    color: white;
+    text-decoration: none;
+}
+
+.nombre a:hover {
+    text-decoration: underline;
 }
 
 .linea-enlace {
     display: block;
     color: white;
     text-decoration: none;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
     word-break: break-word;
 }
 
@@ -157,37 +166,19 @@ body {
 }
 
 .linea-normal {
-    margin-bottom: 4px;
+    margin-bottom: 5px;
+}
+
+.obras {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #d9d9d9;
 }
 
 .fecha {
-    margin-top: 8px;
+    margin-top: 6px;
     font-size: 12px;
     color: #bdbdbd;
-}
-
-.acciones {
-    margin-top: 10px;
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.accion {
-    background: orange;
-    color: #111;
-    padding: 7px 10px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 13px;
-    border: none;
-    cursor: pointer;
-}
-
-.accion-sec {
-    background: #d6a13b;
-    color: #111;
 }
 </style>
 </head>
@@ -209,7 +200,7 @@ body {
             id="busqueda"
             class="input-busqueda"
             type="text"
-            placeholder="Buscar por nombre, dirección, email, teléfono o fecha"
+            placeholder="Buscar por nombre, dirección, email, teléfono, fecha o nº de obras"
             oninput="mostrarClientes()"
         >
     </div>
@@ -245,12 +236,6 @@ function mostrarMensaje(texto) {
     }, 2000);
 }
 
-function actualizarInfo() {
-    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
-    const visibles = filtrarClientes(textoBusqueda).length;
-    info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
-}
-
 function guardar() {
     localStorage.setItem("clientes", JSON.stringify(clientes));
 }
@@ -269,17 +254,15 @@ function formatearFecha(fechaISO) {
     return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
 }
 
-function obtenerTelefonoPrincipal(cliente) {
+function obtenerTelefonos(cliente) {
     let telefonosTexto = cliente.telefonos || cliente.telefono || "";
-    if (!telefonosTexto) return "";
+    if (!telefonosTexto) return [];
 
-    let lista = telefonosTexto
+    return telefonosTexto
         .replace(/\r/g, "")
         .split(/\n|,/)
         .map(t => t.trim())
         .filter(Boolean);
-
-    return lista.length > 0 ? lista[0] : "";
 }
 
 function obtenerDireccionMapa(cliente) {
@@ -303,9 +286,15 @@ function obtenerDireccionMapa(cliente) {
     return partes.join(", ").trim();
 }
 
-function obtenerTextoPoblacion(cliente) {
-    if (cliente.poblacion) return cliente.poblacion;
-    return "";
+function contarObras(clienteId) {
+    const obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+    return obras.length;
+}
+
+function actualizarInfo() {
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const visibles = filtrarClientes(textoBusqueda).length;
+    info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
 }
 
 function nuevoCliente() {
@@ -371,27 +360,50 @@ function filtrarClientes(textoBusqueda) {
         const nombre = (cliente.nombre || "").toLowerCase();
         const telefonos = (cliente.telefonos || cliente.telefono || "").toLowerCase();
         const email = (cliente.email || "").toLowerCase();
-        const direccion = (cliente.direccion || "").toLowerCase();
+        const direccion = obtenerDireccionMapa(cliente).toLowerCase();
         const fecha = formatearFecha(cliente.fechaCreacion).toLowerCase();
+        const numeroObras = String(contarObras(cliente.id)).toLowerCase();
 
         return (
             nombre.includes(textoBusqueda) ||
             telefonos.includes(textoBusqueda) ||
             email.includes(textoBusqueda) ||
             direccion.includes(textoBusqueda) ||
-            fecha.includes(textoBusqueda)
+            fecha.includes(textoBusqueda) ||
+            numeroObras.includes(textoBusqueda)
         );
     });
 }
 
-function irACliente(id) {
+function abrirCliente(id) {
     localStorage.setItem("clienteActivo", id);
     window.location.href = "cliente.html";
 }
 
-function irAObras(id) {
-    localStorage.setItem("clienteActivo", id);
-    window.location.href = "obras.html";
+function elegirMapa(direccion) {
+    if (!direccion) return;
+
+    const opcion = prompt(
+        "Elige mapa:\\n1 - Apple Mapas\\n2 - Google Maps\\n3 - Waze"
+    );
+
+    if (opcion === null) return;
+
+    const encoded = encodeURIComponent(direccion);
+    let url = "";
+
+    if (opcion === "1") {
+        url = "http://maps.apple.com/?q=" + encoded;
+    } else if (opcion === "2") {
+        url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    } else if (opcion === "3") {
+        url = "https://waze.com/ul?q=" + encoded;
+    } else {
+        alert("Opción no válida");
+        return;
+    }
+
+    window.open(url, "_blank");
 }
 
 function mostrarClientes() {
@@ -405,34 +417,42 @@ function mostrarClientes() {
         const div = document.createElement("div");
         div.className = "cliente";
 
-        const telefonoPrincipal = obtenerTelefonoPrincipal(cliente);
+        const telefonos = obtenerTelefonos(cliente);
         const emailTexto = cliente.email || "";
         const fechaTexto = formatearFecha(cliente.fechaCreacion);
-        const poblacionTexto = obtenerTextoPoblacion(cliente);
         const direccionMapa = obtenerDireccionMapa(cliente);
-        const direccionMapaUrl = direccionMapa ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(direccionMapa) : "";
+        const obras = contarObras(cliente.id);
+
+        const telefonosHtml = telefonos.length
+            ? telefonos.map(t =>
+                `<a class="linea-enlace" href="tel:${t.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${t}</a>`
+              ).join("")
+            : "";
+
+        const emailHtml = emailTexto
+            ? `<a class="linea-enlace" href="mailto:${emailTexto}" onclick="event.stopPropagation()">✉️ ${emailTexto}</a>`
+            : "";
+
+        const direccionHtml = direccionMapa
+            ? `<a class="linea-enlace" href="#" onclick="event.stopPropagation(); elegirMapa(${JSON.stringify(direccionMapa)})">📍 ${direccionMapa}</a>`
+            : "";
 
         div.innerHTML = `
             <button class="eliminar">X</button>
 
-            <div class="nombre">${cliente.nombre || ""}</div>
-
-            ${telefonoPrincipal ? `<a class="linea-enlace" href="tel:${telefonoPrincipal.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${telefonoPrincipal}</a>` : ""}
-            ${emailTexto ? `<a class="linea-enlace" href="mailto:${emailTexto}" onclick="event.stopPropagation()">✉️ ${emailTexto}</a>` : ""}
-            ${poblacionTexto ? `<div class="linea-normal">📍 ${poblacionTexto}</div>` : ""}
-
-            <div class="acciones">
-                ${telefonoPrincipal ? `<a class="accion" href="tel:${telefonoPrincipal.replace(/\s+/g, "")}" onclick="event.stopPropagation()">Llamar</a>` : ""}
-                ${emailTexto ? `<a class="accion" href="mailto:${emailTexto}" onclick="event.stopPropagation()">Email</a>` : ""}
-                ${direccionMapaUrl ? `<a class="accion" href="${direccionMapaUrl}" target="_blank" onclick="event.stopPropagation()">Ir</a>` : ""}
-                <button class="accion accion-sec" onclick="event.stopPropagation(); irAObras(${cliente.id})">Obras</button>
-                <button class="accion accion-sec" onclick="event.stopPropagation(); irACliente(${cliente.id})">Ficha</button>
+            <div class="nombre">
+                <a href="#" onclick="event.stopPropagation(); abrirCliente(${cliente.id})">${cliente.nombre || ""}</a>
             </div>
 
+            ${telefonosHtml}
+            ${emailHtml}
+            ${direccionHtml}
+
+            <div class="obras">Obras: ${obras}</div>
             <div class="fecha">Creado: ${fechaTexto}</div>
         `;
 
-        div.onclick = () => irACliente(cliente.id);
+        div.onclick = () => abrirCliente(cliente.id);
 
         div.querySelector(".eliminar").onclick = (e) => {
             e.stopPropagation();
