@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Obra</title>
+<title>Ficha de obra</title>
 
 <style>
 body {
@@ -14,13 +14,77 @@ body {
 }
 
 .header {
-    padding: 15px;
-    font-size: 20px;
+    padding: 12px 15px;
     border-bottom: 2px solid orange;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
-.container {
-    padding: 15px;
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-btn {
+    background: orange;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wrap {
+    padding: 10px;
+    position: relative;
+}
+
+.tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+}
+
+.tools.abierto {
+    display: block;
+}
+
+.subtitulo {
+    margin: 4px 0 6px 0;
+    font-size: 12px;
+    color: orange;
+    font-weight: bold;
+}
+
+.btn {
+    width: 100%;
+    padding: 11px;
+    background: orange;
+    border: none;
+    margin-top: 7px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #111;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.btn-sec {
+    background: #d6a13b;
 }
 
 .campo {
@@ -50,16 +114,13 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.btn {
-    width: 100%;
-    padding: 15px;
-    background: orange;
-    border: none;
-    font-size: 18px;
-    margin-top: 10px;
-    cursor: pointer;
-    color: #111;
-    font-weight: bold;
+.bloque-calculo {
+    margin-top: 18px;
+    margin-bottom: 18px;
+    padding: 12px;
+    background: #141414;
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
 }
 
 .foto, .doc {
@@ -97,22 +158,38 @@ body {
     font-weight: bold;
 }
 
-.bloque-calculo {
-    margin-top: 18px;
-    margin-bottom: 18px;
-    padding: 12px;
+.mensaje {
+    margin-bottom: 10px;
+    padding: 10px;
     background: #141414;
-    border-radius: 8px;
     border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
 }
 </style>
 </head>
-
 <body>
 
-<div class="header">Ficha de obra</div>
+<div class="header">
+    <button class="header-btn" onclick="volver()">Volver</button>
+    <div class="header-titulo">Ficha de obra</div>
+    <button class="header-btn" onclick="toggleTools()">Menú</button>
+</div>
 
-<div class="container">
+<div class="wrap">
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <div class="tools" id="tools">
+        <div class="subtitulo">Acciones</div>
+        <button class="btn" onclick="guardar()">Guardar datos</button>
+        <button class="btn" onclick="irPlano()">Plano</button>
+
+        <div class="subtitulo">Archivos</div>
+        <button class="btn btn-sec" onclick="activarFoto()">Subir foto</button>
+        <button class="btn btn-sec" onclick="activarDoc()">Subir documento</button>
+    </div>
 
     <div class="campo">
         <label class="label" for="nombre">Nombre de obra</label>
@@ -170,7 +247,6 @@ body {
     </div>
 
     <div class="bloque-calculo">
-
         <div class="campo">
             <label class="label" for="superficie">Superficie (m²)</label>
             <input class="input" id="superficie" type="number" step="0.01" oninput="calcular()">
@@ -199,15 +275,12 @@ body {
             <label class="label" for="mCircuito">Metros por circuito</label>
             <input class="input" id="mCircuito" readonly>
         </div>
-
     </div>
 
     <div class="campo">
         <label class="label" for="notas">Notas</label>
         <textarea class="textarea" id="notas"></textarea>
     </div>
-
-    <button class="btn" onclick="guardar()">Guardar datos</button>
 
     <div class="campo">
         <label class="label" for="inputFoto">Subir foto</label>
@@ -222,13 +295,14 @@ body {
     </div>
 
     <div id="docs"></div>
-    <button class="btn" onclick="irPlano()">Plano</button>
-    <button class="btn" onclick="volver()">Volver</button>
 
 </div>
 
 <script>
 const PIN = "1234";
+
+const tools = document.getElementById("tools");
+const mensaje = document.getElementById("mensaje");
 
 let clienteId = localStorage.getItem("clienteActivo");
 let obraId = localStorage.getItem("obraActiva");
@@ -242,6 +316,18 @@ if (!obra) {
 
 if (obra && !obra.fotos) obra.fotos = [];
 if (obra && !obra.docs) obra.docs = [];
+
+function toggleTools() {
+    tools.classList.toggle("abierto");
+}
+
+function mostrarMensaje(texto) {
+    mensaje.textContent = texto;
+    mensaje.style.display = "block";
+    setTimeout(() => {
+        mensaje.style.display = "none";
+    }, 2000);
+}
 
 function guardar() {
     if (!obra) return;
@@ -259,7 +345,8 @@ function guardar() {
     obra.paso = parseFloat(document.getElementById("paso").value) || 15;
 
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-    alert("Guardado correctamente");
+    mostrarMensaje("Datos guardados");
+    tools.classList.remove("abierto");
 }
 
 function calcular() {
@@ -328,6 +415,16 @@ function cargar() {
     mostrarDocs();
 }
 
+function activarFoto() {
+    document.getElementById("inputFoto").click();
+    tools.classList.remove("abierto");
+}
+
+function activarDoc() {
+    document.getElementById("inputDoc").click();
+    tools.classList.remove("abierto");
+}
+
 function subirFoto(e) {
     if (!obra) return;
 
@@ -342,6 +439,7 @@ function subirFoto(e) {
         localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
         mostrarFotos();
         input.value = "";
+        mostrarMensaje("Foto subida");
     };
 
     reader.readAsDataURL(file);
@@ -401,6 +499,7 @@ function subirDoc(e) {
         localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
         mostrarDocs();
         input.value = "";
+        mostrarMensaje("Documento subido");
     };
 
     reader.readAsDataURL(file);
@@ -442,12 +541,14 @@ function borrarDoc(i) {
     document.getElementById("inputDoc").value = "";
 }
 
-function volver() {
-    window.location.href = "obras.html";
-}
 function irPlano() {
     window.location.href = "plano.html";
 }
+
+function volver() {
+    window.location.href = "obras.html";
+}
+
 cargar();
 </script>
 
