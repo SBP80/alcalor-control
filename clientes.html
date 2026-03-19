@@ -195,6 +195,51 @@ body {
     font-size: 12px;
     color: #bdbdbd;
 }
+
+.selector-mapa-fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.selector-mapa {
+    width: calc(100% - 30px);
+    max-width: 420px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.selector-mapa-titulo {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: white;
+}
+
+.selector-mapa-btn {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 10px;
+    background: orange;
+    color: #111;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.selector-mapa-cancelar {
+    background: #2a2a2a;
+    color: white;
+}
 </style>
 </head>
 <body>
@@ -229,6 +274,16 @@ body {
 
 </div>
 
+<div id="selectorMapaFondo" class="selector-mapa-fondo">
+    <div class="selector-mapa">
+        <div class="selector-mapa-titulo">Abrir dirección con</div>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('apple')">Apple Mapas</button>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('google')">Google Maps</button>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('waze')">Waze</button>
+        <button class="selector-mapa-btn selector-mapa-cancelar" onclick="cerrarSelectorMapa()">Cancelar</button>
+    </div>
+</div>
+
 <script>
 const PIN_ADMIN = "1234";
 
@@ -238,6 +293,7 @@ const info = document.getElementById("info");
 const inputBusqueda = document.getElementById("busqueda");
 
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let direccionMapaActual = "";
 
 function toggleTools() {
     tools.classList.toggle("abierto");
@@ -386,23 +442,34 @@ function elegirMapa(event, direccion) {
 
     if (!direccion) return;
 
-    const opcion = prompt("Elige mapa:\n1 - Apple Mapas\n2 - Google Maps\n3 - Waze");
-    if (opcion === null) return;
+    direccionMapaActual = direccion;
+    document.getElementById("selectorMapaFondo").style.display = "flex";
+}
 
-    const encoded = encodeURIComponent(direccion);
+function cerrarSelectorMapa() {
+    direccionMapaActual = "";
+    document.getElementById("selectorMapaFondo").style.display = "none";
+}
+
+function abrirMapaSeleccionado(tipo) {
+    if (!direccionMapaActual) return;
+
+    const encoded = encodeURIComponent(direccionMapaActual);
     let url = "";
 
-    if (opcion === "1") {
+    if (tipo === "apple") {
         url = "http://maps.apple.com/?q=" + encoded;
-    } else if (opcion === "2") {
-        url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
-    } else if (opcion === "3") {
-        url = "https://waze.com/ul?q=" + encoded;
-    } else {
-        alert("Opción no válida");
-        return;
     }
 
+    if (tipo === "google") {
+        url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    }
+
+    if (tipo === "waze") {
+        url = "https://waze.com/ul?q=" + encoded;
+    }
+
+    cerrarSelectorMapa();
     window.open(url, "_blank");
 }
 
