@@ -89,6 +89,19 @@ body {
     display: none;
 }
 
+.buscador {
+    margin-bottom: 10px;
+}
+
+.input-busqueda {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
 .btn {
     width: 100%;
     padding: 11px;
@@ -130,6 +143,12 @@ body {
     font-weight: bold;
     margin-bottom: 6px;
 }
+
+.fecha {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #bdbdbd;
+}
 </style>
 </head>
 <body>
@@ -144,6 +163,16 @@ body {
 
     <div id="mensaje" class="mensaje"></div>
     <div id="info" class="info"></div>
+
+    <div class="buscador">
+        <input
+            id="busqueda"
+            class="input-busqueda"
+            type="text"
+            placeholder="Buscar por nombre, dirección, email, teléfono o fecha"
+            oninput="mostrarClientes()"
+        >
+    </div>
 
     <div class="tools" id="tools">
         <div class="subtitulo">Acciones</div>
@@ -160,6 +189,7 @@ const PIN_ADMIN = "1234";
 const tools = document.getElementById("tools");
 const mensaje = document.getElementById("mensaje");
 const info = document.getElementById("info");
+const inputBusqueda = document.getElementById("busqueda");
 
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
@@ -176,11 +206,27 @@ function mostrarMensaje(texto) {
 }
 
 function actualizarInfo() {
-    info.innerHTML = "Total de clientes: " + clientes.length;
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const visibles = filtrarClientes(textoBusqueda).length;
+    info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
 }
 
 function guardar() {
     localStorage.setItem("clientes", JSON.stringify(clientes));
+}
+
+function formatearFecha(fechaISO) {
+    if (!fechaISO) return "-";
+    const fecha = new Date(fechaISO);
+    if (isNaN(fecha.getTime())) return "-";
+
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    const hora = String(fecha.getHours()).padStart(2, "0");
+    const minutos = String(fecha.getMinutes()).padStart(2, "0");
+
+    return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
 }
 
 function nuevoCliente() {
@@ -198,7 +244,8 @@ function nuevoCliente() {
         telefonos: telefonos.trim(),
         email: email.trim(),
         direccion: direccion.trim(),
-        notas: notas.trim()
+        notas: notas.trim(),
+        fechaCreacion: new Date().toISOString()
     });
 
     guardar();
@@ -238,16 +285,40 @@ function eliminarCliente(id) {
     mostrarMensaje("Cliente eliminado");
 }
 
+function filtrarClientes(textoBusqueda) {
+    if (!textoBusqueda) return clientes;
+
+    return clientes.filter(cliente => {
+        const nombre = (cliente.nombre || "").toLowerCase();
+        const telefonos = (cliente.telefonos || cliente.telefono || "").toLowerCase();
+        const email = (cliente.email || "").toLowerCase();
+        const direccion = (cliente.direccion || "").toLowerCase();
+        const fecha = formatearFecha(cliente.fechaCreacion).toLowerCase();
+
+        return (
+            nombre.includes(textoBusqueda) ||
+            telefonos.includes(textoBusqueda) ||
+            email.includes(textoBusqueda) ||
+            direccion.includes(textoBusqueda) ||
+            fecha.includes(textoBusqueda)
+        );
+    });
+}
+
 function mostrarClientes() {
     const contenedor = document.getElementById("listaClientes");
     contenedor.innerHTML = "";
 
-    clientes.forEach(cliente => {
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const clientesFiltrados = filtrarClientes(textoBusqueda);
+
+    clientesFiltrados.forEach(cliente => {
         const div = document.createElement("div");
         div.className = "cliente";
 
         const telefonosTexto = cliente.telefonos || cliente.telefono || "";
         const emailTexto = cliente.email || "";
+        const fechaTexto = formatearFecha(cliente.fechaCreacion);
 
         div.innerHTML = `
             <button class="eliminar">X</button>
@@ -256,6 +327,7 @@ function mostrarClientes() {
             ✉️ ${emailTexto}<br>
             📍 ${cliente.direccion || ""}<br>
             📝 ${cliente.notas || ""}
+            <div class="fecha">Creado: ${fechaTexto}</div>
         `;
 
         div.onclick = () => abrirCliente(cliente.id);
@@ -267,6 +339,8 @@ function mostrarClientes() {
 
         contenedor.appendChild(div);
     });
+
+    actualizarInfo();
 }
 
 function abrirCliente(id) {
@@ -275,7 +349,6 @@ function abrirCliente(id) {
 }
 
 mostrarClientes();
-actualizarInfo();
 </script>
 
 </body>
