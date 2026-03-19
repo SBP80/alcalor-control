@@ -122,6 +122,7 @@ body {
     border-radius: 10px;
     position: relative;
     border: 1px solid #252525;
+    cursor: pointer;
 }
 
 .eliminar {
@@ -162,6 +163,24 @@ body {
 }
 
 .linea-enlace:hover {
+    text-decoration: underline;
+}
+
+.linea-boton {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: white;
+    margin-bottom: 5px;
+    padding: 0;
+    font-size: 16px;
+    cursor: pointer;
+    word-break: break-word;
+}
+
+.linea-boton:hover {
     text-decoration: underline;
 }
 
@@ -361,10 +380,13 @@ function abrirCliente(id) {
     window.location.href = "cliente.html";
 }
 
-function elegirMapa(direccion) {
+function elegirMapa(event, direccion) {
+    event.preventDefault();
+    event.stopPropagation();
+
     if (!direccion) return;
 
-    const opcion = prompt("Elige mapa:\\n1 - Apple Mapas\\n2 - Google Maps\\n3 - Waze");
+    const opcion = prompt("Elige mapa:\n1 - Apple Mapas\n2 - Google Maps\n3 - Waze");
     if (opcion === null) return;
 
     const encoded = encodeURIComponent(direccion);
@@ -410,14 +432,14 @@ function mostrarClientes() {
         ).join("");
 
         const direccionHtml = direccionMapa
-            ? `<a class="linea-enlace" href="#" onclick="event.stopPropagation(); elegirMapa(${JSON.stringify(direccionMapa)})">📍 ${direccionMapa}</a>`
+            ? `<button class="linea-boton" onclick='elegirMapa(event, ${JSON.stringify(direccionMapa)})'>📍 ${direccionMapa}</button>`
             : "";
 
         div.innerHTML = `
             <button class="eliminar">X</button>
 
             <div class="nombre">
-                <a href="#" onclick="event.stopPropagation(); abrirCliente(${cliente.id})">${cliente.nombre || ""}</a>
+                <a href="#" onclick="event.preventDefault(); event.stopPropagation(); abrirCliente(${cliente.id})">${cliente.nombre || ""}</a>
             </div>
 
             ${telefonosHtml}
