@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuevo cliente</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0b0b;
+    color: white;
+}
+
+.header {
+    padding: 12px;
+    border-bottom: 2px solid orange;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-btn {
+    background: orange;
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.titulo {
+    font-weight: bold;
+}
+
+.wrap {
+    padding: 12px;
+}
+
+.bloque {
+    background: #141414;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    border: 1px solid #2a2a2a;
+}
+
+.label {
+    color: orange;
+    font-weight: bold;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.input, .textarea, .select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+}
+
+.textarea {
+    min-height: 80px;
+}
+
+.boton-crear {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    background: orange;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.oculto {
+    display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <button class="header-btn" onclick="volver()">Volver</button>
+    <div class="titulo">Nuevo cliente</div>
+    <div></div>
+</div>
+
+<div class="wrap">
+
+<div class="bloque">
+    <label class="label">Tipo</label>
+    <select id="tipo" class="select" onchange="cambiarTipo()">
+        <option value="particular">Particular</option>
+        <option value="empresa">Empresa</option>
+    </select>
+
+    <label class="label">Nombre / Comercial</label>
+    <input id="nombre" class="input">
+
+    <div id="empresaBloque">
+        <label class="label">Empresa / Razón social</label>
+        <input id="empresa" class="input">
+
+        <label class="label">Contacto</label>
+        <input id="contacto" class="input">
+    </div>
+
+    <div id="dniBloque">
+        <label class="label">DNI</label>
+        <input id="dni" class="input">
+    </div>
+
+    <div id="cifBloque" class="oculto">
+        <label class="label">CIF</label>
+        <input id="cif" class="input">
+    </div>
+</div>
+
+<div class="bloque">
+    <label class="label">Teléfonos (uno por línea)</label>
+    <textarea id="telefonos" class="textarea"></textarea>
+
+    <label class="label">Emails (uno por línea)</label>
+    <textarea id="emails" class="textarea"></textarea>
+</div>
+
+<div class="bloque">
+    <label class="label">Dirección</label>
+
+    <select id="tipoVia" class="select">
+        <option>Calle</option>
+        <option>Avenida</option>
+        <option>Paseo</option>
+        <option>Plaza</option>
+    </select>
+
+    <input id="nombreVia" class="input" placeholder="Nombre vía">
+    <input id="numero" class="input" placeholder="Número">
+    <input id="poblacion" class="input" placeholder="Población">
+    <input id="cp" class="input" placeholder="Código postal">
+    <input id="provincia" class="input" placeholder="Provincia">
+</div>
+
+<button class="boton-crear" onclick="crearCliente()">
+CREAR CLIENTE
+</button>
+
+</div>
+
+<script>
+function cambiarTipo() {
+    let tipo = document.getElementById("tipo").value;
+
+    document.getElementById("dniBloque").style.display = tipo === "particular" ? "block" : "none";
+    document.getElementById("cifBloque").style.display = tipo === "empresa" ? "block" : "none";
+    document.getElementById("empresaBloque").style.display = tipo === "empresa" ? "block" : "none";
+}
+
+function crearCliente() {
+    let nombre = document.getElementById("nombre").value;
+    if (!nombre) {
+        alert("Nombre obligatorio");
+        return;
+    }
+
+    let cliente = {
+        id: Date.now(),
+        tipo: document.getElementById("tipo").value,
+        nombre: nombre,
+        empresa: document.getElementById("empresa").value,
+        contacto: document.getElementById("contacto").value,
+        dni: document.getElementById("dni").value,
+        cif: document.getElementById("cif").value,
+        telefonos: document.getElementById("telefonos").value,
+        emails: document.getElementById("emails").value,
+        tipoVia: document.getElementById("tipoVia").value,
+        nombreVia: document.getElementById("nombreVia").value,
+        numero: document.getElementById("numero").value,
+        poblacion: document.getElementById("poblacion").value,
+        cp: document.getElementById("cp").value,
+        provincia: document.getElementById("provincia").value,
+        fechaCreacion: new Date().toISOString()
+    };
+
+    let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+    clientes.push(cliente);
+    localStorage.setItem("clientes", JSON.stringify(clientes));
+
+    window.location.href = "clientes.html";
+}
+
+function volver() {
+    window.location.href = "clientes.html";
+}
+</script>
+
+</body>
+</html>
