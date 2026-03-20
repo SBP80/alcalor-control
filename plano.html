@@ -114,6 +114,7 @@ canvas{
         <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
         <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
         <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
+        <button class="btn btn-sec" onclick="activarZonaMuerta()">Zona muerta</button>
         <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
         <button class="btn btn-sec" onclick="definirEscala()">Definir escala</button>
         <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia</button>
@@ -163,6 +164,10 @@ if (!Array.isArray(obra.plano.estancias)) {
 }
 
 let estancias = obra.plano.estancias;
+    
+let modoZonaMuerta = false;
+let zonasMuertas = [];
+let zonaMuertaTemp = null;   
 let metrosPorPixel = obra.plano.metrosPorPixel || null;
 
 let puntos = [];
@@ -508,20 +513,24 @@ function guardarEstancia() {
         alert("Primero cierra la estancia");
         return;
     }
-
+    
     const nombre = prompt("Nombre estancia:");
     if (!nombre || nombre.trim() === "") return;
 
     estancias.push({
         nombre: nombre.trim(),
         puntos: JSON.parse(JSON.stringify(puntos))
-    });
-
+});
+    
     guardarMemoria();
     puntos = [];
     cerrado = false;
     limpiarSeleccion();
     dibujar();
+}
+    function activarZonaMuerta() {
+    modoZonaMuerta = true;
+    zonaMuertaTemp = null;
 }
 
 function borrarUltimoPunto() {
