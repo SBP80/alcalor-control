@@ -464,6 +464,45 @@ function dibujar() {
     }
 
     dibujarEstanciaActual();
+
+    zonasMuertas.forEach((z) => {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+        ctx.fillRect(z.x, z.y, z.w, z.h);
+
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(z.x, z.y, z.w, z.h);
+
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+
+        if (metrosPorPixel) {
+            const ancho = (z.w * metrosPorPixel).toFixed(2);
+            const alto = (z.h * metrosPorPixel).toFixed(2);
+            ctx.fillText("Zona muerta " + ancho + "m x " + alto + "m", z.x + 6, z.y + 16);
+        } else {
+            ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
+        }
+    });
+
+    if (modoZonaMuerta && zonaMuertaTemp) {
+        const x = Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2);
+        const y = Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2);
+        const w = Math.abs(zonaMuertaTemp.x2 - zonaMuertaTemp.x1);
+        const h = Math.abs(zonaMuertaTemp.y2 - zonaMuertaTemp.y1);
+
+        ctx.fillStyle = "rgba(255,255,0,0.15)";
+        ctx.fillRect(x, y, w, h);
+
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+    }
+
+    actualizarInfo();
+}
+
+    dibujarEstanciaActual();
     actualizarInfo();
 }
 
@@ -533,6 +572,9 @@ function guardarEstancia() {
     function activarZonaMuerta() {
     modoZonaMuerta = true;
     zonaMuertaTemp = null;
+    arrastrando = false;
+    limpiarSeleccion();
+    dibujar();
 }
 
 function borrarUltimoPunto() {
@@ -593,12 +635,80 @@ function empezarInteraccion(evento) {
     const pos = obtenerPosicion(evento);
     ultimoX = pos.x;
     ultimoY = pos.y;
+
     if (modoZonaMuerta) {
-        if (!zonaMuertaTemp) {
-            zonaMuertaTemp = {
-                x1: pos.x,
-                y1: pos.y
-            };
+        zonaMuertaTemp = {
+            x1: pos.x,
+            y1: pos.y,
+            x2: pos.x,
+            y2: pos.y
+        };
+        arrastrando = true;
+        dibujar();
+
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
+    if (idx >= 0) {
+        seleccion.tipo = "puntoActual";
+        seleccion.estanciaIndex = -1;
+        seleccion.puntoIndex = idx;
+        arrastrando = true;
+        dibujar();
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    for (let i = estancias.length - 1; i >= 0; i--) {
+        idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
+        if (idx >= 0) {
+            seleccion.tipo = "puntoGuardado";
+            seleccion.estanciaIndex = i;
+            seleccion.puntoIndex = idx;
+            arrastrando = true;
+            dibujar();
+            if (evento.cancelable) evento.preventDefault();
+            return;
+        }
+    }
+
+    if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
+        seleccion.tipo = "estanciaActual";
+        seleccion.estanciaIndex = -1;
+        seleccion.puntoIndex = -1;
+        arrastrando = true;
+        dibujar();
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    for (let i = estancias.length - 1; i >= 0; i--) {
+        if (puntoDentroPoligono(pos.x, pos.y, estancias[i].puntos)) {
+            seleccion.tipo = "estanciaGuardada";
+            seleccion.estanciaIndex = i;
+            seleccion.puntoIndex = -1;
+            arrastrando = true;
+            dibujar();
+            if (evento.cancelable) evento.preventDefault();
+            return;
+        }
+    }
+
+    if (!cerrado) {
+        puntos.push({ x: pos.x, y: pos.y });
+        seleccion.tipo = "puntoActual";
+        seleccion.estanciaIndex = -1;
+        seleccion.puntoIndex = puntos.length - 1;
+        dibujar();
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
+    limpiarSeleccion();
+    dibujar();
+}
         } else {
             zonasMuertas.push({
                 x: Math.min(zonaMuertaTemp.x1, pos.x),
@@ -677,6 +787,21 @@ function empezarInteraccion(evento) {
 }
 
 function moverInteraccion(evento) {
+    if (modoZonaMuerta && arrastrando && zonaMuertaTemp) {
+        const pos = obtenerPosicion(evento);
+
+        zonaMuertaTemp.x2 = pos.x;
+        zonaMuertaTemp.y2 = pos.y;
+
+        ultimoX = pos.x;
+        ultimoY = pos.y;
+
+        dibujar();
+
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
+
     if (!arrastrando || !seleccion.tipo) return;
 
     const pos = obtenerPosicion(evento);
