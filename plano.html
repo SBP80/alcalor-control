@@ -480,8 +480,9 @@ function dibujar() {
             const ancho = (z.w * metrosPorPixel).toFixed(2);
             const alto = (z.h * metrosPorPixel).toFixed(2);
             ctx.fillText("Zona muerta " + ancho + "m x " + alto + "m", z.x + 6, z.y + 16);
-        } else {
-            ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
+        if (z.tipo === "zonaMuerta") {
+    ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
+}
         }
     });
 
@@ -704,23 +705,7 @@ function empezarInteraccion(evento) {
     limpiarSeleccion();
     dibujar();
 }
-        } else {
-            zonasMuertas.push({
-                x: Math.min(zonaMuertaTemp.x1, pos.x),
-                y: Math.min(zonaMuertaTemp.y1, pos.y),
-                w: Math.abs(pos.x - zonaMuertaTemp.x1),
-                h: Math.abs(pos.y - zonaMuertaTemp.y1)
-            });
-
-            zonaMuertaTemp = null;
-            modoZonaMuerta = false;
-            guardarMemoria();
-            dibujar();
-        }
-
-        if (evento.cancelable) evento.preventDefault();
-        return;
-    }
+      
     let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
     if (idx >= 0) {
         seleccion.tipo = "puntoActual";
@@ -868,11 +853,16 @@ function terminarInteraccion(evento) {
 
     if (!arrastrando) return;
 
-    arrastrando = false;
+arrastrando = false;
 
-    if (seleccion.tipo === "puntoGuardado" || seleccion.tipo === "estanciaGuardada") {
-        guardarMemoria();
-    }
+if (
+    seleccion.tipo === "puntoGuardado" ||
+    seleccion.tipo === "estanciaGuardada"
+) {
+    guardarMemoria();
+}
+
+if (evento && evento.cancelable) evento.preventDefault();
 
     if (evento && evento.cancelable) evento.preventDefault();
 }
