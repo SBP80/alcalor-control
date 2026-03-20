@@ -464,6 +464,45 @@ function dibujar() {
     }
 
     dibujarEstanciaActual();
+
+    zonasMuertas.forEach((z) => {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+        ctx.fillRect(z.x, z.y, z.w, z.h);
+
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(z.x, z.y, z.w, z.h);
+
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+
+        if (metrosPorPixel) {
+            const ancho = (z.w * metrosPorPixel).toFixed(2);
+            const alto = (z.h * metrosPorPixel).toFixed(2);
+            ctx.fillText("Zona muerta " + ancho + "m x " + alto + "m", z.x + 6, z.y + 16);
+        } else {
+            ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
+        }
+    });
+
+    if (modoZonaMuerta && zonaMuertaTemp) {
+        const x = Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2);
+        const y = Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2);
+        const w = Math.abs(zonaMuertaTemp.x2 - zonaMuertaTemp.x1);
+        const h = Math.abs(zonaMuertaTemp.y2 - zonaMuertaTemp.y1);
+
+        ctx.fillStyle = "rgba(255,255,0,0.15)";
+        ctx.fillRect(x, y, w, h);
+
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+    }
+
+    actualizarInfo();
+}
+
+    dibujarEstanciaActual();
     actualizarInfo();
 }
 
