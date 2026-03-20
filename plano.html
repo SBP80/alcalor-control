@@ -853,11 +853,16 @@ function terminarInteraccion(evento) {
 
     if (!arrastrando) return;
 
-    arrastrando = false;
+arrastrando = false;
 
-    if (seleccion.tipo === "puntoGuardado" || seleccion.tipo === "estanciaGuardada") {
-        guardarMemoria();
-    }
+if (
+    seleccion.tipo === "puntoGuardado" ||
+    seleccion.tipo === "estanciaGuardada"
+) {
+    guardarMemoria();
+}
+
+if (evento && evento.cancelable) evento.preventDefault();
 
     if (evento && evento.cancelable) evento.preventDefault();
 }
