@@ -184,12 +184,14 @@ let ultimoX = 0;
 let ultimoY = 0;
 
 const RADIO_PUNTO = 14;
-
 function guardarMemoria() {
     obra.plano = {
         estancias: estancias,
         metrosPorPixel: metrosPorPixel
     };
+
+    obra.zonasMuertas = zonasMuertas;
+
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
@@ -591,7 +593,29 @@ function empezarInteraccion(evento) {
     const pos = obtenerPosicion(evento);
     ultimoX = pos.x;
     ultimoY = pos.y;
+    if (modoZonaMuerta) {
+        if (!zonaMuertaTemp) {
+            zonaMuertaTemp = {
+                x1: pos.x,
+                y1: pos.y
+            };
+        } else {
+            zonasMuertas.push({
+                x: Math.min(zonaMuertaTemp.x1, pos.x),
+                y: Math.min(zonaMuertaTemp.y1, pos.y),
+                w: Math.abs(pos.x - zonaMuertaTemp.x1),
+                h: Math.abs(pos.y - zonaMuertaTemp.y1)
+            });
 
+            zonaMuertaTemp = null;
+            modoZonaMuerta = false;
+            guardarMemoria();
+            dibujar();
+        }
+
+        if (evento.cancelable) evento.preventDefault();
+        return;
+    }
     let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
     if (idx >= 0) {
         seleccion.tipo = "puntoActual";
