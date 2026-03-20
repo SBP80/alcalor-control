@@ -719,6 +719,34 @@ function moverInteraccion(evento) {
 }
 
 function terminarInteraccion(evento) {
+    if (modoZonaMuerta && arrastrando && zonaMuertaTemp) {
+        const pos = obtenerPosicion(evento);
+
+        zonaMuertaTemp.x2 = pos.x;
+        zonaMuertaTemp.y2 = pos.y;
+
+        const w = Math.abs(zonaMuertaTemp.x2 - zonaMuertaTemp.x1);
+        const h = Math.abs(zonaMuertaTemp.y2 - zonaMuertaTemp.y1);
+
+        if (w > 3 && h > 3) {
+            zonasMuertas.push({
+                x: Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2),
+                y: Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2),
+                w: w,
+                h: h
+            });
+            guardarMemoria();
+        }
+
+        zonaMuertaTemp = null;
+        modoZonaMuerta = false;
+        arrastrando = false;
+        dibujar();
+
+        if (evento && evento.cancelable) evento.preventDefault();
+        return;
+    }
+
     if (!arrastrando) return;
 
     arrastrando = false;
@@ -729,12 +757,17 @@ function terminarInteraccion(evento) {
 
     if (evento && evento.cancelable) evento.preventDefault();
 }
-
+function activarZonaMuerta() {
+    modoZonaMuerta = true;
+    zonaMuertaTemp = null;
+    arrastrando = false;
+    limpiarSeleccion();
+    dibujar();
+}
 canvas.addEventListener("mousedown", empezarInteraccion);
 canvas.addEventListener("mousemove", moverInteraccion);
 canvas.addEventListener("mouseup", terminarInteraccion);
 canvas.addEventListener("mouseleave", terminarInteraccion);
-
 canvas.addEventListener("touchstart", empezarInteraccion, { passive: false });
 canvas.addEventListener("touchmove", moverInteraccion, { passive: false });
 canvas.addEventListener("touchend", terminarInteraccion, { passive: false });
