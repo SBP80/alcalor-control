@@ -888,6 +888,10 @@ window.addEventListener("resize", () => {
 });
 
 dibujar();
+function empezarInteraccion(evento) {
+    const pos = obtenerPosicion(evento);
+    arrastrando = true;
+}
 </script>
 </body>
 </html>
