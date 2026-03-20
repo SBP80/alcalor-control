@@ -705,7 +705,7 @@ function empezarInteraccion(evento) {
     limpiarSeleccion();
     dibujar();
 }
-      
+    const pos = obtenerPosicion(evento);  
     let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
     if (idx >= 0) {
         seleccion.tipo = "puntoActual";
