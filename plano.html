@@ -168,7 +168,9 @@ if (!Array.isArray(obra.zonasMuertas)) {
 }
 
 let estancias = obra.plano.estancias;
-let zonasMuertas = obra.zonasMuertas;
+let zonasMuertas = [];
+obra.zonasMuertas = [];
+guardarMemoria();
 let metrosPorPixel = obra.plano.metrosPorPixel || null;
 
 let modoZonaMuerta = false;
