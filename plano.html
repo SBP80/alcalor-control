@@ -2,152 +2,260 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Plano</title>
 <style>
+:root{
+    --bg:#0b0b0b;
+    --panel:#151515;
+    --panel2:#1c1c1c;
+    --line:#2b2b2b;
+    --text:#ffffff;
+    --muted:#c8c8c8;
+    --accent:#f39b2f;
+    --danger:#c93b2f;
+    --ok:#ffffff;
+}
+*{box-sizing:border-box}
 body{
     margin:0;
-    background:#0b0b0b;
-    color:#fff;
+    background:var(--bg);
+    color:var(--text);
     font-family:Arial,sans-serif;
 }
 .header{
-    padding:12px 15px;
-    border-bottom:2px solid orange;
     display:flex;
-    justify-content:space-between;
     align-items:center;
+    justify-content:space-between;
     gap:10px;
+    padding:12px 14px;
+    border-bottom:2px solid var(--accent);
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:40;
 }
-.header-titulo{
-    font-size:22px;
+.header-title{
+    font-size:21px;
     font-weight:bold;
 }
-.header-btn{
-    background:orange;
+.btn-top{
     border:none;
+    background:var(--accent);
     color:#111;
     font-weight:bold;
+    border-radius:10px;
     padding:10px 14px;
-    border-radius:8px;
-    font-size:15px;
     cursor:pointer;
 }
-.wrap{
+.main{
     padding:10px;
-    position:relative;
 }
 .info{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
     padding:10px;
-    background:#141414;
-    border:1px solid #2a2a2a;
-    margin-bottom:10px;
-    border-radius:8px;
     font-size:14px;
     line-height:1.45;
+    margin-bottom:10px;
+    min-height:84px;
 }
-.tools{
-    position:absolute;
-    top:58px;
-    right:10px;
-    width:250px;
-    max-height:75vh;
-    overflow-y:auto;
-    background:#141414;
-    border:1px solid #2a2a2a;
-    border-radius:10px;
-    padding:8px;
-    display:none;
-    z-index:30;
-    box-shadow:0 8px 24px rgba(0,0,0,.45);
-}
-.tools.abierto{
-    display:block;
-}
-.subtitulo{
-    margin:4px 0 6px 0;
-    font-size:12px;
-    color:orange;
-    font-weight:bold;
+.canvas-wrap{
+    position:relative;
 }
 canvas{
-    background:#111;
-    border:1px solid #333;
-    display:block;
     width:100%;
+    height:calc(100vh - 190px);
+    min-height:420px;
+    display:block;
+    background:#101010;
+    border:1px solid #333;
+    border-radius:10px;
     touch-action:none;
 }
+.panel{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:260px;
+    background:rgba(21,21,21,.96);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px;
+    box-shadow:0 10px 28px rgba(0,0,0,.4);
+    z-index:30;
+    display:none;
+}
+.panel.open{
+    display:block;
+}
+.panel h3{
+    margin:0 0 8px 0;
+    font-size:13px;
+    color:var(--accent);
+}
+.grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:7px;
+}
 .btn{
-    width:100%;
-    padding:11px;
-    background:orange;
     border:none;
-    margin-top:7px;
-    font-size:14px;
-    cursor:pointer;
-    color:#111;
+    border-radius:9px;
+    padding:11px 12px;
     font-weight:bold;
-    border-radius:8px;
+    cursor:pointer;
+    background:var(--accent);
+    color:#111;
+    width:100%;
 }
-.btn-sec{
-    background:#d6a13b;
+.btn.secondary{
+    background:#d5a23d;
 }
-.btn-danger{
-    background:#c93b2f;
+.btn.neutral{
+    background:#c8c8c8;
+    color:#111;
+}
+.btn.danger{
+    background:var(--danger);
     color:#fff;
 }
-.small-note{
-    font-size:12px;
-    color:#bbb;
+.btn.active{
+    outline:2px solid #fff;
+}
+.note{
     margin-top:8px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.35;
+}
+.quickbar{
+    position:absolute;
+    left:10px;
+    bottom:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    z-index:25;
+}
+.quickbar .chip{
+    background:rgba(21,21,21,.92);
+    border:1px solid var(--line);
+    color:#fff;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:13px;
+}
+.mode-badge{
+    position:absolute;
+    left:10px;
+    top:10px;
+    background:rgba(243,155,47,.95);
+    color:#111;
+    font-weight:bold;
+    border-radius:999px;
+    padding:8px 12px;
+    z-index:20;
+    display:none;
+}
+.mode-badge.show{display:block}
+@media (max-width: 900px){
+    canvas{
+        height:calc(100vh - 210px);
+        min-height:360px;
+    }
+    .panel{
+        left:10px;
+        right:10px;
+        top:auto;
+        bottom:10px;
+        width:auto;
+        max-height:58vh;
+        overflow:auto;
+    }
+    .quickbar{
+        bottom:calc(10px + env(safe-area-inset-bottom));
+        right:10px;
+    }
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-    <button class="header-btn" onclick="volver()">Volver</button>
-    <div class="header-titulo">Plano</div>
-    <button class="header-btn" onclick="toggleTools()">Herramientas</button>
+    <button class="btn-top" onclick="volver()">Volver</button>
+    <div class="header-title">Plano</div>
+    <button class="btn-top" onclick="togglePanel()">Herramientas</button>
 </div>
 
-<div class="wrap">
+<div class="main">
     <div class="info" id="info">Cargando...</div>
 
-    <div class="tools" id="tools">
-        <div class="subtitulo">Plano</div>
-        <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
-        <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
-        <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
-        <button class="btn btn-sec" onclick="activarZonaMuerta()">Zona muerta</button>
-        <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
-        <button class="btn btn-sec" onclick="definirEscala()">Definir escala</button>
-        <button class="btn btn-danger" onclick="eliminarSeleccionado()">Eliminar seleccionado</button>
-        <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
-        <button class="btn" onclick="guardarPlano()">Guardar plano</button>
-        <div class="small-note">
-            Zona muerta: clic para seleccionar, arrastra dentro para mover, arrastra las esquinas blancas para cambiar tamaño.
+    <div class="canvas-wrap">
+        <div class="mode-badge" id="modeBadge"></div>
+
+        <div class="panel" id="panel">
+            <h3>Plano</h3>
+            <div class="grid">
+                <button class="btn" id="btnNueva" onclick="nuevaEstancia()">Nueva estancia</button>
+                <button class="btn" id="btnCerrar" onclick="cerrarEstancia()">Cerrar estancia</button>
+                <button class="btn" id="btnGuardar" onclick="guardarEstancia()">Guardar estancia</button>
+                <button class="btn secondary" id="btnEscala" onclick="definirEscala()">Definir escala</button>
+                <button class="btn secondary" id="btnZona" onclick="activarModo('zona')">Añadir zona muerta</button>
+                <button class="btn secondary" id="btnPuerta" onclick="activarModo('puerta')">Añadir puerta</button>
+                <button class="btn secondary" id="btnVentana" onclick="activarModo('ventana')">Añadir ventana</button>
+                <button class="btn danger" id="btnEliminar" onclick="eliminarSeleccionado()">Eliminar seleccionado</button>
+                <button class="btn neutral" id="btnGuardarPlano" onclick="guardarPlano()">Guardar plano</button>
+            </div>
+            <div class="note">
+                Zonas muertas: clic para seleccionar, arrastra dentro para mover, arrastra las esquinas blancas para redimensionar.
+                <br><br>
+                Puertas y ventanas: activa el modo y toca un lado de la estancia.
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+
+        <div class="quickbar" id="quickbar">
+            <div class="chip" id="chipSeleccion">Sin selección</div>
+            <div class="chip" id="chipEscala">Escala sin definir</div>
         </div>
     </div>
-
-    <canvas id="canvas"></canvas>
 </div>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
-const tools = document.getElementById("tools");
-
-function toggleTools() {
-    tools.classList.toggle("abierto");
-}
+const panel = document.getElementById("panel");
+const modeBadge = document.getElementById("modeBadge");
+const chipSeleccion = document.getElementById("chipSeleccion");
+const chipEscala = document.getElementById("chipEscala");
 
 function ajustarCanvas() {
-    canvas.width = window.innerWidth - 20;
-    canvas.height = window.innerHeight - 165;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.max(300, Math.floor(rect.width));
+    canvas.height = Math.max(300, Math.floor(rect.height));
 }
-ajustarCanvas();
+requestAnimationFrame(() => {
+    ajustarCanvas();
+    dibujar();
+});
+window.addEventListener("resize", () => {
+    ajustarCanvas();
+    dibujar();
+});
+
+function togglePanel() {
+    panel.classList.toggle("open");
+}
+function cerrarPanel() {
+    panel.classList.remove("open");
+}
+function autoCerrarPanel() {
+    if (window.innerWidth <= 900) cerrarPanel();
+}
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
@@ -160,137 +268,52 @@ if (!obra) {
     window.location.href = "obras.html";
 }
 
-if (!obra.plano) {
-    obra.plano = {
-        estancias: [],
-        metrosPorPixel: null
-    };
-}
-
-if (!Array.isArray(obra.plano.estancias)) {
-    obra.plano.estancias = [];
-}
-
-if (!Array.isArray(obra.zonasMuertas)) {
-    obra.zonasMuertas = [];
-}
+if (!obra.plano) obra.plano = {};
+if (!Array.isArray(obra.plano.estancias)) obra.plano.estancias = [];
+if (typeof obra.plano.metrosPorPixel !== "number") obra.plano.metrosPorPixel = null;
+if (!Array.isArray(obra.zonasMuertas)) obra.zonasMuertas = [];
+if (!Array.isArray(obra.aberturas)) obra.aberturas = [];
 
 let estancias = obra.plano.estancias;
 let zonasMuertas = obra.zonasMuertas;
-let metrosPorPixel = obra.plano.metrosPorPixel || null;
-
-let modoZonaMuerta = false;
-let zonaMuertaTemp = null;
+let aberturas = obra.aberturas; // puerta | ventana
+let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let puntos = [];
 let cerrado = false;
 
-let seleccion = {
-    tipo: null,
-    estanciaIndex: -1,
-    puntoIndex: -1,
-    zonaIndex: -1,
-    handle: null
-};
+let modo = null; // zona | puerta | ventana | null
+let zonaTemp = null;
 
 let arrastrando = false;
 let ultimoX = 0;
 let ultimoY = 0;
 
-const RADIO_PUNTO = 14;
 const HANDLE_SIZE = 10;
+const HIT_POINT = 14;
 const MIN_ZONA = 12;
+const MIN_ABERTURA_M = 0.4;
+const MAX_DIST_LINE = 14;
+
+const seleccion = {
+    tipo: null, // estanciaActual, puntoActual, estanciaGuardada, puntoGuardado, zonaMuerta, zonaHandle, abertura
+    estanciaIndex: -1,
+    puntoIndex: -1,
+    zonaIndex: -1,
+    aberturaIndex: -1,
+    handle: null
+};
 
 function guardarMemoria() {
-    obra.plano = {
-        estancias: estancias,
-        metrosPorPixel: metrosPorPixel
-    };
+    obra.plano.estancias = estancias;
+    obra.plano.metrosPorPixel = metrosPorPixel;
     obra.zonasMuertas = zonasMuertas;
+    obra.aberturas = aberturas;
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
-function obtenerPosicion(evento) {
-    const rect = canvas.getBoundingClientRect();
-
-    if (evento.touches && evento.touches.length > 0) {
-        return {
-            x: evento.touches[0].clientX - rect.left,
-            y: evento.touches[0].clientY - rect.top
-        };
-    }
-
-    if (evento.changedTouches && evento.changedTouches.length > 0) {
-        return {
-            x: evento.changedTouches[0].clientX - rect.left,
-            y: evento.changedTouches[0].clientY - rect.top
-        };
-    }
-
-    return {
-        x: evento.clientX - rect.left,
-        y: evento.clientY - rect.top
-    };
-}
-
-function distancia(p1, p2) {
-    return Math.hypot(p2.x - p1.x, p2.y - p1.y);
-}
-
-function puntoMedio(p1, p2) {
-    return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-}
-
-function centroide(lista) {
-    let sx = 0;
-    let sy = 0;
-    for (const p of lista) {
-        sx += p.x;
-        sy += p.y;
-    }
-    return { x: sx / lista.length, y: sy / lista.length };
-}
-
-function calcularAreaPixels(lista) {
-    if (!lista || lista.length < 3) return 0;
-    let area = 0;
-    for (let i = 0; i < lista.length; i++) {
-        const j = (i + 1) % lista.length;
-        area += lista[i].x * lista[j].y;
-        area -= lista[j].x * lista[i].y;
-    }
-    return Math.abs(area / 2);
-}
-
-function calcularSuperficieReal(lista) {
-    if (!metrosPorPixel) return 0;
-    return calcularAreaPixels(lista) * metrosPorPixel * metrosPorPixel;
-}
-
-function puntoDentroPoligono(x, y, poligono) {
-    let dentro = false;
-    for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
-        const xi = poligono[i].x;
-        const yi = poligono[i].y;
-        const xj = poligono[j].x;
-        const yj = poligono[j].y;
-
-        const cruza = ((yi > y) !== (yj > y)) &&
-            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 0.000001) + xi);
-
-        if (cruza) dentro = !dentro;
-    }
-    return dentro;
-}
-
-function buscarPuntoEnLista(x, y, lista) {
-    for (let i = 0; i < lista.length; i++) {
-        const p = lista[i];
-        if (Math.hypot(p.x - x, p.y - y) <= RADIO_PUNTO) {
-            return i;
-        }
-    }
-    return -1;
+function volver() {
+    window.location.href = "obra.html";
 }
 
 function limpiarSeleccion() {
@@ -298,105 +321,152 @@ function limpiarSeleccion() {
     seleccion.estanciaIndex = -1;
     seleccion.puntoIndex = -1;
     seleccion.zonaIndex = -1;
+    seleccion.aberturaIndex = -1;
     seleccion.handle = null;
 }
 
-function obtenerEstanciaSeleccionada() {
-    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-        return estancias[seleccion.estanciaIndex] || null;
-    }
-    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
-        return { nombre: "Estancia actual", puntos: puntos };
-    }
-    return null;
+function cancelarModo() {
+    modo = null;
+    zonaTemp = null;
+    actualizarUIAcciones();
 }
 
-function puntoDentroRect(x, y, r) {
+function activarModo(nuevoModo) {
+    if (modo === nuevoModo) {
+        cancelarModo();
+        return;
+    }
+    modo = nuevoModo;
+    zonaTemp = null;
+    limpiarSeleccion();
+    actualizarUIAcciones();
+    dibujar();
+    autoCerrarPanel();
+}
+
+function actualizarUIAcciones() {
+    document.getElementById("btnZona").classList.toggle("active", modo === "zona");
+    document.getElementById("btnPuerta").classList.toggle("active", modo === "puerta");
+    document.getElementById("btnVentana").classList.toggle("active", modo === "ventana");
+
+    let txt = "";
+    if (modo === "zona") txt = "Modo: zona muerta";
+    if (modo === "puerta") txt = "Modo: puerta";
+    if (modo === "ventana") txt = "Modo: ventana";
+
+    modeBadge.textContent = txt;
+    modeBadge.classList.toggle("show", !!txt);
+
+    chipEscala.textContent = metrosPorPixel ? "Escala definida" : "Escala sin definir";
+
+    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") chipSeleccion.textContent = "Zona muerta seleccionada";
+    else if (seleccion.tipo === "abertura") chipSeleccion.textContent = "Elemento seleccionado";
+    else if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual seleccionada";
+    else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = "Estancia guardada seleccionada";
+    else chipSeleccion.textContent = "Sin selección";
+}
+
+function getPos(ev) {
+    const rect = canvas.getBoundingClientRect();
+    if (ev.touches && ev.touches.length) {
+        return {
+            x: ev.touches[0].clientX - rect.left,
+            y: ev.touches[0].clientY - rect.top
+        };
+    }
+    if (ev.changedTouches && ev.changedTouches.length) {
+        return {
+            x: ev.changedTouches[0].clientX - rect.left,
+            y: ev.changedTouches[0].clientY - rect.top
+        };
+    }
+    return {
+        x: ev.clientX - rect.left,
+        y: ev.clientY - rect.top
+    };
+}
+
+function dist(a, b) {
+    return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
+function midpoint(a, b) {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
+function centroid(poly) {
+    let sx = 0, sy = 0;
+    for (const p of poly) {
+        sx += p.x;
+        sy += p.y;
+    }
+    return { x: sx / poly.length, y: sy / poly.length };
+}
+
+function polygonAreaPx(poly) {
+    if (!poly || poly.length < 3) return 0;
+    let area = 0;
+    for (let i = 0; i < poly.length; i++) {
+        const j = (i + 1) % poly.length;
+        area += poly[i].x * poly[j].y - poly[j].x * poly[i].y;
+    }
+    return Math.abs(area / 2);
+}
+
+function polygonAreaM2(poly) {
+    if (!metrosPorPixel) return 0;
+    return polygonAreaPx(poly) * metrosPorPixel * metrosPorPixel;
+}
+
+function pointInPolygon(x, y, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i].x, yi = poly[i].y;
+        const xj = poly[j].x, yj = poly[j].y;
+        const inter = ((yi > y) !== (yj > y)) &&
+            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 0.000001) + xi);
+        if (inter) inside = !inside;
+    }
+    return inside;
+}
+
+function findPoint(poly, x, y) {
+    for (let i = 0; i < poly.length; i++) {
+        if (Math.hypot(poly[i].x - x, poly[i].y - y) <= HIT_POINT) return i;
+    }
+    return -1;
+}
+
+function pointInRect(x, y, r) {
     return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
 }
 
 function getZonaHandles(z) {
     return [
-        { name: "nw", x: z.x,       y: z.y },
+        { name: "nw", x: z.x, y: z.y },
         { name: "ne", x: z.x + z.w, y: z.y },
         { name: "se", x: z.x + z.w, y: z.y + z.h },
-        { name: "sw", x: z.x,       y: z.y + z.h }
+        { name: "sw", x: z.x, y: z.y + z.h }
     ];
 }
 
-function buscarHandleZona(x, y, z) {
-    const handles = getZonaHandles(z);
-    for (const h of handles) {
-        if (Math.abs(x - h.x) <= HANDLE_SIZE && Math.abs(y - h.y) <= HANDLE_SIZE) {
-            return h.name;
-        }
+function findZonaHandle(z, x, y) {
+    const hs = getZonaHandles(z);
+    for (const h of hs) {
+        if (Math.abs(x - h.x) <= HANDLE_SIZE && Math.abs(y - h.y) <= HANDLE_SIZE) return h.name;
     }
     return null;
 }
 
-function dibujarMedidas(lista, estaCerrada, colorTexto) {
-    if (!metrosPorPixel || !lista || lista.length < 2) return;
-
-    ctx.fillStyle = colorTexto;
-    ctx.font = "12px Arial";
-
-    const totalLados = estaCerrada ? lista.length : lista.length - 1;
-
-    for (let i = 0; i < totalLados; i++) {
-        const j = (i + 1) % lista.length;
-        const p1 = lista[i];
-        const p2 = lista[j];
-        const medio = puntoMedio(p1, p2);
-        const metros = distancia(p1, p2) * metrosPorPixel;
-        ctx.fillText(metros.toFixed(2) + " m", medio.x + 6, medio.y - 6);
-    }
-}
-
-function dibujarLineaMedida(x1, y1, x2, y2, texto) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.70)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "12px Arial";
-    ctx.fillText(texto, mx + 4, my - 4);
-    ctx.restore();
-}
-
-function dibujarHandlesZona(z) {
-    const handles = getZonaHandles(z);
-    ctx.save();
-    ctx.fillStyle = "#fff";
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 1;
-
-    for (const h of handles) {
-        ctx.beginPath();
-        ctx.rect(h.x - HANDLE_SIZE / 2, h.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
-        ctx.fill();
-        ctx.stroke();
-    }
-    ctx.restore();
-}
-
-function lineIntersectionsHorizontal(y, polygon) {
+function lineIntersectionsHorizontal(y, poly) {
     const xs = [];
-    for (let i = 0; i < polygon.length; i++) {
-        const a = polygon[i];
-        const b = polygon[(i + 1) % polygon.length];
-
+    for (let i = 0; i < poly.length; i++) {
+        const a = poly[i];
+        const b = poly[(i + 1) % poly.length];
         if (a.y === b.y) continue;
         const minY = Math.min(a.y, b.y);
         const maxY = Math.max(a.y, b.y);
         if (y < minY || y >= maxY) continue;
-
         const t = (y - a.y) / (b.y - a.y);
         xs.push(a.x + t * (b.x - a.x));
     }
@@ -404,17 +474,15 @@ function lineIntersectionsHorizontal(y, polygon) {
     return xs;
 }
 
-function lineIntersectionsVertical(x, polygon) {
+function lineIntersectionsVertical(x, poly) {
     const ys = [];
-    for (let i = 0; i < polygon.length; i++) {
-        const a = polygon[i];
-        const b = polygon[(i + 1) % polygon.length];
-
+    for (let i = 0; i < poly.length; i++) {
+        const a = poly[i];
+        const b = poly[(i + 1) % poly.length];
         if (a.x === b.x) continue;
         const minX = Math.min(a.x, b.x);
         const maxX = Math.max(a.x, b.x);
         if (x < minX || x >= maxX) continue;
-
         const t = (x - a.x) / (b.x - a.x);
         ys.push(a.y + t * (b.y - a.y));
     }
@@ -422,20 +490,28 @@ function lineIntersectionsVertical(x, polygon) {
     return ys;
 }
 
-function encontrarEstanciaContenedoraZona(zona) {
-    const cx = zona.x + zona.w / 2;
-    const cy = zona.y + zona.h / 2;
+function drawMeasureLine(x1, y1, x2, y2, text) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.7)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px Arial";
+    ctx.fillText(text, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
+    ctx.restore();
+}
 
+function getContainerIndexForZone(z) {
+    const cx = z.x + z.w / 2;
+    const cy = z.y + z.h / 2;
+
+    if (cerrado && puntos.length >= 3 && pointInPolygon(cx, cy, puntos)) return -2;
     for (let i = estancias.length - 1; i >= 0; i--) {
-        if (puntoDentroPoligono(cx, cy, estancias[i].puntos)) {
-            return i;
-        }
+        if (pointInPolygon(cx, cy, estancias[i].puntos)) return i;
     }
-
-    if (cerrado && puntos.length >= 3 && puntoDentroPoligono(cx, cy, puntos)) {
-        return -2;
-    }
-
     return null;
 }
 
@@ -445,47 +521,34 @@ function getPolygonByContainerIndex(idx) {
     return estancias[idx]?.puntos || null;
 }
 
-function dibujarMedidasZonaDentroEstancia(zonaIndex) {
+function drawZoneDistances(idx) {
     if (!metrosPorPixel) return;
-
-    const z = zonasMuertas[zonaIndex];
-    const cont = encontrarEstanciaContenedoraZona(z);
-    const polygon = getPolygonByContainerIndex(cont);
-    if (!polygon || polygon.length < 3) return;
+    const z = zonasMuertas[idx];
+    const cont = getContainerIndexForZone(z);
+    const poly = getPolygonByContainerIndex(cont);
+    if (!poly || poly.length < 3) return;
 
     const cx = z.x + z.w / 2;
     const cy = z.y + z.h / 2;
 
-    const xs = lineIntersectionsHorizontal(cy, polygon);
-    const ys = lineIntersectionsVertical(cx, polygon);
+    const xs = lineIntersectionsHorizontal(cy, poly);
+    const ys = lineIntersectionsVertical(cx, poly);
 
-    let leftBound = null;
-    let rightBound = null;
-    let topBound = null;
-    let bottomBound = null;
+    let leftBound = null, rightBound = null, topBound = null, bottomBound = null;
 
     for (const x of xs) {
         if (x <= z.x) leftBound = x;
         if (x >= z.x + z.w && rightBound === null) rightBound = x;
     }
-
     for (const y of ys) {
         if (y <= z.y) topBound = y;
         if (y >= z.y + z.h && bottomBound === null) bottomBound = y;
     }
 
-    if (leftBound !== null) {
-        dibujarLineaMedida(leftBound, cy, z.x, cy, ((z.x - leftBound) * metrosPorPixel).toFixed(2) + " m");
-    }
-    if (rightBound !== null) {
-        dibujarLineaMedida(z.x + z.w, cy, rightBound, cy, ((rightBound - (z.x + z.w)) * metrosPorPixel).toFixed(2) + " m");
-    }
-    if (topBound !== null) {
-        dibujarLineaMedida(cx, topBound, cx, z.y, ((z.y - topBound) * metrosPorPixel).toFixed(2) + " m");
-    }
-    if (bottomBound !== null) {
-        dibujarLineaMedida(cx, z.y + z.h, cx, bottomBound, ((bottomBound - (z.y + z.h)) * metrosPorPixel).toFixed(2) + " m");
-    }
+    if (leftBound !== null) drawMeasureLine(leftBound, cy, z.x, cy, ((z.x - leftBound) * metrosPorPixel).toFixed(2) + " m");
+    if (rightBound !== null) drawMeasureLine(z.x + z.w, cy, rightBound, cy, ((rightBound - (z.x + z.w)) * metrosPorPixel).toFixed(2) + " m");
+    if (topBound !== null) drawMeasureLine(cx, topBound, cx, z.y, ((z.y - topBound) * metrosPorPixel).toFixed(2) + " m");
+    if (bottomBound !== null) drawMeasureLine(cx, z.y + z.h, cx, bottomBound, ((bottomBound - (z.y + z.h)) * metrosPorPixel).toFixed(2) + " m");
 }
 
 function clipPolygonWithRect(subjectPolygon, rect) {
@@ -528,105 +591,84 @@ function clipPolygonWithRect(subjectPolygon, rect) {
         const input = output.slice();
         output = [];
         if (input.length === 0) break;
-
         let S = input[input.length - 1];
-
         for (const E of input) {
-            const Ein = edge.inside(E);
             const Sin = edge.inside(S);
-
+            const Ein = edge.inside(E);
             if (Ein) {
                 if (!Sin) output.push(edge.intersect(S, E));
                 output.push(E);
             } else if (Sin) {
                 output.push(edge.intersect(S, E));
             }
-
             S = E;
         }
     }
-
     return output;
 }
 
-function calcularAreaMuertaPoligono(polygon) {
-    if (!metrosPorPixel) return 0;
-    if (!polygon || polygon.length < 3) return 0;
-
-    let totalSolapePx = 0;
-
+function deadAreaForPolygon(poly) {
+    if (!metrosPorPixel || !poly || poly.length < 3) return 0;
+    let totalPx = 0;
     for (const z of zonasMuertas) {
-        const clipped = clipPolygonWithRect(polygon, z);
-        if (clipped.length >= 3) {
-            totalSolapePx += calcularAreaPixels(clipped);
-        }
+        const clipped = clipPolygonWithRect(poly, z);
+        if (clipped.length >= 3) totalPx += polygonAreaPx(clipped);
     }
-
-    return totalSolapePx * metrosPorPixel * metrosPorPixel;
+    return totalPx * metrosPorPixel * metrosPorPixel;
 }
 
-function calcularAreaMuertaEnEstancia(estanciaIndex) {
-    const polygon = estancias[estanciaIndex]?.puntos;
-    return calcularAreaMuertaPoligono(polygon);
+function roomStats(poly) {
+    const total = polygonAreaM2(poly);
+    const dead = deadAreaForPolygon(poly);
+    return {
+        total,
+        dead,
+        useful: Math.max(0, total - dead)
+    };
 }
 
-function dibujarEstanciaGuardada(est, index) {
-    if (!est.puntos || est.puntos.length < 3) return;
+function getSelectedRoomData() {
+    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
+        return { nombre: "Estancia actual", puntos };
+    }
+    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
+        return estancias[seleccion.estanciaIndex] || null;
+    }
+    return null;
+}
 
-    const seleccionada =
-        (seleccion.tipo === "estanciaGuardada" && seleccion.estanciaIndex === index) ||
-        (seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === index);
+function drawSideMeasures(poly, closedPoly, colorText) {
+    if (!metrosPorPixel || !poly || poly.length < 2) return;
+    ctx.fillStyle = colorText;
+    ctx.font = "12px Arial";
+    const totalSides = closedPoly ? poly.length : poly.length - 1;
+    for (let i = 0; i < totalSides; i++) {
+        const j = (i + 1) % poly.length;
+        const a = poly[i];
+        const b = poly[j];
+        const m = midpoint(a, b);
+        const mm = dist(a, b) * metrosPorPixel;
+        ctx.fillText(mm.toFixed(2) + " m", m.x + 6, m.y - 6);
+    }
+}
 
+function drawRoom(poly, selected, fillColor, strokeColor) {
     ctx.beginPath();
-    est.puntos.forEach((p, i) => {
+    poly.forEach((p, i) => {
         if (i === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
     });
     ctx.closePath();
-
-    ctx.strokeStyle = seleccionada ? "white" : "orange";
-    ctx.lineWidth = seleccionada ? 3 : 2;
-    ctx.stroke();
-
-    ctx.fillStyle = seleccionada ? "rgba(255,255,255,0.12)" : "rgba(255,165,0,0.10)";
+    ctx.fillStyle = fillColor;
     ctx.fill();
-
-    est.puntos.forEach((p, i) => {
-        const esPuntoSel =
-            seleccion.tipo === "puntoGuardado" &&
-            seleccion.estanciaIndex === index &&
-            seleccion.puntoIndex === i;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, esPuntoSel ? 7 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = esPuntoSel ? "white" : "orange";
-        ctx.fill();
-    });
-
-    const c = centroide(est.puntos);
-    const areaTotal = calcularSuperficieReal(est.puntos);
-    const areaMuerta = calcularAreaMuertaEnEstancia(index);
-    const areaUtil = Math.max(0, areaTotal - areaMuerta);
-
-    ctx.fillStyle = "white";
-    ctx.font = "16px Arial";
-    ctx.fillText(est.nombre || "Estancia", c.x - 20, c.y - 12);
-
-    if (metrosPorPixel) {
-        ctx.font = "13px Arial";
-        ctx.fillText("Útil " + areaUtil.toFixed(2) + " m²", c.x - 20, c.y + 8);
-        if (areaMuerta > 0) {
-            ctx.fillText("Muerta " + areaMuerta.toFixed(2) + " m²", c.x - 20, c.y + 24);
-        }
-    }
-
-    dibujarMedidas(est.puntos, true, "white");
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = selected ? 3 : 2;
+    ctx.stroke();
 }
 
-function dibujarEstanciaActual() {
-    if (puntos.length === 0) return;
-
-    const seleccionada = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
+function drawCurrentRoom() {
+    if (!puntos.length) return;
+    const selected = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
 
     ctx.beginPath();
     puntos.forEach((p, i) => {
@@ -636,192 +678,388 @@ function dibujarEstanciaActual() {
 
     if (cerrado && puntos.length >= 3) {
         ctx.closePath();
-        ctx.fillStyle = seleccionada ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.06)";
+        ctx.fillStyle = selected ? "rgba(255,255,255,.12)" : "rgba(255,255,255,.05)";
         ctx.fill();
     }
 
-    ctx.strokeStyle = seleccionada ? "white" : "#dddddd";
-    ctx.lineWidth = seleccionada ? 3 : 2;
+    ctx.strokeStyle = selected ? "#ffffff" : "#dddddd";
+    ctx.lineWidth = selected ? 3 : 2;
     ctx.stroke();
 
     puntos.forEach((p, i) => {
-        const esPuntoSel = seleccion.tipo === "puntoActual" && seleccion.puntoIndex === i;
-
+        const sel = seleccion.tipo === "puntoActual" && seleccion.puntoIndex === i;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, esPuntoSel ? 7 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = esPuntoSel ? "orange" : "white";
+        ctx.arc(p.x, p.y, sel ? 7 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = sel ? varOr("#f39b2f") : "#ffffff";
         ctx.fill();
 
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "#fff";
         ctx.font = "12px Arial";
         ctx.fillText(String(i + 1), p.x + 8, p.y - 8);
     });
 
-    dibujarMedidas(puntos, cerrado, "white");
+    drawSideMeasures(puntos, cerrado, "#fff");
+
+    if (cerrado && metrosPorPixel) {
+        const c = centroid(puntos);
+        const stats = roomStats(puntos);
+        ctx.fillStyle = "#fff";
+        ctx.font = "16px Arial";
+        ctx.fillText("actual", c.x - 18, c.y - 12);
+        ctx.font = "13px Arial";
+        ctx.fillText("Útil " + stats.useful.toFixed(2) + " m²", c.x - 22, c.y + 8);
+        if (stats.dead > 0) ctx.fillText("Muerta " + stats.dead.toFixed(2) + " m²", c.x - 28, c.y + 24);
+    }
 }
 
-function dibujarZonasMuertas() {
+function drawSavedRooms() {
+    for (let i = 0; i < estancias.length; i++) {
+        const est = estancias[i];
+        if (!est.puntos || est.puntos.length < 3) continue;
+
+        const selected =
+            (seleccion.tipo === "estanciaGuardada" && seleccion.estanciaIndex === i) ||
+            (seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === i);
+
+        drawRoom(
+            est.puntos,
+            selected,
+            selected ? "rgba(255,255,255,.12)" : "rgba(243,155,47,.10)",
+            selected ? "#ffffff" : "#f39b2f"
+        );
+
+        est.puntos.forEach((p, idx) => {
+            const pointSelected = seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === i && seleccion.puntoIndex === idx;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, pointSelected ? 7 : 5, 0, Math.PI * 2);
+            ctx.fillStyle = pointSelected ? "#ffffff" : "#f39b2f";
+            ctx.fill();
+        });
+
+        const c = centroid(est.puntos);
+        const stats = roomStats(est.puntos);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "16px Arial";
+        ctx.fillText(est.nombre || "Estancia", c.x - 24, c.y - 12);
+        if (metrosPorPixel) {
+            ctx.font = "13px Arial";
+            ctx.fillText("Útil " + stats.useful.toFixed(2) + " m²", c.x - 24, c.y + 8);
+            if (stats.dead > 0) ctx.fillText("Muerta " + stats.dead.toFixed(2) + " m²", c.x - 28, c.y + 24);
+        }
+
+        drawSideMeasures(est.puntos, true, "#fff");
+    }
+}
+
+function drawZonaHandles(z) {
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 1;
+    for (const h of getZonaHandles(z)) {
+        ctx.beginPath();
+        ctx.rect(h.x - HANDLE_SIZE / 2, h.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+        ctx.fill();
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function drawZones() {
     zonasMuertas.forEach((z, i) => {
-        const seleccionada = seleccion.tipo === "zonaMuerta" && seleccion.zonaIndex === i;
-        const handleSel = seleccion.tipo === "zonaHandle" && seleccion.zonaIndex === i;
-
-        ctx.fillStyle = seleccionada || handleSel ? "rgba(255,0,0,0.35)" : "rgba(255,0,0,0.25)";
+        const selected = (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") && seleccion.zonaIndex === i;
+        ctx.fillStyle = selected ? "rgba(255,0,0,.36)" : "rgba(255,0,0,.24)";
         ctx.fillRect(z.x, z.y, z.w, z.h);
-
-        ctx.strokeStyle = seleccionada || handleSel ? "white" : "red";
-        ctx.lineWidth = seleccionada || handleSel ? 3 : 2;
+        ctx.strokeStyle = selected ? "#fff" : "#ff4b3a";
+        ctx.lineWidth = selected ? 3 : 2;
         ctx.strokeRect(z.x, z.y, z.w, z.h);
 
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "#fff";
         ctx.font = "12px Arial";
-
         if (metrosPorPixel) {
-            const ancho = (z.w * metrosPorPixel).toFixed(2);
-            const alto = (z.h * metrosPorPixel).toFixed(2);
-            ctx.fillText("Zona muerta " + ancho + "m x " + alto + "m", z.x + 6, z.y + 16);
+            ctx.fillText(
+                "Zona muerta " + (z.w * metrosPorPixel).toFixed(2) + "m x " + (z.h * metrosPorPixel).toFixed(2) + "m",
+                z.x + 6,
+                z.y + 16
+            );
         } else {
             ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
         }
 
-        if (seleccionada || handleSel) {
-            dibujarHandlesZona(z);
-            dibujarMedidasZonaDentroEstancia(i);
+        if (selected) {
+            drawZonaHandles(z);
+            drawZoneDistances(i);
         }
     });
 
-    if (modoZonaMuerta && zonaMuertaTemp) {
-        const x = Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2);
-        const y = Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2);
-        const w = Math.abs(zonaMuertaTemp.x2 - zonaMuertaTemp.x1);
-        const h = Math.abs(zonaMuertaTemp.y2 - zonaMuertaTemp.y1);
-
-        ctx.fillStyle = "rgba(255,255,0,0.15)";
+    if (modo === "zona" && zonaTemp) {
+        const x = Math.min(zonaTemp.x1, zonaTemp.x2);
+        const y = Math.min(zonaTemp.y1, zonaTemp.y2);
+        const w = Math.abs(zonaTemp.x2 - zonaTemp.x1);
+        const h = Math.abs(zonaTemp.y2 - zonaTemp.y1);
+        ctx.fillStyle = "rgba(255,255,0,.15)";
         ctx.fillRect(x, y, w, h);
-
         ctx.strokeStyle = "yellow";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
     }
 }
 
-function actualizarInfo() {
-    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
-        const z = zonasMuertas[seleccion.zonaIndex];
-        let texto = "Zona muerta seleccionada";
+function segPointDistance(px, py, ax, ay, bx, by) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) return { d: Math.hypot(px - ax, py - ay), t: 0 };
+    let t = ((px - ax) * dx + (py - ay) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const qx = ax + t * dx;
+    const qy = ay + t * dy;
+    return { d: Math.hypot(px - qx, py - qy), t, qx, qy };
+}
 
-        if (metrosPorPixel) {
-            texto += "<br>Ancho: " + (z.w * metrosPorPixel).toFixed(2) + " m";
-            texto += "<br>Alto: " + (z.h * metrosPorPixel).toFixed(2) + " m";
-            texto += "<br>Superficie: " + ((z.w * metrosPorPixel) * (z.h * metrosPorPixel)).toFixed(2) + " m²";
-        } else {
-            texto += "<br>Ancho: " + z.w.toFixed(0) + " px";
-            texto += "<br>Alto: " + z.h.toFixed(0) + " px";
-        }
+function findNearestWall(x, y) {
+    let best = null;
 
-        const cont = encontrarEstanciaContenedoraZona(z);
-        if (cont === -2) {
-            texto += "<br>Dentro de: estancia actual";
-        } else if (cont !== null && estancias[cont]) {
-            texto += "<br>Dentro de: " + (estancias[cont].nombre || "Estancia");
-        } else {
-            texto += "<br>Dentro de: fuera de estancia";
-        }
-
-        info.innerHTML = texto;
-        return;
-    }
-
-    const estanciaSel = obtenerEstanciaSeleccionada();
-
-    if (!estanciaSel) {
-        let total = 0;
-        let totalMuerta = 0;
-        let totalUtil = 0;
-
-        for (let i = 0; i < estancias.length; i++) {
-            const area = calcularSuperficieReal(estancias[i].puntos);
-            const muerta = calcularAreaMuertaEnEstancia(i);
-            total += area;
-            totalMuerta += muerta;
-            totalUtil += Math.max(0, area - muerta);
-        }
-
-        let texto = "Resumen del plano";
-        texto += "<br>Estancias guardadas: " + estancias.length;
-        texto += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
-
-        if (total > 0) {
-            texto += "<br>Superficie total: " + total.toFixed(2) + " m²";
-            texto += "<br>Superficie útil: " + totalUtil.toFixed(2) + " m²";
-            texto += "<br>Superficie muerta: " + totalMuerta.toFixed(2) + " m²";
-        }
-
-        if (zonasMuertas.length > 0) {
-            texto += "<br>Zonas muertas: " + zonasMuertas.length;
-        }
-
-        if (puntos.length > 0) {
-            texto += "<br>Estancia actual en edición: sí";
-            texto += "<br>Puntos actuales: " + puntos.length;
-            texto += "<br>Estado: " + (cerrado ? "cerrada" : "abierta");
-
-            if (cerrado && metrosPorPixel) {
-                const areaTotalActual = calcularSuperficieReal(puntos);
-                const areaMuertaActual = calcularAreaMuertaPoligono(puntos);
-                const areaUtilActual = Math.max(0, areaTotalActual - areaMuertaActual);
-                texto += "<br>Superficie actual total: " + areaTotalActual.toFixed(2) + " m²";
-                texto += "<br>Superficie actual muerta: " + areaMuertaActual.toFixed(2) + " m²";
-                texto += "<br>Superficie actual útil: " + areaUtilActual.toFixed(2) + " m²";
+    function testPoly(poly, roomIndex, currentRoom) {
+        if (!poly || poly.length < 2) return;
+        for (let i = 0; i < poly.length; i++) {
+            const j = (i + 1) % poly.length;
+            const a = poly[i];
+            const b = poly[j];
+            const hit = segPointDistance(x, y, a.x, a.y, b.x, b.y);
+            if (hit.d <= MAX_DIST_LINE) {
+                if (!best || hit.d < best.d) {
+                    best = {
+                        d: hit.d,
+                        t: hit.t,
+                        x: hit.qx,
+                        y: hit.qy,
+                        roomIndex,
+                        currentRoom,
+                        sideIndex: i,
+                        a: { x: a.x, y: a.y },
+                        b: { x: b.x, y: b.y }
+                    };
+                }
             }
         }
+    }
 
-        info.innerHTML = texto;
+    if (cerrado && puntos.length >= 3) testPoly(puntos, -2, true);
+    for (let i = 0; i < estancias.length; i++) testPoly(estancias[i].puntos, i, false);
+
+    return best;
+}
+
+function aberturaWidthPx(widthM) {
+    if (!metrosPorPixel) return 50;
+    return widthM / metrosPorPixel;
+}
+
+function createAbertura(tipo, wall) {
+    const valor = prompt("Ancho en metros:", tipo === "puerta" ? "0.82" : "1.20");
+    if (!valor) return;
+    const widthM = parseFloat(String(valor).replace(",", "."));
+    if (!widthM || widthM < MIN_ABERTURA_M) {
+        alert("Ancho no válido");
         return;
     }
 
-    let texto = "Datos de la estancia seleccionada";
-    texto += "<br>Nombre: " + (estanciaSel.nombre || "Sin nombre");
-    texto += "<br>Lados: " + estanciaSel.puntos.length;
+    const segLenPx = dist(wall.a, wall.b);
+    const lenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
+    if (widthM >= lenM) {
+        alert("El ancho es mayor que el lado");
+        return;
+    }
 
-    if (metrosPorPixel) {
-        const areaTotal = calcularSuperficieReal(estanciaSel.puntos);
-        const areaMuerta = calcularAreaMuertaPoligono(estanciaSel.puntos);
-        const areaUtil = Math.max(0, areaTotal - areaMuerta);
+    aberturas.push({
+        tipo,
+        roomIndex: wall.roomIndex,
+        currentRoom: wall.currentRoom,
+        sideIndex: wall.sideIndex,
+        t: wall.t,
+        widthM
+    });
 
-        texto += "<br>Superficie total: " + areaTotal.toFixed(2) + " m²";
-        texto += "<br>Superficie muerta: " + areaMuerta.toFixed(2) + " m²";
-        texto += "<br>Superficie útil: " + areaUtil.toFixed(2) + " m²";
-        texto += "<br>Longitudes:";
+    guardarMemoria();
+    limpiarSeleccion();
+    seleccion.tipo = "abertura";
+    seleccion.aberturaIndex = aberturas.length - 1;
+    cancelarModo();
+    dibujar();
+}
 
-        for (let i = 0; i < estanciaSel.puntos.length; i++) {
-            const j = (i + 1) % estanciaSel.puntos.length;
-            const m = distancia(estanciaSel.puntos[i], estanciaSel.puntos[j]) * metrosPorPixel;
-            texto += "<br>- Lado " + (i + 1) + ": " + m.toFixed(2) + " m";
+function getAberturaSegment(ab) {
+    const poly = ab.currentRoom ? puntos : estancias[ab.roomIndex]?.puntos;
+    if (!poly || poly.length < 2) return null;
+    const a = poly[ab.sideIndex];
+    const b = poly[(ab.sideIndex + 1) % poly.length];
+    return { a, b };
+}
+
+function aberturaVisual(ab) {
+    const seg = getAberturaSegment(ab);
+    if (!seg) return null;
+
+    const ax = seg.a.x, ay = seg.a.y;
+    const bx = seg.b.x, by = seg.b.y;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const segLen = Math.hypot(dx, dy);
+    if (!segLen) return null;
+
+    const ux = dx / segLen;
+    const uy = dy / segLen;
+    const nx = -uy;
+    const ny = ux;
+
+    const widthPx = Math.min(segLen - 12, aberturaWidthPx(ab.widthM));
+    const centerX = ax + dx * ab.t;
+    const centerY = ay + dy * ab.t;
+
+    const half = widthPx / 2;
+    const p1 = { x: centerX - ux * half, y: centerY - uy * half };
+    const p2 = { x: centerX + ux * half, y: centerY + uy * half };
+
+    return { p1, p2, centerX, centerY, ux, uy, nx, ny };
+}
+
+function drawAberturas() {
+    aberturas.forEach((ab, i) => {
+        const v = aberturaVisual(ab);
+        if (!v) return;
+
+        const selected = seleccion.tipo === "abertura" && seleccion.aberturaIndex === i;
+
+        ctx.save();
+        ctx.lineWidth = selected ? 5 : 4;
+        ctx.strokeStyle = ab.tipo === "puerta" ? "#7dd3ff" : "#7dff9b";
+        ctx.beginPath();
+        ctx.moveTo(v.p1.x, v.p1.y);
+        ctx.lineTo(v.p2.x, v.p2.y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "12px Arial";
+        ctx.fillText(
+            (ab.tipo === "puerta" ? "Puerta " : "Ventana ") + ab.widthM.toFixed(2) + " m",
+            v.centerX + v.nx * 16,
+            v.centerY + v.ny * 16
+        );
+
+        if (selected) {
+            ctx.beginPath();
+            ctx.arc(v.centerX, v.centerY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+        }
+        ctx.restore();
+    });
+}
+
+function updateInfo() {
+    let html = "";
+
+    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
+        const z = zonasMuertas[seleccion.zonaIndex];
+        if (z) {
+            html += "Zona muerta seleccionada";
+            if (metrosPorPixel) {
+                html += "<br>Ancho: " + (z.w * metrosPorPixel).toFixed(2) + " m";
+                html += "<br>Alto: " + (z.h * metrosPorPixel).toFixed(2) + " m";
+                html += "<br>Superficie: " + ((z.w * metrosPorPixel) * (z.h * metrosPorPixel)).toFixed(2) + " m²";
+            }
+            const cont = getContainerIndexForZone(z);
+            if (cont === -2) html += "<br>Dentro de: estancia actual";
+            else if (cont !== null && estancias[cont]) html += "<br>Dentro de: " + (estancias[cont].nombre || "Estancia");
+            else html += "<br>Dentro de: fuera de estancia";
+            info.innerHTML = html;
+            actualizarUIAcciones();
+            return;
         }
     }
 
-    info.innerHTML = texto;
-}
-
-function dibujar() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < estancias.length; i++) {
-        dibujarEstanciaGuardada(estancias[i], i);
+    if (seleccion.tipo === "abertura") {
+        const ab = aberturas[seleccion.aberturaIndex];
+        if (ab) {
+            html += (ab.tipo === "puerta" ? "Puerta" : "Ventana") + " seleccionada";
+            html += "<br>Ancho: " + ab.widthM.toFixed(2) + " m";
+            if (ab.currentRoom) html += "<br>En: estancia actual";
+            else if (estancias[ab.roomIndex]) html += "<br>En: " + (estancias[ab.roomIndex].nombre || "Estancia");
+            info.innerHTML = html;
+            actualizarUIAcciones();
+            return;
+        }
     }
 
-    dibujarEstanciaActual();
-    dibujarZonasMuertas();
-    actualizarInfo();
+    const estSel = getSelectedRoomData();
+    if (estSel && estSel.puntos && estSel.puntos.length >= 3) {
+        const stats = roomStats(estSel.puntos);
+        html += "Datos de la estancia seleccionada";
+        html += "<br>Nombre: " + (estSel.nombre || "Sin nombre");
+        html += "<br>Lados: " + estSel.puntos.length;
+        if (metrosPorPixel) {
+            html += "<br>Superficie total: " + stats.total.toFixed(2) + " m²";
+            html += "<br>Superficie muerta: " + stats.dead.toFixed(2) + " m²";
+            html += "<br>Superficie útil: " + stats.useful.toFixed(2) + " m²";
+        }
+        info.innerHTML = html;
+        actualizarUIAcciones();
+        return;
+    }
+
+    let total = 0, dead = 0, useful = 0;
+    for (const est of estancias) {
+        const s = roomStats(est.puntos);
+        total += s.total;
+        dead += s.dead;
+        useful += s.useful;
+    }
+
+    html += "Resumen del plano";
+    html += "<br>Estancias guardadas: " + estancias.length;
+    html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
+    if (metrosPorPixel) {
+        html += "<br>Superficie total: " + total.toFixed(2) + " m²";
+        html += "<br>Superficie útil: " + useful.toFixed(2) + " m²";
+        html += "<br>Superficie muerta: " + dead.toFixed(2) + " m²";
+    }
+    html += "<br>Zonas muertas: " + zonasMuertas.length;
+    html += "<br>Puertas: " + aberturas.filter(a => a.tipo === "puerta").length;
+    html += "<br>Ventanas: " + aberturas.filter(a => a.tipo === "ventana").length;
+
+    if (puntos.length > 0) {
+        html += "<br>Estancia actual en edición: sí";
+        html += "<br>Estado: " + (cerrado ? "cerrada" : "abierta");
+        if (cerrado && metrosPorPixel) {
+            const s = roomStats(puntos);
+            html += "<br>Actual total: " + s.total.toFixed(2) + " m²";
+            html += "<br>Actual útil: " + s.useful.toFixed(2) + " m²";
+        }
+    }
+
+    info.innerHTML = html;
+    actualizarUIAcciones();
 }
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawSavedRooms();
+    drawCurrentRoom();
+    drawZones();
+    drawAberturas();
+    updateInfo();
+}
+const dibujar = draw;
 
 function nuevaEstancia() {
     puntos = [];
     cerrado = false;
-    modoZonaMuerta = false;
-    zonaMuertaTemp = null;
+    cancelarModo();
     limpiarSeleccion();
     dibujar();
+    autoCerrarPanel();
 }
 
 function cerrarEstancia() {
@@ -830,37 +1068,10 @@ function cerrarEstancia() {
         return;
     }
     cerrado = true;
+    cancelarModo();
     limpiarSeleccion();
     dibujar();
-}
-
-function definirEscala() {
-    const poligonoReferencia = puntos.length >= 2 ? puntos : (estancias[0]?.puntos || null);
-
-    if (!poligonoReferencia || poligonoReferencia.length < 2) {
-        alert("Necesitas al menos 2 puntos en una estancia para definir escala");
-        return;
-    }
-
-    const valor = prompt("Introduce la medida real del lado entre punto 1 y punto 2, en metros:");
-    if (!valor) return;
-
-    const metrosReales = parseFloat(valor.replace(",", "."));
-    if (!metrosReales || metrosReales <= 0) {
-        alert("Medida no válida");
-        return;
-    }
-
-    const pixeles = distancia(poligonoReferencia[0], poligonoReferencia[1]);
-    if (!pixeles || pixeles <= 0) {
-        alert("No se pudo calcular la escala");
-        return;
-    }
-
-    metrosPorPixel = metrosReales / pixeles;
-    guardarMemoria();
-    dibujar();
-    alert("Escala guardada");
+    autoCerrarPanel();
 }
 
 function guardarEstancia() {
@@ -870,7 +1081,7 @@ function guardarEstancia() {
     }
 
     const nombre = prompt("Nombre estancia:");
-    if (!nombre || nombre.trim() === "") return;
+    if (!nombre || !nombre.trim()) return;
 
     estancias.push({
         nombre: nombre.trim(),
@@ -880,97 +1091,123 @@ function guardarEstancia() {
     guardarMemoria();
     puntos = [];
     cerrado = false;
+    cancelarModo();
     limpiarSeleccion();
     dibujar();
+    autoCerrarPanel();
 }
 
-function activarZonaMuerta() {
-    if (!cerrado && puntos.length < 3 && estancias.length === 0) {
-        alert("Primero crea una estancia");
+function definirEscala() {
+    const ref = puntos.length >= 2 ? puntos : (estancias[0]?.puntos || null);
+    if (!ref || ref.length < 2) {
+        alert("Necesitas una estancia con al menos 2 puntos");
         return;
     }
 
-    modoZonaMuerta = true;
-    zonaMuertaTemp = null;
-    arrastrando = false;
+    const valor = prompt("Introduce la medida real entre punto 1 y punto 2, en metros:");
+    if (!valor) return;
+
+    const metros = parseFloat(String(valor).replace(",", "."));
+    if (!metros || metros <= 0) {
+        alert("Medida no válida");
+        return;
+    }
+
+    const px = dist(ref[0], ref[1]);
+    if (!px || px <= 0) {
+        alert("No se pudo calcular la escala");
+        return;
+    }
+
+    metrosPorPixel = metros / px;
+    guardarMemoria();
+    dibujar();
+    autoCerrarPanel();
+    alert("Escala guardada");
+}
+
+function guardarPlano() {
+    guardarMemoria();
+    autoCerrarPanel();
+    alert("Plano guardado");
+}
+
+function borrarUltimoPunto() {
+    if (!puntos.length) return;
+    puntos.pop();
+    if (puntos.length < 3) cerrado = false;
     limpiarSeleccion();
     dibujar();
 }
 
-function borrarUltimoPunto() {
-    if (puntos.length === 0) return;
-
-    puntos.pop();
-    if (puntos.length < 3) cerrado = false;
-
-    if (seleccion.tipo === "puntoActual" && seleccion.puntoIndex >= puntos.length) {
+function removeSelectedAbertura() {
+    const idx = Number(seleccion.aberturaIndex);
+    if (!Number.isNaN(idx) && idx >= 0 && idx < aberturas.length) {
+        aberturas.splice(idx, 1);
+        guardarMemoria();
         limpiarSeleccion();
+        dibujar();
+        return true;
     }
+    return false;
+}
 
-    dibujar();
+function removeSelectedZona() {
+    const idx = Number(seleccion.zonaIndex);
+    if (!Number.isNaN(idx) && idx >= 0 && idx < zonasMuertas.length) {
+        zonasMuertas.splice(idx, 1);
+        guardarMemoria();
+        limpiarSeleccion();
+        dibujar();
+        return true;
+    }
+    return false;
 }
 
 function eliminarSeleccionado() {
     if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
-        const idx = Number(seleccion.zonaIndex);
-        if (!Number.isNaN(idx) && idx >= 0 && idx < zonasMuertas.length) {
-            zonasMuertas.splice(idx, 1);
-            guardarMemoria();
-            limpiarSeleccion();
-            dibujar();
-            return;
-        }
+        if (confirm("Eliminar zona muerta seleccionada?")) removeSelectedZona();
+        return;
     }
 
-    if (zonasMuertas.length === 1) {
-        zonasMuertas.splice(0, 1);
-        guardarMemoria();
-        limpiarSeleccion();
-        dibujar();
+    if (seleccion.tipo === "abertura") {
+        if (confirm("Eliminar elemento seleccionado?")) removeSelectedAbertura();
         return;
     }
 
     if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
         const idx = Number(seleccion.estanciaIndex);
-        if (!Number.isNaN(idx) && idx >= 0 && idx < estancias.length) {
-            estancias.splice(idx, 1);
-            guardarMemoria();
-            limpiarSeleccion();
-            dibujar();
+        if (idx >= 0 && idx < estancias.length) {
+            if (confirm("Eliminar estancia guardada?")) {
+                estancias.splice(idx, 1);
+                aberturas = aberturas.filter(a => !(a.roomIndex === idx && !a.currentRoom)).map(a => {
+                    if (!a.currentRoom && a.roomIndex > idx) a.roomIndex -= 1;
+                    return a;
+                });
+                guardarMemoria();
+                limpiarSeleccion();
+                dibujar();
+            }
             return;
         }
     }
 
     if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
-        puntos = [];
-        cerrado = false;
-        limpiarSeleccion();
-        dibujar();
+        if (confirm("Eliminar estancia actual?")) {
+            puntos = [];
+            cerrado = false;
+            aberturas = aberturas.filter(a => !a.currentRoom);
+            guardarMemoria();
+            limpiarSeleccion();
+            dibujar();
+        }
         return;
     }
 
-    alert("Primero selecciona la zona muerta");
+    alert("Primero selecciona algo");
 }
 
-function limpiarActual() {
-    puntos = [];
-    cerrado = false;
-    modoZonaMuerta = false;
-    zonaMuertaTemp = null;
-    limpiarSeleccion();
-    dibujar();
-}
-
-function guardarPlano() {
-    guardarMemoria();
-    alert("Plano guardado");
-}
-
-function volver() {
-    window.location.href = "obra.html";
-}
-
-function moverZona(z, dx, dy) {
+function moveZona(z, dx, dy) {
     z.x += dx;
     z.y += dy;
 }
@@ -999,7 +1236,6 @@ function resizeZona(z, handle, pos) {
         if (handle === "nw" || handle === "sw") left = right - MIN_ZONA;
         else right = left + MIN_ZONA;
     }
-
     if (bottom - top < MIN_ZONA) {
         if (handle === "nw" || handle === "ne") top = bottom - MIN_ZONA;
         else bottom = top + MIN_ZONA;
@@ -1011,26 +1247,52 @@ function resizeZona(z, handle, pos) {
     z.h = Math.abs(bottom - top);
 }
 
-function empezarInteraccion(evento) {
-    const pos = obtenerPosicion(evento);
+function moveAberturaAlongWall(ab, x, y) {
+    const seg = getAberturaSegment(ab);
+    if (!seg) return;
+    const hit = segPointDistance(x, y, seg.a.x, seg.a.y, seg.b.x, seg.b.y);
+    const segLenPx = dist(seg.a, seg.b);
+    const widthPx = aberturaWidthPx(ab.widthM);
+    const halfT = (widthPx / 2) / segLenPx;
+    ab.t = Math.max(halfT, Math.min(1 - halfT, hit.t));
+}
+
+function hitAbertura(x, y) {
+    for (let i = aberturas.length - 1; i >= 0; i--) {
+        const v = aberturaVisual(aberturas[i]);
+        if (!v) continue;
+        const d = segPointDistance(x, y, v.p1.x, v.p1.y, v.p2.x, v.p2.y);
+        if (d.d <= 10) return i;
+    }
+    return -1;
+}
+
+function onStart(ev) {
+    const pos = getPos(ev);
     ultimoX = pos.x;
     ultimoY = pos.y;
 
-    if (modoZonaMuerta) {
-        zonaMuertaTemp = {
-            x1: pos.x,
-            y1: pos.y,
-            x2: pos.x,
-            y2: pos.y
-        };
+    if (modo === "zona") {
+        zonaTemp = { x1: pos.x, y1: pos.y, x2: pos.x, y2: pos.y };
         arrastrando = true;
         dibujar();
-        if (evento.cancelable) evento.preventDefault();
+        if (ev.cancelable) ev.preventDefault();
+        return;
+    }
+
+    if (modo === "puerta" || modo === "ventana") {
+        const wall = findNearestWall(pos.x, pos.y);
+        if (!wall) {
+            alert("Toca un lado de la estancia");
+            return;
+        }
+        createAbertura(modo, wall);
+        if (ev.cancelable) ev.preventDefault();
         return;
     }
 
     for (let i = zonasMuertas.length - 1; i >= 0; i--) {
-        const h = buscarHandleZona(pos.x, pos.y, zonasMuertas[i]);
+        const h = findZonaHandle(zonasMuertas[i], pos.x, pos.y);
         if (h) {
             limpiarSeleccion();
             seleccion.tipo = "zonaHandle";
@@ -1038,40 +1300,47 @@ function empezarInteraccion(evento) {
             seleccion.handle = h;
             arrastrando = true;
             dibujar();
-            if (evento.cancelable) evento.preventDefault();
+            if (ev.cancelable) ev.preventDefault();
             return;
         }
+    }
+
+    const abIdx = hitAbertura(pos.x, pos.y);
+    if (abIdx >= 0) {
+        limpiarSeleccion();
+        seleccion.tipo = "abertura";
+        seleccion.aberturaIndex = abIdx;
+        arrastrando = true;
+        dibujar();
+        if (ev.cancelable) ev.preventDefault();
+        return;
     }
 
     for (let i = zonasMuertas.length - 1; i >= 0; i--) {
-        if (puntoDentroRect(pos.x, pos.y, zonasMuertas[i])) {
+        if (pointInRect(pos.x, pos.y, zonasMuertas[i])) {
             limpiarSeleccion();
             seleccion.tipo = "zonaMuerta";
             seleccion.zonaIndex = i;
-            seleccion.estanciaIndex = -1;
-            seleccion.puntoIndex = -1;
-            seleccion.handle = null;
             arrastrando = true;
             dibujar();
-            if (evento.cancelable) evento.preventDefault();
+            if (ev.cancelable) ev.preventDefault();
             return;
         }
     }
 
-    let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
+    let idx = findPoint(puntos, pos.x, pos.y);
     if (idx >= 0) {
         limpiarSeleccion();
         seleccion.tipo = "puntoActual";
-        seleccion.estanciaIndex = -1;
         seleccion.puntoIndex = idx;
         arrastrando = true;
         dibujar();
-        if (evento.cancelable) evento.preventDefault();
+        if (ev.cancelable) ev.preventDefault();
         return;
     }
 
     for (let i = estancias.length - 1; i >= 0; i--) {
-        idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
+        idx = findPoint(estancias[i].puntos, pos.x, pos.y);
         if (idx >= 0) {
             limpiarSeleccion();
             seleccion.tipo = "puntoGuardado";
@@ -1079,31 +1348,28 @@ function empezarInteraccion(evento) {
             seleccion.puntoIndex = idx;
             arrastrando = true;
             dibujar();
-            if (evento.cancelable) evento.preventDefault();
+            if (ev.cancelable) ev.preventDefault();
             return;
         }
     }
 
-    if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
+    if (cerrado && puntos.length >= 3 && pointInPolygon(pos.x, pos.y, puntos)) {
         limpiarSeleccion();
         seleccion.tipo = "estanciaActual";
-        seleccion.estanciaIndex = -1;
-        seleccion.puntoIndex = -1;
         arrastrando = true;
         dibujar();
-        if (evento.cancelable) evento.preventDefault();
+        if (ev.cancelable) ev.preventDefault();
         return;
     }
 
     for (let i = estancias.length - 1; i >= 0; i--) {
-        if (puntoDentroPoligono(pos.x, pos.y, estancias[i].puntos)) {
+        if (pointInPolygon(pos.x, pos.y, estancias[i].puntos)) {
             limpiarSeleccion();
             seleccion.tipo = "estanciaGuardada";
             seleccion.estanciaIndex = i;
-            seleccion.puntoIndex = -1;
             arrastrando = true;
             dibujar();
-            if (evento.cancelable) evento.preventDefault();
+            if (ev.cancelable) ev.preventDefault();
             return;
         }
     }
@@ -1112,10 +1378,9 @@ function empezarInteraccion(evento) {
         limpiarSeleccion();
         puntos.push({ x: pos.x, y: pos.y });
         seleccion.tipo = "puntoActual";
-        seleccion.estanciaIndex = -1;
         seleccion.puntoIndex = puntos.length - 1;
         dibujar();
-        if (evento.cancelable) evento.preventDefault();
+        if (ev.cancelable) ev.preventDefault();
         return;
     }
 
@@ -1123,14 +1388,14 @@ function empezarInteraccion(evento) {
     dibujar();
 }
 
-function moverInteraccion(evento) {
-    const pos = obtenerPosicion(evento);
+function onMove(ev) {
+    const pos = getPos(ev);
 
-    if (modoZonaMuerta && arrastrando && zonaMuertaTemp) {
-        zonaMuertaTemp.x2 = pos.x;
-        zonaMuertaTemp.y2 = pos.y;
+    if (modo === "zona" && arrastrando && zonaTemp) {
+        zonaTemp.x2 = pos.x;
+        zonaTemp.y2 = pos.y;
         dibujar();
-        if (evento.cancelable) evento.preventDefault();
+        if (ev.cancelable) ev.preventDefault();
         return;
     }
 
@@ -1140,35 +1405,31 @@ function moverInteraccion(evento) {
     const dy = pos.y - ultimoY;
 
     if (seleccion.tipo === "zonaMuerta") {
-        moverZona(zonasMuertas[seleccion.zonaIndex], dx, dy);
+        moveZona(zonasMuertas[seleccion.zonaIndex], dx, dy);
         guardarMemoria();
-    }
-
-    if (seleccion.tipo === "zonaHandle") {
+    } else if (seleccion.tipo === "zonaHandle") {
         resizeZona(zonasMuertas[seleccion.zonaIndex], seleccion.handle, pos);
         guardarMemoria();
-    }
-
-    if (seleccion.tipo === "puntoActual") {
+    } else if (seleccion.tipo === "abertura") {
+        moveAberturaAlongWall(aberturas[seleccion.aberturaIndex], pos.x, pos.y);
+        guardarMemoria();
+    } else if (seleccion.tipo === "puntoActual") {
         puntos[seleccion.puntoIndex].x += dx;
         puntos[seleccion.puntoIndex].y += dy;
-    }
-
-    if (seleccion.tipo === "puntoGuardado") {
+    } else if (seleccion.tipo === "puntoGuardado") {
         const est = estancias[seleccion.estanciaIndex];
         est.puntos[seleccion.puntoIndex].x += dx;
         est.puntos[seleccion.puntoIndex].y += dy;
         guardarMemoria();
-    }
-
-    if (seleccion.tipo === "estanciaActual") {
+    } else if (seleccion.tipo === "estanciaActual") {
         for (const p of puntos) {
             p.x += dx;
             p.y += dy;
         }
-    }
-
-    if (seleccion.tipo === "estanciaGuardada") {
+        for (const a of aberturas) {
+            if (a.currentRoom) {}
+        }
+    } else if (seleccion.tipo === "estanciaGuardada") {
         const est = estancias[seleccion.estanciaIndex];
         for (const p of est.puntos) {
             p.x += dx;
@@ -1179,17 +1440,16 @@ function moverInteraccion(evento) {
 
     ultimoX = pos.x;
     ultimoY = pos.y;
-
     dibujar();
-    if (evento.cancelable) evento.preventDefault();
+    if (ev.cancelable) ev.preventDefault();
 }
 
-function terminarInteraccion(evento) {
-    if (modoZonaMuerta && arrastrando && zonaMuertaTemp) {
-        const x = Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2);
-        const y = Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2);
-        const w = Math.abs(zonaMuertaTemp.x2 - zonaMuertaTemp.x1);
-        const h = Math.abs(zonaMuertaTemp.y2 - zonaMuertaTemp.y1);
+function onEnd(ev) {
+    if (modo === "zona" && arrastrando && zonaTemp) {
+        const x = Math.min(zonaTemp.x1, zonaTemp.x2);
+        const y = Math.min(zonaTemp.y1, zonaTemp.y2);
+        const w = Math.abs(zonaTemp.x2 - zonaTemp.x1);
+        const h = Math.abs(zonaTemp.y2 - zonaTemp.y1);
 
         if (w > 3 && h > 3) {
             zonasMuertas.push({ x, y, w, h });
@@ -1199,56 +1459,57 @@ function terminarInteraccion(evento) {
             seleccion.zonaIndex = zonasMuertas.length - 1;
         }
 
-        zonaMuertaTemp = null;
-        modoZonaMuerta = false;
+        zonaTemp = null;
+        modo = null;
         arrastrando = false;
+        actualizarUIAcciones();
         dibujar();
-        if (evento && evento.cancelable) evento.preventDefault();
+        if (ev && ev.cancelable) ev.preventDefault();
         return;
     }
 
     if (!arrastrando) return;
-
     arrastrando = false;
 
     if (
-        seleccion.tipo === "puntoGuardado" ||
-        seleccion.tipo === "estanciaGuardada" ||
         seleccion.tipo === "zonaMuerta" ||
-        seleccion.tipo === "zonaHandle"
+        seleccion.tipo === "zonaHandle" ||
+        seleccion.tipo === "abertura" ||
+        seleccion.tipo === "puntoGuardado" ||
+        seleccion.tipo === "estanciaGuardada"
     ) {
         guardarMemoria();
     }
 
-    if (evento && evento.cancelable) evento.preventDefault();
+    if (ev && ev.cancelable) ev.preventDefault();
 }
 
-canvas.addEventListener("mousedown", empezarInteraccion);
-canvas.addEventListener("mousemove", moverInteraccion);
-canvas.addEventListener("mouseup", terminarInteraccion);
-canvas.addEventListener("mouseleave", terminarInteraccion);
+canvas.addEventListener("mousedown", onStart);
+canvas.addEventListener("mousemove", onMove);
+canvas.addEventListener("mouseup", onEnd);
+canvas.addEventListener("mouseleave", onEnd);
 
-canvas.addEventListener("touchstart", empezarInteraccion, { passive: false });
-canvas.addEventListener("touchmove", moverInteraccion, { passive: false });
-canvas.addEventListener("touchend", terminarInteraccion, { passive: false });
-canvas.addEventListener("touchcancel", terminarInteraccion, { passive: false });
-
-window.addEventListener("resize", () => {
-    ajustarCanvas();
-    dibujar();
-});
+canvas.addEventListener("touchstart", onStart, { passive:false });
+canvas.addEventListener("touchmove", onMove, { passive:false });
+canvas.addEventListener("touchend", onEnd, { passive:false });
+canvas.addEventListener("touchcancel", onEnd, { passive:false });
 
 window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        cancelarModo();
+        dibujar();
+    }
     if (e.key === "Delete" || e.key === "Backspace") {
         const tag = document.activeElement ? document.activeElement.tagName : "";
         if (tag !== "INPUT" && tag !== "TEXTAREA") {
-            if (seleccion.tipo) {
-                eliminarSeleccionado();
-            }
+            if (seleccion.tipo) eliminarSeleccionado();
         }
     }
 });
 
+function varOr(v){ return v; }
+
+actualizarUIAcciones();
 dibujar();
 </script>
 </body>
