@@ -1,236 +1,262 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuración</title>
-  <style>
-    :root{
-      --bg:#0b0b0b;
-      --panel:#151515;
-      --line:#2b2b2b;
-      --text:#ffffff;
-      --accent:#f39b2f;
-      --muted:#bdbdbd;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración - ALLCALOR PRO</title>
 
-    *{
-      box-sizing:border-box;
-    }
+<style>
+:root{
+    --bg:#0b0b0b;
+    --panel:#151515;
+    --accent:#f39b2f;
+    --text:#ffffff;
+}
 
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family:Arial, sans-serif;
-    }
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Arial, sans-serif;
+}
 
-    .header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      padding:16px 18px;
-      border-bottom:1px solid var(--line);
-      position:sticky;
-      top:0;
-      background:rgba(11,11,11,0.98);
-    }
+header{
+    padding:15px;
+    background:#000;
+    text-align:center;
+    font-weight:bold;
+}
 
-    .titulo{
-      font-size:22px;
-      font-weight:700;
-      color:var(--accent);
-    }
+.container{
+    padding:15px;
+}
 
-    .volver{
-      border:none;
-      background:var(--accent);
-      color:#111;
-      font-weight:700;
-      border-radius:10px;
-      padding:10px 14px;
-      cursor:pointer;
-    }
+.section{
+    background:var(--panel);
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:10px;
+}
 
-    .wrap{
-      max-width:900px;
-      margin:0 auto;
-      padding:18px;
-    }
+h2{
+    margin-top:0;
+    color:var(--accent);
+}
 
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:18px;
-    }
+input, select{
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+    margin-bottom:10px;
+    border-radius:6px;
+    border:none;
+}
 
-    .panel h2{
-      margin:0 0 16px 0;
-      font-size:20px;
-    }
+button{
+    padding:10px;
+    background:var(--accent);
+    border:none;
+    border-radius:8px;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    width:100%;
+}
 
-    .fila{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:8px;
-      margin-bottom:16px;
-    }
+.preview{
+    margin-top:10px;
+    padding:10px;
+    border:1px solid #333;
+    border-radius:8px;
+    text-align:center;
+}
 
-    label{
-      font-size:14px;
-      color:var(--muted);
-    }
-
-    input{
-      width:100%;
-      padding:12px 14px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:#101010;
-      color:#fff;
-      font-size:15px;
-    }
-
-    .acciones{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:10px;
-    }
-
-    .btn{
-      border:none;
-      background:var(--accent);
-      color:#111;
-      font-weight:700;
-      border-radius:10px;
-      padding:12px 16px;
-      cursor:pointer;
-    }
-
-    .btn-sec{
-      border:none;
-      background:#2a2a2a;
-      color:#fff;
-      font-weight:700;
-      border-radius:10px;
-      padding:12px 16px;
-      cursor:pointer;
-    }
-
-    .vista{
-      margin-top:18px;
-      padding:16px;
-      border:1px dashed var(--line);
-      border-radius:12px;
-      background:#101010;
-    }
-
-    .vista-nombre{
-      font-size:24px;
-      font-weight:700;
-      color:var(--accent);
-      margin-bottom:6px;
-    }
-
-    .vista-sub{
-      color:var(--muted);
-      font-size:13px;
-    }
-  </style>
+.logo-preview{
+    max-width:120px;
+    margin-top:10px;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="header">
-    <div class="titulo">Configuración</div>
-    <button class="volver" onclick="volver()">Volver</button>
-  </div>
+<header>Configuración</header>
 
-  <div class="wrap">
-    <div class="panel">
-      <h2>Ajustes generales</h2>
+<div class="container">
 
-      <div class="fila">
-        <label for="nombreEmpresa">Nombre de la empresa</label>
-        <input id="nombreEmpresa" type="text" placeholder="ALLCALOR PRO">
-      </div>
+<!-- IDENTIDAD -->
+<div class="section">
+<h2>Identidad</h2>
 
-      <div class="fila">
-        <label for="colorPrincipal">Color principal</label>
-        <input id="colorPrincipal" type="text" placeholder="#f39b2f">
-      </div>
+<label>Nombre empresa</label>
+<input id="nombre">
 
-      <div class="acciones">
-        <button class="btn" onclick="guardarConfig()">Guardar</button>
-        <button class="btn-sec" onclick="restablecerConfig()">Restablecer</button>
-      </div>
+<label>Subtítulo</label>
+<input id="subtitulo">
 
-      <div class="vista">
-        <div class="vista-nombre" id="vistaNombre">ALLCALOR PRO</div>
-        <div class="vista-sub">Vista previa del nombre y color principal</div>
-      </div>
-    </div>
-  </div>
+<label>Logo</label>
+<input type="file" id="logo">
 
-  <script>
-    const CONFIG_DEFAULT = {
-      nombre: "ALLCALOR PRO",
-      color: "#f39b2f"
+<img id="logoPreview" class="logo-preview">
+
+<label>Tipografía</label>
+<select id="fuente">
+<option value="Arial">Arial</option>
+<option value="Verdana">Verdana</option>
+<option value="Tahoma">Tahoma</option>
+<option value="Georgia">Georgia</option>
+</select>
+
+<label>Tamaño texto</label>
+<input type="range" id="tamano" min="12" max="30">
+
+<label>Sombra texto</label>
+<input type="range" id="sombra" min="0" max="10">
+
+</div>
+
+<!-- COLORES -->
+<div class="section">
+<h2>Colores</h2>
+
+<label>Color principal</label>
+<input type="color" id="colorPrincipal">
+
+<label>Color fondo</label>
+<input type="color" id="colorFondo">
+
+<label>Color texto</label>
+<input type="color" id="colorTexto">
+
+</div>
+
+<!-- EMPRESA -->
+<div class="section">
+<h2>Datos empresa</h2>
+
+<label>Teléfono</label>
+<input id="telefono">
+
+<label>Email</label>
+<input id="email">
+
+<label>Dirección</label>
+<input id="direccion">
+
+<label>CIF</label>
+<input id="cif">
+
+</div>
+
+<!-- GUARDAR -->
+<button onclick="guardar()">Guardar configuración</button>
+
+<!-- PREVIEW -->
+<div class="section">
+<h2>Vista previa</h2>
+
+<div id="preview" class="preview">
+<p id="previewNombre">ALLCALOR PRO</p>
+<p id="previewSub">Sistema profesional</p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+// CARGAR CONFIG
+function cargar(){
+    let cfg = JSON.parse(localStorage.getItem("config")) || {};
+
+    nombre.value = cfg.nombre || "";
+    subtitulo.value = cfg.subtitulo || "";
+    telefono.value = cfg.telefono || "";
+    email.value = cfg.email || "";
+    direccion.value = cfg.direccion || "";
+    cif.value = cfg.cif || "";
+
+    fuente.value = cfg.fuente || "Arial";
+    tamano.value = cfg.tamano || 18;
+    sombra.value = cfg.sombra || 0;
+
+    colorPrincipal.value = cfg.colorPrincipal || "#f39b2f";
+    colorFondo.value = cfg.colorFondo || "#0b0b0b";
+    colorTexto.value = cfg.colorTexto || "#ffffff";
+
+    if(cfg.logo){
+        logoPreview.src = cfg.logo;
+    }
+
+    actualizarPreview();
+}
+
+// GUARDAR
+function guardar(){
+    let reader = new FileReader();
+
+    if(logo.files[0]){
+        reader.onload = function(e){
+            guardarConfig(e.target.result);
+        };
+        reader.readAsDataURL(logo.files[0]);
+    }else{
+        guardarConfig(null);
+    }
+}
+
+function guardarConfig(logoData){
+
+    let old = JSON.parse(localStorage.getItem("config")) || {};
+
+    let cfg = {
+        nombre:nombre.value,
+        subtitulo:subtitulo.value,
+        telefono:telefono.value,
+        email:email.value,
+        direccion:direccion.value,
+        cif:cif.value,
+
+        fuente:fuente.value,
+        tamano:tamano.value,
+        sombra:sombra.value,
+
+        colorPrincipal:colorPrincipal.value,
+        colorFondo:colorFondo.value,
+        colorTexto:colorTexto.value,
+
+        logo: logoData || old.logo
     };
 
-    function cargarConfig(){
-      let config;
-      try {
-        config = JSON.parse(localStorage.getItem("configAllcalor")) || CONFIG_DEFAULT;
-      } catch (e) {
-        config = CONFIG_DEFAULT;
-      }
+    localStorage.setItem("config", JSON.stringify(cfg));
+    alert("Guardado");
+}
 
-      document.getElementById("nombreEmpresa").value = config.nombre || CONFIG_DEFAULT.nombre;
-      document.getElementById("colorPrincipal").value = config.color || CONFIG_DEFAULT.color;
+// PREVIEW
+function actualizarPreview(){
+    let cfg = JSON.parse(localStorage.getItem("config")) || {};
 
-      aplicarVista();
-    }
+    previewNombre.innerText = nombre.value || "ALLCALOR PRO";
+    previewSub.innerText = subtitulo.value || "";
 
-    function aplicarVista(){
-      const nombre = document.getElementById("nombreEmpresa").value.trim() || CONFIG_DEFAULT.nombre;
-      const color = document.getElementById("colorPrincipal").value.trim() || CONFIG_DEFAULT.color;
+    preview.style.fontFamily = fuente.value;
+    preview.style.color = colorTexto.value;
+    preview.style.background = colorFondo.value;
 
-      document.getElementById("vistaNombre").innerText = nombre;
-      document.getElementById("vistaNombre").style.color = color;
-    }
+    previewNombre.style.fontSize = tamano.value + "px";
+    previewNombre.style.textShadow = "0 0 " + sombra.value + "px #000";
+}
 
-    function guardarConfig(){
-      const nombre = document.getElementById("nombreEmpresa").value.trim() || CONFIG_DEFAULT.nombre;
-      const color = document.getElementById("colorPrincipal").value.trim() || CONFIG_DEFAULT.color;
+// EVENTOS
+document.querySelectorAll("input, select").forEach(el=>{
+    el.addEventListener("input", actualizarPreview);
+});
 
-      const config = {
-        nombre,
-        color
-      };
+// INIT
+cargar();
 
-      localStorage.setItem("configAllcalor", JSON.stringify(config));
-      aplicarVista();
-      alert("Configuración guardada.");
-    }
-
-    function restablecerConfig(){
-      localStorage.setItem("configAllcalor", JSON.stringify(CONFIG_DEFAULT));
-      cargarConfig();
-      alert("Configuración restablecida.");
-    }
-
-    function volver(){
-      window.location.href = "app.html";
-    }
-
-    document.getElementById("nombreEmpresa").addEventListener("input", aplicarVista);
-    document.getElementById("colorPrincipal").addEventListener("input", aplicarVista);
-
-    cargarConfig();
-  </script>
+</script>
 
 </body>
 </html>
