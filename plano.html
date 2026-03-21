@@ -8,13 +8,12 @@
 :root{
     --bg:#0b0b0b;
     --panel:#151515;
-    --panel2:#1c1c1c;
     --line:#2b2b2b;
     --text:#ffffff;
     --muted:#c8c8c8;
     --accent:#f39b2f;
     --danger:#c93b2f;
-    --ok:#ffffff;
+    --soft:#d5a23d;
 }
 *{box-sizing:border-box}
 body{
@@ -33,7 +32,7 @@ body{
     position:sticky;
     top:0;
     background:var(--bg);
-    z-index:40;
+    z-index:50;
 }
 .header-title{
     font-size:21px;
@@ -59,14 +58,14 @@ body{
     font-size:14px;
     line-height:1.45;
     margin-bottom:10px;
-    min-height:84px;
+    min-height:74px;
 }
 .canvas-wrap{
     position:relative;
 }
 canvas{
     width:100%;
-    height:calc(100vh - 190px);
+    height:calc(100vh - 180px);
     min-height:420px;
     display:block;
     background:#101010;
@@ -78,12 +77,12 @@ canvas{
     position:absolute;
     top:10px;
     right:10px;
-    width:260px;
-    background:rgba(21,21,21,.96);
+    width:250px;
+    background:rgba(21,21,21,.97);
     border:1px solid var(--line);
     border-radius:12px;
     padding:10px;
-    box-shadow:0 10px 28px rgba(0,0,0,.4);
+    box-shadow:0 10px 28px rgba(0,0,0,.45);
     z-index:30;
     display:none;
 }
@@ -110,20 +109,10 @@ canvas{
     color:#111;
     width:100%;
 }
-.btn.secondary{
-    background:#d5a23d;
-}
-.btn.neutral{
-    background:#c8c8c8;
-    color:#111;
-}
-.btn.danger{
-    background:var(--danger);
-    color:#fff;
-}
-.btn.active{
-    outline:2px solid #fff;
-}
+.btn.secondary{ background:var(--soft); }
+.btn.neutral{ background:#cfcfcf; color:#111; }
+.btn.danger{ background:var(--danger); color:#fff; }
+.btn.active{ outline:2px solid #fff; }
 .note{
     margin-top:8px;
     color:var(--muted);
@@ -140,7 +129,7 @@ canvas{
     z-index:25;
 }
 .quickbar .chip{
-    background:rgba(21,21,21,.92);
+    background:rgba(21,21,21,.94);
     border:1px solid var(--line);
     color:#fff;
     border-radius:999px;
@@ -151,15 +140,15 @@ canvas{
     position:absolute;
     left:10px;
     top:10px;
-    background:rgba(243,155,47,.95);
+    background:rgba(243,155,47,.96);
     color:#111;
     font-weight:bold;
     border-radius:999px;
     padding:8px 12px;
-    z-index:20;
+    z-index:22;
     display:none;
 }
-.mode-badge.show{display:block}
+.mode-badge.show{ display:block; }
 @media (max-width: 900px){
     canvas{
         height:calc(100vh - 210px);
@@ -173,10 +162,6 @@ canvas{
         width:auto;
         max-height:58vh;
         overflow:auto;
-    }
-    .quickbar{
-        bottom:calc(10px + env(safe-area-inset-bottom));
-        right:10px;
     }
 }
 </style>
@@ -198,28 +183,29 @@ canvas{
         <div class="panel" id="panel">
             <h3>Plano</h3>
             <div class="grid">
-                <button class="btn" id="btnNueva" onclick="nuevaEstancia()">Nueva estancia</button>
-                <button class="btn" id="btnCerrar" onclick="cerrarEstancia()">Cerrar estancia</button>
-                <button class="btn" id="btnGuardar" onclick="guardarEstancia()">Guardar estancia</button>
-                <button class="btn secondary" id="btnEscala" onclick="definirEscala()">Definir escala</button>
+                <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
+                <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
+                <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
+                <button class="btn secondary" onclick="definirEscala()">Definir escala</button>
                 <button class="btn secondary" id="btnZona" onclick="activarModo('zona')">Añadir zona muerta</button>
                 <button class="btn secondary" id="btnPuerta" onclick="activarModo('puerta')">Añadir puerta</button>
                 <button class="btn secondary" id="btnVentana" onclick="activarModo('ventana')">Añadir ventana</button>
-                <button class="btn danger" id="btnEliminar" onclick="eliminarSeleccionado()">Eliminar seleccionado</button>
-                <button class="btn neutral" id="btnGuardarPlano" onclick="guardarPlano()">Guardar plano</button>
+                <button class="btn danger" onclick="eliminarSeleccionado()">Eliminar seleccionado</button>
+                <button class="btn neutral" onclick="guardarPlano()">Guardar plano</button>
             </div>
             <div class="note">
-                Zonas muertas: clic para seleccionar, arrastra dentro para mover, arrastra las esquinas blancas para redimensionar.
+                Zona muerta: clic para seleccionar, arrastra dentro para mover y arrastra esquinas para cambiar tamaño.
                 <br><br>
-                Puertas y ventanas: activa el modo y toca un lado de la estancia.
+                Puerta y ventana: activa el modo y toca el lado de la estancia.
             </div>
         </div>
 
         <canvas id="canvas"></canvas>
 
-        <div class="quickbar" id="quickbar">
+        <div class="quickbar">
             <div class="chip" id="chipSeleccion">Sin selección</div>
             <div class="chip" id="chipEscala">Escala sin definir</div>
+            <div class="chip" id="chipEstado">Reposo</div>
         </div>
     </div>
 </div>
@@ -232,30 +218,30 @@ const panel = document.getElementById("panel");
 const modeBadge = document.getElementById("modeBadge");
 const chipSeleccion = document.getElementById("chipSeleccion");
 const chipEscala = document.getElementById("chipEscala");
+const chipEstado = document.getElementById("chipEstado");
 
 function ajustarCanvas() {
     const rect = canvas.getBoundingClientRect();
     canvas.width = Math.max(300, Math.floor(rect.width));
     canvas.height = Math.max(300, Math.floor(rect.height));
 }
-requestAnimationFrame(() => {
-    ajustarCanvas();
-    dibujar();
-});
-window.addEventListener("resize", () => {
-    ajustarCanvas();
-    dibujar();
-});
 
 function togglePanel() {
     panel.classList.toggle("open");
 }
+
 function cerrarPanel() {
     panel.classList.remove("open");
 }
+
 function autoCerrarPanel() {
     if (window.innerWidth <= 900) cerrarPanel();
 }
+
+window.addEventListener("resize", () => {
+    ajustarCanvas();
+    dibujar();
+});
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
@@ -276,11 +262,12 @@ if (!Array.isArray(obra.aberturas)) obra.aberturas = [];
 
 let estancias = obra.plano.estancias;
 let zonasMuertas = obra.zonasMuertas;
-let aberturas = obra.aberturas; // puerta | ventana
+let aberturas = obra.aberturas;
 let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let puntos = [];
 let cerrado = false;
+let puedeEditarPuntos = false;
 
 let modo = null; // zona | puerta | ventana | null
 let zonaTemp = null;
@@ -328,34 +315,34 @@ function limpiarSeleccion() {
 function cancelarModo() {
     modo = null;
     zonaTemp = null;
-    actualizarUIAcciones();
+    actualizarUI();
 }
 
 function activarModo(nuevoModo) {
     if (modo === nuevoModo) {
         cancelarModo();
+        dibujar();
         return;
     }
     modo = nuevoModo;
     zonaTemp = null;
     limpiarSeleccion();
-    actualizarUIAcciones();
+    actualizarUI();
     dibujar();
     autoCerrarPanel();
 }
 
-function actualizarUIAcciones() {
+function actualizarUI() {
     document.getElementById("btnZona").classList.toggle("active", modo === "zona");
     document.getElementById("btnPuerta").classList.toggle("active", modo === "puerta");
     document.getElementById("btnVentana").classList.toggle("active", modo === "ventana");
 
-    let txt = "";
-    if (modo === "zona") txt = "Modo: zona muerta";
-    if (modo === "puerta") txt = "Modo: puerta";
-    if (modo === "ventana") txt = "Modo: ventana";
-
-    modeBadge.textContent = txt;
-    modeBadge.classList.toggle("show", !!txt);
+    let modoTxt = "";
+    if (modo === "zona") modoTxt = "Modo: zona muerta";
+    if (modo === "puerta") modoTxt = "Modo: puerta";
+    if (modo === "ventana") modoTxt = "Modo: ventana";
+    modeBadge.textContent = modoTxt;
+    modeBadge.classList.toggle("show", !!modoTxt);
 
     chipEscala.textContent = metrosPorPixel ? "Escala definida" : "Escala sin definir";
 
@@ -364,22 +351,29 @@ function actualizarUIAcciones() {
     else if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual seleccionada";
     else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = "Estancia guardada seleccionada";
     else chipSeleccion.textContent = "Sin selección";
+
+    if (puedeEditarPuntos && !cerrado) chipEstado.textContent = "Editando estancia";
+    else if (cerrado && puntos.length >= 3) chipEstado.textContent = "Estancia cerrada";
+    else chipEstado.textContent = "Reposo";
 }
 
 function getPos(ev) {
     const rect = canvas.getBoundingClientRect();
+
     if (ev.touches && ev.touches.length) {
         return {
             x: ev.touches[0].clientX - rect.left,
             y: ev.touches[0].clientY - rect.top
         };
     }
+
     if (ev.changedTouches && ev.changedTouches.length) {
         return {
             x: ev.changedTouches[0].clientX - rect.left,
             y: ev.changedTouches[0].clientY - rect.top
         };
     }
+
     return {
         x: ev.clientX - rect.left,
         y: ev.clientY - rect.top
@@ -458,6 +452,20 @@ function findZonaHandle(z, x, y) {
     return null;
 }
 
+function drawMeasureLine(x1, y1, x2, y2, text) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.7)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px Arial";
+    ctx.fillText(text, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
+    ctx.restore();
+}
+
 function lineIntersectionsHorizontal(y, poly) {
     const xs = [];
     for (let i = 0; i < poly.length; i++) {
@@ -490,28 +498,16 @@ function lineIntersectionsVertical(x, poly) {
     return ys;
 }
 
-function drawMeasureLine(x1, y1, x2, y2, text) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,.7)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.font = "12px Arial";
-    ctx.fillText(text, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
-    ctx.restore();
-}
-
 function getContainerIndexForZone(z) {
     const cx = z.x + z.w / 2;
     const cy = z.y + z.h / 2;
 
     if (cerrado && puntos.length >= 3 && pointInPolygon(cx, cy, puntos)) return -2;
+
     for (let i = estancias.length - 1; i >= 0; i--) {
         if (pointInPolygon(cx, cy, estancias[i].puntos)) return i;
     }
+
     return null;
 }
 
@@ -523,6 +519,7 @@ function getPolygonByContainerIndex(idx) {
 
 function drawZoneDistances(idx) {
     if (!metrosPorPixel) return;
+
     const z = zonasMuertas[idx];
     const cont = getContainerIndexForZone(z);
     const poly = getPolygonByContainerIndex(cont);
@@ -540,6 +537,7 @@ function drawZoneDistances(idx) {
         if (x <= z.x) leftBound = x;
         if (x >= z.x + z.w && rightBound === null) rightBound = x;
     }
+
     for (const y of ys) {
         if (y <= z.y) topBound = y;
         if (y >= z.y + z.h && bottomBound === null) bottomBound = y;
@@ -590,30 +588,36 @@ function clipPolygonWithRect(subjectPolygon, rect) {
     for (const edge of edges) {
         const input = output.slice();
         output = [];
-        if (input.length === 0) break;
+        if (!input.length) break;
         let S = input[input.length - 1];
+
         for (const E of input) {
             const Sin = edge.inside(S);
             const Ein = edge.inside(E);
+
             if (Ein) {
                 if (!Sin) output.push(edge.intersect(S, E));
                 output.push(E);
             } else if (Sin) {
                 output.push(edge.intersect(S, E));
             }
+
             S = E;
         }
     }
+
     return output;
 }
 
 function deadAreaForPolygon(poly) {
     if (!metrosPorPixel || !poly || poly.length < 3) return 0;
     let totalPx = 0;
+
     for (const z of zonasMuertas) {
         const clipped = clipPolygonWithRect(poly, z);
         if (clipped.length >= 3) totalPx += polygonAreaPx(clipped);
     }
+
     return totalPx * metrosPorPixel * metrosPorPixel;
 }
 
@@ -628,7 +632,7 @@ function roomStats(poly) {
 }
 
 function getSelectedRoomData() {
-    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
+    if ((seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") && puntos.length >= 3) {
         return { nombre: "Estancia actual", puntos };
     }
     if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
@@ -639,9 +643,12 @@ function getSelectedRoomData() {
 
 function drawSideMeasures(poly, closedPoly, colorText) {
     if (!metrosPorPixel || !poly || poly.length < 2) return;
+
     ctx.fillStyle = colorText;
     ctx.font = "12px Arial";
+
     const totalSides = closedPoly ? poly.length : poly.length - 1;
+
     for (let i = 0; i < totalSides; i++) {
         const j = (i + 1) % poly.length;
         const a = poly[i];
@@ -668,6 +675,7 @@ function drawRoom(poly, selected, fillColor, strokeColor) {
 
 function drawCurrentRoom() {
     if (!puntos.length) return;
+
     const selected = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
 
     ctx.beginPath();
@@ -690,7 +698,7 @@ function drawCurrentRoom() {
         const sel = seleccion.tipo === "puntoActual" && seleccion.puntoIndex === i;
         ctx.beginPath();
         ctx.arc(p.x, p.y, sel ? 7 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = sel ? varOr("#f39b2f") : "#ffffff";
+        ctx.fillStyle = sel ? "#f39b2f" : "#ffffff";
         ctx.fill();
 
         ctx.fillStyle = "#fff";
@@ -742,6 +750,7 @@ function drawSavedRooms() {
         ctx.fillStyle = "#fff";
         ctx.font = "16px Arial";
         ctx.fillText(est.nombre || "Estancia", c.x - 24, c.y - 12);
+
         if (metrosPorPixel) {
             ctx.font = "13px Arial";
             ctx.fillText("Útil " + stats.useful.toFixed(2) + " m²", c.x - 24, c.y + 8);
@@ -769,14 +778,17 @@ function drawZonaHandles(z) {
 function drawZones() {
     zonasMuertas.forEach((z, i) => {
         const selected = (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") && seleccion.zonaIndex === i;
+
         ctx.fillStyle = selected ? "rgba(255,0,0,.36)" : "rgba(255,0,0,.24)";
         ctx.fillRect(z.x, z.y, z.w, z.h);
+
         ctx.strokeStyle = selected ? "#fff" : "#ff4b3a";
         ctx.lineWidth = selected ? 3 : 2;
         ctx.strokeRect(z.x, z.y, z.w, z.h);
 
         ctx.fillStyle = "#fff";
         ctx.font = "12px Arial";
+
         if (metrosPorPixel) {
             ctx.fillText(
                 "Zona muerta " + (z.w * metrosPorPixel).toFixed(2) + "m x " + (z.h * metrosPorPixel).toFixed(2) + "m",
@@ -798,8 +810,10 @@ function drawZones() {
         const y = Math.min(zonaTemp.y1, zonaTemp.y2);
         const w = Math.abs(zonaTemp.x2 - zonaTemp.x1);
         const h = Math.abs(zonaTemp.y2 - zonaTemp.y1);
+
         ctx.fillStyle = "rgba(255,255,0,.15)";
         ctx.fillRect(x, y, w, h);
+
         ctx.strokeStyle = "yellow";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
@@ -810,11 +824,17 @@ function segPointDistance(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
     const len2 = dx * dx + dy * dy;
-    if (len2 === 0) return { d: Math.hypot(px - ax, py - ay), t: 0 };
+
+    if (len2 === 0) {
+        return { d: Math.hypot(px - ax, py - ay), t: 0, qx: ax, qy: ay };
+    }
+
     let t = ((px - ax) * dx + (py - ay) * dy) / len2;
     t = Math.max(0, Math.min(1, t));
+
     const qx = ax + t * dx;
     const qy = ay + t * dy;
+
     return { d: Math.hypot(px - qx, py - qy), t, qx, qy };
 }
 
@@ -823,11 +843,13 @@ function findNearestWall(x, y) {
 
     function testPoly(poly, roomIndex, currentRoom) {
         if (!poly || poly.length < 2) return;
+
         for (let i = 0; i < poly.length; i++) {
             const j = (i + 1) % poly.length;
             const a = poly[i];
             const b = poly[j];
             const hit = segPointDistance(x, y, a.x, a.y, b.x, b.y);
+
             if (hit.d <= MAX_DIST_LINE) {
                 if (!best || hit.d < best.d) {
                     best = {
@@ -860,6 +882,7 @@ function aberturaWidthPx(widthM) {
 function createAbertura(tipo, wall) {
     const valor = prompt("Ancho en metros:", tipo === "puerta" ? "0.82" : "1.20");
     if (!valor) return;
+
     const widthM = parseFloat(String(valor).replace(",", "."));
     if (!widthM || widthM < MIN_ABERTURA_M) {
         alert("Ancho no válido");
@@ -867,8 +890,9 @@ function createAbertura(tipo, wall) {
     }
 
     const segLenPx = dist(wall.a, wall.b);
-    const lenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
-    if (widthM >= lenM) {
+    const segLenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
+
+    if (widthM >= segLenM) {
         alert("El ancho es mayor que el lado");
         return;
     }
@@ -893,6 +917,7 @@ function createAbertura(tipo, wall) {
 function getAberturaSegment(ab) {
     const poly = ab.currentRoom ? puntos : estancias[ab.roomIndex]?.puntos;
     if (!poly || poly.length < 2) return null;
+
     const a = poly[ab.sideIndex];
     const b = poly[(ab.sideIndex + 1) % poly.length];
     return { a, b };
@@ -902,8 +927,11 @@ function aberturaVisual(ab) {
     const seg = getAberturaSegment(ab);
     if (!seg) return null;
 
-    const ax = seg.a.x, ay = seg.a.y;
-    const bx = seg.b.x, by = seg.b.y;
+    const ax = seg.a.x;
+    const ay = seg.a.y;
+    const bx = seg.b.x;
+    const by = seg.b.y;
+
     const dx = bx - ax;
     const dy = by - ay;
     const segLen = Math.hypot(dx, dy);
@@ -917,12 +945,36 @@ function aberturaVisual(ab) {
     const widthPx = Math.min(segLen - 12, aberturaWidthPx(ab.widthM));
     const centerX = ax + dx * ab.t;
     const centerY = ay + dy * ab.t;
-
     const half = widthPx / 2;
+
     const p1 = { x: centerX - ux * half, y: centerY - uy * half };
     const p2 = { x: centerX + ux * half, y: centerY + uy * half };
 
-    return { p1, p2, centerX, centerY, ux, uy, nx, ny };
+    const leftM = metrosPorPixel ? dist(seg.a, p1) * metrosPorPixel : 0;
+    const rightM = metrosPorPixel ? dist(p2, seg.b) * metrosPorPixel : 0;
+
+    return { p1, p2, centerX, centerY, ux, uy, nx, ny, leftM, rightM, segA: seg.a, segB: seg.b };
+}
+
+function hitAbertura(x, y) {
+    for (let i = aberturas.length - 1; i >= 0; i--) {
+        const v = aberturaVisual(aberturas[i]);
+        if (!v) continue;
+        const d = segPointDistance(x, y, v.p1.x, v.p1.y, v.p2.x, v.p2.y);
+        if (d.d <= 10) return i;
+    }
+    return -1;
+}
+
+function moveAberturaAlongWall(ab, x, y) {
+    const seg = getAberturaSegment(ab);
+    if (!seg) return;
+
+    const hit = segPointDistance(x, y, seg.a.x, seg.a.y, seg.b.x, seg.b.y);
+    const segLenPx = dist(seg.a, seg.b);
+    const widthPx = aberturaWidthPx(ab.widthM);
+    const halfT = (widthPx / 2) / segLenPx;
+    ab.t = Math.max(halfT, Math.min(1 - halfT, hit.t));
 }
 
 function drawAberturas() {
@@ -931,10 +983,11 @@ function drawAberturas() {
         if (!v) return;
 
         const selected = seleccion.tipo === "abertura" && seleccion.aberturaIndex === i;
+        const color = ab.tipo === "puerta" ? "#7dd3ff" : "#7dff9b";
 
         ctx.save();
+        ctx.strokeStyle = color;
         ctx.lineWidth = selected ? 5 : 4;
-        ctx.strokeStyle = ab.tipo === "puerta" ? "#7dd3ff" : "#7dff9b";
         ctx.beginPath();
         ctx.moveTo(v.p1.x, v.p1.y);
         ctx.lineTo(v.p2.x, v.p2.y);
@@ -948,12 +1001,19 @@ function drawAberturas() {
             v.centerY + v.ny * 16
         );
 
+        if (metrosPorPixel) {
+            ctx.font = "11px Arial";
+            ctx.fillText(v.leftM.toFixed(2) + " m", (v.segA.x + v.p1.x) / 2 + v.nx * 10, (v.segA.y + v.p1.y) / 2 + v.ny * 10);
+            ctx.fillText(v.rightM.toFixed(2) + " m", (v.p2.x + v.segB.x) / 2 + v.nx * 10, (v.p2.y + v.segB.y) / 2 + v.ny * 10);
+        }
+
         if (selected) {
             ctx.beginPath();
             ctx.arc(v.centerX, v.centerY, 6, 0, Math.PI * 2);
             ctx.fillStyle = "#fff";
             ctx.fill();
         }
+
         ctx.restore();
     });
 }
@@ -974,8 +1034,9 @@ function updateInfo() {
             if (cont === -2) html += "<br>Dentro de: estancia actual";
             else if (cont !== null && estancias[cont]) html += "<br>Dentro de: " + (estancias[cont].nombre || "Estancia");
             else html += "<br>Dentro de: fuera de estancia";
+
             info.innerHTML = html;
-            actualizarUIAcciones();
+            actualizarUI();
             return;
         }
     }
@@ -985,10 +1046,18 @@ function updateInfo() {
         if (ab) {
             html += (ab.tipo === "puerta" ? "Puerta" : "Ventana") + " seleccionada";
             html += "<br>Ancho: " + ab.widthM.toFixed(2) + " m";
+
+            const v = aberturaVisual(ab);
+            if (v && metrosPorPixel) {
+                html += "<br>Izquierda: " + v.leftM.toFixed(2) + " m";
+                html += "<br>Derecha: " + v.rightM.toFixed(2) + " m";
+            }
+
             if (ab.currentRoom) html += "<br>En: estancia actual";
             else if (estancias[ab.roomIndex]) html += "<br>En: " + (estancias[ab.roomIndex].nombre || "Estancia");
+
             info.innerHTML = html;
-            actualizarUIAcciones();
+            actualizarUI();
             return;
         }
     }
@@ -1005,7 +1074,7 @@ function updateInfo() {
             html += "<br>Superficie útil: " + stats.useful.toFixed(2) + " m²";
         }
         info.innerHTML = html;
-        actualizarUIAcciones();
+        actualizarUI();
         return;
     }
 
@@ -1020,30 +1089,26 @@ function updateInfo() {
     html += "Resumen del plano";
     html += "<br>Estancias guardadas: " + estancias.length;
     html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
+
     if (metrosPorPixel) {
         html += "<br>Superficie total: " + total.toFixed(2) + " m²";
         html += "<br>Superficie útil: " + useful.toFixed(2) + " m²";
         html += "<br>Superficie muerta: " + dead.toFixed(2) + " m²";
     }
+
     html += "<br>Zonas muertas: " + zonasMuertas.length;
     html += "<br>Puertas: " + aberturas.filter(a => a.tipo === "puerta").length;
     html += "<br>Ventanas: " + aberturas.filter(a => a.tipo === "ventana").length;
 
     if (puntos.length > 0) {
-        html += "<br>Estancia actual en edición: sí";
-        html += "<br>Estado: " + (cerrado ? "cerrada" : "abierta");
-        if (cerrado && metrosPorPixel) {
-            const s = roomStats(puntos);
-            html += "<br>Actual total: " + s.total.toFixed(2) + " m²";
-            html += "<br>Actual útil: " + s.useful.toFixed(2) + " m²";
-        }
+        html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
     }
 
     info.innerHTML = html;
-    actualizarUIAcciones();
+    actualizarUI();
 }
 
-function draw() {
+function dibujar() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawSavedRooms();
     drawCurrentRoom();
@@ -1051,11 +1116,11 @@ function draw() {
     drawAberturas();
     updateInfo();
 }
-const dibujar = draw;
 
 function nuevaEstancia() {
     puntos = [];
     cerrado = false;
+    puedeEditarPuntos = true;
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1063,11 +1128,17 @@ function nuevaEstancia() {
 }
 
 function cerrarEstancia() {
+    if (!puedeEditarPuntos) {
+        alert("Primero pulsa Nueva estancia");
+        return;
+    }
     if (puntos.length < 3) {
         alert("Necesitas al menos 3 puntos");
         return;
     }
+
     cerrado = true;
+    puedeEditarPuntos = false;
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1091,6 +1162,7 @@ function guardarEstancia() {
     guardarMemoria();
     puntos = [];
     cerrado = false;
+    puedeEditarPuntos = false;
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1132,46 +1204,30 @@ function guardarPlano() {
     alert("Plano guardado");
 }
 
-function borrarUltimoPunto() {
-    if (!puntos.length) return;
-    puntos.pop();
-    if (puntos.length < 3) cerrado = false;
-    limpiarSeleccion();
-    dibujar();
-}
-
-function removeSelectedAbertura() {
-    const idx = Number(seleccion.aberturaIndex);
-    if (!Number.isNaN(idx) && idx >= 0 && idx < aberturas.length) {
-        aberturas.splice(idx, 1);
-        guardarMemoria();
-        limpiarSeleccion();
-        dibujar();
-        return true;
-    }
-    return false;
-}
-
-function removeSelectedZona() {
-    const idx = Number(seleccion.zonaIndex);
-    if (!Number.isNaN(idx) && idx >= 0 && idx < zonasMuertas.length) {
-        zonasMuertas.splice(idx, 1);
-        guardarMemoria();
-        limpiarSeleccion();
-        dibujar();
-        return true;
-    }
-    return false;
-}
-
 function eliminarSeleccionado() {
     if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
-        if (confirm("Eliminar zona muerta seleccionada?")) removeSelectedZona();
+        const idx = Number(seleccion.zonaIndex);
+        if (idx >= 0 && idx < zonasMuertas.length) {
+            if (confirm("Eliminar zona muerta seleccionada?")) {
+                zonasMuertas.splice(idx, 1);
+                guardarMemoria();
+                limpiarSeleccion();
+                dibujar();
+            }
+        }
         return;
     }
 
     if (seleccion.tipo === "abertura") {
-        if (confirm("Eliminar elemento seleccionado?")) removeSelectedAbertura();
+        const idx = Number(seleccion.aberturaIndex);
+        if (idx >= 0 && idx < aberturas.length) {
+            if (confirm("Eliminar elemento seleccionado?")) {
+                aberturas.splice(idx, 1);
+                guardarMemoria();
+                limpiarSeleccion();
+                dibujar();
+            }
+        }
         return;
     }
 
@@ -1180,22 +1236,25 @@ function eliminarSeleccionado() {
         if (idx >= 0 && idx < estancias.length) {
             if (confirm("Eliminar estancia guardada?")) {
                 estancias.splice(idx, 1);
-                aberturas = aberturas.filter(a => !(a.roomIndex === idx && !a.currentRoom)).map(a => {
-                    if (!a.currentRoom && a.roomIndex > idx) a.roomIndex -= 1;
-                    return a;
-                });
+                aberturas = aberturas
+                    .filter(a => !(a.roomIndex === idx && !a.currentRoom))
+                    .map(a => {
+                        if (!a.currentRoom && a.roomIndex > idx) a.roomIndex -= 1;
+                        return a;
+                    });
                 guardarMemoria();
                 limpiarSeleccion();
                 dibujar();
             }
-            return;
         }
+        return;
     }
 
     if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
         if (confirm("Eliminar estancia actual?")) {
             puntos = [];
             cerrado = false;
+            puedeEditarPuntos = false;
             aberturas = aberturas.filter(a => !a.currentRoom);
             guardarMemoria();
             limpiarSeleccion();
@@ -1236,6 +1295,7 @@ function resizeZona(z, handle, pos) {
         if (handle === "nw" || handle === "sw") left = right - MIN_ZONA;
         else right = left + MIN_ZONA;
     }
+
     if (bottom - top < MIN_ZONA) {
         if (handle === "nw" || handle === "ne") top = bottom - MIN_ZONA;
         else bottom = top + MIN_ZONA;
@@ -1245,26 +1305,6 @@ function resizeZona(z, handle, pos) {
     z.y = Math.min(top, bottom);
     z.w = Math.abs(right - left);
     z.h = Math.abs(bottom - top);
-}
-
-function moveAberturaAlongWall(ab, x, y) {
-    const seg = getAberturaSegment(ab);
-    if (!seg) return;
-    const hit = segPointDistance(x, y, seg.a.x, seg.a.y, seg.b.x, seg.b.y);
-    const segLenPx = dist(seg.a, seg.b);
-    const widthPx = aberturaWidthPx(ab.widthM);
-    const halfT = (widthPx / 2) / segLenPx;
-    ab.t = Math.max(halfT, Math.min(1 - halfT, hit.t));
-}
-
-function hitAbertura(x, y) {
-    for (let i = aberturas.length - 1; i >= 0; i--) {
-        const v = aberturaVisual(aberturas[i]);
-        if (!v) continue;
-        const d = segPointDistance(x, y, v.p1.x, v.p1.y, v.p2.x, v.p2.y);
-        if (d.d <= 10) return i;
-    }
-    return -1;
 }
 
 function onStart(ev) {
@@ -1374,9 +1414,9 @@ function onStart(ev) {
         }
     }
 
-    if (!cerrado) {
-        limpiarSeleccion();
+    if (puedeEditarPuntos && !cerrado) {
         puntos.push({ x: pos.x, y: pos.y });
+        limpiarSeleccion();
         seleccion.tipo = "puntoActual";
         seleccion.puntoIndex = puntos.length - 1;
         dibujar();
@@ -1426,9 +1466,6 @@ function onMove(ev) {
             p.x += dx;
             p.y += dy;
         }
-        for (const a of aberturas) {
-            if (a.currentRoom) {}
-        }
     } else if (seleccion.tipo === "estanciaGuardada") {
         const est = estancias[seleccion.estanciaIndex];
         for (const p of est.puntos) {
@@ -1442,6 +1479,18 @@ function onMove(ev) {
     ultimoY = pos.y;
     dibujar();
     if (ev.cancelable) ev.preventDefault();
+}
+
+function moveAberturaAlongWall(ab, x, y) {
+    const seg = getAberturaSegment(ab);
+    if (!seg) return;
+
+    const hit = segPointDistance(x, y, seg.a.x, seg.a.y, seg.b.x, seg.b.y);
+    const segLenPx = dist(seg.a, seg.b);
+    const widthPx = aberturaWidthPx(ab.widthM);
+    const halfT = (widthPx / 2) / segLenPx;
+
+    ab.t = Math.max(halfT, Math.min(1 - halfT, hit.t));
 }
 
 function onEnd(ev) {
@@ -1462,7 +1511,7 @@ function onEnd(ev) {
         zonaTemp = null;
         modo = null;
         arrastrando = false;
-        actualizarUIAcciones();
+        actualizarUI();
         dibujar();
         if (ev && ev.cancelable) ev.preventDefault();
         return;
@@ -1484,6 +1533,41 @@ function onEnd(ev) {
     if (ev && ev.cancelable) ev.preventDefault();
 }
 
+function createAbertura(tipo, wall) {
+    const valor = prompt("Ancho en metros:", tipo === "puerta" ? "0.82" : "1.20");
+    if (!valor) return;
+
+    const widthM = parseFloat(String(valor).replace(",", "."));
+    if (!widthM || widthM < MIN_ABERTURA_M) {
+        alert("Ancho no válido");
+        return;
+    }
+
+    const segLenPx = dist(wall.a, wall.b);
+    const segLenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
+
+    if (widthM >= segLenM) {
+        alert("El ancho es mayor que el lado");
+        return;
+    }
+
+    aberturas.push({
+        tipo,
+        roomIndex: wall.roomIndex,
+        currentRoom: wall.currentRoom,
+        sideIndex: wall.sideIndex,
+        t: wall.t,
+        widthM
+    });
+
+    guardarMemoria();
+    limpiarSeleccion();
+    seleccion.tipo = "abertura";
+    seleccion.aberturaIndex = aberturas.length - 1;
+    cancelarModo();
+    dibujar();
+}
+
 canvas.addEventListener("mousedown", onStart);
 canvas.addEventListener("mousemove", onMove);
 canvas.addEventListener("mouseup", onEnd);
@@ -1499,6 +1583,7 @@ window.addEventListener("keydown", (e) => {
         cancelarModo();
         dibujar();
     }
+
     if (e.key === "Delete" || e.key === "Backspace") {
         const tag = document.activeElement ? document.activeElement.tagName : "";
         if (tag !== "INPUT" && tag !== "TEXTAREA") {
@@ -1507,10 +1592,11 @@ window.addEventListener("keydown", (e) => {
     }
 });
 
-function varOr(v){ return v; }
-
-actualizarUIAcciones();
-dibujar();
+requestAnimationFrame(() => {
+    ajustarCanvas();
+    actualizarUI();
+    dibujar();
+});
 </script>
 </body>
 </html>
