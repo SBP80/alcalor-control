@@ -14,6 +14,7 @@
     --accent:#f39b2f;
     --accent2:#d5a23d;
     --danger:#c93b2f;
+    --btnText:#111111;
 }
 *{box-sizing:border-box}
 body{
@@ -37,11 +38,42 @@ body{
 .header-title{
     font-size:21px;
     font-weight:bold;
+    color:var(--accent);
+}
+.brand-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+.brand-logo{
+    width:40px;
+    height:40px;
+    object-fit:contain;
+    border-radius:8px;
+    background:#fff;
+    display:none;
+    flex:0 0 auto;
+}
+.brand-text{
+    min-width:0;
+}
+.brand-name{
+    font-size:18px;
+    font-weight:bold;
+    line-height:1.05;
+    color:var(--accent);
+    word-break:break-word;
+}
+.brand-sub{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:4px;
 }
 .btn-top{
     border:none;
     background:var(--accent);
-    color:#111;
+    color:var(--btnText);
     font-weight:bold;
     border-radius:10px;
     padding:10px 14px;
@@ -69,7 +101,7 @@ canvas{
     min-height:420px;
     display:block;
     background:#101010;
-    border:1px solid #333;
+    border:1px solid var(--line);
     border-radius:10px;
     touch-action:none;
 }
@@ -129,7 +161,7 @@ canvas{
     font-weight:bold;
     cursor:pointer;
     background:var(--accent);
-    color:#111;
+    color:var(--btnText);
     width:100%;
     font-size:12px;
 }
@@ -165,7 +197,7 @@ canvas{
 .quickbar .chip{
     background:rgba(21,21,21,.92);
     border:1px solid var(--line);
-    color:#fff;
+    color:var(--text);
     border-radius:999px;
     padding:7px 11px;
     font-size:12px;
@@ -175,7 +207,7 @@ canvas{
     left:10px;
     top:10px;
     background:rgba(243,155,47,.95);
-    color:#111;
+    color:var(--btnText);
     font-weight:bold;
     border-radius:999px;
     padding:8px 12px;
@@ -200,6 +232,9 @@ canvas{
         max-height:56vh;
         overflow:auto;
     }
+    .brand-name{
+        font-size:16px;
+    }
 }
 </style>
 </head>
@@ -207,7 +242,15 @@ canvas{
 
 <div class="header">
     <button class="btn-top" onclick="volver()">Volver</button>
-    <div class="header-title">Plano</div>
+
+    <div class="brand-wrap">
+        <img id="brandLogo" class="brand-logo" alt="Logo">
+        <div class="brand-text">
+            <div id="brandName" class="brand-name">ALLCALOR PRO</div>
+            <div id="brandSub" class="brand-sub">Centro de control</div>
+        </div>
+    </div>
+
     <button class="btn-top" onclick="togglePanel()">Herramientas</button>
 </div>
 
@@ -276,6 +319,83 @@ const chipSeleccion = document.getElementById("chipSeleccion");
 const chipEscala = document.getElementById("chipEscala");
 const chipEdicion = document.getElementById("chipEdicion");
 
+/* CONFIG VISUAL */
+const CONFIG_DEFAULT = {
+    nombre: "ALLCALOR PRO",
+    subtitulo: "Centro de control",
+    logo: "",
+    fuente: "Arial, sans-serif",
+    tamNombre: 22,
+    pesoNombre: 700,
+    espacioLetras: 0,
+    sombraNombre: 0,
+    mayusculas: false,
+    cursiva: false,
+    colorPrincipal: "#f39b2f",
+    colorFondo: "#0b0b0b",
+    colorPanel: "#151515",
+    colorTexto: "#ffffff",
+    colorLinea: "#2b2b2b",
+    colorBotonTexto: "#111111"
+};
+
+function leerConfig(){
+    try{
+        return {
+            ...CONFIG_DEFAULT,
+            ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})
+        };
+    }catch(e){
+        return { ...CONFIG_DEFAULT };
+    }
+}
+
+function aplicarConfigVisual(){
+    const cfg = leerConfig();
+
+    document.title = "Plano";
+    document.documentElement.style.setProperty("--bg", cfg.colorFondo || CONFIG_DEFAULT.colorFondo);
+    document.documentElement.style.setProperty("--panel", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
+    document.documentElement.style.setProperty("--text", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
+    document.documentElement.style.setProperty("--muted", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
+    document.documentElement.style.setProperty("--line", cfg.colorLinea || CONFIG_DEFAULT.colorLinea);
+    document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
+    document.documentElement.style.setProperty("--accent2", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
+    document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto);
+
+    document.body.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+
+    const brandName = document.getElementById("brandName");
+    const brandSub = document.getElementById("brandSub");
+    const brandLogo = document.getElementById("brandLogo");
+
+    const nombreFinal = cfg.mayusculas
+        ? (cfg.nombre || CONFIG_DEFAULT.nombre).toUpperCase()
+        : (cfg.nombre || CONFIG_DEFAULT.nombre);
+
+    brandName.textContent = nombreFinal;
+    brandSub.textContent = cfg.subtitulo || CONFIG_DEFAULT.subtitulo;
+
+    brandName.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+    brandName.style.fontSize = Math.max(14, Number(cfg.tamNombre || CONFIG_DEFAULT.tamNombre) - 2) + "px";
+    brandName.style.fontWeight = cfg.pesoNombre || CONFIG_DEFAULT.pesoNombre;
+    brandName.style.letterSpacing = (cfg.espacioLetras || CONFIG_DEFAULT.espacioLetras) + "px";
+    brandName.style.textShadow = "0 0 " + (cfg.sombraNombre || CONFIG_DEFAULT.sombraNombre) + "px #000";
+    brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+    brandName.style.color = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
+
+    brandSub.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+    brandSub.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+
+    if(cfg.logo){
+        brandLogo.src = cfg.logo;
+        brandLogo.style.display = "block";
+    }else{
+        brandLogo.style.display = "none";
+    }
+}
+aplicarConfigVisual();
+
 function ajustarCanvas() {
     const rect = canvas.getBoundingClientRect();
     canvas.width = Math.max(300, Math.floor(rect.width));
@@ -325,7 +445,7 @@ let puntos = [];
 let cerrado = false;
 let enEdicionNuevaEstancia = false;
 
-let modo = null; // zona | puerta | ventana | null
+let modo = null;
 let zonaTemp = null;
 
 let arrastrando = false;
@@ -339,7 +459,7 @@ const MIN_ABERTURA_M = 0.4;
 const MAX_DIST_LINE = 14;
 
 const seleccion = {
-    tipo: null, // estanciaActual, puntoActual, estanciaGuardada, puntoGuardado, zonaMuerta, zonaHandle, abertura
+    tipo: null,
     estanciaIndex: -1,
     puntoIndex: -1,
     zonaIndex: -1,
