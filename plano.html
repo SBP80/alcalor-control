@@ -8,6 +8,7 @@
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
+  --panel2:#1b1b1b;
   --line:#2b2b2b;
   --text:#ffffff;
   --muted:#c8c8c8;
@@ -86,12 +87,51 @@ input,select,button{font:inherit}
   font-size:14px;
   line-height:1.45;
   margin-bottom:10px;
+}
+.summary-top{
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) minmax(260px,360px);
+  gap:10px;
+  align-items:start;
+}
+.summary-card{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
   min-height:88px;
+}
+.summary-card h3{
+  margin:0 0 8px 0;
+  color:var(--accent);
+  font-size:15px;
+}
+.inline-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+.label{
+  font-size:11px;
+  color:var(--muted);
+}
+.in{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#101010;
+  color:#fff;
+  padding:8px 9px;
+  font-size:12px;
+}
+.small{
+  font-size:11px;
+  color:var(--muted);
 }
 .canvas-wrap{position:relative}
 canvas{
   width:100%;
-  height:calc(100vh - 194px);
+  height:calc(100vh - 260px);
   min-height:420px;
   display:block;
   background:#101010;
@@ -103,7 +143,7 @@ canvas{
   position:absolute;
   top:10px;
   right:10px;
-  width:320px;
+  width:260px;
   background:rgba(21,21,21,.97);
   border:1px solid var(--line);
   border-radius:12px;
@@ -142,11 +182,6 @@ canvas{
   grid-template-columns:1fr;
   gap:6px;
 }
-.grid-2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:6px;
-}
 .btn{
   border:none;
   border-radius:8px;
@@ -162,26 +197,6 @@ canvas{
 .btn.neutral{background:#c8c8c8;color:#111}
 .btn.danger{background:var(--danger);color:#fff}
 .btn.ok{background:var(--ok);color:#fff}
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  margin-bottom:7px;
-}
-.field:last-child{margin-bottom:0}
-.label{
-  font-size:11px;
-  color:var(--muted);
-}
-.in{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#101010;
-  color:#fff;
-  padding:8px 9px;
-  font-size:12px;
-}
 .note{
   margin-top:6px;
   color:var(--muted);
@@ -231,7 +246,7 @@ canvas{
 }
 .overlay.show{display:flex}
 .dialog{
-  width:min(420px,100%);
+  width:min(430px,100%);
   background:#151515;
   border:1px solid #333;
   border-radius:14px;
@@ -253,13 +268,15 @@ canvas{
   grid-template-columns:1fr;
   gap:8px;
 }
-.small{font-size:11px;color:var(--muted)}
+.warn{color:#ffd27d}
 .oktxt{color:#8ee08e}
 .badtxt{color:#ff8d8d}
-.warn{color:#ffd27d}
 @media (max-width:900px){
+  .summary-top{
+    grid-template-columns:1fr;
+  }
   canvas{
-    height:calc(100vh - 215px);
+    height:calc(100vh - 330px);
     min-height:360px;
   }
   .panel{
@@ -284,7 +301,7 @@ canvas{
     <img id="brandLogo" class="brand-logo" alt="Logo">
     <div class="brand-text">
       <div id="brandName" class="brand-name">ALLCALOR PRO</div>
-      <div id="brandSub" class="brand-sub">Plano geometría v2</div>
+      <div id="brandSub" class="brand-sub">Plano geometría v2 corregida</div>
     </div>
   </div>
 
@@ -292,7 +309,25 @@ canvas{
 </div>
 
 <div class="main">
-  <div class="info" id="info">Cargando...</div>
+  <div class="info">
+    <div class="summary-top">
+      <div class="summary-card" id="info">Cargando...</div>
+
+      <div class="summary-card">
+        <h3>Movimiento</h3>
+        <div class="inline-grid">
+          <div>
+            <div class="label">Modo de movimiento</div>
+            <select class="in" id="moveMode">
+              <option value="single">Solo esta estancia</option>
+              <option value="group">Conjunto unido</option>
+            </select>
+          </div>
+          <div class="small" id="groupInfo">Sin grupo activo</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="canvas-wrap">
     <div class="mode-badge" id="modeBadge"></div>
@@ -320,22 +355,8 @@ canvas{
           </div>
           <div class="note">
             Toca una estancia guardada para elegir ver o editar.<br>
-            Toca una medida en pantalla para cambiar ese lado.
+            Toca una medida escrita para cambiar ese lado.
           </div>
-        </div>
-      </div>
-
-      <div class="panel-group open">
-        <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Edición</button>
-        <div class="panel-group-content">
-          <div class="field">
-            <label class="label">Movimiento</label>
-            <select class="in" id="moveMode">
-              <option value="single">Solo esta estancia</option>
-              <option value="group">Conjunto unido</option>
-            </select>
-          </div>
-          <div class="small">Si dos estancias comparten al menos dos vértices, se consideran unidas.</div>
         </div>
       </div>
     </div>
@@ -366,11 +387,11 @@ canvas{
   <div class="dialog">
     <h3>Verificación</h3>
     <p id="diagText">Diagonal</p>
-    <div class="field">
-      <label class="label">Medida real (m)</label>
+    <div>
+      <div class="label">Medida real (m)</div>
       <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
     </div>
-    <div class="row">
+    <div class="row" style="margin-top:10px">
       <button class="btn secondary" onclick="diagSaltar()">Saltar</button>
       <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
       <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
@@ -388,6 +409,7 @@ const chipSeleccion = document.getElementById("chipSeleccion");
 const chipEscala = document.getElementById("chipEscala");
 const chipEdicion = document.getElementById("chipEdicion");
 const moveMode = document.getElementById("moveMode");
+const groupInfo = document.getElementById("groupInfo");
 
 const roomActionOverlay = document.getElementById("roomActionOverlay");
 const roomActionText = document.getElementById("roomActionText");
@@ -398,7 +420,7 @@ const diagInput = document.getElementById("diagInput");
 
 const CONFIG_DEFAULT = {
   nombre: "ALLCALOR PRO",
-  subtitulo: "Plano geometría v2",
+  subtitulo: "Plano geometría v2 corregida",
   logo: "",
   fuente: "Arial, sans-serif",
   tamNombre: 22,
@@ -495,7 +517,9 @@ let ultimoY = 0;
 
 const SNAP_DIST = 18;
 const HIT_POINT = 14;
-const SIDE_HIT_DIST = 14;
+const GROUP_SEG_DIST = 10;
+const GROUP_ANGLE_COS = 0.97;
+const GROUP_MIN_OVERLAP = 20;
 
 const seleccion = {
   tipo: null,
@@ -528,7 +552,9 @@ function guardarMemoria() {
   localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
-function volver(){ window.location.href = "obra.html"; }
+function volver(){
+  window.location.href = "obra.html";
+}
 
 function ajustarCanvas() {
   const rect = canvas.getBoundingClientRect();
@@ -541,8 +567,7 @@ window.addEventListener("resize", () => {
 });
 
 function togglePanel(){ panel.classList.toggle("open"); }
-function cerrarPanel(){ panel.classList.remove("open"); }
-function autoCerrarPanel(){ if (window.innerWidth <= 900) cerrarPanel(); }
+function autoCerrarPanel(){ if (window.innerWidth <= 900) panel.classList.remove("open"); }
 function toggleGroup(btn){ btn.parentElement.classList.toggle("open"); }
 
 function limpiarSeleccion(){
@@ -552,7 +577,9 @@ function limpiarSeleccion(){
   seleccion.editEnabled = false;
 }
 
-function dist(a, b){ return Math.hypot(b.x - a.x, b.y - a.y); }
+function dist(a, b){
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
 
 function midpoint(a, b){
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -690,6 +717,90 @@ function getSelectedSavedRoomIndex(){
   return -1;
 }
 
+function getSegments(poly){
+  const out = [];
+  for(let i=0;i<poly.length;i++){
+    out.push({ a: poly[i], b: poly[(i+1)%poly.length] });
+  }
+  return out;
+}
+
+function sharedVertexCount(a, b){
+  let n = 0;
+  for(const pa of a){
+    for(const pb of b){
+      if(Math.hypot(pa.x - pb.x, pa.y - pb.y) <= SNAP_DIST){
+        n++;
+        break;
+      }
+    }
+  }
+  return n;
+}
+
+function overlap1D(a1, a2, b1, b2){
+  const minA = Math.min(a1,a2);
+  const maxA = Math.max(a1,a2);
+  const minB = Math.min(b1,b2);
+  const maxB = Math.max(b1,b2);
+  return Math.max(0, Math.min(maxA, maxB) - Math.max(minA, minB));
+}
+
+function roomsTouchByWall(polyA, polyB){
+  const segsA = getSegments(polyA);
+  const segsB = getSegments(polyB);
+
+  for(const sa of segsA){
+    const dax = sa.b.x - sa.a.x;
+    const day = sa.b.y - sa.a.y;
+    const lenA = Math.hypot(dax, day);
+    if(lenA < 1) continue;
+    const uax = dax / lenA;
+    const uay = day / lenA;
+
+    for(const sb of segsB){
+      const dbx = sb.b.x - sb.a.x;
+      const dby = sb.b.y - sb.a.y;
+      const lenB = Math.hypot(dbx, dby);
+      if(lenB < 1) continue;
+      const ubx = dbx / lenB;
+      const uby = dby / lenB;
+
+      const dot = Math.abs(uax * ubx + uay * uby);
+      if(dot < GROUP_ANGLE_COS) continue;
+
+      const d1 = segPointDistance(sa.a.x, sa.a.y, sb.a.x, sb.a.y, sb.b.x, sb.b.y).d;
+      const d2 = segPointDistance(sa.b.x, sa.b.y, sb.a.x, sb.a.y, sb.b.x, sb.b.y).d;
+      const d3 = segPointDistance(sb.a.x, sb.a.y, sa.a.x, sa.a.y, sa.b.x, sa.b.y).d;
+      const d4 = segPointDistance(sb.b.x, sb.b.y, sa.a.x, sa.a.y, sa.b.x, sa.b.y).d;
+      const minDist = Math.min(d1, d2, d3, d4);
+      if(minDist > GROUP_SEG_DIST) continue;
+
+      const axisX = Math.abs(uax) >= Math.abs(uay);
+      let ov = 0;
+      if(axisX){
+        ov = overlap1D(sa.a.x, sa.b.x, sb.a.x, sb.b.x);
+      }else{
+        ov = overlap1D(sa.a.y, sa.b.y, sb.a.y, sb.b.y);
+      }
+      if(ov >= GROUP_MIN_OVERLAP) return true;
+    }
+  }
+  return false;
+}
+
+function roomsAreConnected(idxA, idxB){
+  if(idxA === idxB) return true;
+  const a = estancias[idxA]?.puntos;
+  const b = estancias[idxB]?.puntos;
+  if(!a || !b) return false;
+
+  if(sharedVertexCount(a,b) >= 2) return true;
+  if(roomsTouchByWall(a,b)) return true;
+
+  return false;
+}
+
 function getConnectedGroup(startIdx){
   const group = new Set([startIdx]);
   let changed = true;
@@ -699,7 +810,7 @@ function getConnectedGroup(startIdx){
     for(let i=0;i<estancias.length;i++){
       if(group.has(i)) continue;
       for(const g of group){
-        if(sharedVertexCount(estancias[i].puntos, estancias[g].puntos) >= 2){
+        if(roomsAreConnected(i, g)){
           group.add(i);
           changed = true;
           break;
@@ -710,17 +821,18 @@ function getConnectedGroup(startIdx){
   return Array.from(group);
 }
 
-function sharedVertexCount(a, b){
-  let n = 0;
-  for(const pa of a){
-    for(const pb of b){
-      if(Math.hypot(pa.x - pb.x, pa.y - pb.y) < 0.5){
-        n++;
-        break;
-      }
-    }
+function updateGroupInfo(){
+  const idx = getSelectedSavedRoomIndex();
+  if(idx < 0){
+    groupInfo.textContent = "Sin grupo activo";
+    return;
   }
-  return n;
+  const ids = getConnectedGroup(idx);
+  if(ids.length <= 1){
+    groupInfo.textContent = "La estancia seleccionada no forma grupo";
+  }else{
+    groupInfo.textContent = "Grupo detectado: " + ids.length + " estancias";
+  }
 }
 
 function actualizarUI() {
@@ -733,6 +845,8 @@ function actualizarUI() {
   if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual";
   else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = seleccion.editEnabled ? "Estancia guardada · editar" : "Estancia guardada · ver";
   else chipSeleccion.textContent = "Sin selección";
+
+  updateGroupInfo();
 }
 
 function drawRoom(poly, selected, fillColor, strokeColor) {
@@ -786,7 +900,7 @@ function drawVertexNumbers(poly, prefix, selectedPointIndex=-1, current=false){
 function drawConnections(){
   for(let i=0;i<estancias.length;i++){
     for(let j=i+1;j<estancias.length;j++){
-      if(sharedVertexCount(estancias[i].puntos, estancias[j].puntos) >= 2){
+      if(roomsAreConnected(i,j)){
         const c1 = centroid(estancias[i].puntos);
         const c2 = centroid(estancias[j].puntos);
         ctx.save();
@@ -801,6 +915,29 @@ function drawConnections(){
       }
     }
   }
+}
+
+function drawSelectedGroup(){
+  const idx = getSelectedSavedRoomIndex();
+  if(idx < 0 || moveMode.value !== "group") return;
+  const ids = getConnectedGroup(idx);
+  if(ids.length <= 1) return;
+
+  ctx.save();
+  ctx.setLineDash([10,6]);
+  ctx.strokeStyle = "rgba(125,255,155,.9)";
+  ctx.lineWidth = 3;
+  ids.forEach(roomIdx => {
+    const poly = estancias[roomIdx].puntos;
+    ctx.beginPath();
+    poly.forEach((p, i) => {
+      if(i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.closePath();
+    ctx.stroke();
+  });
+  ctx.restore();
 }
 
 function drawSavedRooms() {
@@ -938,13 +1075,10 @@ function hitSideLabel(x, y){
 function updateInfo() {
   let html = "";
 
-  const room = (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual")
-    ? { nombre: "Estancia actual", puntos }
-    : ((seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") ? estancias[seleccion.estanciaIndex] : null);
-
+  const room = getSelectedRoomData();
   if (room && room.puntos && room.puntos.length >= 2) {
-    html += "Datos de la estancia seleccionada";
-    html += "<br>Nombre: " + (room.nombre || "Sin nombre");
+    html += "<h3>Datos de la estancia</h3>";
+    html += "Nombre: " + (room.nombre || "Sin nombre");
     html += "<br>Vértices: " + room.puntos.length;
 
     if (metrosPorPixel && room.puntos.length >= 3) {
@@ -963,8 +1097,8 @@ function updateInfo() {
 
     const idx = getSelectedSavedRoomIndex();
     if (idx >= 0) {
-      const group = getConnectedGroup(idx);
-      if (group.length > 1) html += "<br>Conjunto unido: " + group.length + " estancias";
+      const ids = getConnectedGroup(idx);
+      html += "<br>Grupo detectado: " + ids.length + " estancia(s)";
     }
 
     info.innerHTML = html;
@@ -975,8 +1109,8 @@ function updateInfo() {
   let total = 0;
   for (const est of estancias) total += polygonAreaM2(est.puntos);
 
-  html += "Resumen del plano";
-  html += "<br>Estancias guardadas: " + estancias.length;
+  html += "<h3>Resumen del plano</h3>";
+  html += "Estancias guardadas: " + estancias.length;
   html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
   if (metrosPorPixel) html += "<br>Superficie total: " + total.toFixed(2) + " m²";
   if (puntos.length > 0) html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
@@ -990,6 +1124,7 @@ function dibujar() {
   drawSavedRooms();
   drawCurrentRoom();
   drawConnections();
+  drawSelectedGroup();
   drawActiveDiagonal();
   updateInfo();
 }
@@ -1119,20 +1254,14 @@ function diagAceptar(){
   diagState.results.push(Math.abs(real - calc));
 
   diagState.index++;
-  if (diagState.index >= diagState.diagonals.length) {
-    terminarDiag();
-  } else {
-    mostrarDiagActual();
-  }
+  if (diagState.index >= diagState.diagonals.length) terminarDiag();
+  else mostrarDiagActual();
 }
 
 function diagSaltar(){
   diagState.index++;
-  if (diagState.index >= diagState.diagonals.length) {
-    terminarDiag();
-  } else {
-    mostrarDiagActual();
-  }
+  if (diagState.index >= diagState.diagonals.length) terminarDiag();
+  else mostrarDiagActual();
 }
 
 function diagCancelar(){
@@ -1205,7 +1334,6 @@ function accionEstanciaGuardada(tipo){
   const idx = modalRoomAction.roomIndex;
   roomActionOverlay.classList.remove("show");
   if (idx < 0 || !estancias[idx]) return;
-
   if (tipo === "cancel") return;
 
   seleccion.tipo = "estanciaGuardada";
@@ -1238,6 +1366,7 @@ function aplicarMedidaDirecta(hit){
   const actual = dist(a,b) * metrosPorPixel;
   const valor = prompt("Nueva medida para lado " + (sideIdx + 1) + " en metros:", actual.toFixed(2));
   if (!valor) return;
+
   const lenM = parseFloat(String(valor).replace(",", "."));
   if (!lenM || lenM <= 0) return alert("Medida no válida");
 
@@ -1250,36 +1379,6 @@ function aplicarMedidaDirecta(hit){
 
   guardarMemoria();
   dibujar();
-}
-
-function hitSideLabel(x, y){
-  if (!metrosPorPixel) return null;
-
-  function testPoly(poly, roomIndex, currentRoom){
-    const totalSides = currentRoom ? (cerrado ? poly.length : poly.length - 1) : poly.length;
-    for(let i=0;i<totalSides;i++){
-      const j = (i+1)%poly.length;
-      const a = poly[i];
-      const b = poly[j];
-      const m = midpoint(a,b);
-      const tx = m.x + 40;
-      const ty = m.y - 12;
-      if (Math.abs(x - tx) <= 55 && Math.abs(y - ty) <= 16) {
-        return { roomIndex, currentRoom, sideIndex:i };
-      }
-    }
-    return null;
-  }
-
-  if (puntos.length >= 2) {
-    const hit = testPoly(puntos, -1, true);
-    if (hit) return hit;
-  }
-  for(let i=estancias.length-1;i>=0;i--){
-    const hit = testPoly(estancias[i].puntos, i, false);
-    if (hit) return hit;
-  }
-  return null;
 }
 
 function onStart(ev) {
