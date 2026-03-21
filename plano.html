@@ -14,6 +14,7 @@
     --accent:#f39b2f;
     --accent2:#d5a23d;
     --danger:#c93b2f;
+    --ok:#4caf50;
     --btnText:#111111;
 }
 *{box-sizing:border-box}
@@ -23,6 +24,7 @@ body{
     color:var(--text);
     font-family:Arial,sans-serif;
 }
+input,select,button{font:inherit}
 .header{
     display:flex;
     align-items:center;
@@ -34,11 +36,6 @@ body{
     top:0;
     background:var(--bg);
     z-index:50;
-}
-.header-title{
-    font-size:21px;
-    font-weight:bold;
-    color:var(--accent);
 }
 .brand-wrap{
     display:flex;
@@ -57,6 +54,7 @@ body{
 }
 .brand-text{
     min-width:0;
+    text-align:center;
 }
 .brand-name{
     font-size:18px;
@@ -79,25 +77,21 @@ body{
     padding:10px 14px;
     cursor:pointer;
 }
-.main{
-    padding:10px;
-}
+.main{padding:10px}
 .info{
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:10px;
     padding:10px;
     font-size:14px;
-    line-height:1.4;
+    line-height:1.45;
     margin-bottom:10px;
-    min-height:74px;
+    min-height:92px;
 }
-.canvas-wrap{
-    position:relative;
-}
+.canvas-wrap{position:relative}
 canvas{
     width:100%;
-    height:calc(100vh - 180px);
+    height:calc(100vh - 198px);
     min-height:420px;
     display:block;
     background:#101010;
@@ -109,8 +103,8 @@ canvas{
     position:absolute;
     top:10px;
     right:10px;
-    width:190px;
-    background:rgba(21,21,21,.96);
+    width:280px;
+    background:rgba(21,21,21,.97);
     border:1px solid var(--line);
     border-radius:12px;
     padding:8px;
@@ -118,18 +112,14 @@ canvas{
     z-index:30;
     display:none;
 }
-.panel.open{
-    display:block;
-}
+.panel.open{display:block}
 .panel-group{
     border:1px solid var(--line);
     border-radius:10px;
     overflow:hidden;
     margin-bottom:8px;
 }
-.panel-group:last-child{
-    margin-bottom:0;
-}
+.panel-group:last-child{margin-bottom:0}
 .panel-group-title{
     width:100%;
     border:none;
@@ -143,15 +133,18 @@ canvas{
 }
 .panel-group-content{
     display:none;
-    padding:6px;
+    padding:8px;
     background:#171717;
 }
-.panel-group.open .panel-group-content{
-    display:block;
-}
+.panel-group.open .panel-group-content{display:block}
 .grid{
     display:grid;
     grid-template-columns:1fr;
+    gap:6px;
+}
+.grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
     gap:6px;
 }
 .btn{
@@ -165,26 +158,31 @@ canvas{
     width:100%;
     font-size:12px;
 }
-.btn.secondary{
-    background:var(--accent2);
-}
-.btn.neutral{
-    background:#c8c8c8;
-    color:#111;
-}
-.btn.danger{
-    background:var(--danger);
-    color:#fff;
-}
-.btn.active{
-    outline:2px solid #fff;
-}
+.btn.secondary{background:var(--accent2)}
+.btn.neutral{background:#c8c8c8;color:#111}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.active{outline:2px solid #fff}
 .note{
     margin-top:6px;
     color:var(--muted);
     font-size:11px;
     line-height:1.3;
 }
+.small{
+    font-size:11px;
+    color:var(--muted);
+}
+.warn-box{
+    border:1px solid var(--line);
+    background:#111;
+    border-radius:8px;
+    padding:8px;
+    font-size:11px;
+    line-height:1.35;
+}
+.warn-ok{color:#8ee08e}
+.warn-bad{color:#ff8d8d}
+.warn-mid{color:#ffd27d}
 .quickbar{
     position:absolute;
     left:10px;
@@ -215,12 +213,24 @@ canvas{
     display:none;
     font-size:12px;
 }
-.mode-badge.show{
-    display:block;
+.mode-badge.show{display:block}
+.temp-label{
+    position:absolute;
+    pointer-events:none;
+    transform:translate(-50%,-100%);
+    background:rgba(0,0,0,.88);
+    color:#fff;
+    padding:6px 8px;
+    border-radius:8px;
+    border:1px solid #444;
+    font-size:12px;
+    white-space:nowrap;
+    z-index:28;
+    display:none;
 }
 @media (max-width:900px){
     canvas{
-        height:calc(100vh - 205px);
+        height:calc(100vh - 220px);
         min-height:360px;
     }
     .panel{
@@ -229,12 +239,10 @@ canvas{
         top:auto;
         bottom:10px;
         width:auto;
-        max-height:56vh;
+        max-height:68vh;
         overflow:auto;
     }
-    .brand-name{
-        font-size:16px;
-    }
+    .brand-name{font-size:16px}
 }
 </style>
 </head>
@@ -259,6 +267,7 @@ canvas{
 
     <div class="canvas-wrap">
         <div class="mode-badge" id="modeBadge"></div>
+        <div class="temp-label" id="tempLabel"></div>
 
         <div class="panel" id="panel">
             <div class="panel-group open">
@@ -266,7 +275,7 @@ canvas{
                 <div class="panel-group-content">
                     <div class="grid">
                         <button class="btn neutral" onclick="guardarPlano()">Guardar</button>
-                        <button class="btn secondary" onclick="generarCircuitos()">Circuitos</button>
+                        <button class="btn secondary" onclick="recalcularTodoCircuitos()">Recalcular todo</button>
                         <button class="btn danger" onclick="eliminarSeleccionado()">Eliminar</button>
                     </div>
                 </div>
@@ -280,6 +289,8 @@ canvas{
                         <button class="btn" onclick="cerrarEstancia()">Cerrar</button>
                         <button class="btn" onclick="guardarEstancia()">Guardar</button>
                         <button class="btn secondary" onclick="definirEscala()">Escala</button>
+                        <button class="btn secondary" onclick="verificarDiagonales()">Verificar</button>
+                        <button class="btn secondary" onclick="editarMedidaLado()">Editar lado</button>
                     </div>
                 </div>
             </div>
@@ -291,10 +302,67 @@ canvas{
                         <button class="btn secondary" id="btnZona" onclick="activarModo('zona')">Zona</button>
                         <button class="btn secondary" id="btnPuerta" onclick="activarModo('puerta')">Puerta</button>
                         <button class="btn secondary" id="btnVentana" onclick="activarModo('ventana')">Ventana</button>
+                        <button class="btn secondary" onclick="editarElementoSeleccionado()">Editar elemento</button>
                     </div>
                     <div class="note">
                         Zona: tocar y arrastrar.<br>
-                        Puerta / ventana: tocar un lado.
+                        Puerta / ventana: tocar un lado.<br>
+                        Hay pegado automático entre estancias.
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-group open">
+                <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Circuitos</button>
+                <div class="panel-group-content">
+                    <div class="small" id="circuitRoomName">Selecciona una estancia guardada</div>
+
+                    <div class="grid-2">
+                        <div>
+                            <div class="small">Modo</div>
+                            <select class="in" id="cfgModo" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#101010;color:#fff;padding:8px 9px;font-size:12px">
+                                <option value="auto">Automático</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="small">Tipo</div>
+                            <select class="in" id="cfgTipo" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#101010;color:#fff;padding:8px 9px;font-size:12px">
+                                <option value="general">General</option>
+                                <option value="bano">Baño / aseo</option>
+                                <option value="alta">Alta pérdida</option>
+                                <option value="interior">Interior</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-2" style="margin-top:6px">
+                        <div>
+                            <div class="small">Paso</div>
+                            <select class="in" id="cfgPaso" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#101010;color:#fff;padding:8px 9px;font-size:12px">
+                                <option value="0.05">5 cm</option>
+                                <option value="0.10">10 cm</option>
+                                <option value="0.15">15 cm</option>
+                                <option value="0.20">20 cm</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="small">Long. máx.</div>
+                            <input class="in" id="cfgMax" type="number" min="40" max="150" step="1" value="90" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#101010;color:#fff;padding:8px 9px;font-size:12px">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:6px">
+                        <div class="small">Circuitos manual</div>
+                        <input class="in" id="cfgCircuitos" type="number" min="1" max="12" step="1" value="1" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#101010;color:#fff;padding:8px 9px;font-size:12px">
+                    </div>
+
+                    <div class="grid" style="margin-top:6px">
+                        <button class="btn secondary" onclick="aplicarCircuitosEstancia()">Recalcular estancia</button>
+                    </div>
+
+                    <div class="warn-box" id="warnBox" style="margin-top:6px">
+                        <div class="warn-mid">Aún no hay cálculo para esta estancia.</div>
                     </div>
                 </div>
             </div>
@@ -319,8 +387,16 @@ const modeBadge = document.getElementById("modeBadge");
 const chipSeleccion = document.getElementById("chipSeleccion");
 const chipEscala = document.getElementById("chipEscala");
 const chipEdicion = document.getElementById("chipEdicion");
+const tempLabel = document.getElementById("tempLabel");
 
-/* CONFIG VISUAL */
+const cfgModo = document.getElementById("cfgModo");
+const cfgPaso = document.getElementById("cfgPaso");
+const cfgMax = document.getElementById("cfgMax");
+const cfgTipo = document.getElementById("cfgTipo");
+const cfgCircuitos = document.getElementById("cfgCircuitos");
+const warnBox = document.getElementById("warnBox");
+const circuitRoomName = document.getElementById("circuitRoomName");
+
 const CONFIG_DEFAULT = {
     nombre: "ALLCALOR PRO",
     subtitulo: "Centro de control",
@@ -340,7 +416,7 @@ const CONFIG_DEFAULT = {
     colorBotonTexto: "#111111"
 };
 
-function leerConfig(){
+function leerConfigVisual(){
     try{
         return {
             ...CONFIG_DEFAULT,
@@ -352,9 +428,8 @@ function leerConfig(){
 }
 
 function aplicarConfigVisual(){
-    const cfg = leerConfig();
+    const cfg = leerConfigVisual();
 
-    document.title = "Plano";
     document.documentElement.style.setProperty("--bg", cfg.colorFondo || CONFIG_DEFAULT.colorFondo);
     document.documentElement.style.setProperty("--panel", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
     document.documentElement.style.setProperty("--text", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
@@ -363,28 +438,23 @@ function aplicarConfigVisual(){
     document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
     document.documentElement.style.setProperty("--accent2", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
     document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto);
-
     document.body.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
 
     const brandName = document.getElementById("brandName");
     const brandSub = document.getElementById("brandSub");
     const brandLogo = document.getElementById("brandLogo");
 
-    const nombreFinal = cfg.mayusculas
-        ? (cfg.nombre || CONFIG_DEFAULT.nombre).toUpperCase()
-        : (cfg.nombre || CONFIG_DEFAULT.nombre);
+    const nombreFinal = cfg.mayusculas ? (cfg.nombre || CONFIG_DEFAULT.nombre).toUpperCase() : (cfg.nombre || CONFIG_DEFAULT.nombre);
 
     brandName.textContent = nombreFinal;
     brandSub.textContent = cfg.subtitulo || CONFIG_DEFAULT.subtitulo;
-
     brandName.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
     brandName.style.fontSize = Math.max(14, Number(cfg.tamNombre || CONFIG_DEFAULT.tamNombre) - 2) + "px";
     brandName.style.fontWeight = cfg.pesoNombre || CONFIG_DEFAULT.pesoNombre;
-    brandName.style.letterSpacing = (cfg.espacioLetras || CONFIG_DEFAULT.espacioLetras) + "px";
-    brandName.style.textShadow = "0 0 " + (cfg.sombraNombre || CONFIG_DEFAULT.sombraNombre) + "px #000";
+    brandName.style.letterSpacing = (cfg.espacioLetras || 0) + "px";
+    brandName.style.textShadow = "0 0 " + (cfg.sombraNombre || 0) + "px #000";
     brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
     brandName.style.color = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
-
     brandSub.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
     brandSub.style.fontStyle = cfg.cursiva ? "italic" : "normal";
 
@@ -407,18 +477,10 @@ window.addEventListener("resize", () => {
     dibujar();
 });
 
-function togglePanel() {
-    panel.classList.toggle("open");
-}
-function cerrarPanel() {
-    panel.classList.remove("open");
-}
-function autoCerrarPanel() {
-    if (window.innerWidth <= 900) cerrarPanel();
-}
-function toggleGroup(btn){
-    btn.parentElement.classList.toggle("open");
-}
+function togglePanel(){ panel.classList.toggle("open"); }
+function cerrarPanel(){ panel.classList.remove("open"); }
+function autoCerrarPanel(){ if (window.innerWidth <= 900) cerrarPanel(); }
+function toggleGroup(btn){ btn.parentElement.classList.toggle("open"); }
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
@@ -437,11 +499,13 @@ if (typeof obra.plano.metrosPorPixel !== "number") obra.plano.metrosPorPixel = n
 if (!Array.isArray(obra.zonasMuertas)) obra.zonasMuertas = [];
 if (!Array.isArray(obra.aberturas)) obra.aberturas = [];
 if (!Array.isArray(obra.circuitos)) obra.circuitos = [];
+if (!obra.ajustesCircuitos || typeof obra.ajustesCircuitos !== "object") obra.ajustesCircuitos = {};
 
 let estancias = obra.plano.estancias;
 let zonasMuertas = obra.zonasMuertas;
 let aberturas = obra.aberturas;
 let circuitos = obra.circuitos;
+let ajustesCircuitos = obra.ajustesCircuitos;
 let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let puntos = [];
@@ -460,6 +524,7 @@ const HIT_POINT = 14;
 const MIN_ZONA = 12;
 const MIN_ABERTURA_M = 0.4;
 const MAX_DIST_LINE = 14;
+const SNAP_DIST = 12;
 
 const seleccion = {
     tipo: null,
@@ -470,18 +535,53 @@ const seleccion = {
     handle: null
 };
 
+function saneaDatos(){
+    estancias = estancias.filter(e => e && Array.isArray(e.puntos) && e.puntos.length >= 3);
+
+    zonasMuertas = zonasMuertas.filter(z =>
+        z && isFinite(z.x) && isFinite(z.y) && isFinite(z.w) && isFinite(z.h) && z.w > 1 && z.h > 1
+    );
+
+    aberturas = aberturas.filter(a => {
+        if (!a || !isFinite(a.widthM) || a.widthM <= 0) return false;
+        if (a.currentRoom === true) return false;
+        if (!Number.isInteger(a.roomIndex)) return false;
+        if (a.roomIndex < 0 || a.roomIndex >= estancias.length) return false;
+        if (!Number.isInteger(a.sideIndex)) return false;
+        const poly = estancias[a.roomIndex]?.puntos;
+        if (!poly || a.sideIndex < 0 || a.sideIndex >= poly.length) return false;
+        if (typeof a.t !== "number" || a.t < 0 || a.t > 1) return false;
+        if (a.tipo !== "puerta" && a.tipo !== "ventana") return false;
+        return true;
+    });
+
+    circuitos = circuitos.filter(c => c && Number.isInteger(c.estancia) && c.estancia >= 0 && c.estancia < estancias.length);
+
+    const nuevosAjustes = {};
+    for (let i = 0; i < estancias.length; i++) {
+        nuevosAjustes[String(i)] = ajustesCircuitos[String(i)] || {
+            modo: "auto",
+            paso: 0.15,
+            maxLong: 90,
+            tipo: "general",
+            manualCircuitos: 1
+        };
+    }
+    ajustesCircuitos = nuevosAjustes;
+}
+saneaDatos();
+
 function guardarMemoria() {
     obra.plano.estancias = estancias;
     obra.plano.metrosPorPixel = metrosPorPixel;
     obra.zonasMuertas = zonasMuertas;
     obra.aberturas = aberturas;
     obra.circuitos = circuitos;
+    obra.ajustesCircuitos = ajustesCircuitos;
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
-function volver() {
-    window.location.href = "obra.html";
-}
+function volver(){ window.location.href = "obra.html"; }
 
 function limpiarSeleccion() {
     seleccion.tipo = null;
@@ -495,6 +595,7 @@ function limpiarSeleccion() {
 function cancelarModo() {
     modo = null;
     zonaTemp = null;
+    tempLabel.style.display = "none";
     actualizarUI();
 }
 
@@ -533,6 +634,8 @@ function actualizarUI() {
     else if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual";
     else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = "Estancia guardada";
     else chipSeleccion.textContent = "Sin selección";
+
+    actualizarPanelCircuitos();
 }
 
 function getPos(ev) {
@@ -555,20 +658,12 @@ function getPos(ev) {
     };
 }
 
-function dist(a, b) {
-    return Math.hypot(b.x - a.x, b.y - a.y);
-}
-
-function midpoint(a, b) {
-    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-}
+function dist(a, b){ return Math.hypot(b.x - a.x, b.y - a.y); }
+function midpoint(a, b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
 
 function centroid(poly) {
     let sx = 0, sy = 0;
-    for (const p of poly) {
-        sx += p.x;
-        sy += p.y;
-    }
+    for (const p of poly) { sx += p.x; sy += p.y; }
     return { x: sx / poly.length, y: sy / poly.length };
 }
 
@@ -612,10 +707,10 @@ function pointInRect(x, y, r) {
 
 function getZonaHandles(z) {
     return [
-        { name: "nw", x: z.x, y: z.y },
-        { name: "ne", x: z.x + z.w, y: z.y },
-        { name: "se", x: z.x + z.w, y: z.y + z.h },
-        { name: "sw", x: z.x, y: z.y + z.h }
+        { name:"nw", x:z.x, y:z.y },
+        { name:"ne", x:z.x+z.w, y:z.y },
+        { name:"se", x:z.x+z.w, y:z.y+z.h },
+        { name:"sw", x:z.x, y:z.y+z.h }
     ];
 }
 
@@ -639,7 +734,7 @@ function lineIntersectionsHorizontal(y, poly) {
         const t = (y - a.y) / (b.y - a.y);
         xs.push(a.x + t * (b.x - a.x));
     }
-    xs.sort((m, n) => m - n);
+    xs.sort((m,n) => m - n);
     return xs;
 }
 
@@ -655,7 +750,7 @@ function lineIntersectionsVertical(x, poly) {
         const t = (x - a.x) / (b.x - a.x);
         ys.push(a.y + t * (b.y - a.y));
     }
-    ys.sort((m, n) => m - n);
+    ys.sort((m,n) => m - n);
     return ys;
 }
 
@@ -669,7 +764,7 @@ function drawMeasureLine(x1, y1, x2, y2, text) {
     ctx.stroke();
     ctx.fillStyle = "#fff";
     ctx.font = "12px Arial";
-    ctx.fillText(text, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
+    ctx.fillText(text, (x1+x2)/2 + 4, (y1+y2)/2 - 4);
     ctx.restore();
 }
 
@@ -722,7 +817,6 @@ function drawZoneDistances(idx) {
 
 function clipPolygonWithRect(subjectPolygon, rect) {
     let output = subjectPolygon.slice();
-
     const edges = [
         {
             inside: p => p.x >= rect.x,
@@ -734,9 +828,9 @@ function clipPolygonWithRect(subjectPolygon, rect) {
         {
             inside: p => p.x <= rect.x + rect.w,
             intersect: (a, b) => {
-                const xEdge = rect.x + rect.w;
-                const t = (xEdge - a.x) / (b.x - a.x);
-                return { x: xEdge, y: a.y + t * (b.y - a.y) };
+                const xr = rect.x + rect.w;
+                const t = (xr - a.x) / (b.x - a.x);
+                return { x: xr, y: a.y + t * (b.y - a.y) };
             }
         },
         {
@@ -749,9 +843,9 @@ function clipPolygonWithRect(subjectPolygon, rect) {
         {
             inside: p => p.y <= rect.y + rect.h,
             intersect: (a, b) => {
-                const yEdge = rect.y + rect.h;
-                const t = (yEdge - a.y) / (b.y - a.y);
-                return { x: a.x + t * (b.x - a.x), y: yEdge };
+                const yr = rect.y + rect.h;
+                const t = (yr - a.y) / (b.y - a.y);
+                return { x: a.x + t * (b.x - a.x), y: yr };
             }
         }
     ];
@@ -789,20 +883,12 @@ function deadAreaForPolygon(poly) {
 function roomStats(poly) {
     const total = polygonAreaM2(poly);
     const dead = deadAreaForPolygon(poly);
-    return {
-        total,
-        dead,
-        useful: Math.max(0, total - dead)
-    };
+    return { total, dead, useful: Math.max(0, total - dead) };
 }
 
 function getSelectedRoomData() {
-    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
-        return { nombre: "Estancia actual", puntos };
-    }
-    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-        return estancias[seleccion.estanciaIndex] || null;
-    }
+    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") return { nombre:"Estancia actual", puntos };
+    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") return estancias[seleccion.estanciaIndex] || null;
     return null;
 }
 
@@ -823,16 +909,76 @@ function drawSideMeasures(poly, closedPoly, colorText) {
 
 function drawRoom(poly, selected, fillColor, strokeColor) {
     ctx.beginPath();
-    poly.forEach((p, i) => {
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-    });
+    poly.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
     ctx.closePath();
     ctx.fillStyle = fillColor;
     ctx.fill();
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = selected ? 3 : 2;
     ctx.stroke();
+}
+
+function segPointDistance(px, py, ax, ay, bx, by) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx*dx + dy*dy;
+    if (len2 === 0) return { d:Math.hypot(px-ax, py-ay), t:0, qx:ax, qy:ay };
+    let t = ((px-ax)*dx + (py-ay)*dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const qx = ax + t*dx;
+    const qy = ay + t*dy;
+    return { d:Math.hypot(px-qx, py-qy), t, qx, qy };
+}
+
+function snapPoint(raw, ignoreRoomIdx = -999, ignorePointIdx = -999) {
+    let best = { x: raw.x, y: raw.y, d: Infinity };
+
+    function testPoint(p){
+        const d = Math.hypot(raw.x - p.x, raw.y - p.y);
+        if (d < best.d && d <= SNAP_DIST) best = { x:p.x, y:p.y, d };
+    }
+
+    function testSegment(a,b){
+        const hit = segPointDistance(raw.x, raw.y, a.x, a.y, b.x, b.y);
+        if (hit.d < best.d && hit.d <= SNAP_DIST) best = { x:hit.qx, y:hit.qy, d:hit.d };
+    }
+
+    if (cerrado && puntos.length >= 2) {
+        for (let i = 0; i < puntos.length; i++) testPoint(puntos[i]);
+    }
+
+    for (let r = 0; r < estancias.length; r++) {
+        const poly = estancias[r].puntos;
+        for (let i = 0; i < poly.length; i++) {
+            if (!(r === ignoreRoomIdx && i === ignorePointIdx)) testPoint(poly[i]);
+        }
+        for (let i = 0; i < poly.length; i++) {
+            const j = (i + 1) % poly.length;
+            testSegment(poly[i], poly[j]);
+        }
+    }
+
+    return { x: best.x, y: best.y };
+}
+
+function drawTempZoneLabel(x, y, w, h) {
+    if (w < 3 || h < 3) {
+        tempLabel.style.display = "none";
+        return;
+    }
+    let text = "Zona";
+    if (metrosPorPixel) {
+        const wm = (w * metrosPorPixel).toFixed(2);
+        const hm = (h * metrosPorPixel).toFixed(2);
+        const am2 = ((w * metrosPorPixel) * (h * metrosPorPixel)).toFixed(2);
+        text = wm + " m × " + hm + " m · " + am2 + " m²";
+    } else {
+        text = Math.round(w) + " px × " + Math.round(h) + " px";
+    }
+    tempLabel.textContent = text;
+    tempLabel.style.left = (x + w / 2) + "px";
+    tempLabel.style.top = (y - 6) + "px";
+    tempLabel.style.display = "block";
 }
 
 /* CIRCUITOS */
@@ -845,51 +991,238 @@ function getRoomBounds(poly){
     };
 }
 
-function generarCircuitos(){
+function getCircuitSetting(idx){
+    const saved = ajustesCircuitos[String(idx)] || {};
+    return {
+        modo: saved.modo || "auto",
+        paso: typeof saved.paso === "number" ? saved.paso : 0.15,
+        maxLong: typeof saved.maxLong === "number" ? saved.maxLong : 90,
+        tipo: saved.tipo || "general",
+        manualCircuitos: typeof saved.manualCircuitos === "number" ? saved.manualCircuitos : 1
+    };
+}
+
+function saveCircuitSetting(idx, obj){
+    ajustesCircuitos[String(idx)] = { ...getCircuitSetting(idx), ...obj };
+}
+
+function getAutoPasoPorTipo(tipo, areaUtil){
+    if (tipo === "bano") return 0.10;
+    if (tipo === "alta") return 0.10;
+    if (tipo === "interior") return 0.15;
+    if (areaUtil <= 8) return 0.10;
+    if (areaUtil <= 22) return 0.15;
+    return 0.15;
+}
+
+function estimateLength(areaUtil, paso){
+    if (!paso || paso <= 0) return 0;
+    return areaUtil / paso;
+}
+
+function buildWarnings(calc){
+    const warnings = [];
+    if (calc.paso <= 0.05 && calc.tipo !== "bano" && calc.tipo !== "alta") {
+        warnings.push({ level:"mid", text:"Paso de 5 cm: úsalo solo donde haga falta." });
+    }
+    if (calc.paso >= 0.20 && calc.tipo !== "interior") {
+        warnings.push({ level:"mid", text:"Paso de 20 cm: puede quedarse largo." });
+    }
+    if (calc.longitudPorCircuito > calc.maxLong) {
+        warnings.push({ level:"bad", text:"La longitud por circuito supera el máximo." });
+    }
+    if (calc.longitudPorCircuito > 100) {
+        warnings.push({ level:"bad", text:"Circuito muy largo." });
+    }
+    if (calc.longitudPorCircuito < 40) {
+        warnings.push({ level:"mid", text:"Circuito corto." });
+    }
+    if (calc.numCircuitos > 6) {
+        warnings.push({ level:"mid", text:"Muchos circuitos para una estancia." });
+    }
+    if (calc.areaUtil <= 0) {
+        warnings.push({ level:"bad", text:"Superficie útil incorrecta." });
+    }
+    if (!warnings.length) warnings.push({ level:"ok", text:"Cálculo coherente con los datos actuales." });
+    return warnings;
+}
+
+function calcularCircuitosParaEstancia(idx){
+    const est = estancias[idx];
+    if (!est || !est.puntos || est.puntos.length < 3) return null;
+
+    const s = roomStats(est.puntos);
+    const aj = getCircuitSetting(idx);
+
+    let paso = aj.paso;
+    if (aj.modo === "auto") paso = getAutoPasoPorTipo(aj.tipo, s.useful);
+
+    const maxLong = aj.maxLong || 90;
+    const longitudTotal = estimateLength(s.useful, paso);
+    let numCircuitos = aj.modo === "manual"
+        ? Math.max(1, Math.round(aj.manualCircuitos || 1))
+        : Math.max(1, Math.ceil(longitudTotal / maxLong));
+
+    const longitudPorCircuito = numCircuitos > 0 ? longitudTotal / numCircuitos : 0;
+
+    const calc = {
+        estancia: idx,
+        nombre: est.nombre || "Estancia",
+        areaTotal: s.total,
+        areaMuerta: s.dead,
+        areaUtil: s.useful,
+        modo: aj.modo,
+        tipo: aj.tipo,
+        paso,
+        maxLong,
+        numCircuitos,
+        longitudTotal,
+        longitudPorCircuito
+    };
+    calc.warnings = buildWarnings(calc);
+    return calc;
+}
+
+function recalcularCircuitosEstancia(idx){
+    const calc = calcularCircuitosParaEstancia(idx);
+    circuitos = circuitos.filter(c => c.estancia !== idx);
+
+    if (!calc || calc.areaUtil <= 0) {
+        guardarMemoria();
+        dibujar();
+        return;
+    }
+
+    for(let i = 0; i < calc.numCircuitos; i++){
+        circuitos.push({
+            estancia: idx,
+            circuito: i + 1,
+            paso: calc.paso,
+            longitud: calc.longitudPorCircuito,
+            modo: calc.modo,
+            tipo: calc.tipo,
+            maxLong: calc.maxLong
+        });
+    }
+    guardarMemoria();
+}
+
+function recalcularTodoCircuitos(){
     if(!metrosPorPixel){
         alert("Define escala primero");
         return;
     }
-    if(!estancias.length){
-        alert("No hay estancias guardadas");
-        return;
-    }
-
     circuitos = [];
-
-    estancias.forEach((est, idx)=>{
-        const stats = roomStats(est.puntos);
-        const area = stats.useful;
-
-        if(area <= 0) return;
-
-        let separacion = 0.10;
-        if (area > 12) separacion = 0.15;
-        if (area > 25) separacion = 0.20;
-
-        const longitudTotal = area / separacion;
-        const maxLongitud = 90;
-        const numCircuitos = Math.max(1, Math.ceil(longitudTotal / maxLongitud));
-        const largoPorCircuito = longitudTotal / numCircuitos;
-
-        for(let i = 0; i < numCircuitos; i++){
-            circuitos.push({
-                estancia: idx,
-                circuito: i + 1,
-                separacion,
-                longitud: largoPorCircuito
-            });
-        }
-    });
-
+    for(let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
     guardarMemoria();
     dibujar();
     autoCerrarPanel();
-    alert("Circuitos generados");
+    alert("Circuitos recalculados");
+}
+
+function getSelectedSavedRoomIndex(){
+    if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") return seleccion.estanciaIndex;
+    return -1;
+}
+
+function actualizarPanelCircuitos(){
+    const idx = getSelectedSavedRoomIndex();
+    if (idx < 0 || !estancias[idx]) {
+        circuitRoomName.textContent = "Selecciona una estancia guardada";
+        warnBox.innerHTML = '<div class="warn-mid">Selecciona una estancia para editar sus circuitos.</div>';
+        return;
+    }
+
+    const est = estancias[idx];
+    const aj = getCircuitSetting(idx);
+    cfgModo.value = aj.modo;
+    cfgPaso.value = String(aj.paso.toFixed(2));
+    cfgMax.value = aj.maxLong;
+    cfgTipo.value = aj.tipo;
+    cfgCircuitos.value = aj.manualCircuitos;
+
+    const calc = calcularCircuitosParaEstancia(idx);
+    circuitRoomName.textContent = "Estancia: " + (est.nombre || "Sin nombre");
+
+    let html = "";
+    if (calc) {
+        html += '<div class="warn-mid">Útil: ' + calc.areaUtil.toFixed(2) + ' m²</div>';
+        html += '<div class="warn-mid">Paso: ' + (calc.paso * 100).toFixed(0) + ' cm</div>';
+        html += '<div class="warn-mid">Circuitos: ' + calc.numCircuitos + '</div>';
+        html += '<div class="warn-mid">Long./circuito: ' + calc.longitudPorCircuito.toFixed(1) + ' m</div>';
+        html += '<hr style="border:none;border-top:1px solid #2b2b2b;margin:7px 0">';
+        for (const w of calc.warnings) {
+            if (w.level === "ok") html += '<div class="warn-ok">• ' + w.text + '</div>';
+            else if (w.level === "bad") html += '<div class="warn-bad">• ' + w.text + '</div>';
+            else html += '<div class="warn-mid">• ' + w.text + '</div>';
+        }
+    } else {
+        html = '<div class="warn-bad">No se pudo calcular esta estancia.</div>';
+    }
+    warnBox.innerHTML = html;
+}
+
+function aplicarCircuitosEstancia(){
+    const idx = getSelectedSavedRoomIndex();
+    if (idx < 0 || !estancias[idx]) {
+        alert("Selecciona una estancia guardada");
+        return;
+    }
+
+    const modoVal = cfgModo.value;
+    const pasoVal = parseFloat(cfgPaso.value);
+    const maxVal = parseFloat(cfgMax.value);
+    const tipoVal = cfgTipo.value;
+    const manualVal = parseInt(cfgCircuitos.value, 10);
+
+    if (!pasoVal || pasoVal <= 0) {
+        alert("Paso no válido");
+        return;
+    }
+    if (!maxVal || maxVal <= 0) {
+        alert("Longitud máxima no válida");
+        return;
+    }
+    if (!manualVal || manualVal <= 0) {
+        alert("Número de circuitos manual no válido");
+        return;
+    }
+
+    saveCircuitSetting(idx, {
+        modo: modoVal,
+        paso: pasoVal,
+        maxLong: maxVal,
+        tipo: tipoVal,
+        manualCircuitos: manualVal
+    });
+
+    recalcularCircuitosEstancia(idx);
+    actualizarPanelCircuitos();
+    dibujar();
+}
+
+function subtractRectIntervals(left, right, y){
+    let segments = [{a:left, b:right}];
+    for (const z of zonasMuertas) {
+        if (y < z.y || y > z.y + z.h) continue;
+        const za = z.x;
+        const zb = z.x + z.w;
+        const next = [];
+        for (const s of segments) {
+            if (zb <= s.a || za >= s.b) next.push(s);
+            else {
+                if (za > s.a) next.push({a:s.a, b:Math.max(s.a, za)});
+                if (zb < s.b) next.push({a:Math.min(s.b, zb), b:s.b});
+            }
+        }
+        segments = next.filter(s => s.b - s.a > 4);
+        if (!segments.length) break;
+    }
+    return segments;
 }
 
 function drawCircuitos(){
-    if(!Array.isArray(circuitos) || !circuitos.length) return;
+    if(!Array.isArray(circuitos) || !circuitos.length || !metrosPorPixel) return;
 
     ctx.save();
     ctx.strokeStyle = "#00d9ff";
@@ -898,14 +1231,12 @@ function drawCircuitos(){
     estancias.forEach((est, idx)=>{
         const lista = circuitos.filter(c => c.estancia === idx);
         if(!lista.length) return;
-
         const p = est.puntos;
         if(!p || p.length < 3) return;
 
         const bounds = getRoomBounds(p);
-        const alto = bounds.maxY - bounds.minY;
         const ancho = bounds.maxX - bounds.minX;
-        if (alto < 10 || ancho < 10) return;
+        if (ancho < 10) return;
 
         const num = lista.length;
         const banda = ancho / num;
@@ -915,53 +1246,42 @@ function drawCircuitos(){
             const x1 = bounds.minX + (c + 1) * banda - 8;
             if (x1 <= x0) continue;
 
-            const sepPx = Math.max(12, lista[c].separacion / metrosPorPixel);
+            const pasoPx = Math.max(10, lista[c].paso / metrosPorPixel);
             let sentido = true;
 
-            for(let y = bounds.minY + 8; y <= bounds.maxY - 8; y += sepPx){
+            for(let y = bounds.minY + 8; y <= bounds.maxY - 8; y += pasoPx){
                 const xs = lineIntersectionsHorizontal(y, p);
                 if(xs.length < 2) continue;
-
-                let left = null;
-                let right = null;
 
                 for(let k = 0; k < xs.length; k += 2){
                     const a = xs[k];
                     const b = xs[k + 1];
                     if (b === undefined) continue;
 
-                    const tramoLeft = Math.max(a, x0);
-                    const tramoRight = Math.min(b, x1);
+                    let left = Math.max(a, x0);
+                    let right = Math.min(b, x1);
+                    if (right <= left) continue;
 
-                    if(tramoRight > tramoLeft){
-                        left = tramoLeft;
-                        right = tramoRight;
-                        break;
+                    const trozos = subtractRectIntervals(left, right, y);
+                    for (const t of trozos) {
+                        ctx.beginPath();
+                        if (sentido) {
+                            ctx.moveTo(t.a, y);
+                            ctx.lineTo(t.b, y);
+                        } else {
+                            ctx.moveTo(t.b, y);
+                            ctx.lineTo(t.a, y);
+                        }
+                        ctx.stroke();
                     }
                 }
-
-                if(left === null || right === null) continue;
-
-                ctx.beginPath();
-                if(sentido){
-                    ctx.moveTo(left, y);
-                    ctx.lineTo(right, y);
-                }else{
-                    ctx.moveTo(right, y);
-                    ctx.lineTo(left, y);
-                }
-                ctx.stroke();
                 sentido = !sentido;
             }
 
             const cxy = centroid(p);
             ctx.fillStyle = "#00d9ff";
             ctx.font = "11px Arial";
-            ctx.fillText(
-                "C" + lista[c].circuito + " · " + lista[c].longitud.toFixed(0) + " m",
-                cxy.x - 30,
-                cxy.y + 40 + (c * 14)
-            );
+            ctx.fillText("C" + lista[c].circuito + " · " + lista[c].longitud.toFixed(0) + " m", cxy.x - 30, cxy.y + 40 + (c * 14));
         }
     });
 
@@ -973,10 +1293,7 @@ function drawCurrentRoom() {
     const selected = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
 
     ctx.beginPath();
-    puntos.forEach((p, i) => {
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-    });
+    puntos.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
 
     if (cerrado && puntos.length >= 3) {
         ctx.closePath();
@@ -1040,7 +1357,6 @@ function drawSavedRooms() {
 
         const c = centroid(est.puntos);
         const stats = roomStats(est.puntos);
-
         ctx.fillStyle = "#fff";
         ctx.font = "16px Arial";
         ctx.fillText(est.nombre || "Estancia", c.x - 24, c.y - 12);
@@ -1080,11 +1396,7 @@ function drawZones() {
         ctx.fillStyle = "#fff";
         ctx.font = "12px Arial";
         if (metrosPorPixel) {
-            ctx.fillText(
-                "Zona muerta " + (z.w * metrosPorPixel).toFixed(2) + "m x " + (z.h * metrosPorPixel).toFixed(2) + "m",
-                z.x + 6,
-                z.y + 16
-            );
+            ctx.fillText("Zona muerta " + (z.w * metrosPorPixel).toFixed(2) + "m x " + (z.h * metrosPorPixel).toFixed(2) + "m", z.x + 6, z.y + 16);
         } else {
             ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
         }
@@ -1105,21 +1417,13 @@ function drawZones() {
         ctx.strokeStyle = "yellow";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
-    }
-}
 
-function segPointDistance(px, py, ax, ay, bx, by) {
-    const dx = bx - ax;
-    const dy = by - ay;
-    const len2 = dx * dx + dy * dy;
-    if (len2 === 0) {
-        return { d: Math.hypot(px - ax, py - ay), t: 0, qx: ax, qy: ay };
+        if (metrosPorPixel) {
+            ctx.fillStyle = "#fff";
+            ctx.font = "12px Arial";
+            ctx.fillText((w * metrosPorPixel).toFixed(2) + "m × " + (h * metrosPorPixel).toFixed(2) + "m", x + 6, y + h + 16);
+        }
     }
-    let t = ((px - ax) * dx + (py - ay) * dy) / len2;
-    t = Math.max(0, Math.min(1, t));
-    const qx = ax + t * dx;
-    const qy = ay + t * dy;
-    return { d: Math.hypot(px - qx, py - qy), t, qx, qy };
 }
 
 function findNearestWall(x, y) {
@@ -1162,7 +1466,7 @@ function aberturaWidthPx(widthM) {
 }
 
 function getAberturaSegment(ab) {
-    const poly = ab.currentRoom ? puntos : estancias[ab.roomIndex]?.puntos;
+    const poly = estancias[ab.roomIndex]?.puntos;
     if (!poly || poly.length < 2) return null;
     const a = poly[ab.sideIndex];
     const b = poly[(ab.sideIndex + 1) % poly.length];
@@ -1196,10 +1500,7 @@ function aberturaVisual(ab) {
     const leftM = metrosPorPixel ? dist(seg.a, p1) * metrosPorPixel : 0;
     const rightM = metrosPorPixel ? dist(p2, seg.b) * metrosPorPixel : 0;
 
-    return {
-        p1, p2, centerX, centerY, ux, uy, nx, ny,
-        leftM, rightM, segA: seg.a, segB: seg.b
-    };
+    return { p1, p2, centerX, centerY, ux, uy, nx, ny, leftM, rightM, segA: seg.a, segB: seg.b };
 }
 
 function hitAbertura(x, y) {
@@ -1245,11 +1546,7 @@ function drawAberturas() {
 
         ctx.fillStyle = "#fff";
         ctx.font = "12px Arial";
-        ctx.fillText(
-            (ab.tipo === "puerta" ? "Puerta " : "Ventana ") + ab.widthM.toFixed(2) + " m",
-            v.centerX + v.nx * 16,
-            v.centerY + v.ny * 16
-        );
+        ctx.fillText((ab.tipo === "puerta" ? "Puerta " : "Ventana ") + ab.widthM.toFixed(2) + " m", v.centerX + v.nx * 16, v.centerY + v.ny * 16);
 
         if (selected) {
             ctx.beginPath();
@@ -1294,8 +1591,7 @@ function updateInfo() {
                 html += "<br>Izquierda: " + v.leftM.toFixed(2) + " m";
                 html += "<br>Derecha: " + v.rightM.toFixed(2) + " m";
             }
-            if (ab.currentRoom) html += "<br>En: estancia actual";
-            else if (estancias[ab.roomIndex]) html += "<br>En: " + (estancias[ab.roomIndex].nombre || "Estancia");
+            if (estancias[ab.roomIndex]) html += "<br>En: " + (estancias[ab.roomIndex].nombre || "Estancia");
             info.innerHTML = html;
             actualizarUI();
             return;
@@ -1304,8 +1600,8 @@ function updateInfo() {
 
     const estSel = getSelectedRoomData();
     if (estSel && estSel.puntos && estSel.puntos.length >= 3) {
+        const idx = getSelectedSavedRoomIndex();
         const stats = roomStats(estSel.puntos);
-        const circs = circuitos.filter(c => c.estancia === seleccion.estanciaIndex);
         html += "Datos de la estancia seleccionada";
         html += "<br>Nombre: " + (estSel.nombre || "Sin nombre");
         html += "<br>Lados: " + estSel.puntos.length;
@@ -1314,10 +1610,13 @@ function updateInfo() {
             html += "<br>Superficie muerta: " + stats.dead.toFixed(2) + " m²";
             html += "<br>Superficie útil: " + stats.useful.toFixed(2) + " m²";
         }
-        if (circs.length) {
-            html += "<br>Circuitos: " + circs.length;
-            html += "<br>Longitud media: " + circs[0].longitud.toFixed(1) + " m";
-            html += "<br>Separación: " + (circs[0].separacion * 100).toFixed(0) + " cm";
+        if (idx >= 0) {
+            const calc = calcularCircuitosParaEstancia(idx);
+            if (calc) {
+                html += "<br>Paso: " + (calc.paso * 100).toFixed(0) + " cm";
+                html += "<br>Circuitos: " + calc.numCircuitos;
+                html += "<br>Longitud por circuito: " + calc.longitudPorCircuito.toFixed(1) + " m";
+            }
         }
         info.innerHTML = html;
         actualizarUI();
@@ -1345,9 +1644,7 @@ function updateInfo() {
     html += "<br>Ventanas: " + aberturas.filter(a => a.tipo === "ventana").length;
     html += "<br>Circuitos: " + circuitos.length;
 
-    if (puntos.length > 0) {
-        html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
-    }
+    if (puntos.length > 0) html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
 
     info.innerHTML = html;
     actualizarUI();
@@ -1367,6 +1664,7 @@ function nuevaEstancia() {
     puntos = [];
     cerrado = false;
     enEdicionNuevaEstancia = true;
+    aberturas = aberturas.filter(a => a && a.currentRoom !== true);
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1406,6 +1704,17 @@ function guardarEstancia() {
         nombre: nombre.trim(),
         puntos: JSON.parse(JSON.stringify(puntos))
     });
+
+    const nuevoIdx = estancias.length - 1;
+    if (!ajustesCircuitos[String(nuevoIdx)]) {
+        ajustesCircuitos[String(nuevoIdx)] = {
+            modo: "auto",
+            paso: 0.15,
+            maxLong: 90,
+            tipo: "general",
+            manualCircuitos: 1
+        };
+    }
 
     guardarMemoria();
     puntos = [];
@@ -1452,12 +1761,153 @@ function guardarPlano() {
     alert("Plano guardado");
 }
 
+function editarMedidaLado() {
+    const idx = getSelectedSavedRoomIndex();
+    if (idx < 0) {
+        alert("Selecciona una estancia guardada");
+        return;
+    }
+    if (!metrosPorPixel) {
+        alert("Define escala primero");
+        return;
+    }
+
+    const poly = estancias[idx].puntos;
+    const total = poly.length;
+    const ladoTxt = prompt("Número de lado a corregir (1 a " + total + "):");
+    if (!ladoTxt) return;
+    const lado = parseInt(ladoTxt, 10) - 1;
+    if (!Number.isInteger(lado) || lado < 0 || lado >= total) {
+        alert("Lado no válido");
+        return;
+    }
+
+    const j = (lado + 1) % total;
+    const actualM = dist(poly[lado], poly[j]) * metrosPorPixel;
+    const valor = prompt("Medida real en metros del lado " + (lado + 1) + ":", actualM.toFixed(2));
+    if (!valor) return;
+    const nuevoM = parseFloat(String(valor).replace(",", "."));
+    if (!nuevoM || nuevoM <= 0) {
+        alert("Medida no válida");
+        return;
+    }
+
+    const actualPx = dist(poly[lado], poly[j]);
+    const nuevoPx = nuevoM / metrosPorPixel;
+    const ratio = nuevoPx / actualPx;
+    const dx = (poly[j].x - poly[lado].x) * ratio;
+    const dy = (poly[j].y - poly[lado].y) * ratio;
+
+    poly[j].x = poly[lado].x + dx;
+    poly[j].y = poly[lado].y + dy;
+
+    recalcularCircuitosEstancia(idx);
+    guardarMemoria();
+    dibujar();
+}
+
+function editarElementoSeleccionado() {
+    if (!metrosPorPixel) {
+        alert("Define escala primero");
+        return;
+    }
+
+    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
+        const z = zonasMuertas[seleccion.zonaIndex];
+        if (!z) return;
+
+        const an = prompt("Ancho en metros:", (z.w * metrosPorPixel).toFixed(2));
+        if (!an) return;
+        const al = prompt("Alto en metros:", (z.h * metrosPorPixel).toFixed(2));
+        if (!al) return;
+
+        const anM = parseFloat(String(an).replace(",", "."));
+        const alM = parseFloat(String(al).replace(",", "."));
+        if (!anM || anM <= 0 || !alM || alM <= 0) {
+            alert("Medidas no válidas");
+            return;
+        }
+
+        z.w = anM / metrosPorPixel;
+        z.h = alM / metrosPorPixel;
+
+        for (let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
+        guardarMemoria();
+        dibujar();
+        return;
+    }
+
+    if (seleccion.tipo === "abertura") {
+        const ab = aberturas[seleccion.aberturaIndex];
+        if (!ab) return;
+
+        const an = prompt("Ancho en metros:", ab.widthM.toFixed(2));
+        if (!an) return;
+        const nuevo = parseFloat(String(an).replace(",", "."));
+        if (!nuevo || nuevo <= 0) {
+            alert("Medida no válida");
+            return;
+        }
+        ab.widthM = nuevo;
+        guardarMemoria();
+        dibujar();
+        return;
+    }
+
+    alert("Selecciona una zona muerta, puerta o ventana");
+}
+
+function verificarDiagonales() {
+    const idx = getSelectedSavedRoomIndex();
+    if (idx < 0) {
+        alert("Selecciona una estancia guardada");
+        return;
+    }
+    if (!metrosPorPixel) {
+        alert("Define escala primero");
+        return;
+    }
+
+    const poly = estancias[idx].puntos;
+    if (poly.length < 4) {
+        alert("Esta estancia no necesita verificación por diagonales");
+        return;
+    }
+
+    const diagonales = [];
+    for (let i = 0; i < poly.length; i++) {
+        for (let j = i + 1; j < poly.length; j++) {
+            const adyacentes = j === i + 1 || (i === 0 && j === poly.length - 1);
+            if (!adyacentes) diagonales.push([i, j]);
+        }
+    }
+
+    let informe = [];
+    for (const [i, j] of diagonales) {
+        const calculada = dist(poly[i], poly[j]) * metrosPorPixel;
+        const valor = prompt("Diagonal " + (i + 1) + "-" + (j + 1) + " en metros. Calculada: " + calculada.toFixed(2), calculada.toFixed(2));
+        if (valor === null) continue;
+        const real = parseFloat(String(valor).replace(",", "."));
+        if (!real || real <= 0) continue;
+        const dif = Math.abs(real - calculada);
+        informe.push("Diagonal " + (i + 1) + "-" + (j + 1) + ": diferencia " + dif.toFixed(2) + " m");
+    }
+
+    if (!informe.length) {
+        alert("Verificación cancelada");
+        return;
+    }
+
+    alert(informe.join("\n"));
+}
+
 function eliminarSeleccionado() {
     if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
         const idx = Number(seleccion.zonaIndex);
         if (idx >= 0 && idx < zonasMuertas.length) {
             if (confirm("Eliminar zona muerta seleccionada?")) {
                 zonasMuertas.splice(idx, 1);
+                for (let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
                 guardarMemoria();
                 limpiarSeleccion();
                 dibujar();
@@ -1485,17 +1935,23 @@ function eliminarSeleccionado() {
             if (confirm("Eliminar estancia guardada?")) {
                 estancias.splice(idx, 1);
                 aberturas = aberturas
-                    .filter(a => !(a.roomIndex === idx && !a.currentRoom))
+                    .filter(a => a.roomIndex !== idx)
                     .map(a => {
-                        if (!a.currentRoom && a.roomIndex > idx) a.roomIndex -= 1;
+                        if (a.roomIndex > idx) a.roomIndex -= 1;
                         return a;
                     });
-                circuitos = circuitos
-                    .filter(c => c.estancia !== idx)
-                    .map(c => {
-                        if (c.estancia > idx) c.estancia -= 1;
-                        return c;
-                    });
+
+                const nuevosAjustes = {};
+                Object.keys(ajustesCircuitos).forEach(k => {
+                    const n = Number(k);
+                    if (n < idx) nuevosAjustes[String(n)] = ajustesCircuitos[k];
+                    if (n > idx) nuevosAjustes[String(n - 1)] = ajustesCircuitos[k];
+                });
+                ajustesCircuitos = nuevosAjustes;
+
+                circuitos = [];
+                for (let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
+
                 guardarMemoria();
                 limpiarSeleccion();
                 dibujar();
@@ -1509,7 +1965,7 @@ function eliminarSeleccionado() {
             puntos = [];
             cerrado = false;
             enEdicionNuevaEstancia = false;
-            aberturas = aberturas.filter(a => !a.currentRoom);
+            cancelarModo();
             guardarMemoria();
             limpiarSeleccion();
             dibujar();
@@ -1531,19 +1987,10 @@ function resizeZona(z, handle, pos) {
     let right = z.x + z.w;
     let bottom = z.y + z.h;
 
-    if (handle === "nw") {
-        left = pos.x;
-        top = pos.y;
-    } else if (handle === "ne") {
-        right = pos.x;
-        top = pos.y;
-    } else if (handle === "se") {
-        right = pos.x;
-        bottom = pos.y;
-    } else if (handle === "sw") {
-        left = pos.x;
-        bottom = pos.y;
-    }
+    if (handle === "nw") { left = pos.x; top = pos.y; }
+    else if (handle === "ne") { right = pos.x; top = pos.y; }
+    else if (handle === "se") { right = pos.x; bottom = pos.y; }
+    else if (handle === "sw") { left = pos.x; bottom = pos.y; }
 
     if (right - left < MIN_ZONA) {
         if (handle === "nw" || handle === "sw") left = right - MIN_ZONA;
@@ -1561,7 +2008,8 @@ function resizeZona(z, handle, pos) {
 }
 
 function onStart(ev) {
-    const pos = getPos(ev);
+    const raw = getPos(ev);
+    const pos = snapPoint(raw);
     ultimoX = pos.x;
     ultimoY = pos.y;
 
@@ -1661,6 +2109,7 @@ function onStart(ev) {
             seleccion.tipo = "estanciaGuardada";
             seleccion.estanciaIndex = i;
             arrastrando = true;
+            actualizarUI();
             dibujar();
             if (ev.cancelable) ev.preventDefault();
             return;
@@ -1669,7 +2118,8 @@ function onStart(ev) {
 
     if (enEdicionNuevaEstancia && !cerrado) {
         limpiarSeleccion();
-        puntos.push({ x: pos.x, y: pos.y });
+        const snapped = snapPoint(pos);
+        puntos.push({ x: snapped.x, y: snapped.y });
         seleccion.tipo = "puntoActual";
         seleccion.puntoIndex = puntos.length - 1;
         dibujar();
@@ -1682,11 +2132,17 @@ function onStart(ev) {
 }
 
 function onMove(ev) {
-    const pos = getPos(ev);
+    const raw = getPos(ev);
+    const pos = snapPoint(raw);
 
     if (modo === "zona" && arrastrando && zonaTemp) {
         zonaTemp.x2 = pos.x;
         zonaTemp.y2 = pos.y;
+        const x = Math.min(zonaTemp.x1, zonaTemp.x2);
+        const y = Math.min(zonaTemp.y1, zonaTemp.y2);
+        const w = Math.abs(zonaTemp.x2 - zonaTemp.x1);
+        const h = Math.abs(zonaTemp.y2 - zonaTemp.y1);
+        drawTempZoneLabel(x, y, w, h);
         dibujar();
         if (ev.cancelable) ev.preventDefault();
         return;
@@ -1699,32 +2155,32 @@ function onMove(ev) {
 
     if (seleccion.tipo === "zonaMuerta") {
         moveZona(zonasMuertas[seleccion.zonaIndex], dx, dy);
+        for (let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
         guardarMemoria();
     } else if (seleccion.tipo === "zonaHandle") {
         resizeZona(zonasMuertas[seleccion.zonaIndex], seleccion.handle, pos);
+        for (let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
         guardarMemoria();
     } else if (seleccion.tipo === "abertura") {
         moveAberturaAlongWall(aberturas[seleccion.aberturaIndex], pos.x, pos.y);
         guardarMemoria();
     } else if (seleccion.tipo === "puntoActual") {
-        puntos[seleccion.puntoIndex].x += dx;
-        puntos[seleccion.puntoIndex].y += dy;
+        const snapped = snapPoint(pos);
+        puntos[seleccion.puntoIndex].x = snapped.x;
+        puntos[seleccion.puntoIndex].y = snapped.y;
     } else if (seleccion.tipo === "puntoGuardado") {
         const est = estancias[seleccion.estanciaIndex];
-        est.puntos[seleccion.puntoIndex].x += dx;
-        est.puntos[seleccion.puntoIndex].y += dy;
+        const snapped = snapPoint(pos, seleccion.estanciaIndex, seleccion.puntoIndex);
+        est.puntos[seleccion.puntoIndex].x = snapped.x;
+        est.puntos[seleccion.puntoIndex].y = snapped.y;
+        recalcularCircuitosEstancia(seleccion.estanciaIndex);
         guardarMemoria();
     } else if (seleccion.tipo === "estanciaActual") {
-        for (const p of puntos) {
-            p.x += dx;
-            p.y += dy;
-        }
+        for (const p of puntos) { p.x += dx; p.y += dy; }
     } else if (seleccion.tipo === "estanciaGuardada") {
         const est = estancias[seleccion.estanciaIndex];
-        for (const p of est.puntos) {
-            p.x += dx;
-            p.y += dy;
-        }
+        for (const p of est.puntos) { p.x += dx; p.y += dy; }
+        recalcularCircuitosEstancia(seleccion.estanciaIndex);
         guardarMemoria();
     }
 
@@ -1741,8 +2197,11 @@ function onEnd(ev) {
         const w = Math.abs(zonaTemp.x2 - zonaTemp.x1);
         const h = Math.abs(zonaTemp.y2 - zonaTemp.y1);
 
+        tempLabel.style.display = "none";
+
         if (w > 3 && h > 3) {
             zonasMuertas.push({ x, y, w, h });
+            for (let i = 0; i < estancias.length; i++) recalcularCircuitosEstancia(i);
             guardarMemoria();
             limpiarSeleccion();
             seleccion.tipo = "zonaMuerta";
@@ -1757,6 +2216,8 @@ function onEnd(ev) {
         if (ev && ev.cancelable) ev.preventDefault();
         return;
     }
+
+    tempLabel.style.display = "none";
 
     if (!arrastrando) return;
     arrastrando = false;
@@ -1775,6 +2236,11 @@ function onEnd(ev) {
 }
 
 function crearAbertura(tipo, wall) {
+    if (wall.currentRoom) {
+        alert("Primero guarda la estancia");
+        return;
+    }
+
     const valor = prompt("Ancho en metros:", tipo === "puerta" ? "0.82" : "1.20");
     if (!valor) return;
     const widthM = parseFloat(String(valor).replace(",", "."));
@@ -1793,7 +2259,7 @@ function crearAbertura(tipo, wall) {
     aberturas.push({
         tipo,
         roomIndex: wall.roomIndex,
-        currentRoom: wall.currentRoom,
+        currentRoom: false,
         sideIndex: wall.sideIndex,
         t: wall.t,
         widthM
@@ -1806,6 +2272,12 @@ function crearAbertura(tipo, wall) {
     cancelarModo();
     dibujar();
 }
+
+cfgModo.addEventListener("change", actualizarPanelCircuitos);
+cfgPaso.addEventListener("change", actualizarPanelCircuitos);
+cfgMax.addEventListener("input", actualizarPanelCircuitos);
+cfgTipo.addEventListener("change", actualizarPanelCircuitos);
+cfgCircuitos.addEventListener("input", actualizarPanelCircuitos);
 
 canvas.addEventListener("mousedown", onStart);
 canvas.addEventListener("mousemove", onMove);
@@ -1824,7 +2296,7 @@ window.addEventListener("keydown", (e) => {
     }
     if (e.key === "Delete" || e.key === "Backspace") {
         const tag = document.activeElement ? document.activeElement.tagName : "";
-        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+        if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") {
             if (seleccion.tipo) eliminarSeleccionado();
         }
     }
