@@ -126,6 +126,7 @@ canvas{
 </div>
 
 <script>
+let metrosPorPixel = obra.plano.metrosPorPixel || null;
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
@@ -171,7 +172,7 @@ let estancias = obra.plano.estancias;
 let zonasMuertas = [];
 obra.zonasMuertas = [];
 guardarMemoria();
-let metrosPorPixel = obra.plano.metrosPorPixel || null;
+
 
 let modoZonaMuerta = false;
 let zonaMuertaTemp = null;
