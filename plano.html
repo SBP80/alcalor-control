@@ -186,7 +186,7 @@ let puntos = [];
 let cerrado = false;
 
 let seleccion = {
-    tipo: null, // puntoActual, puntoGuardado, estanciaActual, estanciaGuardada, zonaMuerta, zonaHandle
+    tipo: null,
     estanciaIndex: -1,
     puntoIndex: -1,
     zonaIndex: -1,
@@ -760,14 +760,11 @@ function actualizarInfo() {
             texto += "<br>Zonas muertas: " + zonasMuertas.length;
         }
 
-        if (modoZonaMuerta) {
-            texto += "<br>Modo zona muerta: activo";
-        }
-
         if (puntos.length > 0) {
             texto += "<br>Estancia actual en edición: sí";
             texto += "<br>Puntos actuales: " + puntos.length;
             texto += "<br>Estado: " + (cerrado ? "cerrada" : "abierta");
+
             if (cerrado && metrosPorPixel) {
                 const areaTotalActual = calcularSuperficieReal(puntos);
                 const areaMuertaActual = calcularAreaMuertaPoligono(puntos);
@@ -787,9 +784,9 @@ function actualizarInfo() {
     texto += "<br>Lados: " + estanciaSel.puntos.length;
 
     if (metrosPorPixel) {
-        let areaTotal = calcularSuperficieReal(estanciaSel.puntos);
-        let areaMuerta = calcularAreaMuertaPoligono(estanciaSel.puntos);
-        let areaUtil = Math.max(0, areaTotal - areaMuerta);
+        const areaTotal = calcularSuperficieReal(estanciaSel.puntos);
+        const areaMuerta = calcularAreaMuertaPoligono(estanciaSel.puntos);
+        const areaUtil = Math.max(0, areaTotal - areaMuerta);
 
         texto += "<br>Superficie total: " + areaTotal.toFixed(2) + " m²";
         texto += "<br>Superficie muerta: " + areaMuerta.toFixed(2) + " m²";
@@ -833,6 +830,7 @@ function cerrarEstancia() {
         return;
     }
     cerrado = true;
+    limpiarSeleccion();
     dibujar();
 }
 
@@ -914,25 +912,33 @@ function borrarUltimoPunto() {
 
 function eliminarSeleccionado() {
     if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
-        const idx = seleccion.zonaIndex;
-        if (idx >= 0 && idx < zonasMuertas.length) {
+        const idx = Number(seleccion.zonaIndex);
+        if (!Number.isNaN(idx) && idx >= 0 && idx < zonasMuertas.length) {
             zonasMuertas.splice(idx, 1);
             guardarMemoria();
             limpiarSeleccion();
             dibujar();
+            return;
         }
+    }
+
+    if (zonasMuertas.length === 1) {
+        zonasMuertas.splice(0, 1);
+        guardarMemoria();
+        limpiarSeleccion();
+        dibujar();
         return;
     }
 
     if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-        const idx = seleccion.estanciaIndex;
-        if (idx >= 0 && idx < estancias.length) {
+        const idx = Number(seleccion.estanciaIndex);
+        if (!Number.isNaN(idx) && idx >= 0 && idx < estancias.length) {
             estancias.splice(idx, 1);
             guardarMemoria();
             limpiarSeleccion();
             dibujar();
+            return;
         }
-        return;
     }
 
     if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
@@ -943,7 +949,7 @@ function eliminarSeleccionado() {
         return;
     }
 
-    alert("Primero selecciona algo");
+    alert("Primero selecciona la zona muerta");
 }
 
 function limpiarActual() {
@@ -1026,6 +1032,7 @@ function empezarInteraccion(evento) {
     for (let i = zonasMuertas.length - 1; i >= 0; i--) {
         const h = buscarHandleZona(pos.x, pos.y, zonasMuertas[i]);
         if (h) {
+            limpiarSeleccion();
             seleccion.tipo = "zonaHandle";
             seleccion.zonaIndex = i;
             seleccion.handle = h;
@@ -1038,8 +1045,12 @@ function empezarInteraccion(evento) {
 
     for (let i = zonasMuertas.length - 1; i >= 0; i--) {
         if (puntoDentroRect(pos.x, pos.y, zonasMuertas[i])) {
+            limpiarSeleccion();
             seleccion.tipo = "zonaMuerta";
             seleccion.zonaIndex = i;
+            seleccion.estanciaIndex = -1;
+            seleccion.puntoIndex = -1;
+            seleccion.handle = null;
             arrastrando = true;
             dibujar();
             if (evento.cancelable) evento.preventDefault();
@@ -1049,6 +1060,7 @@ function empezarInteraccion(evento) {
 
     let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
     if (idx >= 0) {
+        limpiarSeleccion();
         seleccion.tipo = "puntoActual";
         seleccion.estanciaIndex = -1;
         seleccion.puntoIndex = idx;
@@ -1061,6 +1073,7 @@ function empezarInteraccion(evento) {
     for (let i = estancias.length - 1; i >= 0; i--) {
         idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
         if (idx >= 0) {
+            limpiarSeleccion();
             seleccion.tipo = "puntoGuardado";
             seleccion.estanciaIndex = i;
             seleccion.puntoIndex = idx;
@@ -1072,6 +1085,7 @@ function empezarInteraccion(evento) {
     }
 
     if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
+        limpiarSeleccion();
         seleccion.tipo = "estanciaActual";
         seleccion.estanciaIndex = -1;
         seleccion.puntoIndex = -1;
@@ -1083,6 +1097,7 @@ function empezarInteraccion(evento) {
 
     for (let i = estancias.length - 1; i >= 0; i--) {
         if (puntoDentroPoligono(pos.x, pos.y, estancias[i].puntos)) {
+            limpiarSeleccion();
             seleccion.tipo = "estanciaGuardada";
             seleccion.estanciaIndex = i;
             seleccion.puntoIndex = -1;
@@ -1094,6 +1109,7 @@ function empezarInteraccion(evento) {
     }
 
     if (!cerrado) {
+        limpiarSeleccion();
         puntos.push({ x: pos.x, y: pos.y });
         seleccion.tipo = "puntoActual";
         seleccion.estanciaIndex = -1;
@@ -1178,6 +1194,9 @@ function terminarInteraccion(evento) {
         if (w > 3 && h > 3) {
             zonasMuertas.push({ x, y, w, h });
             guardarMemoria();
+            limpiarSeleccion();
+            seleccion.tipo = "zonaMuerta";
+            seleccion.zonaIndex = zonasMuertas.length - 1;
         }
 
         zonaMuertaTemp = null;
