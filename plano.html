@@ -706,7 +706,7 @@ function empezarInteraccion(evento) {
     dibujar();
 
       
-    let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
+    idx = buscarPuntoEnLista(pos.x, pos.y, estancias[i].puntos);
     if (idx >= 0) {
         seleccion.tipo = "puntoActual";
         seleccion.estanciaIndex = -1;
