@@ -3,259 +3,649 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Configuración - ALLCALOR PRO</title>
-
+<title>Configuración</title>
 <style>
 :root{
-    --bg:#0b0b0b;
-    --panel:#151515;
-    --accent:#f39b2f;
-    --text:#ffffff;
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
 }
+
+*{box-sizing:border-box}
 
 body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:Arial, sans-serif;
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
-header{
-    padding:15px;
-    background:#000;
-    text-align:center;
-    font-weight:bold;
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid var(--line);
+  background:#0b0b0b;
+  position:sticky;
+  top:0;
+  z-index:20;
 }
 
-.container{
-    padding:15px;
+.titulo{
+  font-size:22px;
+  font-weight:700;
+  color:var(--accent);
 }
 
-.section{
-    background:var(--panel);
-    padding:15px;
-    margin-bottom:15px;
-    border-radius:10px;
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:700;
 }
 
-h2{
-    margin-top:0;
-    color:var(--accent);
+.btn-main{
+  background:var(--accent);
+  color:#111;
 }
 
-input, select{
-    width:100%;
-    padding:8px;
-    margin-top:5px;
-    margin-bottom:10px;
-    border-radius:6px;
-    border:none;
+.btn-sec{
+  background:#2a2a2a;
+  color:#fff;
 }
 
-button{
-    padding:10px;
-    background:var(--accent);
-    border:none;
-    border-radius:8px;
-    color:#000;
-    font-weight:bold;
-    cursor:pointer;
-    width:100%;
+.wrap{
+  max-width:1300px;
+  margin:0 auto;
+  padding:18px;
+  display:grid;
+  grid-template-columns:420px 1fr;
+  gap:18px;
 }
 
-.preview{
-    margin-top:10px;
-    padding:10px;
-    border:1px solid #333;
-    border-radius:8px;
-    text-align:center;
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
 }
 
-.logo-preview{
-    max-width:120px;
-    margin-top:10px;
+.panel h2{
+  margin:0 0 14px 0;
+  font-size:18px;
+}
+
+.bloque{
+  margin-bottom:18px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--line);
+}
+
+.bloque:last-child{
+  border-bottom:none;
+  margin-bottom:0;
+  padding-bottom:0;
+}
+
+.label{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+input[type="text"],
+input[type="email"],
+select{
+  width:100%;
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+input[type="range"]{
+  width:100%;
+  margin-bottom:12px;
+}
+
+input[type="file"]{
+  width:100%;
+  margin-bottom:12px;
+}
+
+.grid-colores{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.color-item{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+}
+
+.color-item input[type="color"]{
+  width:100%;
+  height:42px;
+  border:none;
+  background:none;
+  padding:0;
+  cursor:pointer;
+}
+
+.fila-botones{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.preview-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.preview-app{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  background:#000;
+}
+
+.preview-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.preview-logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.preview-logo img{
+  width:44px;
+  height:44px;
+  object-fit:contain;
+  border-radius:8px;
+  background:#fff;
+  display:none;
+}
+
+.preview-name{
+  font-weight:700;
+}
+
+.preview-sub{
+  font-size:12px;
+  opacity:.8;
+  margin-top:4px;
+}
+
+.preview-btn{
+  border:none;
+  border-radius:10px;
+  padding:9px 12px;
+  font-weight:700;
+}
+
+.preview-body{
+  padding:16px;
+}
+
+.preview-hero{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:16px;
+}
+
+.preview-cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+}
+
+.preview-card{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:14px;
+  min-height:100px;
+}
+
+.preview-card h3{
+  margin:0 0 6px 0;
+  font-size:16px;
+}
+
+.preview-card p{
+  margin:0;
+  font-size:13px;
+  opacity:.82;
+}
+
+.preview-chip{
+  display:inline-block;
+  margin-top:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.logo-real{
+  max-width:120px;
+  max-height:80px;
+  display:block;
+  margin-top:8px;
+}
+
+.muestras{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:8px;
+  margin-top:8px;
+}
+
+.muestra{
+  height:28px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.15);
+  cursor:pointer;
+}
+
+@media (max-width: 980px){
+  .wrap{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
-
 <body>
 
-<header>Configuración</header>
-
-<div class="container">
-
-<!-- IDENTIDAD -->
-<div class="section">
-<h2>Identidad</h2>
-
-<label>Nombre empresa</label>
-<input id="nombre">
-
-<label>Subtítulo</label>
-<input id="subtitulo">
-
-<label>Logo</label>
-<input type="file" id="logo">
-
-<img id="logoPreview" class="logo-preview">
-
-<label>Tipografía</label>
-<select id="fuente">
-<option value="Arial">Arial</option>
-<option value="Verdana">Verdana</option>
-<option value="Tahoma">Tahoma</option>
-<option value="Georgia">Georgia</option>
-</select>
-
-<label>Tamaño texto</label>
-<input type="range" id="tamano" min="12" max="30">
-
-<label>Sombra texto</label>
-<input type="range" id="sombra" min="0" max="10">
-
+<div class="header">
+  <div class="titulo">Configuración</div>
+  <div class="fila-botones">
+    <button class="btn btn-sec" onclick="volver()">Volver</button>
+    <button class="btn btn-main" onclick="guardar()">Guardar</button>
+    <button class="btn btn-main" onclick="guardarYVolver()">Guardar y volver</button>
+  </div>
 </div>
 
-<!-- COLORES -->
-<div class="section">
-<h2>Colores</h2>
+<div class="wrap">
+  <div class="panel">
+    <div class="bloque">
+      <h2>Identidad</h2>
 
-<label>Color principal</label>
-<input type="color" id="colorPrincipal">
+      <label class="label">Nombre de empresa</label>
+      <input id="nombreEmpresa" type="text" placeholder="ALLCALOR PRO">
 
-<label>Color fondo</label>
-<input type="color" id="colorFondo">
+      <label class="label">Subtítulo</label>
+      <input id="subtituloEmpresa" type="text" placeholder="Centro de control">
 
-<label>Color texto</label>
-<input type="color" id="colorTexto">
+      <label class="label">Logo</label>
+      <input id="logoInput" type="file" accept="image/*">
+      <img id="logoGuardado" class="logo-real" alt="">
+    </div>
 
-</div>
+    <div class="bloque">
+      <h2>Texto</h2>
 
-<!-- EMPRESA -->
-<div class="section">
-<h2>Datos empresa</h2>
+      <label class="label">Tipografía</label>
+      <select id="fuenteTexto">
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="Verdana, sans-serif">Verdana</option>
+        <option value="Tahoma, sans-serif">Tahoma</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+        <option value="'Courier New', monospace">Courier New</option>
+      </select>
 
-<label>Teléfono</label>
-<input id="telefono">
+      <label class="label">Tamaño del nombre</label>
+      <input id="tamNombre" type="range" min="18" max="42" step="1">
 
-<label>Email</label>
-<input id="email">
+      <label class="label">Grosor del nombre</label>
+      <input id="pesoNombre" type="range" min="400" max="900" step="100">
 
-<label>Dirección</label>
-<input id="direccion">
+      <label class="label">Sombra del nombre</label>
+      <input id="sombraNombre" type="range" min="0" max="20" step="1">
+    </div>
 
-<label>CIF</label>
-<input id="cif">
+    <div class="bloque">
+      <h2>Colores</h2>
 
-</div>
+      <div class="grid-colores">
+        <div class="color-item">
+          <label class="label">Color principal</label>
+          <input id="colorPrincipal" type="color">
+        </div>
+        <div class="color-item">
+          <label class="label">Color fondo</label>
+          <input id="colorFondo" type="color">
+        </div>
+        <div class="color-item">
+          <label class="label">Color panel</label>
+          <input id="colorPanel" type="color">
+        </div>
+        <div class="color-item">
+          <label class="label">Color texto</label>
+          <input id="colorTexto" type="color">
+        </div>
+        <div class="color-item">
+          <label class="label">Color línea</label>
+          <input id="colorLinea" type="color">
+        </div>
+        <div class="color-item">
+          <label class="label">Color botón texto</label>
+          <input id="colorBotonTexto" type="color">
+        </div>
+      </div>
 
-<!-- GUARDAR -->
-<button onclick="guardar()">Guardar configuración</button>
+      <label class="label" style="margin-top:12px;">Paleta rápida</label>
+      <div class="muestras">
+        <div class="muestra" style="background:#f39b2f" onclick="aplicarPaleta('#f39b2f','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
+        <div class="muestra" style="background:#4caf50" onclick="aplicarPaleta('#4caf50','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
+        <div class="muestra" style="background:#2196f3" onclick="aplicarPaleta('#2196f3','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
+        <div class="muestra" style="background:#9c27b0" onclick="aplicarPaleta('#9c27b0','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
+        <div class="muestra" style="background:#e91e63" onclick="aplicarPaleta('#e91e63','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
+        <div class="muestra" style="background:#ff5722" onclick="aplicarPaleta('#ff5722','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
+      </div>
+    </div>
 
-<!-- PREVIEW -->
-<div class="section">
-<h2>Vista previa</h2>
+    <div class="bloque">
+      <h2>Empresa</h2>
 
-<div id="preview" class="preview">
-<p id="previewNombre">ALLCALOR PRO</p>
-<p id="previewSub">Sistema profesional</p>
-</div>
+      <label class="label">Teléfono</label>
+      <input id="telefonoEmpresa" type="text">
 
-</div>
+      <label class="label">Email</label>
+      <input id="emailEmpresa" type="email">
 
+      <label class="label">Dirección</label>
+      <input id="direccionEmpresa" type="text">
+
+      <label class="label">CIF</label>
+      <input id="cifEmpresa" type="text">
+    </div>
+
+    <div class="bloque">
+      <h2>Sistema</h2>
+      <div class="fila-botones">
+        <button class="btn btn-sec" onclick="restablecer()">Restablecer valores</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="panel">
+      <h2>Vista previa en directo</h2>
+
+      <div class="preview-app" id="previewApp">
+        <div class="preview-header" id="previewHeader">
+          <div class="preview-logo">
+            <img id="previewLogo" alt="">
+            <div>
+              <div class="preview-name" id="previewNombre">ALLCALOR PRO</div>
+              <div class="preview-sub" id="previewSubtitulo">Centro de control</div>
+            </div>
+          </div>
+
+          <button class="preview-btn" id="previewBoton">Configuración</button>
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-hero" id="previewHero">
+            Panel principal de la app con vista previa inmediata.
+          </div>
+
+          <div class="preview-cards">
+            <div class="preview-card" id="card1">
+              <h3>Clientes</h3>
+              <p>Listado general y gestión de fichas.</p>
+              <span class="preview-chip" id="chip1">Abrir</span>
+            </div>
+
+            <div class="preview-card" id="card2">
+              <h3>Obras</h3>
+              <p>Seguimiento de trabajos y estado.</p>
+              <span class="preview-chip" id="chip2">Abrir</span>
+            </div>
+
+            <div class="preview-card" id="card3">
+              <h3>Planos</h3>
+              <p>Editor de estancias y zonas muertas.</p>
+              <span class="preview-chip" id="chip3">Abrir</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
+const CONFIG_DEFAULT = {
+  nombre: "ALLCALOR PRO",
+  subtitulo: "Centro de control",
+  logo: "",
+  fuente: "Arial, sans-serif",
+  tamNombre: 22,
+  pesoNombre: 700,
+  sombraNombre: 0,
+  colorPrincipal: "#f39b2f",
+  colorFondo: "#0b0b0b",
+  colorPanel: "#151515",
+  colorTexto: "#ffffff",
+  colorLinea: "#2b2b2b",
+  colorBotonTexto: "#111111",
+  telefono: "",
+  email: "",
+  direccion: "",
+  cif: ""
+};
 
-// CARGAR CONFIG
-function cargar(){
-    let cfg = JSON.parse(localStorage.getItem("config")) || {};
-
-    nombre.value = cfg.nombre || "";
-    subtitulo.value = cfg.subtitulo || "";
-    telefono.value = cfg.telefono || "";
-    email.value = cfg.email || "";
-    direccion.value = cfg.direccion || "";
-    cif.value = cfg.cif || "";
-
-    fuente.value = cfg.fuente || "Arial";
-    tamano.value = cfg.tamano || 18;
-    sombra.value = cfg.sombra || 0;
-
-    colorPrincipal.value = cfg.colorPrincipal || "#f39b2f";
-    colorFondo.value = cfg.colorFondo || "#0b0b0b";
-    colorTexto.value = cfg.colorTexto || "#ffffff";
-
-    if(cfg.logo){
-        logoPreview.src = cfg.logo;
-    }
-
-    actualizarPreview();
+function leerConfig(){
+  try{
+    return JSON.parse(localStorage.getItem("configAllcalor")) || {...CONFIG_DEFAULT};
+  }catch(e){
+    return {...CONFIG_DEFAULT};
+  }
 }
 
-// GUARDAR
+function cargarCampos(){
+  const cfg = {...CONFIG_DEFAULT, ...leerConfig()};
+
+  nombreEmpresa.value = cfg.nombre;
+  subtituloEmpresa.value = cfg.subtitulo;
+  fuenteTexto.value = cfg.fuente;
+  tamNombre.value = cfg.tamNombre;
+  pesoNombre.value = cfg.pesoNombre;
+  sombraNombre.value = cfg.sombraNombre;
+  colorPrincipal.value = cfg.colorPrincipal;
+  colorFondo.value = cfg.colorFondo;
+  colorPanel.value = cfg.colorPanel;
+  colorTexto.value = cfg.colorTexto;
+  colorLinea.value = cfg.colorLinea;
+  colorBotonTexto.value = cfg.colorBotonTexto;
+  telefonoEmpresa.value = cfg.telefono;
+  emailEmpresa.value = cfg.email;
+  direccionEmpresa.value = cfg.direccion;
+  cifEmpresa.value = cfg.cif;
+
+  if(cfg.logo){
+    logoGuardado.src = cfg.logo;
+    logoGuardado.style.display = "block";
+  }else{
+    logoGuardado.style.display = "none";
+  }
+
+  actualizarVista();
+}
+
+function recogerCampos(logoFinal){
+  return {
+    nombre: nombreEmpresa.value.trim() || CONFIG_DEFAULT.nombre,
+    subtitulo: subtituloEmpresa.value.trim() || CONFIG_DEFAULT.subtitulo,
+    logo: logoFinal,
+    fuente: fuenteTexto.value,
+    tamNombre: Number(tamNombre.value),
+    pesoNombre: Number(pesoNombre.value),
+    sombraNombre: Number(sombraNombre.value),
+    colorPrincipal: colorPrincipal.value,
+    colorFondo: colorFondo.value,
+    colorPanel: colorPanel.value,
+    colorTexto: colorTexto.value,
+    colorLinea: colorLinea.value,
+    colorBotonTexto: colorBotonTexto.value,
+    telefono: telefonoEmpresa.value.trim(),
+    email: emailEmpresa.value.trim(),
+    direccion: direccionEmpresa.value.trim(),
+    cif: cifEmpresa.value.trim()
+  };
+}
+
 function guardar(){
-    let reader = new FileReader();
+  const cfgActual = leerConfig();
 
-    if(logo.files[0]){
-        reader.onload = function(e){
-            guardarConfig(e.target.result);
-        };
-        reader.readAsDataURL(logo.files[0]);
-    }else{
-        guardarConfig(null);
-    }
-}
-
-function guardarConfig(logoData){
-
-    let old = JSON.parse(localStorage.getItem("config")) || {};
-
-    let cfg = {
-        nombre:nombre.value,
-        subtitulo:subtitulo.value,
-        telefono:telefono.value,
-        email:email.value,
-        direccion:direccion.value,
-        cif:cif.value,
-
-        fuente:fuente.value,
-        tamano:tamano.value,
-        sombra:sombra.value,
-
-        colorPrincipal:colorPrincipal.value,
-        colorFondo:colorFondo.value,
-        colorTexto:colorTexto.value,
-
-        logo: logoData || old.logo
+  if(logoInput.files && logoInput.files[0]){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const nuevo = recogerCampos(e.target.result);
+      localStorage.setItem("configAllcalor", JSON.stringify(nuevo));
+      logoGuardado.src = e.target.result;
+      logoGuardado.style.display = "block";
+      actualizarVista();
+      alert("Configuración guardada.");
     };
-
-    localStorage.setItem("config", JSON.stringify(cfg));
-    alert("Guardado");
+    reader.readAsDataURL(logoInput.files[0]);
+  }else{
+    const nuevo = recogerCampos(cfgActual.logo || "");
+    localStorage.setItem("configAllcalor", JSON.stringify(nuevo));
+    actualizarVista();
+    alert("Configuración guardada.");
+  }
 }
 
-// PREVIEW
-function actualizarPreview(){
-    let cfg = JSON.parse(localStorage.getItem("config")) || {};
+function guardarYVolver(){
+  const cfgActual = leerConfig();
 
-    previewNombre.innerText = nombre.value || "ALLCALOR PRO";
-    previewSub.innerText = subtitulo.value || "";
-
-    preview.style.fontFamily = fuente.value;
-    preview.style.color = colorTexto.value;
-    preview.style.background = colorFondo.value;
-
-    previewNombre.style.fontSize = tamano.value + "px";
-    previewNombre.style.textShadow = "0 0 " + sombra.value + "px #000";
+  if(logoInput.files && logoInput.files[0]){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const nuevo = recogerCampos(e.target.result);
+      localStorage.setItem("configAllcalor", JSON.stringify(nuevo));
+      window.location.href = "app.html";
+    };
+    reader.readAsDataURL(logoInput.files[0]);
+  }else{
+    const nuevo = recogerCampos(cfgActual.logo || "");
+    localStorage.setItem("configAllcalor", JSON.stringify(nuevo));
+    window.location.href = "app.html";
+  }
 }
 
-// EVENTOS
-document.querySelectorAll("input, select").forEach(el=>{
-    el.addEventListener("input", actualizarPreview);
+function volver(){
+  window.location.href = "app.html";
+}
+
+function restablecer(){
+  localStorage.setItem("configAllcalor", JSON.stringify(CONFIG_DEFAULT));
+  logoInput.value = "";
+  cargarCampos();
+}
+
+function aplicarPaleta(principal, fondo, panel, texto, linea, botonTexto){
+  colorPrincipal.value = principal;
+  colorFondo.value = fondo;
+  colorPanel.value = panel;
+  colorTexto.value = texto;
+  colorLinea.value = linea;
+  colorBotonTexto.value = botonTexto;
+  actualizarVista();
+}
+
+function actualizarVista(){
+  const cfgActual = leerConfig();
+  const logoTemp = logoInput.files && logoInput.files[0] ? URL.createObjectURL(logoInput.files[0]) : (cfgActual.logo || "");
+
+  previewNombre.textContent = nombreEmpresa.value.trim() || CONFIG_DEFAULT.nombre;
+  previewSubtitulo.textContent = subtituloEmpresa.value.trim() || CONFIG_DEFAULT.subtitulo;
+
+  previewApp.style.background = colorFondo.value;
+  previewApp.style.color = colorTexto.value;
+  previewHeader.style.borderBottomColor = colorLinea.value;
+  previewHero.style.borderColor = colorLinea.value;
+
+  [card1, card2, card3].forEach(card=>{
+    card.style.background = colorPanel.value;
+    card.style.borderColor = colorLinea.value;
+    card.style.color = colorTexto.value;
+  });
+
+  previewBoton.style.background = colorPrincipal.value;
+  previewBoton.style.color = colorBotonTexto.value;
+
+  [chip1, chip2, chip3].forEach(chip=>{
+    chip.style.background = colorPrincipal.value;
+    chip.style.color = colorBotonTexto.value;
+  });
+
+  previewNombre.style.color = colorPrincipal.value;
+  previewNombre.style.fontFamily = fuenteTexto.value;
+  previewNombre.style.fontSize = tamNombre.value + "px";
+  previewNombre.style.fontWeight = pesoNombre.value;
+  previewNombre.style.textShadow = "0 0 " + sombraNombre.value + "px #000";
+
+  previewSubtitulo.style.fontFamily = fuenteTexto.value;
+
+  if(logoTemp){
+    previewLogo.src = logoTemp;
+    previewLogo.style.display = "block";
+  }else{
+    previewLogo.style.display = "none";
+  }
+}
+
+[
+  nombreEmpresa,
+  subtituloEmpresa,
+  fuenteTexto,
+  tamNombre,
+  pesoNombre,
+  sombraNombre,
+  colorPrincipal,
+  colorFondo,
+  colorPanel,
+  colorTexto,
+  colorLinea,
+  colorBotonTexto,
+  telefonoEmpresa,
+  emailEmpresa,
+  direccionEmpresa,
+  cifEmpresa
+].forEach(el=>{
+  el.addEventListener("input", actualizarVista);
+  el.addEventListener("change", actualizarVista);
 });
 
-// INIT
-cargar();
+logoInput.addEventListener("change", actualizarVista);
 
+cargarCampos();
 </script>
 
 </body>
