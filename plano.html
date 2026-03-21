@@ -653,7 +653,7 @@ function empezarInteraccion(evento) {
         seleccion.puntoIndex = idx;
         arrastrando = true;
         dibujar();
-        if (evento.cancelable) evento.preventDefault();
+        if (evento && evento.cancelable) evento.preventDefault();
         return;
     }
 
@@ -665,7 +665,7 @@ function empezarInteraccion(evento) {
             seleccion.puntoIndex = idx;
             arrastrando = true;
             dibujar();
-            if (evento.cancelable) evento.preventDefault();
+            if (evento && evento.cancelable) evento.preventDefault();
             return;
         }
     }
