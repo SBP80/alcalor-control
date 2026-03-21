@@ -17,6 +17,7 @@
   --danger:#c93b2f;
   --ok:#4caf50;
   --btnText:#111111;
+  --info:#7dd3ff;
 }
 *{box-sizing:border-box}
 body{
@@ -26,6 +27,7 @@ body{
   font-family:Arial,sans-serif;
 }
 input,select,button{font:inherit}
+button{touch-action:manipulation}
 .header{
   display:flex;
   align-items:center;
@@ -90,7 +92,7 @@ input,select,button{font:inherit}
 }
 .summary-top{
   display:grid;
-  grid-template-columns:minmax(240px,1fr) minmax(280px,380px);
+  grid-template-columns:minmax(240px,1fr) minmax(300px,420px);
   gap:10px;
   align-items:start;
 }
@@ -128,10 +130,20 @@ input,select,button{font:inherit}
   font-size:11px;
   color:var(--muted);
 }
+.action-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.action-row-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
 .canvas-wrap{position:relative}
 canvas{
   width:100%;
-  height:calc(100vh - 290px);
+  height:calc(100vh - 360px);
   min-height:420px;
   display:block;
   background:#101010;
@@ -143,7 +155,7 @@ canvas{
   position:absolute;
   top:10px;
   right:10px;
-  width:280px;
+  width:290px;
   background:rgba(21,21,21,.97);
   border:1px solid var(--line);
   border-radius:12px;
@@ -182,11 +194,6 @@ canvas{
   grid-template-columns:1fr;
   gap:6px;
 }
-.grid-2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:6px;
-}
 .btn{
   border:none;
   border-radius:8px;
@@ -202,6 +209,7 @@ canvas{
 .btn.neutral{background:#c8c8c8;color:#111}
 .btn.danger{background:var(--danger);color:#fff}
 .btn.ok{background:var(--ok);color:#fff}
+.btn.info{background:var(--info);color:#111}
 .note{
   margin-top:6px;
   color:var(--muted);
@@ -281,7 +289,7 @@ canvas{
     grid-template-columns:1fr;
   }
   canvas{
-    height:calc(100vh - 380px);
+    height:calc(100vh - 470px);
     min-height:360px;
   }
   .panel{
@@ -306,7 +314,7 @@ canvas{
     <img id="brandLogo" class="brand-logo" alt="Logo">
     <div class="brand-text">
       <div id="brandName" class="brand-name">ALLCALOR PRO</div>
-      <div id="brandSub" class="brand-sub">Plano geometría v3</div>
+      <div id="brandSub" class="brand-sub">Plano geometría v4</div>
     </div>
   </div>
 
@@ -319,7 +327,8 @@ canvas{
       <div class="summary-card" id="info">Cargando...</div>
 
       <div class="summary-card">
-        <h3>Movimiento y unión</h3>
+        <h3>Acople sobre pared</h3>
+
         <div class="inline-grid">
           <div>
             <div class="label">Modo de movimiento</div>
@@ -328,8 +337,31 @@ canvas{
               <option value="group">Conjunto unido</option>
             </select>
           </div>
+
           <div class="small" id="groupInfo">Sin grupo activo</div>
-          <div class="small" id="mergeInfo">A: ninguna · B: ninguna</div>
+          <div class="small" id="dockInfo">Principal: ninguna · Secundaria: ninguna</div>
+          <div class="small" id="dockStep">Sin acople activo</div>
+
+          <div class="action-row">
+            <button class="btn neutral" onclick="usarSeleccionComoPrincipal()">Principal</button>
+            <button class="btn neutral" onclick="usarSeleccionComoSecundaria()">Secundaria</button>
+          </div>
+
+          <div class="action-row">
+            <button class="btn info" onclick="iniciarAcople()">Acople sobre pared</button>
+            <button class="btn secondary" onclick="cancelarAcople()">Cancelar acople</button>
+          </div>
+
+          <div class="action-row-3">
+            <button class="btn neutral" onclick="moverAcople(-10)">←</button>
+            <button class="btn neutral" onclick="moverAcople(0)">Centro</button>
+            <button class="btn neutral" onclick="moverAcople(10)">→</button>
+          </div>
+
+          <div class="action-row">
+            <button class="btn ok" onclick="confirmarAcopleYUnir()">Confirmar acople y unir</button>
+            <button class="btn danger" onclick="limpiarPrincipalSecundaria()">Limpiar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -362,22 +394,6 @@ canvas{
           <div class="note">
             Toca una estancia guardada para elegir ver o editar.<br>
             Toca una medida escrita para cambiar ese lado.
-          </div>
-        </div>
-      </div>
-
-      <div class="panel-group open">
-        <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Unión real</button>
-        <div class="panel-group-content">
-          <div class="grid">
-            <button class="btn neutral" onclick="usarSeleccionComoA()">Usar selección como A</button>
-            <button class="btn neutral" onclick="usarSeleccionComoB()">Usar selección como B</button>
-            <button class="btn secondary" onclick="limpiarUnion()">Limpiar A y B</button>
-            <button class="btn ok" onclick="unirEstanciasSeleccionadas()">Unir estancias</button>
-          </div>
-          <div class="note">
-            Une dos estancias si comparten la misma pared completa.<br>
-            Si la pared común es parcial, no las unirá.
           </div>
         </div>
       </div>
@@ -432,7 +448,8 @@ const chipEscala = document.getElementById("chipEscala");
 const chipEdicion = document.getElementById("chipEdicion");
 const moveMode = document.getElementById("moveMode");
 const groupInfo = document.getElementById("groupInfo");
-const mergeInfo = document.getElementById("mergeInfo");
+const dockInfo = document.getElementById("dockInfo");
+const dockStep = document.getElementById("dockStep");
 
 const roomActionOverlay = document.getElementById("roomActionOverlay");
 const roomActionText = document.getElementById("roomActionText");
@@ -443,7 +460,7 @@ const diagInput = document.getElementById("diagInput");
 
 const CONFIG_DEFAULT = {
   nombre: "ALLCALOR PRO",
-  subtitulo: "Plano geometría v3",
+  subtitulo: "Plano geometría v4",
   logo: "",
   fuente: "Arial, sans-serif",
   tamNombre: 22,
@@ -543,7 +560,9 @@ const HIT_POINT = 14;
 const GROUP_SEG_DIST = 10;
 const GROUP_ANGLE_COS = 0.97;
 const GROUP_MIN_OVERLAP = 20;
-const MERGE_TOL = 18;
+const EDGE_MERGE_TOL = 16;
+const BOUNDARY_TOL = 0.8;
+const INTERSECTION_TOL = 0.01;
 
 const seleccion = {
   tipo: null,
@@ -552,12 +571,7 @@ const seleccion = {
   editEnabled: false
 };
 
-const mergeSelection = {
-  a: -1,
-  b: -1
-};
-
-const modalRoomAction = {
+const roomActionState = {
   roomIndex: -1
 };
 
@@ -567,6 +581,20 @@ const diagState = {
   diagonals: [],
   index: 0,
   results: []
+};
+
+const dockState = {
+  principal: -1,
+  secundaria: -1,
+  active: false,
+  step: "idle",
+  mainWall: null,
+  secWall: null,
+  secBase: null,
+  secPreview: null,
+  slidePx: 0,
+  dragAlongWall: false,
+  dragStartProj: 0
 };
 
 function limpiarEstancias(arr){
@@ -592,7 +620,7 @@ function ajustarCanvas() {
 }
 window.addEventListener("resize", () => {
   ajustarCanvas();
-  dibujar();
+  drawAll();
 });
 
 function togglePanel(){ panel.classList.toggle("open"); }
@@ -608,10 +636,6 @@ function limpiarSeleccion(){
 
 function dist(a, b){
   return Math.hypot(b.x - a.x, b.y - a.y);
-}
-
-function samePoint(a, b, tol=MERGE_TOL){
-  return Math.hypot(a.x - b.x, a.y - b.y) <= tol;
 }
 
 function midpoint(a, b){
@@ -652,6 +676,20 @@ function pointInPolygon(x, y, poly) {
     if (inter) inside = !inside;
   }
   return inside;
+}
+
+function pointOnSegment(p, a, b, tol=BOUNDARY_TOL){
+  const h = segPointDistance(p.x, p.y, a.x, a.y, b.x, b.y);
+  return h.d <= tol;
+}
+
+function pointOnPolygonBoundary(p, poly, tol=BOUNDARY_TOL){
+  for(let i=0;i<poly.length;i++){
+    const a = poly[i];
+    const b = poly[(i+1)%poly.length];
+    if(pointOnSegment(p, a, b, tol)) return true;
+  }
+  return false;
 }
 
 function findPoint(poly, x, y) {
@@ -735,6 +773,11 @@ function getPos(ev) {
   return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
 }
 
+function getSelectedSavedRoomIndex(){
+  if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") return seleccion.estanciaIndex;
+  return -1;
+}
+
 function getSelectedRoomData() {
   if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
     return { nombre: "Estancia actual", puntos };
@@ -743,11 +786,6 @@ function getSelectedRoomData() {
     return estancias[seleccion.estanciaIndex] || null;
   }
   return null;
-}
-
-function getSelectedSavedRoomIndex(){
-  if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") return seleccion.estanciaIndex;
-  return -1;
 }
 
 function getSegments(poly){
@@ -863,10 +901,19 @@ function updateGroupInfo(){
   else groupInfo.textContent = "Grupo detectado: " + ids.length + " estancias";
 }
 
-function updateMergeInfo(){
-  const nameA = mergeSelection.a >= 0 && estancias[mergeSelection.a] ? estancias[mergeSelection.a].nombre : "ninguna";
-  const nameB = mergeSelection.b >= 0 && estancias[mergeSelection.b] ? estancias[mergeSelection.b].nombre : "ninguna";
-  mergeInfo.textContent = "A: " + nameA + " · B: " + nameB;
+function updateDockInfo(){
+  const p = dockState.principal >= 0 && estancias[dockState.principal] ? estancias[dockState.principal].nombre : "ninguna";
+  const s = dockState.secundaria >= 0 && estancias[dockState.secundaria] ? estancias[dockState.secundaria].nombre : "ninguna";
+  dockInfo.textContent = "Principal: " + p + " · Secundaria: " + s;
+
+  if(!dockState.active){
+    dockStep.textContent = "Sin acople activo";
+    return;
+  }
+  if(dockState.step === "pick-main") dockStep.textContent = "Paso 1: toca la pared de la principal";
+  else if(dockState.step === "pick-sec") dockStep.textContent = "Paso 2: toca la pared de la secundaria";
+  else if(dockState.step === "adjust") dockStep.textContent = "Paso 3: arrastra la secundaria o usa ← / →";
+  else dockStep.textContent = "Sin acople activo";
 }
 
 function actualizarUI() {
@@ -881,7 +928,7 @@ function actualizarUI() {
   else chipSeleccion.textContent = "Sin selección";
 
   updateGroupInfo();
-  updateMergeInfo();
+  updateDockInfo();
 }
 
 function drawRoom(poly, selected, fillColor, strokeColor) {
@@ -963,7 +1010,7 @@ function drawSelectedGroup(){
   ctx.strokeStyle = "rgba(125,255,155,.9)";
   ctx.lineWidth = 3;
   ids.forEach(roomIdx => {
-    const poly = estancias[roomIdx].puntos;
+    const poly = roomIdx === dockState.secundaria && dockState.secPreview ? dockState.secPreview : estancias[roomIdx].puntos;
     ctx.beginPath();
     poly.forEach((p, i) => {
       if(i === 0) ctx.moveTo(p.x, p.y);
@@ -975,27 +1022,71 @@ function drawSelectedGroup(){
   ctx.restore();
 }
 
-function drawMergeMarks(){
-  if(mergeSelection.a >= 0 && estancias[mergeSelection.a]){
-    const c = centroid(estancias[mergeSelection.a].puntos);
+function drawDockMarks(){
+  if(dockState.principal >= 0 && estancias[dockState.principal]){
+    const c = centroid(estancias[dockState.principal].puntos);
     ctx.save();
     ctx.fillStyle = "#7dd3ff";
-    ctx.font = "bold 20px Arial";
-    ctx.fillText("A", c.x - 6, c.y - 28);
+    ctx.font = "bold 22px Arial";
+    ctx.fillText("P", c.x - 7, c.y - 30);
     ctx.restore();
   }
-  if(mergeSelection.b >= 0 && estancias[mergeSelection.b]){
-    const c = centroid(estancias[mergeSelection.b].puntos);
+  if(dockState.secundaria >= 0){
+    const poly = dockState.secPreview || estancias[dockState.secundaria]?.puntos;
+    if(poly){
+      const c = centroid(poly);
+      ctx.save();
+      ctx.fillStyle = "#8ee08e";
+      ctx.font = "bold 22px Arial";
+      ctx.fillText("S", c.x - 7, c.y - 30);
+      ctx.restore();
+    }
+  }
+
+  if(dockState.mainWall){
+    const w = dockState.mainWall;
     ctx.save();
-    ctx.fillStyle = "#8ee08e";
-    ctx.font = "bold 20px Arial";
-    ctx.fillText("B", c.x - 6, c.y - 28);
+    ctx.strokeStyle = "#7dd3ff";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(w.a.x, w.a.y);
+    ctx.lineTo(w.b.x, w.b.y);
+    ctx.stroke();
     ctx.restore();
+  }
+
+  if(dockState.secWall && dockState.secPreview){
+    const wall = getWallByIndex(dockState.secPreview, dockState.secWall.i);
+    if(wall){
+      ctx.save();
+      ctx.strokeStyle = "#8ee08e";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(wall.a.x, wall.a.y);
+      ctx.lineTo(wall.b.x, wall.b.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  if(dockState.active && dockState.mainWall && dockState.secPreview){
+    const overlap = sharedCollinearOverlap(dockState.mainWall, getWallByIndex(dockState.secPreview, dockState.secWall.i));
+    if(overlap){
+      ctx.save();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(overlap.a.x, overlap.a.y);
+      ctx.lineTo(overlap.b.x, overlap.b.y);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 }
 
 function drawSavedRooms() {
   for (let i = 0; i < estancias.length; i++) {
+    if(i === dockState.secundaria && dockState.secPreview) continue;
     const est = estancias[i];
     if (!est.puntos || est.puntos.length < 3) continue;
 
@@ -1030,6 +1121,22 @@ function drawSavedRooms() {
     }
 
     drawSideMeasures(est.puntos, true, "#fff");
+  }
+
+  if(dockState.secundaria >= 0 && dockState.secPreview){
+    const poly = dockState.secPreview;
+    drawRoom(poly, true, "rgba(142,224,142,.14)", "#8ee08e");
+    drawVertexNumbers(poly, "V", -1, false);
+    const c = centroid(poly);
+    const area = polygonAreaM2(poly);
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px Arial";
+    ctx.fillText(estancias[dockState.secundaria]?.nombre || "Secundaria", c.x - 24, c.y - 14);
+    if (metrosPorPixel) {
+      ctx.font = "13px Arial";
+      ctx.fillText(area.toFixed(2) + " m²", c.x - 20, c.y + 8);
+    }
+    drawSideMeasures(poly, true, "#fff");
   }
 }
 
@@ -1096,6 +1203,17 @@ function drawActiveDiagonal(){
   ctx.restore();
 }
 
+function drawAll(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawSavedRooms();
+  drawCurrentRoom();
+  drawConnections();
+  drawSelectedGroup();
+  drawDockMarks();
+  drawActiveDiagonal();
+  updateInfo();
+}
+
 function hitSideLabel(x, y){
   if (!metrosPorPixel) return null;
 
@@ -1119,7 +1237,12 @@ function hitSideLabel(x, y){
     const hit = testPoly(puntos, -1, true);
     if (hit) return hit;
   }
+  if(dockState.secPreview){
+    const hitDock = testPoly(dockState.secPreview, dockState.secundaria, false);
+    if (hitDock) return hitDock;
+  }
   for(let i=estancias.length-1;i>=0;i--){
+    if(i === dockState.secundaria && dockState.secPreview) continue;
     const hit = testPoly(estancias[i].puntos, i, false);
     if (hit) return hit;
   }
@@ -1152,6 +1275,10 @@ function updateInfo() {
       html += "<br>Grupo detectado: " + ids.length + " estancia(s)";
     }
 
+    if(dockState.active && dockState.principal >= 0 && dockState.secundaria >= 0){
+      html += "<br><span class='oktxt'>Acople activo</span>";
+    }
+
     info.innerHTML = html;
     actualizarUI();
     return;
@@ -1165,20 +1292,10 @@ function updateInfo() {
   html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
   if (metrosPorPixel) html += "<br>Superficie total: " + total.toFixed(2) + " m²";
   if (puntos.length > 0) html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
+  if (dockState.active) html += "<br><span class='warn'>Acople en preparación</span>";
 
   info.innerHTML = html;
   actualizarUI();
-}
-
-function dibujar() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawSavedRooms();
-  drawCurrentRoom();
-  drawConnections();
-  drawSelectedGroup();
-  drawMergeMarks();
-  drawActiveDiagonal();
-  updateInfo();
 }
 
 function nuevaEstancia() {
@@ -1186,7 +1303,7 @@ function nuevaEstancia() {
   cerrado = false;
   enEdicionNuevaEstancia = true;
   limpiarSeleccion();
-  dibujar();
+  drawAll();
   autoCerrarPanel();
 }
 
@@ -1195,7 +1312,7 @@ function cerrarEstancia() {
   if (puntos.length < 3) return alert("Necesitas al menos 3 puntos");
   cerrado = true;
   limpiarSeleccion();
-  dibujar();
+  drawAll();
   autoCerrarPanel();
 }
 
@@ -1216,7 +1333,7 @@ function guardarEstancia() {
   cerrado = false;
   enEdicionNuevaEstancia = false;
   limpiarSeleccion();
-  dibujar();
+  drawAll();
   autoCerrarPanel();
 
   const nuevoIdx = estancias.length - 1;
@@ -1244,7 +1361,7 @@ function definirEscala() {
 
   metrosPorPixel = metros / px;
   guardarMemoria();
-  dibujar();
+  drawAll();
   autoCerrarPanel();
   alert("Escala guardada");
 }
@@ -1292,7 +1409,7 @@ function mostrarDiagActual(){
     " · calculada: " + calc.toFixed(2) + " m";
   diagInput.value = calc.toFixed(2);
   diagOverlay.classList.add("show");
-  dibujar();
+  drawAll();
 }
 
 function diagAceptar(){
@@ -1319,14 +1436,14 @@ function diagSaltar(){
 function diagCancelar(){
   diagState.active = false;
   diagOverlay.classList.remove("show");
-  dibujar();
+  drawAll();
 }
 
 function terminarDiag(){
   diagOverlay.classList.remove("show");
   diagState.active = false;
   if (!diagState.results.length) {
-    dibujar();
+    drawAll();
     return alert("No se introdujo ninguna diagonal");
   }
   const media = diagState.results.reduce((a,b)=>a+b,0) / diagState.results.length;
@@ -1336,7 +1453,7 @@ function terminarDiag(){
   if (media <= 0.03) msg += "Resultado: muy bien";
   else if (media <= 0.08) msg += "Resultado: aceptable";
   else msg += "Resultado: revisar forma";
-  dibujar();
+  drawAll();
   alert(msg);
 }
 
@@ -1353,13 +1470,15 @@ function eliminarSeleccionado() {
     if (idx >= 0 && idx < estancias.length) {
       if (confirm("Eliminar estancia guardada?")) {
         estancias.splice(idx, 1);
-        if (mergeSelection.a === idx) mergeSelection.a = -1;
-        if (mergeSelection.b === idx) mergeSelection.b = -1;
-        if (mergeSelection.a > idx) mergeSelection.a--;
-        if (mergeSelection.b > idx) mergeSelection.b--;
+
+        if (dockState.principal === idx) dockState.principal = -1;
+        if (dockState.secundaria === idx) dockState.secundaria = -1;
+        if (dockState.principal > idx) dockState.principal--;
+        if (dockState.secundaria > idx) dockState.secundaria--;
+
         guardarMemoria();
         limpiarSeleccion();
-        dibujar();
+        drawAll();
       }
     }
     return;
@@ -1372,7 +1491,7 @@ function eliminarSeleccionado() {
       enEdicionNuevaEstancia = false;
       guardarMemoria();
       limpiarSeleccion();
-      dibujar();
+      drawAll();
     }
     return;
   }
@@ -1381,13 +1500,13 @@ function eliminarSeleccionado() {
 }
 
 function abrirAccionEstancia(idx){
-  modalRoomAction.roomIndex = idx;
+  roomActionState.roomIndex = idx;
   roomActionText.textContent = "Estancia: " + (estancias[idx]?.nombre || "Sin nombre");
   roomActionOverlay.classList.add("show");
 }
 
 function accionEstanciaGuardada(tipo){
-  const idx = modalRoomAction.roomIndex;
+  const idx = roomActionState.roomIndex;
   roomActionOverlay.classList.remove("show");
   if (idx < 0 || !estancias[idx]) return;
   if (tipo === "cancel") return;
@@ -1396,7 +1515,7 @@ function accionEstanciaGuardada(tipo){
   seleccion.estanciaIndex = idx;
   seleccion.puntoIndex = -1;
   seleccion.editEnabled = tipo === "edit";
-  dibujar();
+  drawAll();
 }
 
 function aplicarMedidaDirecta(hit){
@@ -1408,6 +1527,8 @@ function aplicarMedidaDirecta(hit){
   if (hit.currentRoom) {
     poly = puntos;
     closed = cerrado;
+  } else if (dockState.secPreview && hit.roomIndex === dockState.secundaria) {
+    poly = dockState.secPreview;
   } else {
     poly = estancias[hit.roomIndex]?.puntos || null;
   }
@@ -1433,163 +1554,510 @@ function aplicarMedidaDirecta(hit){
   b.x = a.x + dx * newPx;
   b.y = a.y + dy * newPx;
 
-  guardarMemoria();
-  dibujar();
+  if (dockState.secPreview && hit.roomIndex === dockState.secundaria) {
+    dockState.secBase = dockState.secPreview.map(p => ({x:p.x, y:p.y}));
+    recomputarVistaAcople();
+  } else {
+    guardarMemoria();
+    drawAll();
+  }
 }
 
-function usarSeleccionComoA(){
+function cancelarAcopleInterno(clearRooms=false){
+  dockState.active = false;
+  dockState.step = "idle";
+  dockState.mainWall = null;
+  dockState.secWall = null;
+  dockState.secBase = null;
+  dockState.secPreview = null;
+  dockState.slidePx = 0;
+  dockState.dragAlongWall = false;
+  dockState.dragStartProj = 0;
+  if(clearRooms){
+    dockState.principal = -1;
+    dockState.secundaria = -1;
+  }
+}
+
+function cancelarAcople(){
+  cancelarAcopleInterno(false);
+  drawAll();
+}
+
+function usarSeleccionComoPrincipal(){
   const idx = getSelectedSavedRoomIndex();
   if (idx < 0) return alert("Selecciona una estancia guardada");
-  mergeSelection.a = idx;
-  if (mergeSelection.b === idx) mergeSelection.b = -1;
-  dibujar();
+  dockState.principal = idx;
+  if (dockState.secundaria === idx) dockState.secundaria = -1;
+  cancelarAcopleInterno(false);
+  dockState.principal = idx;
+  drawAll();
 }
 
-function usarSeleccionComoB(){
+function usarSeleccionComoSecundaria(){
   const idx = getSelectedSavedRoomIndex();
   if (idx < 0) return alert("Selecciona una estancia guardada");
-  mergeSelection.b = idx;
-  if (mergeSelection.a === idx) mergeSelection.a = -1;
-  dibujar();
+  dockState.secundaria = idx;
+  if (dockState.principal === idx) dockState.principal = -1;
+  cancelarAcopleInterno(false);
+  dockState.secundaria = idx;
+  drawAll();
 }
 
-function limpiarUnion(){
-  mergeSelection.a = -1;
-  mergeSelection.b = -1;
-  dibujar();
+function limpiarPrincipalSecundaria(){
+  cancelarAcopleInterno(true);
+  drawAll();
 }
 
-function walkBackwardExcludingEdge(poly, edgeIndex){
-  const n = poly.length;
-  const out = [];
-  let idx = edgeIndex;
-  out.push(poly[idx]);
-  idx = (idx - 1 + n) % n;
-  while (idx !== (edgeIndex + 1) % n) {
-    out.push(poly[idx]);
-    idx = (idx - 1 + n) % n;
+function iniciarAcople(){
+  if (dockState.principal < 0 || dockState.secundaria < 0) return alert("Marca principal y secundaria");
+  if (dockState.principal === dockState.secundaria) return alert("Principal y secundaria no pueden ser la misma");
+  dockState.active = true;
+  dockState.step = "pick-main";
+  dockState.mainWall = null;
+  dockState.secWall = null;
+  dockState.secBase = null;
+  dockState.secPreview = null;
+  dockState.slidePx = 0;
+  drawAll();
+  alert("Toca ahora una pared de la estancia principal");
+}
+
+function getWallByIndex(poly, i){
+  if(!poly || poly.length < 2) return null;
+  return { a: poly[i], b: poly[(i+1)%poly.length], i };
+}
+
+function angleOf(a, b){
+  return Math.atan2(b.y - a.y, b.x - a.x);
+}
+
+function rotatePoint(p, center, ang){
+  const x = p.x - center.x;
+  const y = p.y - center.y;
+  return {
+    x: center.x + x * Math.cos(ang) - y * Math.sin(ang),
+    y: center.y + x * Math.sin(ang) + y * Math.cos(ang)
+  };
+}
+
+function transformPoly(poly, fn){
+  return poly.map(fn);
+}
+
+function signedSideOfLine(p, a, b){
+  return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+}
+
+function translatePoly(poly, dx, dy){
+  return poly.map(p => ({ x: p.x + dx, y: p.y + dy }));
+}
+
+function buildAlignedSecondary(mainWall, secPoly, secWallIndex){
+  const secWall0 = getWallByIndex(secPoly, secWallIndex);
+  const mainMid = midpoint(mainWall.a, mainWall.b);
+  const secMid = midpoint(secWall0.a, secWall0.b);
+  const angMain = angleOf(mainWall.a, mainWall.b);
+  const angSec = angleOf(secWall0.a, secWall0.b);
+
+  function makeCandidate(extra){
+    const ang = angMain - angSec + extra;
+    let poly1 = transformPoly(secPoly, p => rotatePoint(p, secMid, ang));
+    const wall1 = getWallByIndex(poly1, secWallIndex);
+    const mid1 = midpoint(wall1.a, wall1.b);
+    poly1 = translatePoly(poly1, mainMid.x - mid1.x, mainMid.y - mid1.y);
+    return poly1;
   }
-  out.push(poly[(edgeIndex + 1) % n]);
-  return out;
-}
 
-function removeDuplicateClosing(poly){
-  if (poly.length > 1 && samePoint(poly[0], poly[poly.length - 1], 0.5)) {
-    poly.pop();
+  const cand1 = makeCandidate(Math.PI);
+  const cand2 = makeCandidate(0);
+
+  const cMain = centroid(estancias[dockState.principal].puntos);
+  const sMain = signedSideOfLine(cMain, mainWall.a, mainWall.b);
+
+  const c1 = centroid(cand1);
+  const c2 = centroid(cand2);
+  const s1 = signedSideOfLine(c1, mainWall.a, mainWall.b);
+  const s2 = signedSideOfLine(c2, mainWall.a, mainWall.b);
+
+  let chosen = cand1;
+  if (Math.sign(s1) === Math.sign(sMain) && Math.sign(s2) !== Math.sign(sMain)) chosen = cand2;
+  else if (Math.sign(s1) === Math.sign(sMain) && Math.sign(s2) === Math.sign(sMain)) {
+    chosen = Math.abs(s1) > Math.abs(s2) ? cand1 : cand2;
+  } else if (Math.sign(s1) !== Math.sign(sMain) && Math.sign(s2) !== Math.sign(sMain)) {
+    chosen = Math.abs(s1) < Math.abs(s2) ? cand1 : cand2;
   }
-  return poly;
+
+  return chosen;
 }
 
-function isCollinear(a, b, c, tol=0.5){
-  const area = Math.abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x));
-  return area <= tol;
+function recomputarVistaAcople(){
+  if(!dockState.mainWall || !dockState.secWall || !dockState.secBase) return;
+
+  const base = dockState.secBase.map(p => ({x:p.x, y:p.y}));
+  const wall = dockState.mainWall;
+  const len = dist(wall.a, wall.b);
+  if(len < 1) return;
+
+  const ux = (wall.b.x - wall.a.x) / len;
+  const uy = (wall.b.y - wall.a.y) / len;
+
+  dockState.secPreview = translatePoly(base, ux * dockState.slidePx, uy * dockState.slidePx);
 }
 
-function removeCollinearPoints(poly){
-  if (!poly || poly.length < 3) return poly;
-  let changed = true;
-  let out = poly.slice();
+function sharedCollinearOverlap(w1, w2){
+  if(!w1 || !w2) return null;
 
-  while(changed && out.length >= 3){
-    changed = false;
-    const next = [];
-    for(let i=0;i<out.length;i++){
-      const prev = out[(i - 1 + out.length) % out.length];
-      const cur = out[i];
-      const nxt = out[(i + 1) % out.length];
-      if (samePoint(prev, cur, 0.5)) {
-        changed = true;
-        continue;
-      }
-      if (isCollinear(prev, cur, nxt, 0.5)) {
-        changed = true;
-        continue;
-      }
-      next.push(cur);
-    }
-    out = next.length ? next : out;
+  const ax = w1.b.x - w1.a.x;
+  const ay = w1.b.y - w1.a.y;
+  const bx = w2.b.x - w2.a.x;
+  const by = w2.b.y - w2.a.y;
+  const la = Math.hypot(ax, ay);
+  const lb = Math.hypot(bx, by);
+  if(la < 1 || lb < 1) return null;
+
+  const uax = ax / la;
+  const uay = ay / la;
+  const ubx = bx / lb;
+  const uby = by / lb;
+
+  const dot = Math.abs(uax * ubx + uay * uby);
+  if(dot < 0.995) return null;
+
+  const d1 = segPointDistance(w2.a.x, w2.a.y, w1.a.x, w1.a.y, w1.b.x, w1.b.y).d;
+  const d2 = segPointDistance(w2.b.x, w2.b.y, w1.a.x, w1.a.y, w1.b.x, w1.b.y).d;
+  if(Math.max(d1, d2) > EDGE_MERGE_TOL) return null;
+
+  const useX = Math.abs(uax) >= Math.abs(uay);
+  let vals = [];
+  if(useX){
+    vals = [
+      { t: w1.a.x, p: w1.a },
+      { t: w1.b.x, p: w1.b },
+      { t: w2.a.x, p: w2.a },
+      { t: w2.b.x, p: w2.b }
+    ].sort((m,n)=>m.t-n.t);
+  }else{
+    vals = [
+      { t: w1.a.y, p: w1.a },
+      { t: w1.b.y, p: w1.b },
+      { t: w2.a.y, p: w2.a },
+      { t: w2.b.y, p: w2.b }
+    ].sort((m,n)=>m.t-n.t);
   }
-  return out;
+
+  const p1 = vals[1].p;
+  const p2 = vals[2].p;
+  if(dist(p1,p2) < 1) return null;
+
+  const mid = midpoint(p1,p2);
+  const on1 = pointOnSegment(mid, w1.a, w1.b, EDGE_MERGE_TOL);
+  const on2 = pointOnSegment(mid, w2.a, w2.b, EDGE_MERGE_TOL);
+  if(!on1 || !on2) return null;
+
+  return { a: {x:p1.x, y:p1.y}, b: {x:p2.x, y:p2.y} };
 }
 
-function normalizeMergePolygon(poly){
-  const out = poly.map(p => ({ x: Number(p.x.toFixed(3)), y: Number(p.y.toFixed(3)) }));
-  removeDuplicateClosing(out);
-  return removeCollinearPoints(out);
+function moverAcople(px){
+  if(!dockState.active || dockState.step !== "adjust") return;
+  if(px === 0) dockState.slidePx = 0;
+  else dockState.slidePx += px;
+  recomputarVistaAcople();
+  drawAll();
 }
 
-function findSharedFullEdge(polyA, polyB){
-  for(let i=0;i<polyA.length;i++){
-    const a1 = polyA[i];
-    const a2 = polyA[(i+1)%polyA.length];
+function usarParedEnAcople(hit){
+  if(!dockState.active) return false;
 
-    for(let j=0;j<polyB.length;j++){
-      const b1 = polyB[j];
-      const b2 = polyB[(j+1)%polyB.length];
+  if(dockState.step === "pick-main"){
+    if(hit.roomIndex !== dockState.principal) return true;
+    dockState.mainWall = getWallByIndex(estancias[dockState.principal].puntos, hit.sideIndex);
+    dockState.step = "pick-sec";
+    drawAll();
+    alert("Ahora toca una pared de la estancia secundaria");
+    return true;
+  }
 
-      if (samePoint(a1, b2) && samePoint(a2, b1)) {
-        return { i, j };
-      }
-    }
+  if(dockState.step === "pick-sec"){
+    if(hit.roomIndex !== dockState.secundaria) return true;
+    dockState.secWall = { i: hit.sideIndex };
+    dockState.secBase = buildAlignedSecondary(
+      dockState.mainWall,
+      estancias[dockState.secundaria].puntos.map(p => ({x:p.x, y:p.y})),
+      hit.sideIndex
+    );
+    dockState.slidePx = 0;
+    dockState.step = "adjust";
+    recomputarVistaAcople();
+    drawAll();
+    alert("La secundaria ya está acoplada. Arrástrala a lo largo de la pared o usa ← / →");
+    return true;
+  }
+
+  return false;
+}
+
+function getProjectionOnMainWall(x, y){
+  const w = dockState.mainWall;
+  const len = dist(w.a, w.b);
+  if(len < 1) return 0;
+  const ux = (w.b.x - w.a.x) / len;
+  const uy = (w.b.y - w.a.y) / len;
+  return (x - w.a.x) * ux + (y - w.a.y) * uy;
+}
+
+function polygonBBox(poly){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const p of poly){
+    if(p.x<minX) minX=p.x;
+    if(p.y<minY) minY=p.y;
+    if(p.x>maxX) maxX=p.x;
+    if(p.y>maxY) maxY=p.y;
+  }
+  return {minX,minY,maxX,maxY};
+}
+
+function boxesOverlap(a,b){
+  return !(a.maxX < b.minX || a.minX > b.maxX || a.maxY < b.minY || a.minY > b.maxY);
+}
+
+function segmentIntersection(a,b,c,d){
+  const r = {x:b.x-a.x, y:b.y-a.y};
+  const s = {x:d.x-c.x, y:d.y-c.y};
+  const den = r.x*s.y - r.y*s.x;
+
+  if(Math.abs(den) < INTERSECTION_TOL){
+    return null;
+  }
+
+  const qp = {x:c.x-a.x, y:c.y-a.y};
+  const t = (qp.x*s.y - qp.y*s.x) / den;
+  const u = (qp.x*r.y - qp.y*r.x) / den;
+
+  if(t >= -INTERSECTION_TOL && t <= 1+INTERSECTION_TOL && u >= -INTERSECTION_TOL && u <= 1+INTERSECTION_TOL){
+    return {x:a.x + t*r.x, y:a.y + t*r.y};
   }
   return null;
 }
 
-function mergePolygonsBySharedEdge(polyA, edgeA, polyB, edgeB){
-  const pathA = walkBackwardExcludingEdge(polyA, edgeA);
-  const pathB = walkBackwardExcludingEdge(polyB, edgeB);
-
-  const merged = [];
-  for (const p of pathA) merged.push({ x: p.x, y: p.y });
-  for (let k = 1; k < pathB.length; k++) merged.push({ x: pathB[k].x, y: pathB[k].y });
-
-  return normalizeMergePolygon(merged);
+function addPointUnique(arr, p, tol=0.5){
+  for(const q of arr){
+    if(Math.hypot(p.x-q.x,p.y-q.y) <= tol) return;
+  }
+  arr.push({x:p.x, y:p.y});
 }
 
-function unirEstanciasSeleccionadas(){
-  const aIdx = mergeSelection.a;
-  const bIdx = mergeSelection.b;
+function splitEdgeByPoints(a,b,pts){
+  const len = dist(a,b);
+  if(len < 0.5) return [];
 
-  if (aIdx < 0 || bIdx < 0) return alert("Marca una estancia como A y otra como B");
-  if (aIdx === bIdx) return alert("A y B no pueden ser la misma estancia");
-  if (!estancias[aIdx] || !estancias[bIdx]) return alert("No se encontraron las estancias seleccionadas");
+  const sorted = pts.map(p=>{
+    const t = ((p.x-a.x)*(b.x-a.x)+(p.y-a.y)*(b.y-a.y)) / (len*len);
+    return {p, t};
+  }).sort((m,n)=>m.t-n.t);
 
-  const polyA = estancias[aIdx].puntos.map(p => ({ x: p.x, y: p.y }));
-  const polyB = estancias[bIdx].puntos.map(p => ({ x: p.x, y: p.y }));
+  const out = [];
+  for(let i=0;i<sorted.length-1;i++){
+    const p1 = sorted[i].p;
+    const p2 = sorted[i+1].p;
+    if(dist(p1,p2) > 0.5) out.push({a:{x:p1.x,y:p1.y}, b:{x:p2.x,y:p2.y}});
+  }
+  return out;
+}
 
-  const shared = findSharedFullEdge(polyA, polyB);
-  if (!shared) {
-    return alert("No comparten una pared completa válida para unir");
+function segmentKey(seg){
+  const a = seg.a;
+  const b = seg.b;
+  const k1 = a.x.toFixed(3)+","+a.y.toFixed(3);
+  const k2 = b.x.toFixed(3)+","+b.y.toFixed(3);
+  return k1 < k2 ? k1+"|"+k2 : k2+"|"+k1;
+}
+
+function buildUnionBoundary(polyA, polyB){
+  const bboxA = polygonBBox(polyA);
+  const bboxB = polygonBBox(polyB);
+  if(!boxesOverlap(bboxA,bboxB)){
+    return null;
   }
 
-  const merged = mergePolygonsBySharedEdge(polyA, shared.i, polyB, shared.j);
-  if (!merged || merged.length < 3) {
-    return alert("No se pudo formar el contorno unido");
+  const polys = [polyA, polyB];
+  const splitSegments = [];
+
+  for(let pIndex=0;pIndex<2;pIndex++){
+    const poly = polys[pIndex];
+    const other = polys[1-pIndex];
+
+    for(let i=0;i<poly.length;i++){
+      const a = poly[i];
+      const b = poly[(i+1)%poly.length];
+      const pts = [];
+      addPointUnique(pts, a);
+      addPointUnique(pts, b);
+
+      for(let j=0;j<other.length;j++){
+        const c = other[j];
+        const d = other[(j+1)%other.length];
+
+        if(pointOnSegment(c,a,b,EDGE_MERGE_TOL)) addPointUnique(pts, c);
+        if(pointOnSegment(d,a,b,EDGE_MERGE_TOL)) addPointUnique(pts, d);
+
+        const inter = segmentIntersection(a,b,c,d);
+        if(inter) addPointUnique(pts, inter);
+      }
+
+      const pieces = splitEdgeByPoints(a,b,pts);
+      for(const piece of pieces){
+        const mid = midpoint(piece.a, piece.b);
+        const insideOther = pointInPolygon(mid.x, mid.y, other);
+        const onOtherBoundary = pointOnPolygonBoundary(mid, other, EDGE_MERGE_TOL);
+
+        if(insideOther || onOtherBoundary) continue;
+        splitSegments.push(piece);
+      }
+    }
   }
 
-  const nombreA = estancias[aIdx].nombre || "Estancia A";
-  const nombreB = estancias[bIdx].nombre || "Estancia B";
-  const nombreNuevo = prompt("Nombre de la nueva estancia unida:", nombreA + " + " + nombreB);
-  if (!nombreNuevo || !nombreNuevo.trim()) return;
+  const dedup = new Map();
+  for(const s of splitSegments){
+    dedup.set(segmentKey(s), s);
+  }
+  const edges = Array.from(dedup.values());
+  if(edges.length < 3) return null;
+
+  const nodes = new Map();
+  function nodeKey(p){ return p.x.toFixed(3)+","+p.y.toFixed(3); }
+
+  for(const e of edges){
+    const ka = nodeKey(e.a);
+    const kb = nodeKey(e.b);
+    if(!nodes.has(ka)) nodes.set(ka, {p:e.a, next:[]});
+    if(!nodes.has(kb)) nodes.set(kb, {p:e.b, next:[]});
+    nodes.get(ka).next.push(e.b);
+    nodes.get(kb).next.push(e.a);
+  }
+
+  let start = null;
+  for(const n of nodes.values()){
+    if(!start || n.p.x < start.x || (Math.abs(n.p.x-start.x)<0.5 && n.p.y < start.y)){
+      start = {x:n.p.x, y:n.p.y};
+    }
+  }
+  if(!start) return null;
+
+  const outline = [start];
+  let prev = {x:start.x - 1000, y:start.y};
+  let current = start;
+  let safety = 0;
+
+  while(safety < 2000){
+    safety++;
+
+    const nexts = nodes.get(nodeKey(current))?.next || [];
+    if(nexts.length === 0) return null;
+
+    const inAng = Math.atan2(current.y - prev.y, current.x - prev.x);
+    let best = null;
+    let bestDelta = Infinity;
+
+    for(const cand of nexts){
+      if(Math.hypot(cand.x - prev.x, cand.y - prev.y) < 0.5) continue;
+      const outAng = Math.atan2(cand.y - current.y, cand.x - current.x);
+      let delta = outAng - inAng;
+      while(delta <= 0) delta += Math.PI * 2;
+      if(delta < bestDelta){
+        bestDelta = delta;
+        best = cand;
+      }
+    }
+
+    if(!best){
+      best = nexts[0];
+    }
+
+    if(Math.hypot(best.x - start.x, best.y - start.y) < 0.5){
+      break;
+    }
+
+    outline.push({x:best.x, y:best.y});
+    prev = current;
+    current = best;
+  }
+
+  if(outline.length < 3) return null;
+  return cleanupPolygon(outline);
+}
+
+function cleanupPolygon(poly){
+  let out = poly.map(p=>({x:Number(p.x.toFixed(3)), y:Number(p.y.toFixed(3))}));
+
+  let changed = true;
+  while(changed && out.length >= 3){
+    changed = false;
+    const next = [];
+    for(let i=0;i<out.length;i++){
+      const prev = out[(i-1+out.length)%out.length];
+      const cur = out[i];
+      const nxt = out[(i+1)%out.length];
+
+      if(Math.hypot(prev.x-cur.x, prev.y-cur.y) < 0.5){
+        changed = true;
+        continue;
+      }
+
+      const area = Math.abs((cur.x-prev.x)*(nxt.y-prev.y) - (cur.y-prev.y)*(nxt.x-prev.x));
+      if(area < 0.5){
+        changed = true;
+        continue;
+      }
+
+      next.push(cur);
+    }
+    out = next.length ? next : out;
+  }
+
+  return out;
+}
+
+function confirmarAcopleYUnir(){
+  if(!dockState.active || dockState.step !== "adjust" || !dockState.secPreview){
+    return alert("Primero completa el acople");
+  }
+
+  const pIdx = dockState.principal;
+  const sIdx = dockState.secundaria;
+
+  if(pIdx < 0 || sIdx < 0 || !estancias[pIdx] || !estancias[sIdx]){
+    return alert("Faltan principal o secundaria");
+  }
+
+  const principal = estancias[pIdx];
+  const secundariaPreview = dockState.secPreview.map(p => ({x:p.x, y:p.y}));
+
+  const merged = buildUnionBoundary(principal.puntos, secundariaPreview);
+  if(!merged || merged.length < 3){
+    return alert("No se pudo unir. Ajusta la secundaria a lo largo de la pared y prueba otra vez");
+  }
+
+  const nombrePorDefecto = (principal.nombre || "Principal") + " + " + (estancias[sIdx].nombre || "Secundaria");
+  const nombreNuevo = prompt("Nombre de la nueva estancia unida:", nombrePorDefecto);
+  if(!nombreNuevo || !nombreNuevo.trim()) return;
 
   const nuevo = {
     nombre: nombreNuevo.trim(),
     puntos: merged
   };
 
-  const mayor = Math.max(aIdx, bIdx);
-  const menor = Math.min(aIdx, bIdx);
+  const mayor = Math.max(pIdx, sIdx);
+  const menor = Math.min(pIdx, sIdx);
   estancias.splice(mayor, 1);
   estancias.splice(menor, 1);
   estancias.push(nuevo);
 
-  mergeSelection.a = -1;
-  mergeSelection.b = -1;
+  cancelarAcopleInterno(true);
   limpiarSeleccion();
-
   guardarMemoria();
-  dibujar();
-  alert("Estancias unidas");
+  drawAll();
+  alert("Acople y unión completados");
 }
 
 function onStart(ev) {
@@ -1598,6 +2066,11 @@ function onStart(ev) {
 
   const sideHit = hitSideLabel(raw.x, raw.y);
   if (sideHit) {
+    if(usarParedEnAcople(sideHit)){
+      if (ev.cancelable) ev.preventDefault();
+      return;
+    }
+
     if (!sideHit.currentRoom) {
       const idx = sideHit.roomIndex;
       if (seleccion.estanciaIndex !== idx || !seleccion.editEnabled) {
@@ -1611,6 +2084,15 @@ function onStart(ev) {
     return;
   }
 
+  if(dockState.active && dockState.step === "adjust" && dockState.secPreview){
+    if(pointInPolygon(raw.x, raw.y, dockState.secPreview)){
+      dockState.dragAlongWall = true;
+      dockState.dragStartProj = getProjectionOnMainWall(raw.x, raw.y);
+      if (ev.cancelable) ev.preventDefault();
+      return;
+    }
+  }
+
   const posSnap = snapPoint(raw);
   ultimoX = posSnap.x;
   ultimoY = posSnap.y;
@@ -1621,12 +2103,25 @@ function onStart(ev) {
     seleccion.tipo = "puntoActual";
     seleccion.puntoIndex = idx;
     arrastrando = true;
-    dibujar();
+    drawAll();
     if (ev.cancelable) ev.preventDefault();
     return;
   }
 
+  if(dockState.secPreview){
+    idx = findPoint(dockState.secPreview, raw.x, raw.y);
+    if(idx >= 0){
+      if(dockState.active && dockState.step === "adjust"){
+        dockState.dragAlongWall = true;
+        dockState.dragStartProj = getProjectionOnMainWall(raw.x, raw.y);
+        if (ev.cancelable) ev.preventDefault();
+        return;
+      }
+    }
+  }
+
   for (let i = estancias.length - 1; i >= 0; i--) {
+    if(i === dockState.secundaria && dockState.secPreview) continue;
     idx = findPoint(estancias[i].puntos, raw.x, raw.y);
     if (idx >= 0) {
       if (!seleccion.editEnabled || seleccion.estanciaIndex !== i) {
@@ -1638,7 +2133,7 @@ function onStart(ev) {
       seleccion.estanciaIndex = i;
       seleccion.puntoIndex = idx;
       arrastrando = true;
-      dibujar();
+      drawAll();
       if (ev.cancelable) ev.preventDefault();
       return;
     }
@@ -1648,12 +2143,22 @@ function onStart(ev) {
     if (!enEdicionNuevaEstancia && !seleccion.editEnabled) return;
     seleccion.tipo = "estanciaActual";
     arrastrando = true;
-    dibujar();
+    drawAll();
     if (ev.cancelable) ev.preventDefault();
     return;
   }
 
+  if(dockState.secPreview && pointInPolygon(raw.x, raw.y, dockState.secPreview)){
+    if(dockState.active && dockState.step === "adjust"){
+      dockState.dragAlongWall = true;
+      dockState.dragStartProj = getProjectionOnMainWall(raw.x, raw.y);
+      if (ev.cancelable) ev.preventDefault();
+      return;
+    }
+  }
+
   for (let i = estancias.length - 1; i >= 0; i--) {
+    if(i === dockState.secundaria && dockState.secPreview) continue;
     if (pointInPolygon(raw.x, raw.y, estancias[i].puntos)) {
       if (!seleccion.editEnabled || seleccion.estanciaIndex !== i) {
         abrirAccionEstancia(i);
@@ -1663,7 +2168,7 @@ function onStart(ev) {
       seleccion.tipo = "estanciaGuardada";
       seleccion.estanciaIndex = i;
       arrastrando = true;
-      dibujar();
+      drawAll();
       if (ev.cancelable) ev.preventDefault();
       return;
     }
@@ -1673,18 +2178,30 @@ function onStart(ev) {
     puntos.push({ x: posSnap.x, y: posSnap.y });
     seleccion.tipo = "puntoActual";
     seleccion.puntoIndex = puntos.length - 1;
-    dibujar();
+    drawAll();
     if (ev.cancelable) ev.preventDefault();
     return;
   }
 
   limpiarSeleccion();
-  dibujar();
+  drawAll();
 }
 
 function onMove(ev) {
   if (diagState.active) return;
   const raw = getPos(ev);
+
+  if(dockState.dragAlongWall && dockState.active && dockState.step === "adjust"){
+    const proj = getProjectionOnMainWall(raw.x, raw.y);
+    const delta = proj - dockState.dragStartProj;
+    dockState.slidePx += delta;
+    dockState.dragStartProj = proj;
+    recomputarVistaAcople();
+    drawAll();
+    if (ev.cancelable) ev.preventDefault();
+    return;
+  }
+
   if (!arrastrando || !seleccion.tipo) return;
 
   let pos = { x: raw.x, y: raw.y };
@@ -1726,11 +2243,17 @@ function onMove(ev) {
 
   ultimoX = pos.x;
   ultimoY = pos.y;
-  dibujar();
+  drawAll();
   if (ev.cancelable) ev.preventDefault();
 }
 
 function onEnd(ev) {
+  if (dockState.dragAlongWall) {
+    dockState.dragAlongWall = false;
+    if (ev && ev.cancelable) ev.preventDefault();
+    return;
+  }
+
   if (!arrastrando) return;
   arrastrando = false;
 
@@ -1767,7 +2290,7 @@ requestAnimationFrame(() => {
   ajustarCanvas();
   guardarMemoria();
   actualizarUI();
-  dibujar();
+  drawAll();
 });
 </script>
 </body>
