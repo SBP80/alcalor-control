@@ -266,6 +266,7 @@ canvas{
                 <div class="panel-group-content">
                     <div class="grid">
                         <button class="btn neutral" onclick="guardarPlano()">Guardar</button>
+                        <button class="btn secondary" onclick="generarCircuitos()">Circuitos</button>
                         <button class="btn danger" onclick="eliminarSeleccionado()">Eliminar</button>
                     </div>
                 </div>
@@ -435,10 +436,12 @@ if (!Array.isArray(obra.plano.estancias)) obra.plano.estancias = [];
 if (typeof obra.plano.metrosPorPixel !== "number") obra.plano.metrosPorPixel = null;
 if (!Array.isArray(obra.zonasMuertas)) obra.zonasMuertas = [];
 if (!Array.isArray(obra.aberturas)) obra.aberturas = [];
+if (!Array.isArray(obra.circuitos)) obra.circuitos = [];
 
 let estancias = obra.plano.estancias;
 let zonasMuertas = obra.zonasMuertas;
 let aberturas = obra.aberturas;
+let circuitos = obra.circuitos;
 let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let puntos = [];
@@ -472,6 +475,7 @@ function guardarMemoria() {
     obra.plano.metrosPorPixel = metrosPorPixel;
     obra.zonasMuertas = zonasMuertas;
     obra.aberturas = aberturas;
+    obra.circuitos = circuitos;
     localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
 }
 
@@ -831,6 +835,139 @@ function drawRoom(poly, selected, fillColor, strokeColor) {
     ctx.stroke();
 }
 
+/* CIRCUITOS */
+function getRoomBounds(poly){
+    return {
+        minX: Math.min(...poly.map(p => p.x)),
+        maxX: Math.max(...poly.map(p => p.x)),
+        minY: Math.min(...poly.map(p => p.y)),
+        maxY: Math.max(...poly.map(p => p.y))
+    };
+}
+
+function generarCircuitos(){
+    if(!metrosPorPixel){
+        alert("Define escala primero");
+        return;
+    }
+    if(!estancias.length){
+        alert("No hay estancias guardadas");
+        return;
+    }
+
+    circuitos = [];
+
+    estancias.forEach((est, idx)=>{
+        const stats = roomStats(est.puntos);
+        const area = stats.useful;
+
+        if(area <= 0) return;
+
+        let separacion = 0.10;
+        if (area > 12) separacion = 0.15;
+        if (area > 25) separacion = 0.20;
+
+        const longitudTotal = area / separacion;
+        const maxLongitud = 90;
+        const numCircuitos = Math.max(1, Math.ceil(longitudTotal / maxLongitud));
+        const largoPorCircuito = longitudTotal / numCircuitos;
+
+        for(let i = 0; i < numCircuitos; i++){
+            circuitos.push({
+                estancia: idx,
+                circuito: i + 1,
+                separacion,
+                longitud: largoPorCircuito
+            });
+        }
+    });
+
+    guardarMemoria();
+    dibujar();
+    autoCerrarPanel();
+    alert("Circuitos generados");
+}
+
+function drawCircuitos(){
+    if(!Array.isArray(circuitos) || !circuitos.length) return;
+
+    ctx.save();
+    ctx.strokeStyle = "#00d9ff";
+    ctx.lineWidth = 1.8;
+
+    estancias.forEach((est, idx)=>{
+        const lista = circuitos.filter(c => c.estancia === idx);
+        if(!lista.length) return;
+
+        const p = est.puntos;
+        if(!p || p.length < 3) return;
+
+        const bounds = getRoomBounds(p);
+        const alto = bounds.maxY - bounds.minY;
+        const ancho = bounds.maxX - bounds.minX;
+        if (alto < 10 || ancho < 10) return;
+
+        const num = lista.length;
+        const banda = ancho / num;
+
+        for(let c = 0; c < num; c++){
+            const x0 = bounds.minX + c * banda + 8;
+            const x1 = bounds.minX + (c + 1) * banda - 8;
+            if (x1 <= x0) continue;
+
+            const sepPx = Math.max(12, lista[c].separacion / metrosPorPixel);
+            let sentido = true;
+
+            for(let y = bounds.minY + 8; y <= bounds.maxY - 8; y += sepPx){
+                const xs = lineIntersectionsHorizontal(y, p);
+                if(xs.length < 2) continue;
+
+                let left = null;
+                let right = null;
+
+                for(let k = 0; k < xs.length; k += 2){
+                    const a = xs[k];
+                    const b = xs[k + 1];
+                    if (b === undefined) continue;
+
+                    const tramoLeft = Math.max(a, x0);
+                    const tramoRight = Math.min(b, x1);
+
+                    if(tramoRight > tramoLeft){
+                        left = tramoLeft;
+                        right = tramoRight;
+                        break;
+                    }
+                }
+
+                if(left === null || right === null) continue;
+
+                ctx.beginPath();
+                if(sentido){
+                    ctx.moveTo(left, y);
+                    ctx.lineTo(right, y);
+                }else{
+                    ctx.moveTo(right, y);
+                    ctx.lineTo(left, y);
+                }
+                ctx.stroke();
+                sentido = !sentido;
+            }
+
+            const cxy = centroid(p);
+            ctx.fillStyle = "#00d9ff";
+            ctx.font = "11px Arial";
+            ctx.fillText(
+                "C" + lista[c].circuito + " · " + lista[c].longitud.toFixed(0) + " m",
+                cxy.x - 30,
+                cxy.y + 40 + (c * 14)
+            );
+        }
+    });
+
+    ctx.restore();
+}
+
 function drawCurrentRoom() {
     if (!puntos.length) return;
     const selected = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
@@ -1168,6 +1305,7 @@ function updateInfo() {
     const estSel = getSelectedRoomData();
     if (estSel && estSel.puntos && estSel.puntos.length >= 3) {
         const stats = roomStats(estSel.puntos);
+        const circs = circuitos.filter(c => c.estancia === seleccion.estanciaIndex);
         html += "Datos de la estancia seleccionada";
         html += "<br>Nombre: " + (estSel.nombre || "Sin nombre");
         html += "<br>Lados: " + estSel.puntos.length;
@@ -1175,6 +1313,11 @@ function updateInfo() {
             html += "<br>Superficie total: " + stats.total.toFixed(2) + " m²";
             html += "<br>Superficie muerta: " + stats.dead.toFixed(2) + " m²";
             html += "<br>Superficie útil: " + stats.useful.toFixed(2) + " m²";
+        }
+        if (circs.length) {
+            html += "<br>Circuitos: " + circs.length;
+            html += "<br>Longitud media: " + circs[0].longitud.toFixed(1) + " m";
+            html += "<br>Separación: " + (circs[0].separacion * 100).toFixed(0) + " cm";
         }
         info.innerHTML = html;
         actualizarUI();
@@ -1200,6 +1343,7 @@ function updateInfo() {
     html += "<br>Zonas muertas: " + zonasMuertas.length;
     html += "<br>Puertas: " + aberturas.filter(a => a.tipo === "puerta").length;
     html += "<br>Ventanas: " + aberturas.filter(a => a.tipo === "ventana").length;
+    html += "<br>Circuitos: " + circuitos.length;
 
     if (puntos.length > 0) {
         html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
@@ -1215,6 +1359,7 @@ function dibujar() {
     drawCurrentRoom();
     drawZones();
     drawAberturas();
+    drawCircuitos();
     updateInfo();
 }
 
@@ -1344,6 +1489,12 @@ function eliminarSeleccionado() {
                     .map(a => {
                         if (!a.currentRoom && a.roomIndex > idx) a.roomIndex -= 1;
                         return a;
+                    });
+                circuitos = circuitos
+                    .filter(c => c.estancia !== idx)
+                    .map(c => {
+                        if (c.estancia > idx) c.estancia -= 1;
+                        return c;
                     });
                 guardarMemoria();
                 limpiarSeleccion();
