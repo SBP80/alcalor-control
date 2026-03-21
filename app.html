@@ -1,101 +1,437 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALLCALOR PRO</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALLCALOR PRO</title>
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#151515;
+      --line:#2b2b2b;
+      --text:#ffffff;
+      --accent:#f39b2f;
+      --panel2:#1d1d1d;
+      --muted:#bdbdbd;
+    }
 
-<style>
-:root{
-  --bg:#0b0b0b;
-  --panel:#151515;
-  --line:#2b2b2b;
-  --text:#ffffff;
-  --accent:#f39b2f;
-}
+    *{
+      box-sizing:border-box;
+    }
 
-*{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
 
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background:rgba(11,11,11,0.98);
+      backdrop-filter:blur(6px);
+      z-index:20;
+    }
 
-/* HEADER */
-.header{
-  padding:20px;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+    .logo{
+      font-size:22px;
+      font-weight:700;
+      color:var(--accent);
+      letter-spacing:.3px;
+    }
 
-.logo{
-  font-size:20px;
-  font-weight:bold;
-  color:var(--accent);
-}
+    .subtitulo{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+    }
 
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:15px;
-  padding:20px;
-}
+    .header-left{
+      display:flex;
+      flex-direction:column;
+    }
 
-/* CARD */
-.card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:20px;
-  text-align:center;
-  cursor:pointer;
-  transition:0.2s;
-}
+    .header-right{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
 
-.card:hover{
-  background:#1f1f1f;
-  transform:scale(1.03);
-}
+    .btn-top{
+      border:none;
+      background:var(--accent);
+      color:#111;
+      font-weight:700;
+      border-radius:10px;
+      padding:10px 14px;
+      cursor:pointer;
+    }
 
-/* TITLES */
-.card h3{
-  margin:0;
-  font-size:16px;
-}
+    .wrap{
+      max-width:1400px;
+      margin:0 auto;
+      padding:18px;
+    }
 
-</style>
+    .hero{
+      display:grid;
+      grid-template-columns:1.3fr .9fr;
+      gap:18px;
+      margin-bottom:18px;
+    }
+
+    .hero-card,
+    .resumen-card,
+    .modulos-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:18px;
+    }
+
+    .hero-title{
+      font-size:28px;
+      font-weight:700;
+      margin:0 0 8px 0;
+    }
+
+    .hero-text{
+      color:var(--muted);
+      line-height:1.45;
+      margin:0;
+    }
+
+    .resumen-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .dato{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px;
+    }
+
+    .dato-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .dato-valor{
+      font-size:22px;
+      font-weight:700;
+      color:var(--accent);
+    }
+
+    .seccion-titulo{
+      font-size:18px;
+      font-weight:700;
+      margin:0 0 14px 0;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:14px;
+    }
+
+    .card{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:18px;
+      cursor:pointer;
+      transition:transform .15s ease, border-color .15s ease, background .15s ease;
+      min-height:110px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .card:hover{
+      transform:translateY(-2px);
+      border-color:var(--accent);
+    }
+
+    .card h3{
+      margin:0 0 8px 0;
+      font-size:17px;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .card-tag{
+      margin-top:12px;
+      display:inline-block;
+      align-self:flex-start;
+      background:rgba(243,155,47,.12);
+      color:var(--accent);
+      border:1px solid rgba(243,155,47,.25);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .footer{
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    @media (max-width: 900px){
+      .hero{
+        grid-template-columns:1fr;
+      }
+
+      .hero-title{
+        font-size:24px;
+      }
+    }
+
+    @media (max-width: 640px){
+      .header{
+        padding:14px;
+      }
+
+      .logo{
+        font-size:18px;
+      }
+
+      .btn-top{
+        padding:9px 12px;
+        font-size:13px;
+      }
+
+      .wrap{
+        padding:14px;
+      }
+
+      .resumen-grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .card{
+        min-height:96px;
+        padding:14px;
+      }
+
+      .card h3{
+        font-size:15px;
+      }
+    }
+
+    @media (max-width: 430px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .resumen-grid{
+        grid-template-columns:1fr;
+      }
+
+      .header{
+        align-items:flex-start;
+      }
+
+      .header-right{
+        flex-shrink:0;
+      }
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="header">
-  <div class="logo">ALLCALOR PRO</div>
-</div>
+  <div class="header">
+    <div class="header-left">
+      <div class="logo" id="nombreApp">ALLCALOR PRO</div>
+      <div class="subtitulo">Centro de control</div>
+    </div>
 
-<div class="grid">
+    <div class="header-right">
+      <button class="btn-top" onclick="ir('configuracion.html')">Configuración</button>
+    </div>
+  </div>
 
-  <div class="card" onclick="ir('clientes.html')"><h3>Clientes</h3></div>
-  <div class="card" onclick="ir('obras.html')"><h3>Obras</h3></div>
-  <div class="card" onclick="ir('plano.html')"><h3>Planos</h3></div>
-  <div class="card"><h3>Presupuestos</h3></div>
-  <div class="card"><h3>Facturas</h3></div>
-  <div class="card"><h3>Agenda</h3></div>
-  <div class="card"><h3>Vehículos</h3></div>
-  <div class="card"><h3>Stock</h3></div>
-  <div class="card"><h3>Configuración</h3></div>
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-card">
+        <h1 class="hero-title">Gestión general</h1>
+        <p class="hero-text">
+          Desde aquí entras a clientes, obras, planos y al resto de módulos.
+          Esta pantalla será la entrada principal de toda la app.
+        </p>
+      </div>
 
-</div>
+      <div class="resumen-card">
+        <h2 class="seccion-titulo">Resumen</h2>
+        <div class="resumen-grid">
+          <div class="dato">
+            <div class="dato-label">Clientes</div>
+            <div class="dato-valor" id="datoClientes">0</div>
+          </div>
+          <div class="dato">
+            <div class="dato-label">Obras</div>
+            <div class="dato-valor" id="datoObras">0</div>
+          </div>
+          <div class="dato">
+            <div class="dato-label">Planos</div>
+            <div class="dato-valor">1</div>
+          </div>
+          <div class="dato">
+            <div class="dato-label">Estado</div>
+            <div class="dato-valor" style="font-size:16px;">OK</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<script>
-function ir(pagina){
-  window.location.href = pagina;
-}
-</script>
+    <div class="modulos-card">
+      <h2 class="seccion-titulo">Módulos</h2>
+
+      <div class="grid">
+        <div class="card" onclick="ir('clientes.html')">
+          <div>
+            <h3>Clientes</h3>
+            <p>Listado general y gestión de fichas.</p>
+          </div>
+          <span class="card-tag">Abrir</span>
+        </div>
+
+        <div class="card" onclick="ir('obras.html')">
+          <div>
+            <h3>Obras</h3>
+            <p>Seguimiento de obras, trabajos y estado.</p>
+          </div>
+          <span class="card-tag">Abrir</span>
+        </div>
+
+        <div class="card" onclick="ir('plano.html')">
+          <div>
+            <h3>Planos</h3>
+            <p>Editor de estancias, zonas muertas, puertas y ventanas.</p>
+          </div>
+          <span class="card-tag">Abrir</span>
+        </div>
+
+        <div class="card" onclick="moduloPendiente('Presupuestos')">
+          <div>
+            <h3>Presupuestos</h3>
+            <p>Base preparada para el siguiente desarrollo.</p>
+          </div>
+          <span class="card-tag">Pendiente</span>
+        </div>
+
+        <div class="card" onclick="moduloPendiente('Facturas')">
+          <div>
+            <h3>Facturas</h3>
+            <p>Base preparada para el siguiente desarrollo.</p>
+          </div>
+          <span class="card-tag">Pendiente</span>
+        </div>
+
+        <div class="card" onclick="moduloPendiente('Agenda')">
+          <div>
+            <h3>Agenda</h3>
+            <p>Base preparada para el siguiente desarrollo.</p>
+          </div>
+          <span class="card-tag">Pendiente</span>
+        </div>
+
+        <div class="card" onclick="moduloPendiente('Vehículos')">
+          <div>
+            <h3>Vehículos</h3>
+            <p>Base preparada para el siguiente desarrollo.</p>
+          </div>
+          <span class="card-tag">Pendiente</span>
+        </div>
+
+        <div class="card" onclick="moduloPendiente('Stock')">
+          <div>
+            <h3>Stock</h3>
+            <p>Base preparada para el siguiente desarrollo.</p>
+          </div>
+          <span class="card-tag">Pendiente</span>
+        </div>
+
+        <div class="card" onclick="ir('configuracion.html')">
+          <div>
+            <h3>Configuración</h3>
+            <p>Nombre de empresa, colores y ajustes generales.</p>
+          </div>
+          <span class="card-tag">Abrir</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    ALLCALOR · Panel principal
+  </div>
+
+  <script>
+    const config = JSON.parse(localStorage.getItem("configAllcalor")) || {
+      nombre: "ALLCALOR PRO",
+      color: "#f39b2f"
+    };
+
+    document.getElementById("nombreApp").innerText = config.nombre || "ALLCALOR PRO";
+    document.title = config.nombre || "ALLCALOR PRO";
+
+    if (config.color) {
+      document.documentElement.style.setProperty("--accent", config.color);
+    }
+
+    function ir(pagina){
+      window.location.href = pagina;
+    }
+
+    function moduloPendiente(nombre){
+      alert(nombre + " todavía no está desarrollado.");
+    }
+
+    function contarDatos(){
+      let clientes = [];
+      let obras = [];
+
+      try {
+        clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+      } catch (e) {
+        clientes = [];
+      }
+
+      try {
+        obras = JSON.parse(localStorage.getItem("obras")) || [];
+      } catch (e) {
+        obras = [];
+      }
+
+      document.getElementById("datoClientes").innerText = Array.isArray(clientes) ? clientes.length : 0;
+      document.getElementById("datoObras").innerText = Array.isArray(obras) ? obras.length : 0;
+    }
+
+    contarDatos();
+  </script>
 
 </body>
 </html>
