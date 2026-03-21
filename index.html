@@ -2,294 +2,536 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ALLCALOR - Calculadora de circuitos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes</title>
+
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif}
-body{min-height:100vh}
-.wrap{max-width:1100px;margin:0 auto;padding:14px}
-h1{margin:0 0 12px 0;font-size:24px}
-.card{background:#1b1b1b;border:1px solid #333;border-radius:12px;padding:12px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
-@media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-label{display:block;font-size:13px;margin-bottom:6px;color:#ddd}
-input,select,button{width:100%;padding:11px 12px;border:none;border-radius:10px;font-size:16px}
-input,select{background:#fff;color:#111}
-button{background:#f0842f;color:#fff;font-weight:700}
-button.sec{background:#5a616c}
-button.green{background:#2f8f46}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.row > *{flex:1 1 180px}
-.room{border:1px solid #353535;border-radius:12px;padding:12px;margin-bottom:10px;background:#161616}
-.room h3{margin:0 0 10px 0;font-size:17px}
-.small{font-size:13px;color:#bbb}
-.tableWrap{overflow:auto}
-table{width:100%;border-collapse:collapse;background:#161616}
-th,td{padding:10px;border-bottom:1px solid #2d2d2d;text-align:left;font-size:14px}
-th{background:#202020}
-.total{font-size:18px;font-weight:700}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#2a2a2a;font-size:12px}
-.note{font-size:13px;color:#ccc;line-height:1.4}
-hr{border:none;border-top:1px solid #333;margin:12px 0}
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0b0b;
+    color: white;
+}
+
+.header {
+    padding: 12px 15px;
+    border-bottom: 2px solid orange;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-btn {
+    background: orange;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.wrap {
+    padding: 10px;
+    position: relative;
+}
+
+.tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+}
+
+.tools.abierto {
+    display: block;
+}
+
+.subtitulo {
+    margin: 4px 0 6px 0;
+    font-size: 12px;
+    color: orange;
+    font-weight: bold;
+}
+
+.info {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.mensaje {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+}
+
+.buscador {
+    margin-bottom: 10px;
+}
+
+.input-busqueda {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.btn {
+    width: 100%;
+    padding: 11px;
+    background: orange;
+    border: none;
+    margin-top: 7px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #111;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.cliente {
+    background: #1a1a1a;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    position: relative;
+    border: 1px solid #252525;
+    cursor: pointer;
+}
+
+.eliminar {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #b30000;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.nombre {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding-right: 55px;
+}
+
+.nombre a {
+    color: white;
+    text-decoration: none;
+}
+
+.nombre a:hover {
+    text-decoration: underline;
+}
+
+.linea-enlace {
+    display: block;
+    color: white;
+    text-decoration: none;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+.linea-enlace:hover {
+    text-decoration: underline;
+}
+
+.linea-boton {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: white;
+    margin-bottom: 5px;
+    padding: 0;
+    font-size: 16px;
+    cursor: pointer;
+    word-break: break-word;
+}
+
+.linea-boton:hover {
+    text-decoration: underline;
+}
+
+.obras {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #d9d9d9;
+}
+
+.fecha {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #bdbdbd;
+}
+
+.selector-mapa-fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.selector-mapa {
+    width: calc(100% - 30px);
+    max-width: 420px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.selector-mapa-titulo {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: white;
+}
+
+.selector-mapa-btn {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 10px;
+    background: orange;
+    color: #111;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.selector-mapa-cancelar {
+    background: #2a2a2a;
+    color: white;
+}
 </style>
 </head>
 <body>
+
+<div class="header">
+    <div></div>
+    <div class="header-titulo">Clientes</div>
+    <button class="header-btn" onclick="toggleTools()">Menú</button>
+</div>
+
 <div class="wrap">
-  <h1>ALLCALOR · Calculadora de circuitos</h1>
 
-  <div class="card">
-    <div class="grid">
-      <div>
-        <label>Separación por defecto</label>
-        <select id="sepGlobal">
-          <option value="0.10">10 cm</option>
-          <option value="0.125">12,5 cm</option>
-          <option value="0.15" selected>15 cm</option>
-          <option value="0.20">20 cm</option>
-        </select>
-      </div>
-      <div>
-        <label>Longitud máxima por circuito</label>
-        <input id="maxCircuito" type="number" step="1" value="100">
-      </div>
-      <div>
-        <label>Factor de corrección tubo</label>
-        <input id="factor" type="number" step="0.01" value="1.08">
-      </div>
-      <div>
-        <label>Tipo de tubo</label>
-        <select id="tubo">
-          <option value="16" selected>16x2</option>
-          <option value="17">17x2</option>
-          <option value="20">20x2</option>
-        </select>
-      </div>
-      <div>
-        <label>Temperatura / uso</label>
-        <select id="uso">
-          <option value="calor" selected>Suelo radiante</option>
-          <option value="frio">Suelo refrescante</option>
-        </select>
-      </div>
-      <div>
-        <label>Acción</label>
-        <button class="green" id="btnCalcular">Calcular</button>
-      </div>
+    <div id="mensaje" class="mensaje"></div>
+    <div id="info" class="info"></div>
+
+    <div class="buscador">
+        <input
+            id="busqueda"
+            class="input-busqueda"
+            type="text"
+            placeholder="Buscar por nombre, dirección, email, teléfono, fecha o nº de obras"
+            oninput="mostrarClientes()"
+        >
     </div>
-    <hr>
-    <div class="row">
-      <button id="btnNueva">Añadir estancia</button>
-      <button class="sec" id="btnEjemplo">Cargar ejemplo</button>
-      <button class="sec" id="btnLimpiar">Vaciar todo</button>
+
+    <div class="tools" id="tools">
+        <div class="subtitulo">Acciones</div>
+        <button class="btn" onclick="window.location.href='nuevo-cliente.html'">Nuevo cliente</button>
     </div>
-  </div>
 
-  <div class="card">
-    <div id="rooms"></div>
-  </div>
+    <div class="clientes" id="listaClientes"></div>
 
-  <div class="card">
-    <div class="tableWrap">
-      <table id="tablaResultados">
-        <thead>
-          <tr>
-            <th>Estancia</th>
-            <th>Superficie útil</th>
-            <th>Separación</th>
-            <th>Tubo estimado</th>
-            <th>Circuitos</th>
-            <th>m/circuito</th>
-            <th>Recomendación</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+</div>
+
+<div id="selectorMapaFondo" class="selector-mapa-fondo">
+    <div class="selector-mapa">
+        <div class="selector-mapa-titulo">Abrir dirección con</div>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('apple')">Apple Mapas</button>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('google')">Google Maps</button>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('waze')">Waze</button>
+        <button class="selector-mapa-btn selector-mapa-cancelar" onclick="cerrarSelectorMapa()">Cancelar</button>
     </div>
-  </div>
-
-  <div class="card">
-    <div id="resumen" class="note">Sin calcular.</div>
-  </div>
 </div>
 
 <script>
-const roomsEl = document.getElementById("rooms");
-const tbody = document.querySelector("#tablaResultados tbody");
-const resumenEl = document.getElementById("resumen");
+const PIN_ADMIN = "1234";
 
-let roomId = 0;
+const tools = document.getElementById("tools");
+const mensaje = document.getElementById("mensaje");
+const info = document.getElementById("info");
+const inputBusqueda = document.getElementById("busqueda");
 
-function nuevaEstancia(data = {}) {
-  roomId++;
-  const div = document.createElement("div");
-  div.className = "room";
-  div.dataset.id = roomId;
-  div.innerHTML = `
-    <h3>Estancia <span class="badge">#${roomId}</span></h3>
-    <div class="grid">
-      <div>
-        <label>Nombre</label>
-        <input class="nombre" type="text" value="${data.nombre || ""}" placeholder="Salón">
-      </div>
-      <div>
-        <label>Largo (m)</label>
-        <input class="largo" type="number" step="0.01" value="${data.largo ?? ""}" placeholder="5.20">
-      </div>
-      <div>
-        <label>Ancho (m)</label>
-        <input class="ancho" type="number" step="0.01" value="${data.ancho ?? ""}" placeholder="4.10">
-      </div>
-      <div>
-        <label>Superficie no calefactable (m²)</label>
-        <input class="noCalef" type="number" step="0.01" value="${data.noCalef ?? 0}">
-      </div>
-      <div>
-        <label>Separación</label>
-        <select class="sep">
-          <option value="">Usar global</option>
-          <option value="0.10">10 cm</option>
-          <option value="0.125">12,5 cm</option>
-          <option value="0.15">15 cm</option>
-          <option value="0.20">20 cm</option>
-        </select>
-      </div>
-      <div>
-        <label>m extra ida/vuelta hasta colector</label>
-        <input class="extra" type="number" step="0.01" value="${data.extra ?? 4}">
-      </div>
-    </div>
-    <div style="margin-top:10px">
-      <button class="sec borrar">Borrar esta estancia</button>
-    </div>
-  `;
-  div.querySelector(".sep").value = data.sep ?? "";
-  div.querySelector(".borrar").addEventListener("click", () => {
-    div.remove();
-    recalcular();
-  });
-  div.querySelectorAll("input,select").forEach(el => {
-    el.addEventListener("input", recalcular);
-    el.addEventListener("change", recalcular);
-  });
-  roomsEl.appendChild(div);
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let direccionMapaActual = "";
+
+function toggleTools() {
+    tools.classList.toggle("abierto");
 }
 
-function leerNumero(el) {
-  const v = String(el.value).replace(",", ".").trim();
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
+function mostrarMensaje(texto) {
+    mensaje.textContent = texto;
+    mensaje.style.display = "block";
+    setTimeout(() => {
+        mensaje.style.display = "none";
+    }, 2000);
 }
 
-function formato(n, dec = 2) {
-  return n.toFixed(dec).replace(".", ",");
+function guardar() {
+    localStorage.setItem("clientes", JSON.stringify(clientes));
 }
 
-function recomendar(estancia, circuitos, mPorCircuito, sep) {
-  const nombre = estancia.nombre.toLowerCase();
-  if (sep <= 0.10) return "Zona exigente / perímetro frío";
-  if (nombre.includes("baño")) return "Baño: separación cerrada";
-  if (mPorCircuito > 95) return "Conviene partir mejor";
-  if (circuitos === 1) return "Un solo circuito";
-  return "Reparto correcto";
+function formatearFecha(fechaISO) {
+    if (!fechaISO) return "-";
+    const fecha = new Date(fechaISO);
+    if (isNaN(fecha.getTime())) return "-";
+
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    const hora = String(fecha.getHours()).padStart(2, "0");
+    const minutos = String(fecha.getMinutes()).padStart(2, "0");
+
+    return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
 }
 
-function recalcular() {
-  const sepGlobal = leerNumero(document.getElementById("sepGlobal"));
-  const maxCircuito = leerNumero(document.getElementById("maxCircuito")) || 100;
-  const factor = leerNumero(document.getElementById("factor")) || 1.08;
-  const tubo = document.getElementById("tubo").value;
-  const uso = document.getElementById("uso").value;
+function obtenerTelefonos(cliente) {
+    let telefonosTexto = cliente.telefonos || cliente.telefono || "";
+    if (!telefonosTexto) return [];
 
-  const rooms = [...document.querySelectorAll(".room")].map(room => {
-    const nombre = room.querySelector(".nombre").value.trim() || `Estancia ${room.dataset.id}`;
-    const largo = leerNumero(room.querySelector(".largo"));
-    const ancho = leerNumero(room.querySelector(".ancho"));
-    const noCalef = leerNumero(room.querySelector(".noCalef"));
-    const sep = leerNumero(room.querySelector(".sep")) || sepGlobal;
-    const extra = leerNumero(room.querySelector(".extra"));
-
-    const supBruta = largo * ancho;
-    const supUtil = Math.max(0, supBruta - noCalef);
-
-    const tuboPorM2 = sep > 0 ? 1 / sep : 0;
-    const tuboEstimado = supUtil * tuboPorM2 * factor + extra;
-    const circuitos = tuboEstimado > 0 ? Math.max(1, Math.ceil(tuboEstimado / maxCircuito)) : 0;
-    const mPorCircuito = circuitos > 0 ? tuboEstimado / circuitos : 0;
-
-    return {
-      nombre, largo, ancho, noCalef, sep, extra,
-      supBruta, supUtil, tuboEstimado, circuitos, mPorCircuito
-    };
-  });
-
-  tbody.innerHTML = "";
-  let totalSup = 0;
-  let totalTubo = 0;
-  let totalCircuitos = 0;
-
-  for (const r of rooms) {
-    totalSup += r.supUtil;
-    totalTubo += r.tuboEstimado;
-    totalCircuitos += r.circuitos;
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.nombre}</td>
-      <td>${formato(r.supUtil)} m²</td>
-      <td>${formato(r.sep * 100, 1)} cm</td>
-      <td>${formato(r.tuboEstimado)} m</td>
-      <td>${r.circuitos}</td>
-      <td>${formato(r.mPorCircuito)} m</td>
-      <td>${recomendar(r, r.circuitos, r.mPorCircuito, r.sep)}</td>
-    `;
-    tbody.appendChild(tr);
-  }
-
-  if (rooms.length === 0) {
-    resumenEl.textContent = "Sin calcular.";
-    return;
-  }
-
-  resumenEl.innerHTML = `
-    <div class="total">Resumen general</div>
-    <div class="note">
-      Superficie útil total: <b>${formato(totalSup)} m²</b><br>
-      Tubo total estimado: <b>${formato(totalTubo)} m</b><br>
-      Circuitos totales: <b>${totalCircuitos}</b><br>
-      Tubo: <b>${tubo}x2</b><br>
-      Uso: <b>${uso === "calor" ? "Suelo radiante" : "Suelo refrescante"}</b><br><br>
-      Cálculo orientativo basado en superficie útil, separación y factor de corrección.
-    </div>
-  `;
+    return telefonosTexto
+        .replace(/\r/g, "")
+        .split(/\n|,/)
+        .map(t => t.trim())
+        .filter(Boolean);
 }
 
-document.getElementById("btnNueva").addEventListener("click", () => {
-  nuevaEstancia();
-});
+function obtenerEmails(cliente) {
+    let emailsTexto = cliente.emails || cliente.email || "";
+    if (!emailsTexto) return [];
 
-document.getElementById("btnEjemplo").addEventListener("click", () => {
-  roomsEl.innerHTML = "";
-  nuevaEstancia({ nombre: "Salón", largo: 6.20, ancho: 4.80, noCalef: 0.00, sep: "0.15", extra: 6 });
-  nuevaEstancia({ nombre: "Cocina", largo: 4.20, ancho: 3.40, noCalef: 2.10, sep: "0.15", extra: 5 });
-  nuevaEstancia({ nombre: "Baño", largo: 2.60, ancho: 2.20, noCalef: 1.20, sep: "0.10", extra: 4 });
-  recalcular();
-});
+    return emailsTexto
+        .replace(/\r/g, "")
+        .split(/\n|,/)
+        .map(e => e.trim())
+        .filter(Boolean);
+}
 
-document.getElementById("btnLimpiar").addEventListener("click", () => {
-  roomsEl.innerHTML = "";
-  tbody.innerHTML = "";
-  resumenEl.textContent = "Sin calcular.";
-});
+function obtenerDireccionMapa(cliente) {
+    if (cliente.direccion && cliente.direccion.trim()) {
+        return cliente.direccion.trim();
+    }
 
-document.getElementById("btnCalcular").addEventListener("click", recalcular);
-document.querySelectorAll("#sepGlobal,#maxCircuito,#factor,#tubo,#uso").forEach(el => {
-  el.addEventListener("input", recalcular);
-  el.addEventListener("change", recalcular);
-});
+    const partes = [
+        cliente.tipoVia || "",
+        cliente.nombreVia || "",
+        cliente.numero || "",
+        cliente.portal ? "Portal " + cliente.portal : "",
+        cliente.escalera ? "Escalera " + cliente.escalera : "",
+        cliente.piso ? "Piso " + cliente.piso : "",
+        cliente.puerta ? "Puerta " + cliente.puerta : "",
+        cliente.poblacion || "",
+        cliente.cp || "",
+        cliente.provincia || ""
+    ].filter(Boolean);
 
-nuevaEstancia({ nombre: "Salón", largo: 5.00, ancho: 4.00, noCalef: 0, sep: "0.15", extra: 5 });
-recalcular();
+    return partes.join(", ").trim();
+}
+
+function contarObras(clienteId) {
+    const obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+    return obras.length;
+}
+
+function actualizarInfo() {
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const visibles = filtrarClientes(textoBusqueda).length;
+    info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
+}
+
+function pedirPin() {
+    let pin = prompt("Introduce PIN de administrador:");
+    if (pin === null) return false;
+    return pin === PIN_ADMIN;
+}
+
+function eliminarCliente(id) {
+    let confirmar = confirm("¿Seguro que quieres eliminar este cliente?");
+    if (!confirmar) return;
+
+    let pinCorrecto = pedirPin();
+    if (!pinCorrecto) {
+        alert("PIN incorrecto");
+        return;
+    }
+
+    clientes = clientes.filter(c => c.id !== id);
+    guardar();
+
+    localStorage.removeItem("obras_" + id);
+
+    if (localStorage.getItem("clienteActivo") == id) {
+        localStorage.removeItem("clienteActivo");
+    }
+
+    mostrarClientes();
+    actualizarInfo();
+    mostrarMensaje("Cliente eliminado");
+}
+
+function filtrarClientes(textoBusqueda) {
+    if (!textoBusqueda) return clientes;
+
+    return clientes.filter(cliente => {
+        const nombre = (cliente.nombre || "").toLowerCase();
+        const telefonos = (cliente.telefonos || cliente.telefono || "").toLowerCase();
+        const emails = (cliente.emails || cliente.email || "").toLowerCase();
+        const direccion = obtenerDireccionMapa(cliente).toLowerCase();
+        const fecha = formatearFecha(cliente.fechaCreacion).toLowerCase();
+        const numeroObras = String(contarObras(cliente.id)).toLowerCase();
+
+        return (
+            nombre.includes(textoBusqueda) ||
+            telefonos.includes(textoBusqueda) ||
+            emails.includes(textoBusqueda) ||
+            direccion.includes(textoBusqueda) ||
+            fecha.includes(textoBusqueda) ||
+            numeroObras.includes(textoBusqueda)
+        );
+    });
+}
+
+function abrirCliente(id) {
+    localStorage.setItem("clienteActivo", id);
+    window.location.href = "cliente.html";
+}
+
+function elegirMapa(event, direccion) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!direccion) return;
+
+    direccionMapaActual = direccion;
+    document.getElementById("selectorMapaFondo").style.display = "flex";
+}
+
+function cerrarSelectorMapa() {
+    direccionMapaActual = "";
+    document.getElementById("selectorMapaFondo").style.display = "none";
+}
+
+function abrirMapaSeleccionado(tipo) {
+    if (!direccionMapaActual) return;
+
+    const encoded = encodeURIComponent(direccionMapaActual);
+    let url = "";
+
+    if (tipo === "apple") {
+        url = "http://maps.apple.com/?q=" + encoded;
+    }
+
+    if (tipo === "google") {
+        url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    }
+
+    if (tipo === "waze") {
+        url = "https://waze.com/ul?q=" + encoded;
+    }
+
+    cerrarSelectorMapa();
+    window.open(url, "_blank");
+}
+
+function mostrarClientes() {
+    const contenedor = document.getElementById("listaClientes");
+    contenedor.innerHTML = "";
+
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const clientesFiltrados = filtrarClientes(textoBusqueda);
+
+    clientesFiltrados.forEach(cliente => {
+        const div = document.createElement("div");
+        div.className = "cliente";
+
+        const telefonos = obtenerTelefonos(cliente);
+        const emails = obtenerEmails(cliente);
+        const fechaTexto = formatearFecha(cliente.fechaCreacion);
+        const direccionMapa = obtenerDireccionMapa(cliente);
+        const obras = contarObras(cliente.id);
+
+        const telefonosHtml = telefonos.map(t =>
+            `<a class="linea-enlace" href="tel:${t.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${t}</a>`
+        ).join("");
+
+        const emailsHtml = emails.map(e =>
+            `<a class="linea-enlace" href="mailto:${e}" onclick="event.stopPropagation()">✉️ ${e}</a>`
+        ).join("");
+
+        const direccionHtml = direccionMapa
+            ? `<button class="linea-boton" onclick='elegirMapa(event, ${JSON.stringify(direccionMapa)})'>📍 ${direccionMapa}</button>`
+            : "";
+
+        div.innerHTML = `
+            <button class="eliminar">X</button>
+
+            <div class="nombre">
+                <a href="#" onclick="event.preventDefault(); event.stopPropagation(); abrirCliente(${cliente.id})">${cliente.nombre || ""}</a>
+            </div>
+
+            ${telefonosHtml}
+            ${emailsHtml}
+            ${direccionHtml}
+
+            <div class="obras">Obras: ${obras}</div>
+            <div class="fecha">Creado: ${fechaTexto}</div>
+        `;
+
+        div.onclick = () => abrirCliente(cliente.id);
+
+        div.querySelector(".eliminar").onclick = (e) => {
+            e.stopPropagation();
+            eliminarCliente(cliente.id);
+        };
+
+        contenedor.appendChild(div);
+    });
+
+    actualizarInfo();
+}
+
+mostrarClientes();
 </script>
+
 </body>
 </html>
