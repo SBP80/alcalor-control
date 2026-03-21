@@ -126,7 +126,6 @@ canvas{
 </div>
 
 <script>
-let metrosPorPixel = obra.plano.metrosPorPixel || null;
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
@@ -169,10 +168,8 @@ if (!Array.isArray(obra.zonasMuertas)) {
 }
 
 let estancias = obra.plano.estancias;
-let zonasMuertas = [];
-obra.zonasMuertas = [];
-guardarMemoria();
-
+let zonasMuertas = obra.zonasMuertas;
+let metrosPorPixel = obra.plano.metrosPorPixel || null;
 
 let modoZonaMuerta = false;
 let zonaMuertaTemp = null;
@@ -828,4 +825,4 @@ window.addEventListener("resize", () => {
 dibujar();
 </script>
 </body>
-</html>
+</html>នេះ està bien ?
