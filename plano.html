@@ -161,6 +161,11 @@ canvas{
   grid-template-columns:1fr;
   gap:6px;
 }
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
 .btn{
   border:none;
   border-radius:8px;
@@ -213,7 +218,8 @@ canvas{
   font-size:12px;
 }
 .mode-badge.show{display:block}
-.overlay{
+
+.room-action-overlay{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.55);
@@ -223,7 +229,7 @@ canvas{
   z-index:200;
   padding:18px;
 }
-.overlay.show{display:flex}
+.room-action-overlay.show{display:flex}
 .dialog{
   width:min(430px,100%);
   background:#151515;
@@ -247,6 +253,38 @@ canvas{
   grid-template-columns:1fr;
   gap:8px;
 }
+
+.diag-panel{
+  position:absolute;
+  left:10px;
+  top:56px;
+  width:320px;
+  max-width:calc(100% - 20px);
+  background:rgba(21,21,21,.96);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  z-index:35;
+  box-shadow:0 10px 24px rgba(0,0,0,.4);
+  display:none;
+}
+.diag-panel.show{display:block}
+.diag-panel h3{
+  margin:0 0 8px 0;
+  color:var(--accent);
+  font-size:18px;
+}
+.diag-line{
+  font-size:13px;
+  line-height:1.35;
+  margin-bottom:8px;
+}
+.diag-help{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:6px;
+}
+
 @media (max-width:900px){
   .info-grid{
     grid-template-columns:1fr;
@@ -263,6 +301,14 @@ canvas{
     width:auto;
     max-height:64vh;
     overflow:auto;
+  }
+  .diag-panel{
+    left:10px;
+    right:10px;
+    top:auto;
+    bottom:58px;
+    width:auto;
+    max-width:none;
   }
 }
 </style>
@@ -298,6 +344,21 @@ canvas{
   <div class="canvas-wrap">
     <div class="mode-badge" id="modeBadge"></div>
 
+    <div class="diag-panel" id="diagPanel">
+      <h3>Verificación</h3>
+      <div class="diag-line" id="diagText">Diagonal</div>
+      <div class="label">Medida real (m)</div>
+      <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
+      <div class="grid-2" style="margin-top:8px">
+        <button class="btn secondary" onclick="diagSaltar()">Saltar</button>
+        <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
+      </div>
+      <div class="grid" style="margin-top:6px">
+        <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
+      </div>
+      <div class="diag-help">La diagonal activa se ve en el plano. Solo aparece una cada vez.</div>
+    </div>
+
     <div class="panel" id="panel">
       <div class="group open">
         <button class="group-title" type="button" onclick="toggleGroup(this)">Plano</button>
@@ -320,7 +381,7 @@ canvas{
             <button class="btn secondary" onclick="verificarSeleccion()">Verificar diagonales</button>
           </div>
           <div class="note">
-            Toca una estancia guardada y elegirá ver o editar.<br>
+            Toca una estancia guardada y elige ver o editar.<br>
             Toca una medida para cambiarla.
           </div>
         </div>
@@ -337,7 +398,7 @@ canvas{
   </div>
 </div>
 
-<div class="overlay" id="roomActionOverlay">
+<div class="room-action-overlay" id="roomActionOverlay">
   <div class="dialog">
     <h3>Estancia guardada</h3>
     <p id="roomActionText">¿Qué quieres hacer?</p>
@@ -345,20 +406,6 @@ canvas{
       <button class="btn neutral" onclick="accionEstancia('view')">Ver</button>
       <button class="btn ok" onclick="accionEstancia('edit')">Editar</button>
       <button class="btn danger" onclick="accionEstancia('cancel')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="diagOverlay">
-  <div class="dialog">
-    <h3>Verificación</h3>
-    <p id="diagText">Diagonal</p>
-    <div class="label">Medida real (m)</div>
-    <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
-    <div class="row" style="margin-top:10px">
-      <button class="btn secondary" onclick="diagSaltar()">Saltar</button>
-      <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
-      <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -378,7 +425,7 @@ const groupInfo = document.getElementById("groupInfo");
 const roomActionOverlay = document.getElementById("roomActionOverlay");
 const roomActionText = document.getElementById("roomActionText");
 
-const diagOverlay = document.getElementById("diagOverlay");
+const diagPanel = document.getElementById("diagPanel");
 const diagText = document.getElementById("diagText");
 const diagInput = document.getElementById("diagInput");
 
@@ -987,6 +1034,10 @@ function updateInfo(){
       html += "<br>Grupo detectado: " + ids.length + " estancia(s)";
     }
 
+    if(diagState.active){
+      html += "<br><span style='color:#7dd3ff'>Verificación activa</span>";
+    }
+
     infoBox.innerHTML = html;
     actualizarUI();
     return;
@@ -1000,6 +1051,7 @@ function updateInfo(){
   html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
   if(metrosPorPixel) html += "<br>Superficie total: " + total.toFixed(2) + " m²";
   if(puntos.length > 0) html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
+  if(diagState.active) html += "<br><span style='color:#7dd3ff'>Verificación activa</span>";
 
   infoBox.innerHTML = html;
   actualizarUI();
@@ -1111,6 +1163,7 @@ function iniciarDiag(roomIdx){
   diagState.diagonals = getAllDiagonals(poly, true);
   diagState.index = 0;
   diagState.results = [];
+  diagPanel.classList.add("show");
   mostrarDiagActual();
 }
 
@@ -1124,7 +1177,6 @@ function mostrarDiagActual(){
   const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
   diagText.textContent = "Diagonal V" + (d.i+1) + " - V" + (d.j+1) + " · calculada: " + calc.toFixed(2) + " m";
   diagInput.value = calc.toFixed(2);
-  diagOverlay.classList.add("show");
   dibujar();
 }
 
@@ -1151,12 +1203,12 @@ function diagSaltar(){
 
 function diagCancelar(){
   diagState.active = false;
-  diagOverlay.classList.remove("show");
+  diagPanel.classList.remove("show");
   dibujar();
 }
 
 function terminarDiag(){
-  diagOverlay.classList.remove("show");
+  diagPanel.classList.remove("show");
   diagState.active = false;
   if(!diagState.results.length){
     dibujar();
@@ -1267,11 +1319,16 @@ function aplicarMedidaDirecta(hit){
 }
 
 function onStart(ev){
-  if(diagState.active) return;
+  if(diagState.active && ev.target === canvas){
+    const rawView = getPos(ev);
+    ultimoX = rawView.x;
+    ultimoY = rawView.y;
+  }
+
   const raw = getPos(ev);
 
   const sideHit = hitSideLabel(raw.x, raw.y);
-  if(sideHit){
+  if(sideHit && !diagState.active){
     if(!sideHit.currentRoom){
       const idx = sideHit.roomIndex;
       if(seleccion.estanciaIndex !== idx || !seleccion.editEnabled){
@@ -1281,6 +1338,11 @@ function onStart(ev){
       }
     }
     aplicarMedidaDirecta(sideHit);
+    if(ev.cancelable) ev.preventDefault();
+    return;
+  }
+
+  if(diagState.active){
     if(ev.cancelable) ev.preventDefault();
     return;
   }
