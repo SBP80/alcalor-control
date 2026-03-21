@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALLCALOR PRO</title>
+
+<style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --accent:#f39b2f;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+.header{
+  padding:20px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:20px;
+  font-weight:bold;
+  color:var(--accent);
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+  padding:20px;
+}
+
+/* CARD */
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:20px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.card:hover{
+  background:#1f1f1f;
+  transform:scale(1.03);
+}
+
+/* TITLES */
+.card h3{
+  margin:0;
+  font-size:16px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="logo">ALLCALOR PRO</div>
+</div>
+
+<div class="grid">
+
+  <div class="card" onclick="ir('clientes.html')"><h3>Clientes</h3></div>
+  <div class="card" onclick="ir('obras.html')"><h3>Obras</h3></div>
+  <div class="card" onclick="ir('plano.html')"><h3>Planos</h3></div>
+  <div class="card"><h3>Presupuestos</h3></div>
+  <div class="card"><h3>Facturas</h3></div>
+  <div class="card"><h3>Agenda</h3></div>
+  <div class="card"><h3>Vehículos</h3></div>
+  <div class="card"><h3>Stock</h3></div>
+  <div class="card"><h3>Configuración</h3></div>
+
+</div>
+
+<script>
+function ir(pagina){
+  window.location.href = pagina;
+}
+</script>
+
+</body>
+</html>
