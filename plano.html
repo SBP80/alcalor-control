@@ -667,7 +667,6 @@ function empezarInteraccion(evento) {
             dibujar();
             if (evento && evento.cancelable) evento.preventDefault();
             return;
-        }
     }
 
     if (cerrado && puntos.length >= 3 && puntoDentroPoligono(pos.x, pos.y, puntos)) {
