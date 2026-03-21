@@ -12,8 +12,9 @@
     --text:#ffffff;
     --muted:#c8c8c8;
     --accent:#f39b2f;
+    --accent2:#d5a23d;
     --danger:#c93b2f;
-    --soft:#d5a23d;
+    --btnText:#111111;
 }
 *{box-sizing:border-box}
 body{
@@ -37,11 +38,42 @@ body{
 .header-title{
     font-size:21px;
     font-weight:bold;
+    color:var(--accent);
+}
+.brand-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+.brand-logo{
+    width:40px;
+    height:40px;
+    object-fit:contain;
+    border-radius:8px;
+    background:#fff;
+    display:none;
+    flex:0 0 auto;
+}
+.brand-text{
+    min-width:0;
+}
+.brand-name{
+    font-size:18px;
+    font-weight:bold;
+    line-height:1.05;
+    color:var(--accent);
+    word-break:break-word;
+}
+.brand-sub{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:4px;
 }
 .btn-top{
     border:none;
     background:var(--accent);
-    color:#111;
+    color:var(--btnText);
     font-weight:bold;
     border-radius:10px;
     padding:10px 14px;
@@ -56,7 +88,7 @@ body{
     border-radius:10px;
     padding:10px;
     font-size:14px;
-    line-height:1.45;
+    line-height:1.4;
     margin-bottom:10px;
     min-height:74px;
 }
@@ -69,7 +101,7 @@ canvas{
     min-height:420px;
     display:block;
     background:#101010;
-    border:1px solid #333;
+    border:1px solid var(--line);
     border-radius:10px;
     touch-action:none;
 }
@@ -77,47 +109,81 @@ canvas{
     position:absolute;
     top:10px;
     right:10px;
-    width:250px;
-    background:rgba(21,21,21,.97);
+    width:190px;
+    background:rgba(21,21,21,.96);
     border:1px solid var(--line);
     border-radius:12px;
-    padding:10px;
-    box-shadow:0 10px 28px rgba(0,0,0,.45);
+    padding:8px;
+    box-shadow:0 10px 28px rgba(0,0,0,.42);
     z-index:30;
     display:none;
 }
 .panel.open{
     display:block;
 }
-.panel h3{
-    margin:0 0 8px 0;
-    font-size:13px;
+.panel-group{
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:8px;
+}
+.panel-group:last-child{
+    margin-bottom:0;
+}
+.panel-group-title{
+    width:100%;
+    border:none;
+    background:#1f1f1f;
     color:var(--accent);
+    text-align:left;
+    padding:8px 10px;
+    font-weight:bold;
+    font-size:12px;
+    cursor:pointer;
+}
+.panel-group-content{
+    display:none;
+    padding:6px;
+    background:#171717;
+}
+.panel-group.open .panel-group-content{
+    display:block;
 }
 .grid{
     display:grid;
     grid-template-columns:1fr;
-    gap:7px;
+    gap:6px;
 }
 .btn{
     border:none;
-    border-radius:9px;
-    padding:11px 12px;
+    border-radius:8px;
+    padding:9px 10px;
     font-weight:bold;
     cursor:pointer;
     background:var(--accent);
-    color:#111;
+    color:var(--btnText);
     width:100%;
-}
-.btn.secondary{ background:var(--soft); }
-.btn.neutral{ background:#cfcfcf; color:#111; }
-.btn.danger{ background:var(--danger); color:#fff; }
-.btn.active{ outline:2px solid #fff; }
-.note{
-    margin-top:8px;
-    color:var(--muted);
     font-size:12px;
-    line-height:1.35;
+}
+.btn.secondary{
+    background:var(--accent2);
+}
+.btn.neutral{
+    background:#c8c8c8;
+    color:#111;
+}
+.btn.danger{
+    background:var(--danger);
+    color:#fff;
+}
+.btn.active{
+    outline:2px solid #fff;
+}
+.note{
+    margin-top:6px;
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.3;
 }
 .quickbar{
     position:absolute;
@@ -129,29 +195,32 @@ canvas{
     z-index:25;
 }
 .quickbar .chip{
-    background:rgba(21,21,21,.94);
+    background:rgba(21,21,21,.92);
     border:1px solid var(--line);
-    color:#fff;
+    color:var(--text);
     border-radius:999px;
-    padding:8px 12px;
-    font-size:13px;
+    padding:7px 11px;
+    font-size:12px;
 }
 .mode-badge{
     position:absolute;
     left:10px;
     top:10px;
-    background:rgba(243,155,47,.96);
-    color:#111;
+    background:rgba(243,155,47,.95);
+    color:var(--btnText);
     font-weight:bold;
     border-radius:999px;
     padding:8px 12px;
-    z-index:22;
+    z-index:20;
     display:none;
+    font-size:12px;
 }
-.mode-badge.show{ display:block; }
-@media (max-width: 900px){
+.mode-badge.show{
+    display:block;
+}
+@media (max-width:900px){
     canvas{
-        height:calc(100vh - 210px);
+        height:calc(100vh - 205px);
         min-height:360px;
     }
     .panel{
@@ -160,8 +229,11 @@ canvas{
         top:auto;
         bottom:10px;
         width:auto;
-        max-height:58vh;
+        max-height:56vh;
         overflow:auto;
+    }
+    .brand-name{
+        font-size:16px;
     }
 }
 </style>
@@ -170,7 +242,15 @@ canvas{
 
 <div class="header">
     <button class="btn-top" onclick="volver()">Volver</button>
-    <div class="header-title">Plano</div>
+
+    <div class="brand-wrap">
+        <img id="brandLogo" class="brand-logo" alt="Logo">
+        <div class="brand-text">
+            <div id="brandName" class="brand-name">ALLCALOR PRO</div>
+            <div id="brandSub" class="brand-sub">Centro de control</div>
+        </div>
+    </div>
+
     <button class="btn-top" onclick="togglePanel()">Herramientas</button>
 </div>
 
@@ -181,22 +261,41 @@ canvas{
         <div class="mode-badge" id="modeBadge"></div>
 
         <div class="panel" id="panel">
-            <h3>Plano</h3>
-            <div class="grid">
-                <button class="btn" onclick="nuevaEstancia()">Nueva estancia</button>
-                <button class="btn" onclick="cerrarEstancia()">Cerrar estancia</button>
-                <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
-                <button class="btn secondary" onclick="definirEscala()">Definir escala</button>
-                <button class="btn secondary" id="btnZona" onclick="activarModo('zona')">Añadir zona muerta</button>
-                <button class="btn secondary" id="btnPuerta" onclick="activarModo('puerta')">Añadir puerta</button>
-                <button class="btn secondary" id="btnVentana" onclick="activarModo('ventana')">Añadir ventana</button>
-                <button class="btn danger" onclick="eliminarSeleccionado()">Eliminar seleccionado</button>
-                <button class="btn neutral" onclick="guardarPlano()">Guardar plano</button>
+            <div class="panel-group open">
+                <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Plano</button>
+                <div class="panel-group-content">
+                    <div class="grid">
+                        <button class="btn neutral" onclick="guardarPlano()">Guardar</button>
+                        <button class="btn danger" onclick="eliminarSeleccionado()">Eliminar</button>
+                    </div>
+                </div>
             </div>
-            <div class="note">
-                Zona muerta: clic para seleccionar, arrastra dentro para mover y arrastra esquinas para cambiar tamaño.
-                <br><br>
-                Puerta y ventana: activa el modo y toca el lado de la estancia.
+
+            <div class="panel-group">
+                <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Estancia</button>
+                <div class="panel-group-content">
+                    <div class="grid">
+                        <button class="btn" onclick="nuevaEstancia()">Nueva</button>
+                        <button class="btn" onclick="cerrarEstancia()">Cerrar</button>
+                        <button class="btn" onclick="guardarEstancia()">Guardar</button>
+                        <button class="btn secondary" onclick="definirEscala()">Escala</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-group">
+                <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Elementos</button>
+                <div class="panel-group-content">
+                    <div class="grid">
+                        <button class="btn secondary" id="btnZona" onclick="activarModo('zona')">Zona</button>
+                        <button class="btn secondary" id="btnPuerta" onclick="activarModo('puerta')">Puerta</button>
+                        <button class="btn secondary" id="btnVentana" onclick="activarModo('ventana')">Ventana</button>
+                    </div>
+                    <div class="note">
+                        Zona: tocar y arrastrar.<br>
+                        Puerta / ventana: tocar un lado.
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -205,7 +304,7 @@ canvas{
         <div class="quickbar">
             <div class="chip" id="chipSeleccion">Sin selección</div>
             <div class="chip" id="chipEscala">Escala sin definir</div>
-            <div class="chip" id="chipEstado">Reposo</div>
+            <div class="chip" id="chipEdicion">Sin edición</div>
         </div>
     </div>
 </div>
@@ -218,30 +317,107 @@ const panel = document.getElementById("panel");
 const modeBadge = document.getElementById("modeBadge");
 const chipSeleccion = document.getElementById("chipSeleccion");
 const chipEscala = document.getElementById("chipEscala");
-const chipEstado = document.getElementById("chipEstado");
+const chipEdicion = document.getElementById("chipEdicion");
+
+/* CONFIG VISUAL */
+const CONFIG_DEFAULT = {
+    nombre: "ALLCALOR PRO",
+    subtitulo: "Centro de control",
+    logo: "",
+    fuente: "Arial, sans-serif",
+    tamNombre: 22,
+    pesoNombre: 700,
+    espacioLetras: 0,
+    sombraNombre: 0,
+    mayusculas: false,
+    cursiva: false,
+    colorPrincipal: "#f39b2f",
+    colorFondo: "#0b0b0b",
+    colorPanel: "#151515",
+    colorTexto: "#ffffff",
+    colorLinea: "#2b2b2b",
+    colorBotonTexto: "#111111"
+};
+
+function leerConfig(){
+    try{
+        return {
+            ...CONFIG_DEFAULT,
+            ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})
+        };
+    }catch(e){
+        return { ...CONFIG_DEFAULT };
+    }
+}
+
+function aplicarConfigVisual(){
+    const cfg = leerConfig();
+
+    document.title = "Plano";
+    document.documentElement.style.setProperty("--bg", cfg.colorFondo || CONFIG_DEFAULT.colorFondo);
+    document.documentElement.style.setProperty("--panel", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
+    document.documentElement.style.setProperty("--text", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
+    document.documentElement.style.setProperty("--muted", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
+    document.documentElement.style.setProperty("--line", cfg.colorLinea || CONFIG_DEFAULT.colorLinea);
+    document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
+    document.documentElement.style.setProperty("--accent2", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
+    document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto);
+
+    document.body.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+
+    const brandName = document.getElementById("brandName");
+    const brandSub = document.getElementById("brandSub");
+    const brandLogo = document.getElementById("brandLogo");
+
+    const nombreFinal = cfg.mayusculas
+        ? (cfg.nombre || CONFIG_DEFAULT.nombre).toUpperCase()
+        : (cfg.nombre || CONFIG_DEFAULT.nombre);
+
+    brandName.textContent = nombreFinal;
+    brandSub.textContent = cfg.subtitulo || CONFIG_DEFAULT.subtitulo;
+
+    brandName.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+    brandName.style.fontSize = Math.max(14, Number(cfg.tamNombre || CONFIG_DEFAULT.tamNombre) - 2) + "px";
+    brandName.style.fontWeight = cfg.pesoNombre || CONFIG_DEFAULT.pesoNombre;
+    brandName.style.letterSpacing = (cfg.espacioLetras || CONFIG_DEFAULT.espacioLetras) + "px";
+    brandName.style.textShadow = "0 0 " + (cfg.sombraNombre || CONFIG_DEFAULT.sombraNombre) + "px #000";
+    brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+    brandName.style.color = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
+
+    brandSub.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+    brandSub.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+
+    if(cfg.logo){
+        brandLogo.src = cfg.logo;
+        brandLogo.style.display = "block";
+    }else{
+        brandLogo.style.display = "none";
+    }
+}
+aplicarConfigVisual();
 
 function ajustarCanvas() {
     const rect = canvas.getBoundingClientRect();
     canvas.width = Math.max(300, Math.floor(rect.width));
     canvas.height = Math.max(300, Math.floor(rect.height));
 }
-
-function togglePanel() {
-    panel.classList.toggle("open");
-}
-
-function cerrarPanel() {
-    panel.classList.remove("open");
-}
-
-function autoCerrarPanel() {
-    if (window.innerWidth <= 900) cerrarPanel();
-}
-
 window.addEventListener("resize", () => {
     ajustarCanvas();
     dibujar();
 });
+
+function togglePanel() {
+    panel.classList.toggle("open");
+}
+function cerrarPanel() {
+    panel.classList.remove("open");
+}
+function autoCerrarPanel() {
+    if (window.innerWidth <= 900) cerrarPanel();
+}
+function toggleGroup(btn){
+    btn.parentElement.classList.toggle("open");
+}
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
@@ -267,9 +443,9 @@ let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let puntos = [];
 let cerrado = false;
-let puedeEditarPuntos = false;
+let enEdicionNuevaEstancia = false;
 
-let modo = null; // zona | puerta | ventana | null
+let modo = null;
 let zonaTemp = null;
 
 let arrastrando = false;
@@ -283,7 +459,7 @@ const MIN_ABERTURA_M = 0.4;
 const MAX_DIST_LINE = 14;
 
 const seleccion = {
-    tipo: null, // estanciaActual, puntoActual, estanciaGuardada, puntoGuardado, zonaMuerta, zonaHandle, abertura
+    tipo: null,
     estanciaIndex: -1,
     puntoIndex: -1,
     zonaIndex: -1,
@@ -337,43 +513,38 @@ function actualizarUI() {
     document.getElementById("btnPuerta").classList.toggle("active", modo === "puerta");
     document.getElementById("btnVentana").classList.toggle("active", modo === "ventana");
 
-    let modoTxt = "";
-    if (modo === "zona") modoTxt = "Modo: zona muerta";
-    if (modo === "puerta") modoTxt = "Modo: puerta";
-    if (modo === "ventana") modoTxt = "Modo: ventana";
-    modeBadge.textContent = modoTxt;
-    modeBadge.classList.toggle("show", !!modoTxt);
+    let txt = "";
+    if (modo === "zona") txt = "Modo: zona muerta";
+    if (modo === "puerta") txt = "Modo: puerta";
+    if (modo === "ventana") txt = "Modo: ventana";
+
+    modeBadge.textContent = txt;
+    modeBadge.classList.toggle("show", !!txt);
 
     chipEscala.textContent = metrosPorPixel ? "Escala definida" : "Escala sin definir";
+    chipEdicion.textContent = enEdicionNuevaEstancia ? "Editando estancia" : "Sin edición";
 
-    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") chipSeleccion.textContent = "Zona muerta seleccionada";
+    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") chipSeleccion.textContent = "Zona seleccionada";
     else if (seleccion.tipo === "abertura") chipSeleccion.textContent = "Elemento seleccionado";
-    else if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual seleccionada";
-    else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = "Estancia guardada seleccionada";
+    else if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual";
+    else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = "Estancia guardada";
     else chipSeleccion.textContent = "Sin selección";
-
-    if (puedeEditarPuntos && !cerrado) chipEstado.textContent = "Editando estancia";
-    else if (cerrado && puntos.length >= 3) chipEstado.textContent = "Estancia cerrada";
-    else chipEstado.textContent = "Reposo";
 }
 
 function getPos(ev) {
     const rect = canvas.getBoundingClientRect();
-
     if (ev.touches && ev.touches.length) {
         return {
             x: ev.touches[0].clientX - rect.left,
             y: ev.touches[0].clientY - rect.top
         };
     }
-
     if (ev.changedTouches && ev.changedTouches.length) {
         return {
             x: ev.changedTouches[0].clientX - rect.left,
             y: ev.changedTouches[0].clientY - rect.top
         };
     }
-
     return {
         x: ev.clientX - rect.left,
         y: ev.clientY - rect.top
@@ -452,20 +623,6 @@ function findZonaHandle(z, x, y) {
     return null;
 }
 
-function drawMeasureLine(x1, y1, x2, y2, text) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,.7)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.font = "12px Arial";
-    ctx.fillText(text, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
-    ctx.restore();
-}
-
 function lineIntersectionsHorizontal(y, poly) {
     const xs = [];
     for (let i = 0; i < poly.length; i++) {
@@ -498,16 +655,28 @@ function lineIntersectionsVertical(x, poly) {
     return ys;
 }
 
+function drawMeasureLine(x1, y1, x2, y2, text) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.70)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px Arial";
+    ctx.fillText(text, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 4);
+    ctx.restore();
+}
+
 function getContainerIndexForZone(z) {
     const cx = z.x + z.w / 2;
     const cy = z.y + z.h / 2;
 
     if (cerrado && puntos.length >= 3 && pointInPolygon(cx, cy, puntos)) return -2;
-
     for (let i = estancias.length - 1; i >= 0; i--) {
         if (pointInPolygon(cx, cy, estancias[i].puntos)) return i;
     }
-
     return null;
 }
 
@@ -519,7 +688,6 @@ function getPolygonByContainerIndex(idx) {
 
 function drawZoneDistances(idx) {
     if (!metrosPorPixel) return;
-
     const z = zonasMuertas[idx];
     const cont = getContainerIndexForZone(z);
     const poly = getPolygonByContainerIndex(cont);
@@ -537,7 +705,6 @@ function drawZoneDistances(idx) {
         if (x <= z.x) leftBound = x;
         if (x >= z.x + z.w && rightBound === null) rightBound = x;
     }
-
     for (const y of ys) {
         if (y <= z.y) topBound = y;
         if (y >= z.y + z.h && bottomBound === null) bottomBound = y;
@@ -588,36 +755,30 @@ function clipPolygonWithRect(subjectPolygon, rect) {
     for (const edge of edges) {
         const input = output.slice();
         output = [];
-        if (!input.length) break;
+        if (input.length === 0) break;
         let S = input[input.length - 1];
-
         for (const E of input) {
             const Sin = edge.inside(S);
             const Ein = edge.inside(E);
-
             if (Ein) {
                 if (!Sin) output.push(edge.intersect(S, E));
                 output.push(E);
             } else if (Sin) {
                 output.push(edge.intersect(S, E));
             }
-
             S = E;
         }
     }
-
     return output;
 }
 
 function deadAreaForPolygon(poly) {
     if (!metrosPorPixel || !poly || poly.length < 3) return 0;
     let totalPx = 0;
-
     for (const z of zonasMuertas) {
         const clipped = clipPolygonWithRect(poly, z);
         if (clipped.length >= 3) totalPx += polygonAreaPx(clipped);
     }
-
     return totalPx * metrosPorPixel * metrosPorPixel;
 }
 
@@ -632,7 +793,7 @@ function roomStats(poly) {
 }
 
 function getSelectedRoomData() {
-    if ((seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") && puntos.length >= 3) {
+    if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
         return { nombre: "Estancia actual", puntos };
     }
     if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
@@ -643,12 +804,9 @@ function getSelectedRoomData() {
 
 function drawSideMeasures(poly, closedPoly, colorText) {
     if (!metrosPorPixel || !poly || poly.length < 2) return;
-
     ctx.fillStyle = colorText;
     ctx.font = "12px Arial";
-
     const totalSides = closedPoly ? poly.length : poly.length - 1;
-
     for (let i = 0; i < totalSides; i++) {
         const j = (i + 1) % poly.length;
         const a = poly[i];
@@ -675,7 +833,6 @@ function drawRoom(poly, selected, fillColor, strokeColor) {
 
 function drawCurrentRoom() {
     if (!puntos.length) return;
-
     const selected = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
 
     ctx.beginPath();
@@ -750,7 +907,6 @@ function drawSavedRooms() {
         ctx.fillStyle = "#fff";
         ctx.font = "16px Arial";
         ctx.fillText(est.nombre || "Estancia", c.x - 24, c.y - 12);
-
         if (metrosPorPixel) {
             ctx.font = "13px Arial";
             ctx.fillText("Útil " + stats.useful.toFixed(2) + " m²", c.x - 24, c.y + 8);
@@ -778,17 +934,14 @@ function drawZonaHandles(z) {
 function drawZones() {
     zonasMuertas.forEach((z, i) => {
         const selected = (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") && seleccion.zonaIndex === i;
-
         ctx.fillStyle = selected ? "rgba(255,0,0,.36)" : "rgba(255,0,0,.24)";
         ctx.fillRect(z.x, z.y, z.w, z.h);
-
         ctx.strokeStyle = selected ? "#fff" : "#ff4b3a";
         ctx.lineWidth = selected ? 3 : 2;
         ctx.strokeRect(z.x, z.y, z.w, z.h);
 
         ctx.fillStyle = "#fff";
         ctx.font = "12px Arial";
-
         if (metrosPorPixel) {
             ctx.fillText(
                 "Zona muerta " + (z.w * metrosPorPixel).toFixed(2) + "m x " + (z.h * metrosPorPixel).toFixed(2) + "m",
@@ -810,10 +963,8 @@ function drawZones() {
         const y = Math.min(zonaTemp.y1, zonaTemp.y2);
         const w = Math.abs(zonaTemp.x2 - zonaTemp.x1);
         const h = Math.abs(zonaTemp.y2 - zonaTemp.y1);
-
         ctx.fillStyle = "rgba(255,255,0,.15)";
         ctx.fillRect(x, y, w, h);
-
         ctx.strokeStyle = "yellow";
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, w, h);
@@ -824,17 +975,13 @@ function segPointDistance(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
     const len2 = dx * dx + dy * dy;
-
     if (len2 === 0) {
         return { d: Math.hypot(px - ax, py - ay), t: 0, qx: ax, qy: ay };
     }
-
     let t = ((px - ax) * dx + (py - ay) * dy) / len2;
     t = Math.max(0, Math.min(1, t));
-
     const qx = ax + t * dx;
     const qy = ay + t * dy;
-
     return { d: Math.hypot(px - qx, py - qy), t, qx, qy };
 }
 
@@ -843,13 +990,11 @@ function findNearestWall(x, y) {
 
     function testPoly(poly, roomIndex, currentRoom) {
         if (!poly || poly.length < 2) return;
-
         for (let i = 0; i < poly.length; i++) {
             const j = (i + 1) % poly.length;
             const a = poly[i];
             const b = poly[j];
             const hit = segPointDistance(x, y, a.x, a.y, b.x, b.y);
-
             if (hit.d <= MAX_DIST_LINE) {
                 if (!best || hit.d < best.d) {
                     best = {
@@ -879,45 +1024,9 @@ function aberturaWidthPx(widthM) {
     return widthM / metrosPorPixel;
 }
 
-function createAbertura(tipo, wall) {
-    const valor = prompt("Ancho en metros:", tipo === "puerta" ? "0.82" : "1.20");
-    if (!valor) return;
-
-    const widthM = parseFloat(String(valor).replace(",", "."));
-    if (!widthM || widthM < MIN_ABERTURA_M) {
-        alert("Ancho no válido");
-        return;
-    }
-
-    const segLenPx = dist(wall.a, wall.b);
-    const segLenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
-
-    if (widthM >= segLenM) {
-        alert("El ancho es mayor que el lado");
-        return;
-    }
-
-    aberturas.push({
-        tipo,
-        roomIndex: wall.roomIndex,
-        currentRoom: wall.currentRoom,
-        sideIndex: wall.sideIndex,
-        t: wall.t,
-        widthM
-    });
-
-    guardarMemoria();
-    limpiarSeleccion();
-    seleccion.tipo = "abertura";
-    seleccion.aberturaIndex = aberturas.length - 1;
-    cancelarModo();
-    dibujar();
-}
-
 function getAberturaSegment(ab) {
     const poly = ab.currentRoom ? puntos : estancias[ab.roomIndex]?.puntos;
     if (!poly || poly.length < 2) return null;
-
     const a = poly[ab.sideIndex];
     const b = poly[(ab.sideIndex + 1) % poly.length];
     return { a, b };
@@ -927,11 +1036,8 @@ function aberturaVisual(ab) {
     const seg = getAberturaSegment(ab);
     if (!seg) return null;
 
-    const ax = seg.a.x;
-    const ay = seg.a.y;
-    const bx = seg.b.x;
-    const by = seg.b.y;
-
+    const ax = seg.a.x, ay = seg.a.y;
+    const bx = seg.b.x, by = seg.b.y;
     const dx = bx - ax;
     const dy = by - ay;
     const segLen = Math.hypot(dx, dy);
@@ -945,15 +1051,18 @@ function aberturaVisual(ab) {
     const widthPx = Math.min(segLen - 12, aberturaWidthPx(ab.widthM));
     const centerX = ax + dx * ab.t;
     const centerY = ay + dy * ab.t;
-    const half = widthPx / 2;
 
+    const half = widthPx / 2;
     const p1 = { x: centerX - ux * half, y: centerY - uy * half };
     const p2 = { x: centerX + ux * half, y: centerY + uy * half };
 
     const leftM = metrosPorPixel ? dist(seg.a, p1) * metrosPorPixel : 0;
     const rightM = metrosPorPixel ? dist(p2, seg.b) * metrosPorPixel : 0;
 
-    return { p1, p2, centerX, centerY, ux, uy, nx, ny, leftM, rightM, segA: seg.a, segB: seg.b };
+    return {
+        p1, p2, centerX, centerY, ux, uy, nx, ny,
+        leftM, rightM, segA: seg.a, segB: seg.b
+    };
 }
 
 function hitAbertura(x, y) {
@@ -969,12 +1078,17 @@ function hitAbertura(x, y) {
 function moveAberturaAlongWall(ab, x, y) {
     const seg = getAberturaSegment(ab);
     if (!seg) return;
-
     const hit = segPointDistance(x, y, seg.a.x, seg.a.y, seg.b.x, seg.b.y);
     const segLenPx = dist(seg.a, seg.b);
     const widthPx = aberturaWidthPx(ab.widthM);
     const halfT = (widthPx / 2) / segLenPx;
     ab.t = Math.max(halfT, Math.min(1 - halfT, hit.t));
+}
+
+function drawAberturaDistances(v) {
+    if (!metrosPorPixel) return;
+    drawMeasureLine(v.segA.x, v.segA.y, v.p1.x, v.p1.y, v.leftM.toFixed(2) + " m");
+    drawMeasureLine(v.p2.x, v.p2.y, v.segB.x, v.segB.y, v.rightM.toFixed(2) + " m");
 }
 
 function drawAberturas() {
@@ -983,11 +1097,10 @@ function drawAberturas() {
         if (!v) return;
 
         const selected = seleccion.tipo === "abertura" && seleccion.aberturaIndex === i;
-        const color = ab.tipo === "puerta" ? "#7dd3ff" : "#7dff9b";
 
         ctx.save();
-        ctx.strokeStyle = color;
         ctx.lineWidth = selected ? 5 : 4;
+        ctx.strokeStyle = ab.tipo === "puerta" ? "#7dd3ff" : "#7dff9b";
         ctx.beginPath();
         ctx.moveTo(v.p1.x, v.p1.y);
         ctx.lineTo(v.p2.x, v.p2.y);
@@ -1001,19 +1114,13 @@ function drawAberturas() {
             v.centerY + v.ny * 16
         );
 
-        if (metrosPorPixel) {
-            ctx.font = "11px Arial";
-            ctx.fillText(v.leftM.toFixed(2) + " m", (v.segA.x + v.p1.x) / 2 + v.nx * 10, (v.segA.y + v.p1.y) / 2 + v.ny * 10);
-            ctx.fillText(v.rightM.toFixed(2) + " m", (v.p2.x + v.segB.x) / 2 + v.nx * 10, (v.p2.y + v.segB.y) / 2 + v.ny * 10);
-        }
-
         if (selected) {
             ctx.beginPath();
             ctx.arc(v.centerX, v.centerY, 6, 0, Math.PI * 2);
             ctx.fillStyle = "#fff";
             ctx.fill();
+            drawAberturaDistances(v);
         }
-
         ctx.restore();
     });
 }
@@ -1034,7 +1141,6 @@ function updateInfo() {
             if (cont === -2) html += "<br>Dentro de: estancia actual";
             else if (cont !== null && estancias[cont]) html += "<br>Dentro de: " + (estancias[cont].nombre || "Estancia");
             else html += "<br>Dentro de: fuera de estancia";
-
             info.innerHTML = html;
             actualizarUI();
             return;
@@ -1044,18 +1150,15 @@ function updateInfo() {
     if (seleccion.tipo === "abertura") {
         const ab = aberturas[seleccion.aberturaIndex];
         if (ab) {
+            const v = aberturaVisual(ab);
             html += (ab.tipo === "puerta" ? "Puerta" : "Ventana") + " seleccionada";
             html += "<br>Ancho: " + ab.widthM.toFixed(2) + " m";
-
-            const v = aberturaVisual(ab);
             if (v && metrosPorPixel) {
                 html += "<br>Izquierda: " + v.leftM.toFixed(2) + " m";
                 html += "<br>Derecha: " + v.rightM.toFixed(2) + " m";
             }
-
             if (ab.currentRoom) html += "<br>En: estancia actual";
             else if (estancias[ab.roomIndex]) html += "<br>En: " + (estancias[ab.roomIndex].nombre || "Estancia");
-
             info.innerHTML = html;
             actualizarUI();
             return;
@@ -1089,13 +1192,11 @@ function updateInfo() {
     html += "Resumen del plano";
     html += "<br>Estancias guardadas: " + estancias.length;
     html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
-
     if (metrosPorPixel) {
         html += "<br>Superficie total: " + total.toFixed(2) + " m²";
         html += "<br>Superficie útil: " + useful.toFixed(2) + " m²";
         html += "<br>Superficie muerta: " + dead.toFixed(2) + " m²";
     }
-
     html += "<br>Zonas muertas: " + zonasMuertas.length;
     html += "<br>Puertas: " + aberturas.filter(a => a.tipo === "puerta").length;
     html += "<br>Ventanas: " + aberturas.filter(a => a.tipo === "ventana").length;
@@ -1120,7 +1221,7 @@ function dibujar() {
 function nuevaEstancia() {
     puntos = [];
     cerrado = false;
-    puedeEditarPuntos = true;
+    enEdicionNuevaEstancia = true;
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1128,17 +1229,15 @@ function nuevaEstancia() {
 }
 
 function cerrarEstancia() {
-    if (!puedeEditarPuntos) {
-        alert("Primero pulsa Nueva estancia");
+    if (!enEdicionNuevaEstancia) {
+        alert("Primero pulsa Nueva");
         return;
     }
     if (puntos.length < 3) {
         alert("Necesitas al menos 3 puntos");
         return;
     }
-
     cerrado = true;
-    puedeEditarPuntos = false;
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1146,6 +1245,10 @@ function cerrarEstancia() {
 }
 
 function guardarEstancia() {
+    if (!enEdicionNuevaEstancia) {
+        alert("Primero pulsa Nueva");
+        return;
+    }
     if (!cerrado || puntos.length < 3) {
         alert("Primero cierra la estancia");
         return;
@@ -1162,7 +1265,7 @@ function guardarEstancia() {
     guardarMemoria();
     puntos = [];
     cerrado = false;
-    puedeEditarPuntos = false;
+    enEdicionNuevaEstancia = false;
     cancelarModo();
     limpiarSeleccion();
     dibujar();
@@ -1254,7 +1357,7 @@ function eliminarSeleccionado() {
         if (confirm("Eliminar estancia actual?")) {
             puntos = [];
             cerrado = false;
-            puedeEditarPuntos = false;
+            enEdicionNuevaEstancia = false;
             aberturas = aberturas.filter(a => !a.currentRoom);
             guardarMemoria();
             limpiarSeleccion();
@@ -1295,7 +1398,6 @@ function resizeZona(z, handle, pos) {
         if (handle === "nw" || handle === "sw") left = right - MIN_ZONA;
         else right = left + MIN_ZONA;
     }
-
     if (bottom - top < MIN_ZONA) {
         if (handle === "nw" || handle === "ne") top = bottom - MIN_ZONA;
         else bottom = top + MIN_ZONA;
@@ -1326,7 +1428,7 @@ function onStart(ev) {
             alert("Toca un lado de la estancia");
             return;
         }
-        createAbertura(modo, wall);
+        crearAbertura(modo, wall);
         if (ev.cancelable) ev.preventDefault();
         return;
     }
@@ -1414,9 +1516,9 @@ function onStart(ev) {
         }
     }
 
-    if (puedeEditarPuntos && !cerrado) {
-        puntos.push({ x: pos.x, y: pos.y });
+    if (enEdicionNuevaEstancia && !cerrado) {
         limpiarSeleccion();
+        puntos.push({ x: pos.x, y: pos.y });
         seleccion.tipo = "puntoActual";
         seleccion.puntoIndex = puntos.length - 1;
         dibujar();
@@ -1481,18 +1583,6 @@ function onMove(ev) {
     if (ev.cancelable) ev.preventDefault();
 }
 
-function moveAberturaAlongWall(ab, x, y) {
-    const seg = getAberturaSegment(ab);
-    if (!seg) return;
-
-    const hit = segPointDistance(x, y, seg.a.x, seg.a.y, seg.b.x, seg.b.y);
-    const segLenPx = dist(seg.a, seg.b);
-    const widthPx = aberturaWidthPx(ab.widthM);
-    const halfT = (widthPx / 2) / segLenPx;
-
-    ab.t = Math.max(halfT, Math.min(1 - halfT, hit.t));
-}
-
 function onEnd(ev) {
     if (modo === "zona" && arrastrando && zonaTemp) {
         const x = Math.min(zonaTemp.x1, zonaTemp.x2);
@@ -1533,10 +1623,9 @@ function onEnd(ev) {
     if (ev && ev.cancelable) ev.preventDefault();
 }
 
-function createAbertura(tipo, wall) {
+function crearAbertura(tipo, wall) {
     const valor = prompt("Ancho en metros:", tipo === "puerta" ? "0.82" : "1.20");
     if (!valor) return;
-
     const widthM = parseFloat(String(valor).replace(",", "."));
     if (!widthM || widthM < MIN_ABERTURA_M) {
         alert("Ancho no válido");
@@ -1544,9 +1633,8 @@ function createAbertura(tipo, wall) {
     }
 
     const segLenPx = dist(wall.a, wall.b);
-    const segLenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
-
-    if (widthM >= segLenM) {
+    const lenM = metrosPorPixel ? segLenPx * metrosPorPixel : 999999;
+    if (widthM >= lenM) {
         alert("El ancho es mayor que el lado");
         return;
     }
@@ -1583,7 +1671,6 @@ window.addEventListener("keydown", (e) => {
         cancelarModo();
         dibujar();
     }
-
     if (e.key === "Delete" || e.key === "Backspace") {
         const tag = document.activeElement ? document.activeElement.tagName : "";
         if (tag !== "INPUT" && tag !== "TEXTAREA") {
