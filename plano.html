@@ -90,7 +90,7 @@ input,select,button{font:inherit}
 }
 .summary-top{
   display:grid;
-  grid-template-columns:minmax(240px,1fr) minmax(260px,360px);
+  grid-template-columns:minmax(240px,1fr) minmax(280px,380px);
   gap:10px;
   align-items:start;
 }
@@ -131,7 +131,7 @@ input,select,button{font:inherit}
 .canvas-wrap{position:relative}
 canvas{
   width:100%;
-  height:calc(100vh - 260px);
+  height:calc(100vh - 290px);
   min-height:420px;
   display:block;
   background:#101010;
@@ -143,7 +143,7 @@ canvas{
   position:absolute;
   top:10px;
   right:10px;
-  width:260px;
+  width:280px;
   background:rgba(21,21,21,.97);
   border:1px solid var(--line);
   border-radius:12px;
@@ -180,6 +180,11 @@ canvas{
 .grid{
   display:grid;
   grid-template-columns:1fr;
+  gap:6px;
+}
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
   gap:6px;
 }
 .btn{
@@ -276,7 +281,7 @@ canvas{
     grid-template-columns:1fr;
   }
   canvas{
-    height:calc(100vh - 330px);
+    height:calc(100vh - 380px);
     min-height:360px;
   }
   .panel{
@@ -301,7 +306,7 @@ canvas{
     <img id="brandLogo" class="brand-logo" alt="Logo">
     <div class="brand-text">
       <div id="brandName" class="brand-name">ALLCALOR PRO</div>
-      <div id="brandSub" class="brand-sub">Plano geometría v2 corregida</div>
+      <div id="brandSub" class="brand-sub">Plano geometría v3</div>
     </div>
   </div>
 
@@ -314,7 +319,7 @@ canvas{
       <div class="summary-card" id="info">Cargando...</div>
 
       <div class="summary-card">
-        <h3>Movimiento</h3>
+        <h3>Movimiento y unión</h3>
         <div class="inline-grid">
           <div>
             <div class="label">Modo de movimiento</div>
@@ -324,6 +329,7 @@ canvas{
             </select>
           </div>
           <div class="small" id="groupInfo">Sin grupo activo</div>
+          <div class="small" id="mergeInfo">A: ninguna · B: ninguna</div>
         </div>
       </div>
     </div>
@@ -356,6 +362,22 @@ canvas{
           <div class="note">
             Toca una estancia guardada para elegir ver o editar.<br>
             Toca una medida escrita para cambiar ese lado.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-group open">
+        <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Unión real</button>
+        <div class="panel-group-content">
+          <div class="grid">
+            <button class="btn neutral" onclick="usarSeleccionComoA()">Usar selección como A</button>
+            <button class="btn neutral" onclick="usarSeleccionComoB()">Usar selección como B</button>
+            <button class="btn secondary" onclick="limpiarUnion()">Limpiar A y B</button>
+            <button class="btn ok" onclick="unirEstanciasSeleccionadas()">Unir estancias</button>
+          </div>
+          <div class="note">
+            Une dos estancias si comparten la misma pared completa.<br>
+            Si la pared común es parcial, no las unirá.
           </div>
         </div>
       </div>
@@ -410,6 +432,7 @@ const chipEscala = document.getElementById("chipEscala");
 const chipEdicion = document.getElementById("chipEdicion");
 const moveMode = document.getElementById("moveMode");
 const groupInfo = document.getElementById("groupInfo");
+const mergeInfo = document.getElementById("mergeInfo");
 
 const roomActionOverlay = document.getElementById("roomActionOverlay");
 const roomActionText = document.getElementById("roomActionText");
@@ -420,7 +443,7 @@ const diagInput = document.getElementById("diagInput");
 
 const CONFIG_DEFAULT = {
   nombre: "ALLCALOR PRO",
-  subtitulo: "Plano geometría v2 corregida",
+  subtitulo: "Plano geometría v3",
   logo: "",
   fuente: "Arial, sans-serif",
   tamNombre: 22,
@@ -520,12 +543,18 @@ const HIT_POINT = 14;
 const GROUP_SEG_DIST = 10;
 const GROUP_ANGLE_COS = 0.97;
 const GROUP_MIN_OVERLAP = 20;
+const MERGE_TOL = 18;
 
 const seleccion = {
   tipo: null,
   estanciaIndex: -1,
   puntoIndex: -1,
   editEnabled: false
+};
+
+const mergeSelection = {
+  a: -1,
+  b: -1
 };
 
 const modalRoomAction = {
@@ -579,6 +608,10 @@ function limpiarSeleccion(){
 
 function dist(a, b){
   return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
+function samePoint(a, b, tol=MERGE_TOL){
+  return Math.hypot(a.x - b.x, a.y - b.y) <= tol;
 }
 
 function midpoint(a, b){
@@ -720,7 +753,7 @@ function getSelectedSavedRoomIndex(){
 function getSegments(poly){
   const out = [];
   for(let i=0;i<poly.length;i++){
-    out.push({ a: poly[i], b: poly[(i+1)%poly.length] });
+    out.push({ a: poly[i], b: poly[(i+1)%poly.length], i });
   }
   return out;
 }
@@ -778,11 +811,9 @@ function roomsTouchByWall(polyA, polyB){
 
       const axisX = Math.abs(uax) >= Math.abs(uay);
       let ov = 0;
-      if(axisX){
-        ov = overlap1D(sa.a.x, sa.b.x, sb.a.x, sb.b.x);
-      }else{
-        ov = overlap1D(sa.a.y, sa.b.y, sb.a.y, sb.b.y);
-      }
+      if(axisX) ov = overlap1D(sa.a.x, sa.b.x, sb.a.x, sb.b.x);
+      else ov = overlap1D(sa.a.y, sa.b.y, sb.a.y, sb.b.y);
+
       if(ov >= GROUP_MIN_OVERLAP) return true;
     }
   }
@@ -828,11 +859,14 @@ function updateGroupInfo(){
     return;
   }
   const ids = getConnectedGroup(idx);
-  if(ids.length <= 1){
-    groupInfo.textContent = "La estancia seleccionada no forma grupo";
-  }else{
-    groupInfo.textContent = "Grupo detectado: " + ids.length + " estancias";
-  }
+  if(ids.length <= 1) groupInfo.textContent = "La estancia seleccionada no forma grupo";
+  else groupInfo.textContent = "Grupo detectado: " + ids.length + " estancias";
+}
+
+function updateMergeInfo(){
+  const nameA = mergeSelection.a >= 0 && estancias[mergeSelection.a] ? estancias[mergeSelection.a].nombre : "ninguna";
+  const nameB = mergeSelection.b >= 0 && estancias[mergeSelection.b] ? estancias[mergeSelection.b].nombre : "ninguna";
+  mergeInfo.textContent = "A: " + nameA + " · B: " + nameB;
 }
 
 function actualizarUI() {
@@ -847,6 +881,7 @@ function actualizarUI() {
   else chipSeleccion.textContent = "Sin selección";
 
   updateGroupInfo();
+  updateMergeInfo();
 }
 
 function drawRoom(poly, selected, fillColor, strokeColor) {
@@ -938,6 +973,25 @@ function drawSelectedGroup(){
     ctx.stroke();
   });
   ctx.restore();
+}
+
+function drawMergeMarks(){
+  if(mergeSelection.a >= 0 && estancias[mergeSelection.a]){
+    const c = centroid(estancias[mergeSelection.a].puntos);
+    ctx.save();
+    ctx.fillStyle = "#7dd3ff";
+    ctx.font = "bold 20px Arial";
+    ctx.fillText("A", c.x - 6, c.y - 28);
+    ctx.restore();
+  }
+  if(mergeSelection.b >= 0 && estancias[mergeSelection.b]){
+    const c = centroid(estancias[mergeSelection.b].puntos);
+    ctx.save();
+    ctx.fillStyle = "#8ee08e";
+    ctx.font = "bold 20px Arial";
+    ctx.fillText("B", c.x - 6, c.y - 28);
+    ctx.restore();
+  }
 }
 
 function drawSavedRooms() {
@@ -1089,11 +1143,8 @@ function updateInfo() {
       html += "<br>Vértice: V" + (seleccion.puntoIndex + 1);
     }
 
-    if (seleccion.editEnabled) {
-      html += "<br><span class='oktxt'>Modo edición activo</span>";
-    } else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-      html += "<br><span class='warn'>Modo vista</span>";
-    }
+    if (seleccion.editEnabled) html += "<br><span class='oktxt'>Modo edición activo</span>";
+    else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") html += "<br><span class='warn'>Modo vista</span>";
 
     const idx = getSelectedSavedRoomIndex();
     if (idx >= 0) {
@@ -1125,6 +1176,7 @@ function dibujar() {
   drawCurrentRoom();
   drawConnections();
   drawSelectedGroup();
+  drawMergeMarks();
   drawActiveDiagonal();
   updateInfo();
 }
@@ -1301,6 +1353,10 @@ function eliminarSeleccionado() {
     if (idx >= 0 && idx < estancias.length) {
       if (confirm("Eliminar estancia guardada?")) {
         estancias.splice(idx, 1);
+        if (mergeSelection.a === idx) mergeSelection.a = -1;
+        if (mergeSelection.b === idx) mergeSelection.b = -1;
+        if (mergeSelection.a > idx) mergeSelection.a--;
+        if (mergeSelection.b > idx) mergeSelection.b--;
         guardarMemoria();
         limpiarSeleccion();
         dibujar();
@@ -1379,6 +1435,161 @@ function aplicarMedidaDirecta(hit){
 
   guardarMemoria();
   dibujar();
+}
+
+function usarSeleccionComoA(){
+  const idx = getSelectedSavedRoomIndex();
+  if (idx < 0) return alert("Selecciona una estancia guardada");
+  mergeSelection.a = idx;
+  if (mergeSelection.b === idx) mergeSelection.b = -1;
+  dibujar();
+}
+
+function usarSeleccionComoB(){
+  const idx = getSelectedSavedRoomIndex();
+  if (idx < 0) return alert("Selecciona una estancia guardada");
+  mergeSelection.b = idx;
+  if (mergeSelection.a === idx) mergeSelection.a = -1;
+  dibujar();
+}
+
+function limpiarUnion(){
+  mergeSelection.a = -1;
+  mergeSelection.b = -1;
+  dibujar();
+}
+
+function walkBackwardExcludingEdge(poly, edgeIndex){
+  const n = poly.length;
+  const out = [];
+  let idx = edgeIndex;
+  out.push(poly[idx]);
+  idx = (idx - 1 + n) % n;
+  while (idx !== (edgeIndex + 1) % n) {
+    out.push(poly[idx]);
+    idx = (idx - 1 + n) % n;
+  }
+  out.push(poly[(edgeIndex + 1) % n]);
+  return out;
+}
+
+function removeDuplicateClosing(poly){
+  if (poly.length > 1 && samePoint(poly[0], poly[poly.length - 1], 0.5)) {
+    poly.pop();
+  }
+  return poly;
+}
+
+function isCollinear(a, b, c, tol=0.5){
+  const area = Math.abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x));
+  return area <= tol;
+}
+
+function removeCollinearPoints(poly){
+  if (!poly || poly.length < 3) return poly;
+  let changed = true;
+  let out = poly.slice();
+
+  while(changed && out.length >= 3){
+    changed = false;
+    const next = [];
+    for(let i=0;i<out.length;i++){
+      const prev = out[(i - 1 + out.length) % out.length];
+      const cur = out[i];
+      const nxt = out[(i + 1) % out.length];
+      if (samePoint(prev, cur, 0.5)) {
+        changed = true;
+        continue;
+      }
+      if (isCollinear(prev, cur, nxt, 0.5)) {
+        changed = true;
+        continue;
+      }
+      next.push(cur);
+    }
+    out = next.length ? next : out;
+  }
+  return out;
+}
+
+function normalizeMergePolygon(poly){
+  const out = poly.map(p => ({ x: Number(p.x.toFixed(3)), y: Number(p.y.toFixed(3)) }));
+  removeDuplicateClosing(out);
+  return removeCollinearPoints(out);
+}
+
+function findSharedFullEdge(polyA, polyB){
+  for(let i=0;i<polyA.length;i++){
+    const a1 = polyA[i];
+    const a2 = polyA[(i+1)%polyA.length];
+
+    for(let j=0;j<polyB.length;j++){
+      const b1 = polyB[j];
+      const b2 = polyB[(j+1)%polyB.length];
+
+      if (samePoint(a1, b2) && samePoint(a2, b1)) {
+        return { i, j };
+      }
+    }
+  }
+  return null;
+}
+
+function mergePolygonsBySharedEdge(polyA, edgeA, polyB, edgeB){
+  const pathA = walkBackwardExcludingEdge(polyA, edgeA);
+  const pathB = walkBackwardExcludingEdge(polyB, edgeB);
+
+  const merged = [];
+  for (const p of pathA) merged.push({ x: p.x, y: p.y });
+  for (let k = 1; k < pathB.length; k++) merged.push({ x: pathB[k].x, y: pathB[k].y });
+
+  return normalizeMergePolygon(merged);
+}
+
+function unirEstanciasSeleccionadas(){
+  const aIdx = mergeSelection.a;
+  const bIdx = mergeSelection.b;
+
+  if (aIdx < 0 || bIdx < 0) return alert("Marca una estancia como A y otra como B");
+  if (aIdx === bIdx) return alert("A y B no pueden ser la misma estancia");
+  if (!estancias[aIdx] || !estancias[bIdx]) return alert("No se encontraron las estancias seleccionadas");
+
+  const polyA = estancias[aIdx].puntos.map(p => ({ x: p.x, y: p.y }));
+  const polyB = estancias[bIdx].puntos.map(p => ({ x: p.x, y: p.y }));
+
+  const shared = findSharedFullEdge(polyA, polyB);
+  if (!shared) {
+    return alert("No comparten una pared completa válida para unir");
+  }
+
+  const merged = mergePolygonsBySharedEdge(polyA, shared.i, polyB, shared.j);
+  if (!merged || merged.length < 3) {
+    return alert("No se pudo formar el contorno unido");
+  }
+
+  const nombreA = estancias[aIdx].nombre || "Estancia A";
+  const nombreB = estancias[bIdx].nombre || "Estancia B";
+  const nombreNuevo = prompt("Nombre de la nueva estancia unida:", nombreA + " + " + nombreB);
+  if (!nombreNuevo || !nombreNuevo.trim()) return;
+
+  const nuevo = {
+    nombre: nombreNuevo.trim(),
+    puntos: merged
+  };
+
+  const mayor = Math.max(aIdx, bIdx);
+  const menor = Math.min(aIdx, bIdx);
+  estancias.splice(mayor, 1);
+  estancias.splice(menor, 1);
+  estancias.push(nuevo);
+
+  mergeSelection.a = -1;
+  mergeSelection.b = -1;
+  limpiarSeleccion();
+
+  guardarMemoria();
+  dibujar();
+  alert("Estancias unidas");
 }
 
 function onStart(ev) {
