@@ -14,65 +14,90 @@
   --muted:#bdbdbd;
   --accent:#f39b2f;
   --border:#2b2b2b;
+  --btnText:#111111;
 }
 
-*{box-sizing:border-box;}
+*{box-sizing:border-box}
 
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:var(--bg);
   color:var(--text);
 }
 
-/* HEADER */
 .header{
-  padding:20px;
+  padding:18px 20px;
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
   justify-content:space-between;
+  gap:16px;
 }
 
 .logo-container{
   display:flex;
   align-items:center;
-  gap:15px;
+  gap:14px;
+  min-width:0;
 }
 
 .logo-container img{
-  max-height:50px;
+  max-height:54px;
+  max-width:70px;
+  object-fit:contain;
+  border-radius:8px;
+  background:#fff;
+  display:none;
+  flex:0 0 auto;
+}
+
+.brand{
+  min-width:0;
 }
 
 .titulo{
   font-size:22px;
+  font-weight:700;
+  line-height:1.08;
+  word-break:break-word;
 }
 
-/* BOTÓN CONFIG */
+.subtitulo{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:5px;
+}
+
 .config-btn{
   background:var(--accent);
-  color:#000;
+  color:var(--btnText);
   border:none;
   padding:10px 16px;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
+  font-weight:700;
 }
 
-/* CONTENIDO */
 .container{
   padding:20px;
+  max-width:1400px;
+  margin:0 auto;
 }
 
-/* TARJETAS */
 .card{
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:12px;
+  border-radius:14px;
   padding:20px;
   margin-bottom:20px;
 }
 
-/* GRID */
+.card h2{
+  margin:0 0 10px 0;
+  color:var(--accent);
+}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -82,17 +107,43 @@ body{
 .modulo{
   background:var(--panel2);
   border:1px solid var(--border);
-  border-radius:10px;
-  padding:15px;
+  border-radius:12px;
+  padding:16px;
+}
+
+.modulo h3{
+  margin:0 0 8px 0;
+}
+
+.modulo p{
+  margin:0 0 12px 0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.35;
 }
 
 .modulo button{
-  margin-top:10px;
   background:var(--accent);
+  color:var(--btnText);
   border:none;
   padding:8px 12px;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
+  font-weight:700;
+}
+
+@media (max-width: 700px){
+  .header{
+    align-items:flex-start;
+  }
+
+  .config-btn{
+    padding:9px 12px;
+  }
+
+  .container{
+    padding:14px;
+  }
 }
 </style>
 </head>
@@ -101,10 +152,10 @@ body{
 
 <div class="header">
   <div class="logo-container">
-    <img id="logo" style="display:none;">
-    <div>
+    <img id="logo" alt="Logo">
+    <div class="brand">
       <div id="titulo" class="titulo">ALLCALOR PRO</div>
-      <div id="subtitulo" style="color:var(--muted);font-size:13px;">Centro de control</div>
+      <div id="subtitulo" class="subtitulo">Centro de control</div>
     </div>
   </div>
 
@@ -119,91 +170,141 @@ body{
   </div>
 
   <div class="grid">
-    <div class="modulo">Clientes<br><button>Abrir</button></div>
-    <div class="modulo">Obras<br><button>Abrir</button></div>
-    <div class="modulo">Planos<br><button onclick="location.href='plano.html'">Abrir</button></div>
-    <div class="modulo">Presupuestos<br><button>Pendiente</button></div>
-    <div class="modulo">Facturas<br><button>Pendiente</button></div>
-    <div class="modulo">Agenda<br><button>Pendiente</button></div>
-    <div class="modulo">Vehículos<br><button>Pendiente</button></div>
-    <div class="modulo">Stock<br><button>Pendiente</button></div>
+    <div class="modulo">
+      <h3>Clientes</h3>
+      <p>Listado general y gestión de fichas.</p>
+      <button type="button">Abrir</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Obras</h3>
+      <p>Seguimiento de trabajos y estado.</p>
+      <button type="button">Abrir</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Planos</h3>
+      <p>Editor de estancias, zonas muertas, puertas y ventanas.</p>
+      <button type="button" onclick="location.href='plano.html'">Abrir</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Presupuestos</h3>
+      <p>Módulo pendiente.</p>
+      <button type="button">Pendiente</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Facturas</h3>
+      <p>Módulo pendiente.</p>
+      <button type="button">Pendiente</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Agenda</h3>
+      <p>Módulo pendiente.</p>
+      <button type="button">Pendiente</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Vehículos</h3>
+      <p>Módulo pendiente.</p>
+      <button type="button">Pendiente</button>
+    </div>
+
+    <div class="modulo">
+      <h3>Stock</h3>
+      <p>Módulo pendiente.</p>
+      <button type="button">Pendiente</button>
+    </div>
   </div>
 
 </div>
 
 <script>
 function irConfig(){
-  window.location.href="configuracion.html";
+  window.location.href = "configuracion.html";
 }
 
-/* APLICAR CONFIGURACIÓN */
-const cfg = JSON.parse(localStorage.getItem("config") || "{}");
+const CONFIG_DEFAULT = {
+  nombre: "ALLCALOR PRO",
+  subtitulo: "Centro de control",
+  logo: "",
+  fuente: "Arial, sans-serif",
+  tamNombre: 22,
+  pesoNombre: 700,
+  espacioLetras: 0,
+  sombraNombre: 0,
+  mayusculas: false,
+  cursiva: false,
+  colorPrincipal: "#f39b2f",
+  colorFondo: "#0b0b0b",
+  colorPanel: "#151515",
+  colorTexto: "#ffffff",
+  colorLinea: "#2b2b2b",
+  colorBotonTexto: "#111111"
+};
 
-/* NOMBRE */
-if(cfg.nombre){
-  document.getElementById("titulo").innerText = cfg.nombre;
-  document.title = cfg.nombre;
+function leerConfig(){
+  try{
+    return {
+      ...CONFIG_DEFAULT,
+      ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})
+    };
+  }catch(e){
+    return { ...CONFIG_DEFAULT };
+  }
 }
 
-/* SUBTITULO */
-if(cfg.subtitulo){
-  document.getElementById("subtitulo").innerText = cfg.subtitulo;
-}
+function aplicarConfig(){
+  const cfg = leerConfig();
 
-/* LOGO */
-if(cfg.logo){
+  document.title = cfg.nombre || CONFIG_DEFAULT.nombre;
+
+  document.documentElement.style.setProperty("--bg", cfg.colorFondo || CONFIG_DEFAULT.colorFondo);
+  document.documentElement.style.setProperty("--panel", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
+  document.documentElement.style.setProperty("--panel2", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
+  document.documentElement.style.setProperty("--text", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
+  document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
+  document.documentElement.style.setProperty("--border", cfg.colorLinea || CONFIG_DEFAULT.colorLinea);
+  document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto);
+
+  const titulo = document.getElementById("titulo");
+  const subtitulo = document.getElementById("subtitulo");
   const logo = document.getElementById("logo");
-  logo.src = cfg.logo;
-  logo.style.display = "block";
+
+  const nombreFinal = cfg.mayusculas
+    ? (cfg.nombre || CONFIG_DEFAULT.nombre).toUpperCase()
+    : (cfg.nombre || CONFIG_DEFAULT.nombre);
+
+  titulo.textContent = nombreFinal;
+  subtitulo.textContent = cfg.subtitulo || CONFIG_DEFAULT.subtitulo;
+
+  titulo.style.color = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
+  titulo.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+  titulo.style.fontSize = (cfg.tamNombre || CONFIG_DEFAULT.tamNombre) + "px";
+  titulo.style.fontWeight = cfg.pesoNombre || CONFIG_DEFAULT.pesoNombre;
+  titulo.style.letterSpacing = (cfg.espacioLetras || CONFIG_DEFAULT.espacioLetras) + "px";
+  titulo.style.textShadow = "0 0 " + (cfg.sombraNombre || CONFIG_DEFAULT.sombraNombre) + "px #000";
+  titulo.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+
+  subtitulo.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
+  subtitulo.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+
+  if(cfg.logo){
+    logo.src = cfg.logo;
+    logo.style.display = "block";
+  }else{
+    logo.style.display = "none";
+  }
+
+  document.querySelectorAll(".modulo button").forEach(btn=>{
+    btn.style.background = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
+    btn.style.color = cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto;
+  });
 }
 
-/* COLOR PRINCIPAL */
-if(cfg.color){
-  document.documentElement.style.setProperty("--accent", cfg.color);
-}
-
-/* FUENTE */
-if(cfg.fuente){
-  document.body.style.fontFamily = cfg.fuente;
-}
-
-/* TAMAÑO */
-if(cfg.tamano){
-  document.getElementById("titulo").style.fontSize = cfg.tamano + "px";
-}
-
-/* GROSOR */
-if(cfg.grosor){
-  document.getElementById("titulo").style.fontWeight = cfg.grosor;
-}
-
-/* MAYÚSCULAS */
-if(cfg.mayus){
-  document.getElementById("titulo").style.textTransform = "uppercase";
-}
-
-/* CURSIVA */
-if(cfg.cursiva){
-  document.getElementById("titulo").style.fontStyle = "italic";
-}
-
-/* ESPACIADO */
-if(cfg.espaciado){
-  document.getElementById("titulo").style.letterSpacing = cfg.espaciado + "px";
-}
-
-/* SOMBRA */
-if(cfg.sombra){
-  document.getElementById("titulo").style.textShadow = "0 0 10px " + cfg.color;
-}
-
-/* COLORES AVANZADOS */
-if(cfg.bg) document.documentElement.style.setProperty("--bg", cfg.bg);
-if(cfg.panel) document.documentElement.style.setProperty("--panel", cfg.panel);
-if(cfg.panel2) document.documentElement.style.setProperty("--panel2", cfg.panel2);
-if(cfg.text) document.documentElement.style.setProperty("--text", cfg.text);
-if(cfg.muted) document.documentElement.style.setProperty("--muted", cfg.muted);
-
+aplicarConfig();
 </script>
 
 </body>
