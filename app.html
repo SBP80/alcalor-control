@@ -1,437 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ALLCALOR PRO</title>
-  <style>
-    :root{
-      --bg:#0b0b0b;
-      --panel:#151515;
-      --line:#2b2b2b;
-      --text:#ffffff;
-      --accent:#f39b2f;
-      --panel2:#1d1d1d;
-      --muted:#bdbdbd;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALLCALOR PRO</title>
 
-    *{
-      box-sizing:border-box;
-    }
+<style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --border:#2b2b2b;
+}
 
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
+*{box-sizing:border-box;}
 
-    .header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:16px 18px;
-      border-bottom:1px solid var(--line);
-      position:sticky;
-      top:0;
-      background:rgba(11,11,11,0.98);
-      backdrop-filter:blur(6px);
-      z-index:20;
-    }
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    .logo{
-      font-size:22px;
-      font-weight:700;
-      color:var(--accent);
-      letter-spacing:.3px;
-    }
+/* HEADER */
+.header{
+  padding:20px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
 
-    .subtitulo{
-      color:var(--muted);
-      font-size:13px;
-      margin-top:4px;
-    }
+.logo-container{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
 
-    .header-left{
-      display:flex;
-      flex-direction:column;
-    }
+.logo-container img{
+  max-height:50px;
+}
 
-    .header-right{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
+.titulo{
+  font-size:22px;
+}
 
-    .btn-top{
-      border:none;
-      background:var(--accent);
-      color:#111;
-      font-weight:700;
-      border-radius:10px;
-      padding:10px 14px;
-      cursor:pointer;
-    }
+/* BOTÓN CONFIG */
+.config-btn{
+  background:var(--accent);
+  color:#000;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+}
 
-    .wrap{
-      max-width:1400px;
-      margin:0 auto;
-      padding:18px;
-    }
+/* CONTENIDO */
+.container{
+  padding:20px;
+}
 
-    .hero{
-      display:grid;
-      grid-template-columns:1.3fr .9fr;
-      gap:18px;
-      margin-bottom:18px;
-    }
+/* TARJETAS */
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+}
 
-    .hero-card,
-    .resumen-card,
-    .modulos-card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:18px;
-    }
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+}
 
-    .hero-title{
-      font-size:28px;
-      font-weight:700;
-      margin:0 0 8px 0;
-    }
+.modulo{
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:15px;
+}
 
-    .hero-text{
-      color:var(--muted);
-      line-height:1.45;
-      margin:0;
-    }
-
-    .resumen-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-    }
-
-    .dato{
-      background:var(--panel2);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:14px;
-    }
-
-    .dato-label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    .dato-valor{
-      font-size:22px;
-      font-weight:700;
-      color:var(--accent);
-    }
-
-    .seccion-titulo{
-      font-size:18px;
-      font-weight:700;
-      margin:0 0 14px 0;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-      gap:14px;
-    }
-
-    .card{
-      background:var(--panel2);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:18px;
-      cursor:pointer;
-      transition:transform .15s ease, border-color .15s ease, background .15s ease;
-      min-height:110px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
-    .card:hover{
-      transform:translateY(-2px);
-      border-color:var(--accent);
-    }
-
-    .card h3{
-      margin:0 0 8px 0;
-      font-size:17px;
-    }
-
-    .card p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
-    }
-
-    .card-tag{
-      margin-top:12px;
-      display:inline-block;
-      align-self:flex-start;
-      background:rgba(243,155,47,.12);
-      color:var(--accent);
-      border:1px solid rgba(243,155,47,.25);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:12px;
-      font-weight:700;
-    }
-
-    .footer{
-      padding:18px;
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    @media (max-width: 900px){
-      .hero{
-        grid-template-columns:1fr;
-      }
-
-      .hero-title{
-        font-size:24px;
-      }
-    }
-
-    @media (max-width: 640px){
-      .header{
-        padding:14px;
-      }
-
-      .logo{
-        font-size:18px;
-      }
-
-      .btn-top{
-        padding:9px 12px;
-        font-size:13px;
-      }
-
-      .wrap{
-        padding:14px;
-      }
-
-      .resumen-grid{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .grid{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .card{
-        min-height:96px;
-        padding:14px;
-      }
-
-      .card h3{
-        font-size:15px;
-      }
-    }
-
-    @media (max-width: 430px){
-      .grid{
-        grid-template-columns:1fr;
-      }
-
-      .resumen-grid{
-        grid-template-columns:1fr;
-      }
-
-      .header{
-        align-items:flex-start;
-      }
-
-      .header-right{
-        flex-shrink:0;
-      }
-    }
-  </style>
+.modulo button{
+  margin-top:10px;
+  background:var(--accent);
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="header">
-    <div class="header-left">
-      <div class="logo" id="nombreApp">ALLCALOR PRO</div>
-      <div class="subtitulo">Centro de control</div>
-    </div>
-
-    <div class="header-right">
-      <button class="btn-top" onclick="ir('configuracion.html')">Configuración</button>
+<div class="header">
+  <div class="logo-container">
+    <img id="logo" style="display:none;">
+    <div>
+      <div id="titulo" class="titulo">ALLCALOR PRO</div>
+      <div id="subtitulo" style="color:var(--muted);font-size:13px;">Centro de control</div>
     </div>
   </div>
 
-  <div class="wrap">
-    <div class="hero">
-      <div class="hero-card">
-        <h1 class="hero-title">Gestión general</h1>
-        <p class="hero-text">
-          Desde aquí entras a clientes, obras, planos y al resto de módulos.
-          Esta pantalla será la entrada principal de toda la app.
-        </p>
-      </div>
+  <button class="config-btn" onclick="irConfig()">Configuración</button>
+</div>
 
-      <div class="resumen-card">
-        <h2 class="seccion-titulo">Resumen</h2>
-        <div class="resumen-grid">
-          <div class="dato">
-            <div class="dato-label">Clientes</div>
-            <div class="dato-valor" id="datoClientes">0</div>
-          </div>
-          <div class="dato">
-            <div class="dato-label">Obras</div>
-            <div class="dato-valor" id="datoObras">0</div>
-          </div>
-          <div class="dato">
-            <div class="dato-label">Planos</div>
-            <div class="dato-valor">1</div>
-          </div>
-          <div class="dato">
-            <div class="dato-label">Estado</div>
-            <div class="dato-valor" style="font-size:16px;">OK</div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="container">
 
-    <div class="modulos-card">
-      <h2 class="seccion-titulo">Módulos</h2>
-
-      <div class="grid">
-        <div class="card" onclick="ir('clientes.html')">
-          <div>
-            <h3>Clientes</h3>
-            <p>Listado general y gestión de fichas.</p>
-          </div>
-          <span class="card-tag">Abrir</span>
-        </div>
-
-        <div class="card" onclick="ir('obras.html')">
-          <div>
-            <h3>Obras</h3>
-            <p>Seguimiento de obras, trabajos y estado.</p>
-          </div>
-          <span class="card-tag">Abrir</span>
-        </div>
-
-        <div class="card" onclick="ir('plano.html')">
-          <div>
-            <h3>Planos</h3>
-            <p>Editor de estancias, zonas muertas, puertas y ventanas.</p>
-          </div>
-          <span class="card-tag">Abrir</span>
-        </div>
-
-        <div class="card" onclick="moduloPendiente('Presupuestos')">
-          <div>
-            <h3>Presupuestos</h3>
-            <p>Base preparada para el siguiente desarrollo.</p>
-          </div>
-          <span class="card-tag">Pendiente</span>
-        </div>
-
-        <div class="card" onclick="moduloPendiente('Facturas')">
-          <div>
-            <h3>Facturas</h3>
-            <p>Base preparada para el siguiente desarrollo.</p>
-          </div>
-          <span class="card-tag">Pendiente</span>
-        </div>
-
-        <div class="card" onclick="moduloPendiente('Agenda')">
-          <div>
-            <h3>Agenda</h3>
-            <p>Base preparada para el siguiente desarrollo.</p>
-          </div>
-          <span class="card-tag">Pendiente</span>
-        </div>
-
-        <div class="card" onclick="moduloPendiente('Vehículos')">
-          <div>
-            <h3>Vehículos</h3>
-            <p>Base preparada para el siguiente desarrollo.</p>
-          </div>
-          <span class="card-tag">Pendiente</span>
-        </div>
-
-        <div class="card" onclick="moduloPendiente('Stock')">
-          <div>
-            <h3>Stock</h3>
-            <p>Base preparada para el siguiente desarrollo.</p>
-          </div>
-          <span class="card-tag">Pendiente</span>
-        </div>
-
-        <div class="card" onclick="ir('configuracion.html')">
-          <div>
-            <h3>Configuración</h3>
-            <p>Nombre de empresa, colores y ajustes generales.</p>
-          </div>
-          <span class="card-tag">Abrir</span>
-        </div>
-      </div>
-    </div>
+  <div class="card">
+    <h2>Panel principal</h2>
+    <p>Desde aquí accedes a todos los módulos.</p>
   </div>
 
-  <div class="footer">
-    ALLCALOR · Panel principal
+  <div class="grid">
+    <div class="modulo">Clientes<br><button>Abrir</button></div>
+    <div class="modulo">Obras<br><button>Abrir</button></div>
+    <div class="modulo">Planos<br><button onclick="location.href='plano.html'">Abrir</button></div>
+    <div class="modulo">Presupuestos<br><button>Pendiente</button></div>
+    <div class="modulo">Facturas<br><button>Pendiente</button></div>
+    <div class="modulo">Agenda<br><button>Pendiente</button></div>
+    <div class="modulo">Vehículos<br><button>Pendiente</button></div>
+    <div class="modulo">Stock<br><button>Pendiente</button></div>
   </div>
 
-  <script>
-    const config = JSON.parse(localStorage.getItem("configAllcalor")) || {
-      nombre: "ALLCALOR PRO",
-      color: "#f39b2f"
-    };
+</div>
 
-    document.getElementById("nombreApp").innerText = config.nombre || "ALLCALOR PRO";
-    document.title = config.nombre || "ALLCALOR PRO";
+<script>
+function irConfig(){
+  window.location.href="configuracion.html";
+}
 
-    if (config.color) {
-      document.documentElement.style.setProperty("--accent", config.color);
-    }
+/* APLICAR CONFIGURACIÓN */
+const cfg = JSON.parse(localStorage.getItem("config") || "{}");
 
-    function ir(pagina){
-      window.location.href = pagina;
-    }
+/* NOMBRE */
+if(cfg.nombre){
+  document.getElementById("titulo").innerText = cfg.nombre;
+  document.title = cfg.nombre;
+}
 
-    function moduloPendiente(nombre){
-      alert(nombre + " todavía no está desarrollado.");
-    }
+/* SUBTITULO */
+if(cfg.subtitulo){
+  document.getElementById("subtitulo").innerText = cfg.subtitulo;
+}
 
-    function contarDatos(){
-      let clientes = [];
-      let obras = [];
+/* LOGO */
+if(cfg.logo){
+  const logo = document.getElementById("logo");
+  logo.src = cfg.logo;
+  logo.style.display = "block";
+}
 
-      try {
-        clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-      } catch (e) {
-        clientes = [];
-      }
+/* COLOR PRINCIPAL */
+if(cfg.color){
+  document.documentElement.style.setProperty("--accent", cfg.color);
+}
 
-      try {
-        obras = JSON.parse(localStorage.getItem("obras")) || [];
-      } catch (e) {
-        obras = [];
-      }
+/* FUENTE */
+if(cfg.fuente){
+  document.body.style.fontFamily = cfg.fuente;
+}
 
-      document.getElementById("datoClientes").innerText = Array.isArray(clientes) ? clientes.length : 0;
-      document.getElementById("datoObras").innerText = Array.isArray(obras) ? obras.length : 0;
-    }
+/* TAMAÑO */
+if(cfg.tamano){
+  document.getElementById("titulo").style.fontSize = cfg.tamano + "px";
+}
 
-    contarDatos();
-  </script>
+/* GROSOR */
+if(cfg.grosor){
+  document.getElementById("titulo").style.fontWeight = cfg.grosor;
+}
+
+/* MAYÚSCULAS */
+if(cfg.mayus){
+  document.getElementById("titulo").style.textTransform = "uppercase";
+}
+
+/* CURSIVA */
+if(cfg.cursiva){
+  document.getElementById("titulo").style.fontStyle = "italic";
+}
+
+/* ESPACIADO */
+if(cfg.espaciado){
+  document.getElementById("titulo").style.letterSpacing = cfg.espaciado + "px";
+}
+
+/* SOMBRA */
+if(cfg.sombra){
+  document.getElementById("titulo").style.textShadow = "0 0 10px " + cfg.color;
+}
+
+/* COLORES AVANZADOS */
+if(cfg.bg) document.documentElement.style.setProperty("--bg", cfg.bg);
+if(cfg.panel) document.documentElement.style.setProperty("--panel", cfg.panel);
+if(cfg.panel2) document.documentElement.style.setProperty("--panel2", cfg.panel2);
+if(cfg.text) document.documentElement.style.setProperty("--text", cfg.text);
+if(cfg.muted) document.documentElement.style.setProperty("--muted", cfg.muted);
+
+</script>
 
 </body>
 </html>
