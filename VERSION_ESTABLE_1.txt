@@ -1,0 +1,12 @@
+VERSION ESTABLE 1
+
+Archivos válidos:
+- index.html (calculadora)
+- plano.html (editor funcionando)
+- plano_backup.html (copia seguridad)
+
+Estado:
+- Plano funcional con zonas muertas, puertas y ventanas
+- Cálculos funcionando
+
+NO TOCAR SIN COPIA
