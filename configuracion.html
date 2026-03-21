@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración</title>
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#151515;
+      --line:#2b2b2b;
+      --text:#ffffff;
+      --accent:#f39b2f;
+      --muted:#bdbdbd;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial, sans-serif;
+    }
+
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background:rgba(11,11,11,0.98);
+    }
+
+    .titulo{
+      font-size:22px;
+      font-weight:700;
+      color:var(--accent);
+    }
+
+    .volver{
+      border:none;
+      background:var(--accent);
+      color:#111;
+      font-weight:700;
+      border-radius:10px;
+      padding:10px 14px;
+      cursor:pointer;
+    }
+
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:18px;
+    }
+
+    .panel h2{
+      margin:0 0 16px 0;
+      font-size:20px;
+    }
+
+    .fila{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      margin-bottom:16px;
+    }
+
+    label{
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#101010;
+      color:#fff;
+      font-size:15px;
+    }
+
+    .acciones{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .btn{
+      border:none;
+      background:var(--accent);
+      color:#111;
+      font-weight:700;
+      border-radius:10px;
+      padding:12px 16px;
+      cursor:pointer;
+    }
+
+    .btn-sec{
+      border:none;
+      background:#2a2a2a;
+      color:#fff;
+      font-weight:700;
+      border-radius:10px;
+      padding:12px 16px;
+      cursor:pointer;
+    }
+
+    .vista{
+      margin-top:18px;
+      padding:16px;
+      border:1px dashed var(--line);
+      border-radius:12px;
+      background:#101010;
+    }
+
+    .vista-nombre{
+      font-size:24px;
+      font-weight:700;
+      color:var(--accent);
+      margin-bottom:6px;
+    }
+
+    .vista-sub{
+      color:var(--muted);
+      font-size:13px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="titulo">Configuración</div>
+    <button class="volver" onclick="volver()">Volver</button>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <h2>Ajustes generales</h2>
+
+      <div class="fila">
+        <label for="nombreEmpresa">Nombre de la empresa</label>
+        <input id="nombreEmpresa" type="text" placeholder="ALLCALOR PRO">
+      </div>
+
+      <div class="fila">
+        <label for="colorPrincipal">Color principal</label>
+        <input id="colorPrincipal" type="text" placeholder="#f39b2f">
+      </div>
+
+      <div class="acciones">
+        <button class="btn" onclick="guardarConfig()">Guardar</button>
+        <button class="btn-sec" onclick="restablecerConfig()">Restablecer</button>
+      </div>
+
+      <div class="vista">
+        <div class="vista-nombre" id="vistaNombre">ALLCALOR PRO</div>
+        <div class="vista-sub">Vista previa del nombre y color principal</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG_DEFAULT = {
+      nombre: "ALLCALOR PRO",
+      color: "#f39b2f"
+    };
+
+    function cargarConfig(){
+      let config;
+      try {
+        config = JSON.parse(localStorage.getItem("configAllcalor")) || CONFIG_DEFAULT;
+      } catch (e) {
+        config = CONFIG_DEFAULT;
+      }
+
+      document.getElementById("nombreEmpresa").value = config.nombre || CONFIG_DEFAULT.nombre;
+      document.getElementById("colorPrincipal").value = config.color || CONFIG_DEFAULT.color;
+
+      aplicarVista();
+    }
+
+    function aplicarVista(){
+      const nombre = document.getElementById("nombreEmpresa").value.trim() || CONFIG_DEFAULT.nombre;
+      const color = document.getElementById("colorPrincipal").value.trim() || CONFIG_DEFAULT.color;
+
+      document.getElementById("vistaNombre").innerText = nombre;
+      document.getElementById("vistaNombre").style.color = color;
+    }
+
+    function guardarConfig(){
+      const nombre = document.getElementById("nombreEmpresa").value.trim() || CONFIG_DEFAULT.nombre;
+      const color = document.getElementById("colorPrincipal").value.trim() || CONFIG_DEFAULT.color;
+
+      const config = {
+        nombre,
+        color
+      };
+
+      localStorage.setItem("configAllcalor", JSON.stringify(config));
+      aplicarVista();
+      alert("Configuración guardada.");
+    }
+
+    function restablecerConfig(){
+      localStorage.setItem("configAllcalor", JSON.stringify(CONFIG_DEFAULT));
+      cargarConfig();
+      alert("Configuración restablecida.");
+    }
+
+    function volver(){
+      window.location.href = "app.html";
+    }
+
+    document.getElementById("nombreEmpresa").addEventListener("input", aplicarVista);
+    document.getElementById("colorPrincipal").addEventListener("input", aplicarVista);
+
+    cargarConfig();
+  </script>
+
+</body>
+</html>
