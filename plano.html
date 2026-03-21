@@ -50,7 +50,7 @@ body{
     position:absolute;
     top:58px;
     right:10px;
-    width:185px;
+    width:240px;
     max-height:75vh;
     overflow-y:auto;
     background:#141414;
@@ -96,6 +96,11 @@ canvas{
     background:#c93b2f;
     color:#fff;
 }
+.small-note{
+    font-size:12px;
+    color:#bbb;
+    margin-top:8px;
+}
 </style>
 </head>
 <body>
@@ -117,9 +122,12 @@ canvas{
         <button class="btn btn-sec" onclick="activarZonaMuerta()">Zona muerta</button>
         <button class="btn btn-sec" onclick="borrarUltimoPunto()">Borrar último punto</button>
         <button class="btn btn-sec" onclick="definirEscala()">Definir escala</button>
-        <button class="btn btn-danger" onclick="eliminarEstanciaSeleccionada()">Eliminar estancia</button>
+        <button class="btn btn-danger" onclick="eliminarSeleccionado()">Eliminar seleccionado</button>
         <button class="btn btn-sec" onclick="limpiarActual()">Limpiar actual</button>
         <button class="btn" onclick="guardarPlano()">Guardar plano</button>
+        <div class="small-note">
+            Zona muerta: clic para seleccionar, arrastra dentro para mover, arrastra las esquinas blancas para cambiar tamaño.
+        </div>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -178,9 +186,11 @@ let puntos = [];
 let cerrado = false;
 
 let seleccion = {
-    tipo: null,
+    tipo: null,               // puntoActual, puntoGuardado, estanciaActual, estanciaGuardada, zonaMuerta, zonaHandle
     estanciaIndex: -1,
-    puntoIndex: -1
+    puntoIndex: -1,
+    zonaIndex: -1,
+    handle: null
 };
 
 let arrastrando = false;
@@ -188,6 +198,8 @@ let ultimoX = 0;
 let ultimoY = 0;
 
 const RADIO_PUNTO = 14;
+const HANDLE_SIZE = 10;
+const MIN_ZONA = 12;
 
 function guardarMemoria() {
     obra.plano = {
@@ -226,10 +238,7 @@ function distancia(p1, p2) {
 }
 
 function puntoMedio(p1, p2) {
-    return {
-        x: (p1.x + p2.x) / 2,
-        y: (p1.y + p2.y) / 2
-    };
+    return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 }
 
 function centroide(lista) {
@@ -239,15 +248,11 @@ function centroide(lista) {
         sx += p.x;
         sy += p.y;
     }
-    return {
-        x: sx / lista.length,
-        y: sy / lista.length
-    };
+    return { x: sx / lista.length, y: sy / lista.length };
 }
 
 function calcularAreaPixels(lista) {
     if (!lista || lista.length < 3) return 0;
-
     let area = 0;
     for (let i = 0; i < lista.length; i++) {
         const j = (i + 1) % lista.length;
@@ -264,7 +269,6 @@ function calcularSuperficieReal(lista) {
 
 function puntoDentroPoligono(x, y, poligono) {
     let dentro = false;
-
     for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
         const xi = poligono[i].x;
         const yi = poligono[i].y;
@@ -276,7 +280,6 @@ function puntoDentroPoligono(x, y, poligono) {
 
         if (cruza) dentro = !dentro;
     }
-
     return dentro;
 }
 
@@ -294,20 +297,40 @@ function limpiarSeleccion() {
     seleccion.tipo = null;
     seleccion.estanciaIndex = -1;
     seleccion.puntoIndex = -1;
+    seleccion.zonaIndex = -1;
+    seleccion.handle = null;
 }
 
 function obtenerEstanciaSeleccionada() {
     if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
         return estancias[seleccion.estanciaIndex] || null;
     }
-
     if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") {
-        return {
-            nombre: "Estancia actual",
-            puntos: puntos
-        };
+        return { nombre: "Estancia actual", puntos: puntos };
     }
+    return null;
+}
 
+function puntoDentroRect(x, y, r) {
+    return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+}
+
+function getZonaHandles(z) {
+    return [
+        { name: "nw", x: z.x,       y: z.y },
+        { name: "ne", x: z.x + z.w, y: z.y },
+        { name: "se", x: z.x + z.w, y: z.y + z.h },
+        { name: "sw", x: z.x,       y: z.y + z.h }
+    ];
+}
+
+function buscarHandleZona(x, y, z) {
+    const handles = getZonaHandles(z);
+    for (const h of handles) {
+        if (Math.abs(x - h.x) <= HANDLE_SIZE && Math.abs(y - h.y) <= HANDLE_SIZE) {
+            return h.name;
+        }
+    }
     return null;
 }
 
@@ -363,13 +386,20 @@ function dibujarEstanciaGuardada(est, index) {
     });
 
     const c = centroide(est.puntos);
+    const areaTotal = calcularSuperficieReal(est.puntos);
+    const areaMuerta = calcularAreaMuertaEnEstancia(index);
+    const areaUtil = Math.max(0, areaTotal - areaMuerta);
+
     ctx.fillStyle = "white";
     ctx.font = "16px Arial";
-    ctx.fillText(est.nombre || "Estancia", c.x - 20, c.y - 10);
+    ctx.fillText(est.nombre || "Estancia", c.x - 20, c.y - 12);
 
     if (metrosPorPixel) {
         ctx.font = "13px Arial";
-        ctx.fillText(calcularSuperficieReal(est.puntos).toFixed(2) + " m²", c.x - 20, c.y + 10);
+        ctx.fillText("Útil " + areaUtil.toFixed(2) + " m²", c.x - 20, c.y + 8);
+        if (areaMuerta > 0) {
+            ctx.fillText("Muerta " + areaMuerta.toFixed(2) + " m²", c.x - 20, c.y + 24);
+        }
     }
 
     dibujarMedidas(est.puntos, true, "white");
@@ -412,13 +442,152 @@ function dibujarEstanciaActual() {
     dibujarMedidas(puntos, cerrado, "white");
 }
 
+function dibujarLineaMedida(x1, y1, x2, y2, texto) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.70)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px Arial";
+    ctx.fillText(texto, mx + 4, my - 4);
+    ctx.restore();
+}
+
+function dibujarHandlesZona(z) {
+    const handles = getZonaHandles(z);
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 1;
+
+    for (const h of handles) {
+        ctx.beginPath();
+        ctx.rect(h.x - HANDLE_SIZE / 2, h.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+        ctx.fill();
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function lineIntersectionsHorizontal(y, polygon) {
+    const xs = [];
+    for (let i = 0; i < polygon.length; i++) {
+        const a = polygon[i];
+        const b = polygon[(i + 1) % polygon.length];
+
+        if (a.y === b.y) continue;
+        const minY = Math.min(a.y, b.y);
+        const maxY = Math.max(a.y, b.y);
+        if (y < minY || y >= maxY) continue;
+
+        const t = (y - a.y) / (b.y - a.y);
+        xs.push(a.x + t * (b.x - a.x));
+    }
+    xs.sort((m, n) => m - n);
+    return xs;
+}
+
+function lineIntersectionsVertical(x, polygon) {
+    const ys = [];
+    for (let i = 0; i < polygon.length; i++) {
+        const a = polygon[i];
+        const b = polygon[(i + 1) % polygon.length];
+
+        if (a.x === b.x) continue;
+        const minX = Math.min(a.x, b.x);
+        const maxX = Math.max(a.x, b.x);
+        if (x < minX || x >= maxX) continue;
+
+        const t = (x - a.x) / (b.x - a.x);
+        ys.push(a.y + t * (b.y - a.y));
+    }
+    ys.sort((m, n) => m - n);
+    return ys;
+}
+
+function encontrarEstanciaContenedoraZona(zona) {
+    const cx = zona.x + zona.w / 2;
+    const cy = zona.y + zona.h / 2;
+
+    for (let i = estancias.length - 1; i >= 0; i--) {
+        if (puntoDentroPoligono(cx, cy, estancias[i].puntos)) {
+            return i;
+        }
+    }
+
+    if (cerrado && puntos.length >= 3 && puntoDentroPoligono(cx, cy, puntos)) {
+        return -2;
+    }
+
+    return null;
+}
+
+function getPolygonByContainerIndex(idx) {
+    if (idx === -2) return puntos;
+    if (idx === null || idx === undefined) return null;
+    return estancias[idx]?.puntos || null;
+}
+
+function dibujarMedidasZonaDentroEstancia(zonaIndex) {
+    if (!metrosPorPixel) return;
+
+    const z = zonasMuertas[zonaIndex];
+    const cont = encontrarEstanciaContenedoraZona(z);
+    const polygon = getPolygonByContainerIndex(cont);
+    if (!polygon || polygon.length < 3) return;
+
+    const cx = z.x + z.w / 2;
+    const cy = z.y + z.h / 2;
+
+    const xs = lineIntersectionsHorizontal(cy, polygon);
+    const ys = lineIntersectionsVertical(cx, polygon);
+
+    let leftBound = null;
+    let rightBound = null;
+    let topBound = null;
+    let bottomBound = null;
+
+    for (const x of xs) {
+        if (x <= z.x) leftBound = x;
+        if (x >= z.x + z.w && rightBound === null) rightBound = x;
+    }
+
+    for (const y of ys) {
+        if (y <= z.y) topBound = y;
+        if (y >= z.y + z.h && bottomBound === null) bottomBound = y;
+    }
+
+    if (leftBound !== null) {
+        dibujarLineaMedida(leftBound, cy, z.x, cy, ((z.x - leftBound) * metrosPorPixel).toFixed(2) + " m");
+    }
+    if (rightBound !== null) {
+        dibujarLineaMedida(z.x + z.w, cy, rightBound, cy, ((rightBound - (z.x + z.w)) * metrosPorPixel).toFixed(2) + " m");
+    }
+    if (topBound !== null) {
+        dibujarLineaMedida(cx, topBound, cx, z.y, ((z.y - topBound) * metrosPorPixel).toFixed(2) + " m");
+    }
+    if (bottomBound !== null) {
+        dibujarLineaMedida(cx, z.y + z.h, cx, bottomBound, ((bottomBound - (z.y + z.h)) * metrosPorPixel).toFixed(2) + " m");
+    }
+}
+
 function dibujarZonasMuertas() {
-    zonasMuertas.forEach(z => {
-        ctx.fillStyle = "rgba(255,0,0,0.25)";
+    zonasMuertas.forEach((z, i) => {
+        const seleccionada = seleccion.tipo === "zonaMuerta" && seleccion.zonaIndex === i;
+        const handleSel = seleccion.tipo === "zonaHandle" && seleccion.zonaIndex === i;
+
+        ctx.fillStyle = seleccionada || handleSel ? "rgba(255,0,0,0.35)" : "rgba(255,0,0,0.25)";
         ctx.fillRect(z.x, z.y, z.w, z.h);
 
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = seleccionada || handleSel ? "white" : "red";
+        ctx.lineWidth = seleccionada || handleSel ? 3 : 2;
         ctx.strokeRect(z.x, z.y, z.w, z.h);
 
         ctx.fillStyle = "white";
@@ -430,6 +599,11 @@ function dibujarZonasMuertas() {
             ctx.fillText("Zona muerta " + ancho + "m x " + alto + "m", z.x + 6, z.y + 16);
         } else {
             ctx.fillText("Zona muerta", z.x + 6, z.y + 16);
+        }
+
+        if (seleccionada || handleSel) {
+            dibujarHandlesZona(z);
+            dibujarMedidasZonaDentroEstancia(i);
         }
     });
 
@@ -448,13 +622,124 @@ function dibujarZonasMuertas() {
     }
 }
 
+function clipPolygonWithRect(subjectPolygon, rect) {
+    let output = subjectPolygon.slice();
+
+    const edges = [
+        {
+            inside: p => p.x >= rect.x,
+            intersect: (a, b) => {
+                const t = (rect.x - a.x) / (b.x - a.x);
+                return { x: rect.x, y: a.y + t * (b.y - a.y) };
+            }
+        },
+        {
+            inside: p => p.x <= rect.x + rect.w,
+            intersect: (a, b) => {
+                const xEdge = rect.x + rect.w;
+                const t = (xEdge - a.x) / (b.x - a.x);
+                return { x: xEdge, y: a.y + t * (b.y - a.y) };
+            }
+        },
+        {
+            inside: p => p.y >= rect.y,
+            intersect: (a, b) => {
+                const t = (rect.y - a.y) / (b.y - a.y);
+                return { x: a.x + t * (b.x - a.x), y: rect.y };
+            }
+        },
+        {
+            inside: p => p.y <= rect.y + rect.h,
+            intersect: (a, b) => {
+                const yEdge = rect.y + rect.h;
+                const t = (yEdge - a.y) / (b.y - a.y);
+                return { x: a.x + t * (b.x - a.x), y: yEdge };
+            }
+        }
+    ];
+
+    for (const edge of edges) {
+        const input = output.slice();
+        output = [];
+        if (input.length === 0) break;
+
+        let S = input[input.length - 1];
+
+        for (const E of input) {
+            const Ein = edge.inside(E);
+            const Sin = edge.inside(S);
+
+            if (Ein) {
+                if (!Sin) output.push(edge.intersect(S, E));
+                output.push(E);
+            } else if (Sin) {
+                output.push(edge.intersect(S, E));
+            }
+
+            S = E;
+        }
+    }
+
+    return output;
+}
+
+function calcularAreaMuertaEnEstancia(estanciaIndex) {
+    if (!metrosPorPixel) return 0;
+    const polygon = estancias[estanciaIndex]?.puntos;
+    if (!polygon || polygon.length < 3) return 0;
+
+    let totalSolapePx = 0;
+
+    for (const z of zonasMuertas) {
+        const clipped = clipPolygonWithRect(polygon, z);
+        if (clipped.length >= 3) {
+            totalSolapePx += calcularAreaPixels(clipped);
+        }
+    }
+
+    return totalSolapePx * metrosPorPixel * metrosPorPixel;
+}
+
 function actualizarInfo() {
+    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
+        const z = zonasMuertas[seleccion.zonaIndex];
+        let texto = "Zona muerta seleccionada";
+
+        if (metrosPorPixel) {
+            texto += "<br>Ancho: " + (z.w * metrosPorPixel).toFixed(2) + " m";
+            texto += "<br>Alto: " + (z.h * metrosPorPixel).toFixed(2) + " m";
+            texto += "<br>Superficie: " + ((z.w * metrosPorPixel) * (z.h * metrosPorPixel)).toFixed(2) + " m²";
+        } else {
+            texto += "<br>Ancho: " + z.w.toFixed(0) + " px";
+            texto += "<br>Alto: " + z.h.toFixed(0) + " px";
+        }
+
+        const cont = encontrarEstanciaContenedoraZona(z);
+        if (cont === -2) {
+            texto += "<br>Dentro de: estancia actual";
+        } else if (cont !== null && estancias[cont]) {
+            texto += "<br>Dentro de: " + (estancias[cont].nombre || "Estancia");
+        } else {
+            texto += "<br>Dentro de: fuera de estancia";
+        }
+
+        info.innerHTML = texto;
+        return;
+    }
+
     const estanciaSel = obtenerEstanciaSeleccionada();
 
     if (!estanciaSel) {
         let total = 0;
-        for (const est of estancias) {
-            total += calcularSuperficieReal(est.puntos);
+        let totalMuerta = 0;
+        let totalUtil = 0;
+
+        for (let i = 0; i < estancias.length; i++) {
+            const area = calcularSuperficieReal(estancias[i].puntos);
+            const muerta = calcularAreaMuertaEnEstancia(i);
+            total += area;
+            totalMuerta += muerta;
+            totalUtil += Math.max(0, area - muerta);
         }
 
         let texto = "Resumen del plano";
@@ -463,6 +748,8 @@ function actualizarInfo() {
 
         if (total > 0) {
             texto += "<br>Superficie total: " + total.toFixed(2) + " m²";
+            texto += "<br>Superficie útil: " + totalUtil.toFixed(2) + " m²";
+            texto += "<br>Superficie muerta: " + totalMuerta.toFixed(2) + " m²";
         }
 
         if (zonasMuertas.length > 0) {
@@ -491,7 +778,16 @@ function actualizarInfo() {
     texto += "<br>Lados: " + estanciaSel.puntos.length;
 
     if (metrosPorPixel) {
-        texto += "<br>Superficie: " + calcularSuperficieReal(estanciaSel.puntos).toFixed(2) + " m²";
+        let areaTotal = calcularSuperficieReal(estanciaSel.puntos);
+        let areaMuerta = 0;
+
+        if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
+            areaMuerta = calcularAreaMuertaEnEstancia(seleccion.estanciaIndex);
+        }
+
+        texto += "<br>Superficie total: " + areaTotal.toFixed(2) + " m²";
+        texto += "<br>Superficie muerta: " + areaMuerta.toFixed(2) + " m²";
+        texto += "<br>Superficie útil: " + Math.max(0, areaTotal - areaMuerta).toFixed(2) + " m²";
         texto += "<br>Longitudes:";
         for (let i = 0; i < estanciaSel.puntos.length; i++) {
             const j = (i + 1) % estanciaSel.puntos.length;
@@ -532,12 +828,14 @@ function cerrarEstancia() {
 }
 
 function definirEscala() {
-    if (puntos.length < 2) {
-        alert("Necesitas al menos 2 puntos en la estancia actual");
+    const poligonoReferencia = puntos.length >= 2 ? puntos : (estancias[0]?.puntos || null);
+
+    if (!poligonoReferencia || poligonoReferencia.length < 2) {
+        alert("Necesitas al menos 2 puntos en una estancia para definir escala");
         return;
     }
 
-    const valor = prompt("Introduce la medida real del primer lado en metros (entre punto 1 y punto 2):");
+    const valor = prompt("Introduce la medida real del lado entre punto 1 y punto 2, en metros:");
     if (!valor) return;
 
     const metrosReales = parseFloat(valor.replace(",", "."));
@@ -546,7 +844,7 @@ function definirEscala() {
         return;
     }
 
-    const pixeles = distancia(puntos[0], puntos[1]);
+    const pixeles = distancia(poligonoReferencia[0], poligonoReferencia[1]);
     if (!pixeles || pixeles <= 0) {
         alert("No se pudo calcular la escala");
         return;
@@ -555,7 +853,7 @@ function definirEscala() {
     metrosPorPixel = metrosReales / pixeles;
     guardarMemoria();
     dibujar();
-    alert("Escala guardada correctamente");
+    alert("Escala guardada");
 }
 
 function guardarEstancia() {
@@ -600,7 +898,16 @@ function borrarUltimoPunto() {
     dibujar();
 }
 
-function eliminarEstanciaSeleccionada() {
+function eliminarSeleccionado() {
+    if (seleccion.tipo === "zonaMuerta" || seleccion.tipo === "zonaHandle") {
+        if (!confirm("Eliminar zona muerta seleccionada?")) return;
+        zonasMuertas.splice(seleccion.zonaIndex, 1);
+        guardarMemoria();
+        limpiarSeleccion();
+        dibujar();
+        return;
+    }
+
     if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
         const nombre = estancias[seleccion.estanciaIndex]?.nombre || "esta estancia";
         if (!confirm('Eliminar "' + nombre + '"?')) return;
@@ -622,7 +929,7 @@ function eliminarEstanciaSeleccionada() {
         return;
     }
 
-    alert("Primero selecciona una estancia");
+    alert("Primero selecciona algo");
 }
 
 function limpiarActual() {
@@ -641,6 +948,47 @@ function volver() {
     window.location.href = "obra.html";
 }
 
+function moverZona(z, dx, dy) {
+    z.x += dx;
+    z.y += dy;
+}
+
+function resizeZona(z, handle, pos) {
+    let left = z.x;
+    let top = z.y;
+    let right = z.x + z.w;
+    let bottom = z.y + z.h;
+
+    if (handle === "nw") {
+        left = pos.x;
+        top = pos.y;
+    } else if (handle === "ne") {
+        right = pos.x;
+        top = pos.y;
+    } else if (handle === "se") {
+        right = pos.x;
+        bottom = pos.y;
+    } else if (handle === "sw") {
+        left = pos.x;
+        bottom = pos.y;
+    }
+
+    if (right - left < MIN_ZONA) {
+        if (handle === "nw" || handle === "sw") left = right - MIN_ZONA;
+        else right = left + MIN_ZONA;
+    }
+
+    if (bottom - top < MIN_ZONA) {
+        if (handle === "nw" || handle === "ne") top = bottom - MIN_ZONA;
+        else bottom = top + MIN_ZONA;
+    }
+
+    z.x = Math.min(left, right);
+    z.y = Math.min(top, bottom);
+    z.w = Math.abs(right - left);
+    z.h = Math.abs(bottom - top);
+}
+
 function empezarInteraccion(evento) {
     const pos = obtenerPosicion(evento);
     ultimoX = pos.x;
@@ -657,6 +1005,30 @@ function empezarInteraccion(evento) {
         dibujar();
         if (evento.cancelable) evento.preventDefault();
         return;
+    }
+
+    for (let i = zonasMuertas.length - 1; i >= 0; i--) {
+        const h = buscarHandleZona(pos.x, pos.y, zonasMuertas[i]);
+        if (h) {
+            seleccion.tipo = "zonaHandle";
+            seleccion.zonaIndex = i;
+            seleccion.handle = h;
+            arrastrando = true;
+            dibujar();
+            if (evento.cancelable) evento.preventDefault();
+            return;
+        }
+    }
+
+    for (let i = zonasMuertas.length - 1; i >= 0; i--) {
+        if (puntoDentroRect(pos.x, pos.y, zonasMuertas[i])) {
+            seleccion.tipo = "zonaMuerta";
+            seleccion.zonaIndex = i;
+            arrastrando = true;
+            dibujar();
+            if (evento.cancelable) evento.preventDefault();
+            return;
+        }
     }
 
     let idx = buscarPuntoEnLista(pos.x, pos.y, puntos);
@@ -735,6 +1107,16 @@ function moverInteraccion(evento) {
     const dx = pos.x - ultimoX;
     const dy = pos.y - ultimoY;
 
+    if (seleccion.tipo === "zonaMuerta") {
+        moverZona(zonasMuertas[seleccion.zonaIndex], dx, dy);
+        guardarMemoria();
+    }
+
+    if (seleccion.tipo === "zonaHandle") {
+        resizeZona(zonasMuertas[seleccion.zonaIndex], seleccion.handle, pos);
+        guardarMemoria();
+    }
+
     if (seleccion.tipo === "puntoActual") {
         puntos[seleccion.puntoIndex].x += dx;
         puntos[seleccion.puntoIndex].y += dy;
@@ -772,16 +1154,13 @@ function moverInteraccion(evento) {
 
 function terminarInteraccion(evento) {
     if (modoZonaMuerta && arrastrando && zonaMuertaTemp) {
+        const x = Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2);
+        const y = Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2);
         const w = Math.abs(zonaMuertaTemp.x2 - zonaMuertaTemp.x1);
         const h = Math.abs(zonaMuertaTemp.y2 - zonaMuertaTemp.y1);
 
         if (w > 3 && h > 3) {
-            zonasMuertas.push({
-                x: Math.min(zonaMuertaTemp.x1, zonaMuertaTemp.x2),
-                y: Math.min(zonaMuertaTemp.y1, zonaMuertaTemp.y2),
-                w: w,
-                h: h
-            });
+            zonasMuertas.push({ x, y, w, h });
             guardarMemoria();
         }
 
@@ -799,7 +1178,9 @@ function terminarInteraccion(evento) {
 
     if (
         seleccion.tipo === "puntoGuardado" ||
-        seleccion.tipo === "estanciaGuardada"
+        seleccion.tipo === "estanciaGuardada" ||
+        seleccion.tipo === "zonaMuerta" ||
+        seleccion.tipo === "zonaHandle"
     ) {
         guardarMemoria();
     }
@@ -822,7 +1203,18 @@ window.addEventListener("resize", () => {
     dibujar();
 });
 
+window.addEventListener("keydown", (e) => {
+    if (e.key === "Delete" || e.key === "Backspace") {
+        const tag = document.activeElement ? document.activeElement.tagName : "";
+        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+            if (seleccion.tipo) {
+                eliminarSeleccionado();
+            }
+        }
+    }
+});
+
 dibujar();
 </script>
 </body>
-</html>នេះ està bien ?
+</html>
