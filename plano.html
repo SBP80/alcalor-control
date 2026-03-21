@@ -14,6 +14,7 @@
   --accent:#f39b2f;
   --accent2:#d5a23d;
   --danger:#c93b2f;
+  --ok:#4caf50;
   --btnText:#111111;
 }
 *{box-sizing:border-box}
@@ -102,7 +103,7 @@ canvas{
   position:absolute;
   top:10px;
   right:10px;
-  width:300px;
+  width:320px;
   background:rgba(21,21,21,.97);
   border:1px solid var(--line);
   border-radius:12px;
@@ -160,7 +161,7 @@ canvas{
 .btn.secondary{background:var(--accent2)}
 .btn.neutral{background:#c8c8c8;color:#111}
 .btn.danger{background:var(--danger);color:#fff}
-.btn.active{outline:2px solid #fff}
+.btn.ok{background:var(--ok);color:#fff}
 .field{
   display:flex;
   flex-direction:column;
@@ -218,7 +219,44 @@ canvas{
   font-size:12px;
 }
 .mode-badge.show{display:block}
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:18px;
+}
+.overlay.show{display:flex}
+.dialog{
+  width:min(420px,100%);
+  background:#151515;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 16px 50px rgba(0,0,0,.5);
+}
+.dialog h3{
+  margin:0 0 10px 0;
+  color:var(--accent);
+  font-size:18px;
+}
+.dialog p{
+  margin:0 0 12px 0;
+  color:#fff;
+  line-height:1.4;
+}
+.dialog .row{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
 .small{font-size:11px;color:var(--muted)}
+.oktxt{color:#8ee08e}
+.badtxt{color:#ff8d8d}
+.warn{color:#ffd27d}
 @media (max-width:900px){
   canvas{
     height:calc(100vh - 215px);
@@ -246,7 +284,7 @@ canvas{
     <img id="brandLogo" class="brand-logo" alt="Logo">
     <div class="brand-text">
       <div id="brandName" class="brand-name">ALLCALOR PRO</div>
-      <div id="brandSub" class="brand-sub">Plano</div>
+      <div id="brandSub" class="brand-sub">Plano geometría v2</div>
     </div>
   </div>
 
@@ -281,32 +319,23 @@ canvas{
             <button class="btn secondary" onclick="verificarSeleccion()">Verificar diagonales</button>
           </div>
           <div class="note">
-            Crea la forma punto a punto.<br>
-            Después puedes mover vértices y editar lados.
+            Toca una estancia guardada para elegir ver o editar.<br>
+            Toca una medida en pantalla para cambiar ese lado.
           </div>
         </div>
       </div>
 
       <div class="panel-group open">
-        <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Medidas</button>
+        <button class="panel-group-title" type="button" onclick="toggleGroup(this)">Edición</button>
         <div class="panel-group-content">
-          <div class="small" id="measureTarget">Selecciona una estancia guardada o actual</div>
-
           <div class="field">
-            <label class="label">Lado</label>
-            <select class="in" id="editSideSelect"></select>
+            <label class="label">Movimiento</label>
+            <select class="in" id="moveMode">
+              <option value="single">Solo esta estancia</option>
+              <option value="group">Conjunto unido</option>
+            </select>
           </div>
-
-          <div class="grid-2">
-            <div class="field">
-              <label class="label">Longitud lado (m)</label>
-              <input class="in" id="editSideLength" type="number" min="0.01" step="0.01">
-            </div>
-            <div class="field">
-              <label class="label">Aplicar</label>
-              <button class="btn secondary" onclick="aplicarMedidaLado()">Cambiar lado</button>
-            </div>
-          </div>
+          <div class="small">Si dos estancias comparten al menos dos vértices, se consideran unidas.</div>
         </div>
       </div>
     </div>
@@ -321,6 +350,34 @@ canvas{
   </div>
 </div>
 
+<div class="overlay" id="roomActionOverlay">
+  <div class="dialog">
+    <h3>Estancia guardada</h3>
+    <p id="roomActionText">¿Qué quieres hacer?</p>
+    <div class="row">
+      <button class="btn neutral" onclick="accionEstanciaGuardada('view')">Ver</button>
+      <button class="btn ok" onclick="accionEstanciaGuardada('edit')">Editar</button>
+      <button class="btn danger" onclick="accionEstanciaGuardada('cancel')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="diagOverlay">
+  <div class="dialog">
+    <h3>Verificación</h3>
+    <p id="diagText">Diagonal</p>
+    <div class="field">
+      <label class="label">Medida real (m)</label>
+      <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
+    </div>
+    <div class="row">
+      <button class="btn secondary" onclick="diagSaltar()">Saltar</button>
+      <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
+      <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -330,13 +387,18 @@ const modeBadge = document.getElementById("modeBadge");
 const chipSeleccion = document.getElementById("chipSeleccion");
 const chipEscala = document.getElementById("chipEscala");
 const chipEdicion = document.getElementById("chipEdicion");
-const measureTarget = document.getElementById("measureTarget");
-const editSideSelect = document.getElementById("editSideSelect");
-const editSideLength = document.getElementById("editSideLength");
+const moveMode = document.getElementById("moveMode");
+
+const roomActionOverlay = document.getElementById("roomActionOverlay");
+const roomActionText = document.getElementById("roomActionText");
+
+const diagOverlay = document.getElementById("diagOverlay");
+const diagText = document.getElementById("diagText");
+const diagInput = document.getElementById("diagInput");
 
 const CONFIG_DEFAULT = {
   nombre: "ALLCALOR PRO",
-  subtitulo: "Plano",
+  subtitulo: "Plano geometría v2",
   logo: "",
   fuente: "Arial, sans-serif",
   tamNombre: 22,
@@ -409,7 +471,6 @@ aplicarConfigVisual();
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
-
 const obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
 const obra = obras.find(o => String(o.id) === String(obraId));
 
@@ -432,13 +493,27 @@ let arrastrando = false;
 let ultimoX = 0;
 let ultimoY = 0;
 
-const SNAP_DIST = 14;
+const SNAP_DIST = 18;
 const HIT_POINT = 14;
+const SIDE_HIT_DIST = 14;
 
 const seleccion = {
-  tipo: null, // estanciaActual, puntoActual, estanciaGuardada, puntoGuardado
+  tipo: null,
   estanciaIndex: -1,
-  puntoIndex: -1
+  puntoIndex: -1,
+  editEnabled: false
+};
+
+const modalRoomAction = {
+  roomIndex: -1
+};
+
+const diagState = {
+  active: false,
+  roomIndex: -1,
+  diagonals: [],
+  index: 0,
+  results: []
 };
 
 function limpiarEstancias(arr){
@@ -474,6 +549,7 @@ function limpiarSeleccion(){
   seleccion.tipo = null;
   seleccion.estanciaIndex = -1;
   seleccion.puntoIndex = -1;
+  seleccion.editEnabled = false;
 }
 
 function dist(a, b){ return Math.hypot(b.x - a.x, b.y - a.y); }
@@ -609,31 +685,54 @@ function getSelectedRoomData() {
   return null;
 }
 
-function getSelectedRoomPolyRef(){
-  if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") return puntos;
-  if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
-    return estancias[seleccion.estanciaIndex]?.puntos || null;
-  }
-  return null;
-}
-
 function getSelectedSavedRoomIndex(){
   if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") return seleccion.estanciaIndex;
   return -1;
 }
 
+function getConnectedGroup(startIdx){
+  const group = new Set([startIdx]);
+  let changed = true;
+
+  while(changed){
+    changed = false;
+    for(let i=0;i<estancias.length;i++){
+      if(group.has(i)) continue;
+      for(const g of group){
+        if(sharedVertexCount(estancias[i].puntos, estancias[g].puntos) >= 2){
+          group.add(i);
+          changed = true;
+          break;
+        }
+      }
+    }
+  }
+  return Array.from(group);
+}
+
+function sharedVertexCount(a, b){
+  let n = 0;
+  for(const pa of a){
+    for(const pb of b){
+      if(Math.hypot(pa.x - pb.x, pa.y - pb.y) < 0.5){
+        n++;
+        break;
+      }
+    }
+  }
+  return n;
+}
+
 function actualizarUI() {
-  modeBadge.textContent = "Geometría limpia";
+  modeBadge.textContent = seleccion.editEnabled ? "Editando" : "Vista";
   modeBadge.classList.add("show");
 
   chipEscala.textContent = metrosPorPixel ? "Escala definida" : "Escala sin definir";
-  chipEdicion.textContent = enEdicionNuevaEstancia ? "Editando estancia" : "Sin edición";
+  chipEdicion.textContent = enEdicionNuevaEstancia ? "Editando estancia nueva" : (seleccion.editEnabled ? "Edición activa" : "Sin edición");
 
   if (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual";
-  else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = "Estancia guardada";
+  else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = seleccion.editEnabled ? "Estancia guardada · editar" : "Estancia guardada · ver";
   else chipSeleccion.textContent = "Sin selección";
-
-  actualizarPanelMedidas();
 }
 
 function drawRoom(poly, selected, fillColor, strokeColor) {
@@ -661,7 +760,8 @@ function drawSideMeasures(poly, closedPoly, colorText) {
     const b = poly[j];
     const m = midpoint(a, b);
     const mm = dist(a, b) * metrosPorPixel;
-    ctx.fillText("L" + (i + 1) + ": " + mm.toFixed(2) + " m", m.x + 6, m.y - 6);
+    const txt = "L" + (i + 1) + ": " + mm.toFixed(2) + " m";
+    ctx.fillText(txt, m.x + 6, m.y - 6);
   }
 }
 
@@ -681,6 +781,26 @@ function drawVertexNumbers(poly, prefix, selectedPointIndex=-1, current=false){
     ctx.font = "11px Arial";
     ctx.fillText(prefix + (i + 1), p.x + 10, p.y - 10);
   });
+}
+
+function drawConnections(){
+  for(let i=0;i<estancias.length;i++){
+    for(let j=i+1;j<estancias.length;j++){
+      if(sharedVertexCount(estancias[i].puntos, estancias[j].puntos) >= 2){
+        const c1 = centroid(estancias[i].puntos);
+        const c2 = centroid(estancias[j].puntos);
+        ctx.save();
+        ctx.setLineDash([6,6]);
+        ctx.strokeStyle = "rgba(125,255,155,.7)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(c1.x, c1.y);
+        ctx.lineTo(c2.x, c2.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
 }
 
 function drawSavedRooms() {
@@ -763,10 +883,65 @@ function drawCurrentRoom() {
   }
 }
 
+function drawActiveDiagonal(){
+  if(!diagState.active) return;
+  const room = estancias[diagState.roomIndex];
+  if(!room) return;
+  const d = diagState.diagonals[diagState.index];
+  if(!d) return;
+  const a = room.puntos[d.i];
+  const b = room.puntos[d.j];
+  ctx.save();
+  ctx.setLineDash([8,6]);
+  ctx.strokeStyle = "#7dd3ff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  ctx.fillStyle = "#7dd3ff";
+  ctx.font = "bold 13px Arial";
+  ctx.fillText("Diagonal V" + (d.i + 1) + " - V" + (d.j + 1), midpoint(a,b).x + 8, midpoint(a,b).y - 8);
+  ctx.restore();
+}
+
+function hitSideLabel(x, y){
+  if (!metrosPorPixel) return null;
+
+  function testPoly(poly, roomIndex, currentRoom){
+    const totalSides = currentRoom ? (cerrado ? poly.length : poly.length - 1) : poly.length;
+    for(let i=0;i<totalSides;i++){
+      const j = (i+1)%poly.length;
+      const a = poly[i];
+      const b = poly[j];
+      const m = midpoint(a,b);
+      const tx = m.x + 40;
+      const ty = m.y - 12;
+      if (Math.abs(x - tx) <= 55 && Math.abs(y - ty) <= 16) {
+        return { roomIndex, currentRoom, sideIndex:i };
+      }
+    }
+    return null;
+  }
+
+  if (puntos.length >= 2) {
+    const hit = testPoly(puntos, -1, true);
+    if (hit) return hit;
+  }
+  for(let i=estancias.length-1;i>=0;i--){
+    const hit = testPoly(estancias[i].puntos, i, false);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 function updateInfo() {
   let html = "";
 
-  const room = getSelectedRoomData();
+  const room = (seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual")
+    ? { nombre: "Estancia actual", puntos }
+    : ((seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") ? estancias[seleccion.estanciaIndex] : null);
+
   if (room && room.puntos && room.puntos.length >= 2) {
     html += "Datos de la estancia seleccionada";
     html += "<br>Nombre: " + (room.nombre || "Sin nombre");
@@ -778,6 +953,18 @@ function updateInfo() {
 
     if (seleccion.tipo === "puntoActual" || seleccion.tipo === "puntoGuardado") {
       html += "<br>Vértice: V" + (seleccion.puntoIndex + 1);
+    }
+
+    if (seleccion.editEnabled) {
+      html += "<br><span class='oktxt'>Modo edición activo</span>";
+    } else if (seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") {
+      html += "<br><span class='warn'>Modo vista</span>";
+    }
+
+    const idx = getSelectedSavedRoomIndex();
+    if (idx >= 0) {
+      const group = getConnectedGroup(idx);
+      if (group.length > 1) html += "<br>Conjunto unido: " + group.length + " estancias";
     }
 
     info.innerHTML = html;
@@ -802,6 +989,8 @@ function dibujar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawSavedRooms();
   drawCurrentRoom();
+  drawConnections();
+  drawActiveDiagonal();
   updateInfo();
 }
 
@@ -846,6 +1035,7 @@ function guardarEstancia() {
   const nuevoIdx = estancias.length - 1;
   seleccion.tipo = "estanciaGuardada";
   seleccion.estanciaIndex = nuevoIdx;
+  seleccion.editEnabled = false;
   actualizarUI();
 
   const quiere = confirm("¿Quieres verificar diagonales ahora?");
@@ -878,65 +1068,6 @@ function guardarPlano() {
   alert("Plano guardado");
 }
 
-function actualizarPanelMedidas(){
-  measureTarget.textContent = "Selecciona una estancia guardada o actual";
-  editSideSelect.innerHTML = "";
-  editSideLength.value = "";
-
-  const room = getSelectedRoomData();
-  if (!room || !room.puntos || room.puntos.length < 2) return;
-
-  measureTarget.textContent = "Estancia: " + (room.nombre || "Sin nombre");
-
-  const closed = !(seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") ? true : cerrado;
-  const totalSides = closed ? room.puntos.length : Math.max(0, room.puntos.length - 1);
-
-  for(let i=0;i<totalSides;i++){
-    const a = room.puntos[i];
-    const b = room.puntos[(i+1)%room.puntos.length];
-    const len = metrosPorPixel ? (dist(a,b) * metrosPorPixel).toFixed(2) : dist(a,b).toFixed(0);
-    const op = document.createElement("option");
-    op.value = String(i);
-    op.textContent = "Lado " + (i+1) + " · V" + (i+1) + " → V" + (((i+1)%room.puntos.length)+1) + " · " + len + (metrosPorPixel ? " m" : " px");
-    editSideSelect.appendChild(op);
-  }
-
-  if (totalSides > 0 && metrosPorPixel) {
-    const a = room.puntos[0];
-    const b = room.puntos[1];
-    editSideLength.value = (dist(a,b) * metrosPorPixel).toFixed(2);
-  }
-}
-
-function aplicarMedidaLado(){
-  if (!metrosPorPixel) return alert("Define escala primero");
-  const poly = getSelectedRoomPolyRef();
-  if (!poly || poly.length < 2) return alert("Selecciona una estancia");
-
-  const sideIdx = parseInt(editSideSelect.value, 10);
-  const lenM = parseFloat(String(editSideLength.value).replace(",", "."));
-  if (!Number.isFinite(sideIdx) || !lenM || lenM <= 0) return alert("Medida no válida");
-
-  const closed = !(seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") ? true : cerrado;
-  const maxSide = closed ? poly.length : poly.length - 1;
-  if (sideIdx < 0 || sideIdx >= maxSide) return alert("Lado no válido");
-
-  const a = poly[sideIdx];
-  const b = poly[(sideIdx + 1) % poly.length];
-  const old = dist(a, b);
-  if (!old) return alert("Ese lado no es válido");
-
-  const newPx = lenM / metrosPorPixel;
-  const dx = (b.x - a.x) / old;
-  const dy = (b.y - a.y) / old;
-
-  b.x = a.x + dx * newPx;
-  b.y = a.y + dy * newPx;
-
-  guardarMemoria();
-  dibujar();
-}
-
 function getAllDiagonals(poly, closed=true){
   const res = [];
   const n = poly.length;
@@ -950,50 +1081,89 @@ function getAllDiagonals(poly, closed=true){
   return res;
 }
 
-function verificarSeleccion(){
-  if (!metrosPorPixel) return alert("Define escala primero");
-  const room = getSelectedRoomData();
-  if (!room || !room.puntos || room.puntos.length < 3) return alert("Selecciona una estancia");
+function iniciarDiag(roomIdx){
+  const poly = estancias[roomIdx]?.puntos;
+  if (!poly || poly.length < 4) return alert("Esta estancia no necesita diagonales");
+  diagState.active = true;
+  diagState.roomIndex = roomIdx;
+  diagState.diagonals = getAllDiagonals(poly, true);
+  diagState.index = 0;
+  diagState.results = [];
+  mostrarDiagActual();
+}
 
-  const closed = !(seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") ? true : cerrado;
-  if (!closed) return alert("Primero cierra la estancia");
-
-  const poly = room.puntos;
-  const diags = getAllDiagonals(poly, true);
-  if (!diags.length) return alert("Esta estancia no necesita diagonales");
-
-  let media = 0;
-  let usadas = 0;
-
-  for (const d of diags) {
-    const calculada = dist(poly[d.i], poly[d.j]) * metrosPorPixel;
-    const txt = prompt(
-      "Diagonal V" + (d.i + 1) + " - V" + (d.j + 1) + " en metros.\n" +
-      "Calculada: " + calculada.toFixed(2) + "\n" +
-      "Deja vacío para saltarla.",
-      calculada.toFixed(2)
-    );
-    if (txt === null || txt === "") continue;
-
-    const real = parseFloat(String(txt).replace(",", "."));
-    if (!real || real <= 0) continue;
-
-    media += Math.abs(real - calculada);
-    usadas++;
+function mostrarDiagActual(){
+  const d = diagState.diagonals[diagState.index];
+  const room = estancias[diagState.roomIndex];
+  if (!d || !room) {
+    terminarDiag();
+    return;
   }
+  const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
+  diagText.textContent =
+    "Diagonal V" + (d.i + 1) + " - V" + (d.j + 1) +
+    " · calculada: " + calc.toFixed(2) + " m";
+  diagInput.value = calc.toFixed(2);
+  diagOverlay.classList.add("show");
+  dibujar();
+}
 
-  if (!usadas) return alert("No se introdujo ninguna diagonal");
+function diagAceptar(){
+  const room = estancias[diagState.roomIndex];
+  const d = diagState.diagonals[diagState.index];
+  if (!room || !d) return;
+  const real = parseFloat(String(diagInput.value).replace(",", "."));
+  if (!real || real <= 0) return alert("Medida no válida");
 
-  media = media / usadas;
+  const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
+  diagState.results.push(Math.abs(real - calc));
 
+  diagState.index++;
+  if (diagState.index >= diagState.diagonals.length) {
+    terminarDiag();
+  } else {
+    mostrarDiagActual();
+  }
+}
+
+function diagSaltar(){
+  diagState.index++;
+  if (diagState.index >= diagState.diagonals.length) {
+    terminarDiag();
+  } else {
+    mostrarDiagActual();
+  }
+}
+
+function diagCancelar(){
+  diagState.active = false;
+  diagOverlay.classList.remove("show");
+  dibujar();
+}
+
+function terminarDiag(){
+  diagOverlay.classList.remove("show");
+  diagState.active = false;
+  if (!diagState.results.length) {
+    dibujar();
+    return alert("No se introdujo ninguna diagonal");
+  }
+  const media = diagState.results.reduce((a,b)=>a+b,0) / diagState.results.length;
   let msg = "Verificación terminada\n";
-  msg += "Diagonales usadas: " + usadas + "\n";
+  msg += "Diagonales usadas: " + diagState.results.length + "\n";
   msg += "Desviación media: " + media.toFixed(2) + " m\n";
   if (media <= 0.03) msg += "Resultado: muy bien";
   else if (media <= 0.08) msg += "Resultado: aceptable";
   else msg += "Resultado: revisar forma";
-
+  dibujar();
   alert(msg);
+}
+
+function verificarSeleccion(){
+  if (!metrosPorPixel) return alert("Define escala primero");
+  const idx = getSelectedSavedRoomIndex();
+  if (idx < 0) return alert("Selecciona una estancia guardada");
+  iniciarDiag(idx);
 }
 
 function eliminarSeleccionado() {
@@ -1025,16 +1195,119 @@ function eliminarSeleccionado() {
   alert("Primero selecciona algo");
 }
 
-function onStart(ev) {
-  const raw = getPos(ev);
-  const posSnap = snapPoint(raw);
+function abrirAccionEstancia(idx){
+  modalRoomAction.roomIndex = idx;
+  roomActionText.textContent = "Estancia: " + (estancias[idx]?.nombre || "Sin nombre");
+  roomActionOverlay.classList.add("show");
+}
 
+function accionEstanciaGuardada(tipo){
+  const idx = modalRoomAction.roomIndex;
+  roomActionOverlay.classList.remove("show");
+  if (idx < 0 || !estancias[idx]) return;
+
+  if (tipo === "cancel") return;
+
+  seleccion.tipo = "estanciaGuardada";
+  seleccion.estanciaIndex = idx;
+  seleccion.puntoIndex = -1;
+  seleccion.editEnabled = tipo === "edit";
+  dibujar();
+}
+
+function aplicarMedidaDirecta(hit){
+  if (!metrosPorPixel) return alert("Define escala primero");
+
+  let poly = null;
+  let closed = true;
+
+  if (hit.currentRoom) {
+    poly = puntos;
+    closed = cerrado;
+  } else {
+    poly = estancias[hit.roomIndex]?.puntos || null;
+  }
+  if (!poly) return;
+
+  const sideIdx = hit.sideIndex;
+  const maxSide = hit.currentRoom ? (closed ? poly.length : poly.length - 1) : poly.length;
+  if (sideIdx < 0 || sideIdx >= maxSide) return;
+
+  const a = poly[sideIdx];
+  const b = poly[(sideIdx + 1) % poly.length];
+  const actual = dist(a,b) * metrosPorPixel;
+  const valor = prompt("Nueva medida para lado " + (sideIdx + 1) + " en metros:", actual.toFixed(2));
+  if (!valor) return;
+  const lenM = parseFloat(String(valor).replace(",", "."));
+  if (!lenM || lenM <= 0) return alert("Medida no válida");
+
+  const old = dist(a,b);
+  const newPx = lenM / metrosPorPixel;
+  const dx = (b.x - a.x) / old;
+  const dy = (b.y - a.y) / old;
+  b.x = a.x + dx * newPx;
+  b.y = a.y + dy * newPx;
+
+  guardarMemoria();
+  dibujar();
+}
+
+function hitSideLabel(x, y){
+  if (!metrosPorPixel) return null;
+
+  function testPoly(poly, roomIndex, currentRoom){
+    const totalSides = currentRoom ? (cerrado ? poly.length : poly.length - 1) : poly.length;
+    for(let i=0;i<totalSides;i++){
+      const j = (i+1)%poly.length;
+      const a = poly[i];
+      const b = poly[j];
+      const m = midpoint(a,b);
+      const tx = m.x + 40;
+      const ty = m.y - 12;
+      if (Math.abs(x - tx) <= 55 && Math.abs(y - ty) <= 16) {
+        return { roomIndex, currentRoom, sideIndex:i };
+      }
+    }
+    return null;
+  }
+
+  if (puntos.length >= 2) {
+    const hit = testPoly(puntos, -1, true);
+    if (hit) return hit;
+  }
+  for(let i=estancias.length-1;i>=0;i--){
+    const hit = testPoly(estancias[i].puntos, i, false);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+function onStart(ev) {
+  if (diagState.active) return;
+  const raw = getPos(ev);
+
+  const sideHit = hitSideLabel(raw.x, raw.y);
+  if (sideHit) {
+    if (!sideHit.currentRoom) {
+      const idx = sideHit.roomIndex;
+      if (seleccion.estanciaIndex !== idx || !seleccion.editEnabled) {
+        seleccion.tipo = "estanciaGuardada";
+        seleccion.estanciaIndex = idx;
+        seleccion.editEnabled = true;
+      }
+    }
+    aplicarMedidaDirecta(sideHit);
+    if (ev.cancelable) ev.preventDefault();
+    return;
+  }
+
+  const posSnap = snapPoint(raw);
   ultimoX = posSnap.x;
   ultimoY = posSnap.y;
 
   let idx = findPoint(puntos, raw.x, raw.y);
   if (idx >= 0) {
-    limpiarSeleccion();
+    if (!enEdicionNuevaEstancia && !seleccion.editEnabled) return;
     seleccion.tipo = "puntoActual";
     seleccion.puntoIndex = idx;
     arrastrando = true;
@@ -1046,7 +1319,11 @@ function onStart(ev) {
   for (let i = estancias.length - 1; i >= 0; i--) {
     idx = findPoint(estancias[i].puntos, raw.x, raw.y);
     if (idx >= 0) {
-      limpiarSeleccion();
+      if (!seleccion.editEnabled || seleccion.estanciaIndex !== i) {
+        abrirAccionEstancia(i);
+        if (ev.cancelable) ev.preventDefault();
+        return;
+      }
       seleccion.tipo = "puntoGuardado";
       seleccion.estanciaIndex = i;
       seleccion.puntoIndex = idx;
@@ -1058,7 +1335,7 @@ function onStart(ev) {
   }
 
   if (cerrado && puntos.length >= 3 && pointInPolygon(raw.x, raw.y, puntos)) {
-    limpiarSeleccion();
+    if (!enEdicionNuevaEstancia && !seleccion.editEnabled) return;
     seleccion.tipo = "estanciaActual";
     arrastrando = true;
     dibujar();
@@ -1068,7 +1345,11 @@ function onStart(ev) {
 
   for (let i = estancias.length - 1; i >= 0; i--) {
     if (pointInPolygon(raw.x, raw.y, estancias[i].puntos)) {
-      limpiarSeleccion();
+      if (!seleccion.editEnabled || seleccion.estanciaIndex !== i) {
+        abrirAccionEstancia(i);
+        if (ev.cancelable) ev.preventDefault();
+        return;
+      }
       seleccion.tipo = "estanciaGuardada";
       seleccion.estanciaIndex = i;
       arrastrando = true;
@@ -1079,7 +1360,6 @@ function onStart(ev) {
   }
 
   if (enEdicionNuevaEstancia && !cerrado) {
-    limpiarSeleccion();
     puntos.push({ x: posSnap.x, y: posSnap.y });
     seleccion.tipo = "puntoActual";
     seleccion.puntoIndex = puntos.length - 1;
@@ -1093,6 +1373,7 @@ function onStart(ev) {
 }
 
 function onMove(ev) {
+  if (diagState.active) return;
   const raw = getPos(ev);
   if (!arrastrando || !seleccion.tipo) return;
 
@@ -1121,10 +1402,14 @@ function onMove(ev) {
       p.y += dy;
     }
   } else if (seleccion.tipo === "estanciaGuardada") {
-    const est = estancias[seleccion.estanciaIndex];
-    for (const p of est.puntos) {
-      p.x += dx;
-      p.y += dy;
+    const idx = seleccion.estanciaIndex;
+    const ids = (moveMode.value === "group") ? getConnectedGroup(idx) : [idx];
+    for (const roomIdx of ids) {
+      const est = estancias[roomIdx];
+      for (const p of est.puntos) {
+        p.x += dx;
+        p.y += dy;
+      }
     }
     guardarMemoria();
   }
@@ -1148,16 +1433,6 @@ function onEnd(ev) {
 
   if (ev && ev.cancelable) ev.preventDefault();
 }
-
-editSideSelect.addEventListener("change", () => {
-  const room = getSelectedRoomData();
-  if (!room || !room.puntos || !metrosPorPixel) return;
-  const i = parseInt(editSideSelect.value, 10);
-  if (!Number.isFinite(i)) return;
-  const a = room.puntos[i];
-  const b = room.puntos[(i+1)%room.puntos.length];
-  editSideLength.value = (dist(a,b) * metrosPorPixel).toFixed(2);
-});
 
 canvas.addEventListener("mousedown", onStart);
 canvas.addEventListener("mousemove", onMove);
