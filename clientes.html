@@ -6,180 +6,136 @@
 <title>Clientes</title>
 
 <style>
-:root{
-    --bg:#0b0b0b;
-    --panel:#141414;
-    --line:#2a2a2a;
-    --text:#ffffff;
-    --muted:#bdbdbd;
-    --accent:#f39b2f;
-    --btnText:#111111;
-    --danger:#b30000;
-}
-
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    background: #0b0b0b;
+    color: white;
 }
 
 /* HEADER */
 .header {
-    padding: 12px 15px;
-    border-bottom: 2px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px;
+    border-bottom:2px solid orange;
 }
 
-.header-titulo-wrap{
+.header-center{
     flex:1;
     text-align:center;
 }
 
-.header-titulo {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--accent);
+.header-title{
+    font-size:20px;
+    font-weight:bold;
 }
 
-.header-subtitulo{
-    font-size:11px;
-    color:var(--muted);
-}
-
-.header-btn {
-    background: var(--accent);
-    border: none;
-    color: var(--btnText);
-    font-weight: bold;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
+.btn{
+    background:orange;
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
 /* CONTENIDO */
-.wrap {
-    padding: 10px;
+.wrap{
+    padding:10px;
 }
 
-.info, .mensaje {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-}
-
-.mensaje { display:none; }
-
-.input-busqueda {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border:1px solid var(--line);
-    background:#101010;
-    color:white;
+.input{
+    width:100%;
+    padding:12px;
     margin-bottom:10px;
+    border-radius:8px;
+    border:none;
 }
 
 /* CLIENTES */
-.cliente {
-    background: #1a1a1a;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    border: 1px solid #252525;
-    cursor: pointer;
+.cliente{
+    background:#1a1a1a;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
     position:relative;
-}
-
-.nombre {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.eliminar {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    background: var(--danger);
-    border: none;
-    color: white;
-    padding: 6px 10px;
-    border-radius:6px;
     cursor:pointer;
+}
+
+.nombre{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.eliminar{
+    position:absolute;
+    right:10px;
+    top:10px;
+    background:red;
+    border:none;
+    color:white;
+    padding:6px 10px;
+    border-radius:6px;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-    <button class="header-btn" id="btnVolver">Volver</button>
+    <button class="btn" id="btnVolver">Volver</button>
 
-    <div class="header-titulo-wrap">
-        <div class="header-titulo">Clientes</div>
-        <div class="header-subtitulo">Gestión</div>
+    <div class="header-center">
+        <div class="header-title">Clientes</div>
     </div>
 
-    <button class="header-btn" onclick="toggleTools()">Menú</button>
+    <button class="btn" onclick="alert('Menú')">Menú</button>
 </div>
 
 <div class="wrap">
 
-    <div id="mensaje" class="mensaje"></div>
-    <div id="info" class="info"></div>
+    <input id="busqueda" class="input" placeholder="Buscar..." oninput="render()">
 
-    <input id="busqueda" class="input-busqueda" placeholder="Buscar..." oninput="mostrarClientes()">
-
-    <div id="listaClientes"></div>
+    <div id="lista"></div>
 
 </div>
 
 <script>
 const btnVolver = document.getElementById("btnVolver");
-const lista = document.getElementById("listaClientes");
+const lista = document.getElementById("lista");
 const input = document.getElementById("busqueda");
-const info = document.getElementById("info");
-const mensaje = document.getElementById("mensaje");
 
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
-btnVolver.addEventListener("click", () => {
+/* BOTÓN VOLVER */
+btnVolver.onclick = () => {
     window.location.replace("index.html");
-});
+};
 
-function toggleTools(){}
-
+/* GUARDAR */
 function guardar(){
     localStorage.setItem("clientes", JSON.stringify(clientes));
 }
 
-function mostrarMensaje(t){
-    mensaje.textContent = t;
-    mensaje.style.display="block";
-    setTimeout(()=>mensaje.style.display="none",2000);
-}
-
+/* ELIMINAR */
 function eliminar(id){
     if(!confirm("Eliminar cliente?")) return;
-    clientes = clientes.filter(c=>c.id!==id);
+    clientes = clientes.filter(c => c.id !== id);
     guardar();
-    mostrarClientes();
+    render();
 }
 
-function mostrarClientes(){
-    lista.innerHTML="";
-    const txt = input.value.toLowerCase();
+/* RENDER */
+function render(){
+    lista.innerHTML = "";
+    const texto = input.value.toLowerCase();
 
     const filtrados = clientes.filter(c =>
-        (c.nombre||"").toLowerCase().includes(txt)
+        (c.nombre || "").toLowerCase().includes(texto)
     );
-
-    info.textContent = "Total: "+clientes.length+" | Mostrados: "+filtrados.length;
 
     filtrados.forEach(c=>{
         const div = document.createElement("div");
@@ -190,12 +146,12 @@ function mostrarClientes(){
             <div class="nombre">${c.nombre || ""}</div>
         `;
 
-        div.onclick=()=>{
-            localStorage.setItem("clienteActivo",c.id);
-            location.href="cliente.html";
+        div.onclick = () => {
+            localStorage.setItem("clienteActivo", c.id);
+            location.href = "cliente.html";
         };
 
-        div.querySelector(".eliminar").onclick=(e)=>{
+        div.querySelector(".eliminar").onclick = (e)=>{
             e.stopPropagation();
             eliminar(c.id);
         };
@@ -204,7 +160,7 @@ function mostrarClientes(){
     });
 }
 
-mostrarClientes();
+render();
 </script>
 
 </body>
