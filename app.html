@@ -2,310 +2,1148 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALLCALOR PRO</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ALLCALOR · Panel principal</title>
 <style>
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
   --panel2:#1d1d1d;
+  --line:#2b2b2b;
   --text:#ffffff;
   --muted:#bdbdbd;
   --accent:#f39b2f;
-  --border:#2b2b2b;
+  --accent2:#d9861f;
   --btnText:#111111;
+  --ok:#39a96b;
+  --danger:#c94b4b;
+  --shadow:0 12px 28px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box}
+html,body{height:100%}
 
 body{
   margin:0;
-  font-family:Arial, sans-serif;
   background:var(--bg);
   color:var(--text);
+  font-family:Arial,sans-serif;
 }
 
-.header{
-  padding:18px 20px;
-  border-bottom:1px solid var(--border);
+button,input{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+.app{
+  min-height:100vh;
+  display:grid;
+  grid-template-rows:auto auto 1fr;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:40;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:16px;
+  gap:12px;
+  padding:14px 16px;
+  background:rgba(11,11,11,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
 }
 
-.logo-container{
+.brand{
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:12px;
   min-width:0;
 }
 
-.logo-container img{
-  max-height:54px;
-  max-width:70px;
+.brand-logo{
+  width:48px;
+  height:48px;
+  border-radius:12px;
   object-fit:contain;
-  border-radius:8px;
   background:#fff;
   display:none;
   flex:0 0 auto;
 }
 
-.brand{
+.brand-text{
   min-width:0;
 }
 
-.titulo{
-  font-size:22px;
-  font-weight:700;
-  line-height:1.08;
+.brand-name{
+  margin:0;
+  line-height:1.05;
+  color:var(--accent);
+  font-size:28px;
+  font-weight:800;
   word-break:break-word;
 }
 
-.subtitulo{
+.brand-sub{
+  margin:6px 0 0 0;
   color:var(--muted);
-  font-size:13px;
-  margin-top:5px;
+  font-size:12px;
 }
 
-.config-btn{
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.clock-box{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px 14px;
+  text-align:right;
+  min-width:190px;
+  box-shadow:var(--shadow);
+}
+
+.clock-time{
+  font-size:28px;
+  font-weight:800;
+  line-height:1;
+  color:var(--accent);
+}
+
+.clock-date{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.btn-top{
+  border:none;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:800;
   background:var(--accent);
   color:var(--btnText);
-  border:none;
-  padding:10px 16px;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:700;
 }
 
-.container{
-  padding:20px;
-  max-width:1400px;
+.searchbar{
+  padding:14px 16px 0 16px;
+}
+
+.search-wrap{
+  max-width:1550px;
   margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+}
+
+.search{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--panel);
+  color:var(--text);
+  padding:16px 18px;
+  font-size:16px;
+  box-shadow:var(--shadow);
+}
+
+.quick-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.quick-btn{
+  border:none;
+  border-radius:14px;
+  padding:14px 16px;
+  font-weight:800;
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+
+.wrap{
+  max-width:1550px;
+  width:100%;
+  margin:0 auto;
+  padding:16px;
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);
+  gap:18px;
+}
+
+.left,
+.right{
+  min-width:0;
+}
+
+.hero{
+  background:linear-gradient(135deg, rgba(243,155,47,.16), rgba(243,155,47,.04));
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:18px;
+  align-items:stretch;
+}
+
+.hero-box,
+.stats-box{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:18px;
+  padding:18px;
+}
+
+.hero-title{
+  margin:0 0 10px 0;
+  font-size:30px;
+  color:var(--text);
+  line-height:1.05;
+}
+
+.hero-text{
+  margin:0;
+  color:var(--muted);
+  line-height:1.5;
+  font-size:14px;
+}
+
+.hero-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.hero-btn{
+  border:none;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
+}
+
+.hero-btn.sec{
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.stat{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+}
+
+.stat-label{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.stat-value{
+  font-size:24px;
+  font-weight:800;
+  color:var(--accent);
+}
+
+.section{
+  margin-bottom:18px;
+}
+
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.section-title{
+  margin:0;
+  font-size:20px;
+  color:var(--accent);
+}
+
+.section-note{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.modules{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
 }
 
 .card{
   background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
-}
-
-.card h2{
-  margin:0 0 10px 0;
-  color:var(--accent);
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
-}
-
-.modulo{
-  background:var(--panel2);
-  border:1px solid var(--border);
-  border-radius:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
   padding:16px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height:182px;
 }
 
-.modulo h3{
-  margin:0 0 8px 0;
+.card-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
 }
 
-.modulo p{
-  margin:0 0 12px 0;
+.card-icon{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(243,155,47,.12);
+  color:var(--accent);
+  font-size:24px;
+  font-weight:800;
+}
+
+.card-tag{
+  font-size:11px;
+  color:var(--muted);
+  border:1px solid var(--line);
+  background:var(--panel2);
+  border-radius:999px;
+  padding:6px 10px;
+}
+
+.card h3{
+  margin:0;
+  font-size:18px;
+  color:var(--text);
+}
+
+.card p{
+  margin:0;
   color:var(--muted);
   font-size:13px;
-  line-height:1.35;
+  line-height:1.45;
+  flex:1;
 }
 
-.modulo button{
+.card-btns{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.card-btn{
+  border:none;
+  border-radius:12px;
+  padding:11px 14px;
+  font-weight:800;
   background:var(--accent);
   color:var(--btnText);
+}
+
+.card-btn.sec{
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+
+.side-panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  margin-bottom:18px;
+}
+
+.calendar-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.calendar-title{
+  margin:0;
+  color:var(--accent);
+  font-size:18px;
+}
+
+.calendar-nav{
+  display:flex;
+  gap:8px;
+}
+
+.calendar-nav button{
   border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  cursor:pointer;
+  border-radius:10px;
+  padding:10px 12px;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+  font-weight:800;
+}
+
+.calendar-weekdays,
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+}
+
+.calendar-weekdays{
+  margin-bottom:8px;
+}
+
+.wday{
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+  padding:4px 0;
+}
+
+.day{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:12px;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-weight:700;
 }
 
-@media (max-width: 700px){
-  .header{
-    align-items:flex-start;
-  }
+.day.out{
+  opacity:.35;
+}
 
-  .config-btn{
-    padding:9px 12px;
-  }
+.day.today{
+  outline:2px solid var(--accent);
+}
 
-  .container{
-    padding:14px;
+.day.sel{
+  background:var(--accent);
+  color:var(--btnText);
+}
+
+.mini-list{
+  display:grid;
+  gap:10px;
+}
+
+.mini-item{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  border-radius:14px;
+  padding:12px;
+}
+
+.mini-item strong{
+  display:block;
+  margin-bottom:4px;
+  color:var(--text);
+}
+
+.mini-item span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:120;
+  background:rgba(0,0,0,.86);
+  color:#fff;
+  padding:12px 16px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  display:none;
+  max-width:92vw;
+  text-align:center;
+  font-size:13px;
+}
+
+.toast.show{
+  display:block;
+}
+
+@media (max-width:1180px){
+  .wrap{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:920px){
+  .hero-grid{
+    grid-template-columns:1fr;
+  }
+  .search-wrap{
+    grid-template-columns:1fr;
+  }
+  .quick-actions{
+    justify-content:flex-start;
+  }
+}
+
+@media (max-width:680px){
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .topbar-right{
+    justify-content:space-between;
+  }
+  .clock-box{
+    min-width:0;
+    flex:1;
+  }
+  .brand-name{
+    font-size:24px;
+  }
+  .stats-grid{
+    grid-template-columns:1fr 1fr;
+  }
+  .modules{
+    grid-template-columns:1fr;
   }
 }
 </style>
 </head>
-
 <body>
-
-<div class="header">
-  <div class="logo-container">
-    <img id="logo" alt="Logo">
+<div class="app">
+  <div class="topbar">
     <div class="brand">
-      <div id="titulo" class="titulo">ALLCALOR PRO</div>
-      <div id="subtitulo" class="subtitulo">Centro de control</div>
+      <img id="brandLogo" class="brand-logo" alt="">
+      <div class="brand-text">
+        <h1 id="brandName" class="brand-name">ALLCALOR</h1>
+        <p id="brandSub" class="brand-sub">Centro de control</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="clock-box">
+        <div id="clockTime" class="clock-time">00:00:00</div>
+        <div id="clockDate" class="clock-date">Cargando fecha…</div>
+      </div>
+      <button class="btn-top" onclick="goConfig()">Configuración</button>
     </div>
   </div>
 
-  <button class="config-btn" onclick="irConfig()">Configuración</button>
+  <div class="searchbar">
+    <div class="search-wrap">
+      <input id="globalSearch" class="search" type="text" placeholder="Buscar módulo, cliente, obra, plano o acción rápida">
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="goClientes()">+ Cliente</button>
+        <button class="quick-btn" onclick="goObras()">+ Obra</button>
+        <button class="quick-btn" onclick="goPlanos()">+ Plano</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="left">
+      <div class="hero">
+        <div class="hero-grid">
+          <div class="hero-box">
+            <h2 class="hero-title">Panel principal de trabajo</h2>
+            <p class="hero-text">
+              Desde aquí debe salir todo: clientes, obras, planos, agenda, control de documentos y gestión diaria. Esta base ya queda preparada para crecer sin volver a desmontarla.
+            </p>
+            <div class="hero-actions">
+              <button class="hero-btn" onclick="goClientes()">Clientes</button>
+              <button class="hero-btn" onclick="goObras()">Obras</button>
+              <button class="hero-btn" onclick="goPlanos()">Planos</button>
+              <button class="hero-btn sec" onclick="goConfig()">Ajustes</button>
+            </div>
+          </div>
+
+          <div class="stats-box">
+            <div class="stats-grid">
+              <div class="stat">
+                <div class="stat-label">Clientes</div>
+                <div id="statClientes" class="stat-value">0</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Obras</div>
+                <div id="statObras" class="stat-value">0</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Planos</div>
+                <div id="statPlanos" class="stat-value">0</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Hoy</div>
+                <div id="statHoy" class="stat-value">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">Módulos</h2>
+          <div class="section-note">Accesos directos al sistema</div>
+        </div>
+
+        <div id="modulesGrid" class="modules">
+          <div class="card" data-search="clientes clientes fichas agenda teléfonos emails">
+            <div class="card-top">
+              <div class="card-icon">👤</div>
+              <div class="card-tag">Global</div>
+            </div>
+            <h3>Clientes</h3>
+            <p>Listado general, acceso a fichas, teléfonos, emails y entrada a cada cliente.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="goClientes()">Abrir</button>
+              <button class="card-btn sec" onclick="goClientes()">Ver todos</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="obras obra instalaciones trabajos seguimiento">
+            <div class="card-top">
+              <div class="card-icon">🏗️</div>
+              <div class="card-tag">Global</div>
+            </div>
+            <h3>Obras</h3>
+            <p>Vista general de trabajos, estado de ejecución y acceso a cada obra.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="goObras()">Abrir</button>
+              <button class="card-btn sec" onclick="goObras()">Ver todas</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="planos plano estancias dibujo geometría">
+            <div class="card-top">
+              <div class="card-icon">📐</div>
+              <div class="card-tag">Global</div>
+            </div>
+            <h3>Planos</h3>
+            <p>Acceso a planos y editor. La vista global de todos los planos será la siguiente fase.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="goPlanos()">Abrir</button>
+              <button class="card-btn sec" onclick="showToast('La vista global de planos será el siguiente módulo')">Próximo paso</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="presupuestos precios ofertas">
+            <div class="card-top">
+              <div class="card-icon">💶</div>
+              <div class="card-tag">Preparación</div>
+            </div>
+            <h3>Presupuestos</h3>
+            <p>Preparado para dejar aquí el sistema de ofertas, partidas y exportación.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="showToast('Presupuestos será una fase siguiente')">Abrir</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="facturas cobros pagos">
+            <div class="card-top">
+              <div class="card-icon">🧾</div>
+              <div class="card-tag">Preparación</div>
+            </div>
+            <h3>Facturas</h3>
+            <p>Espacio reservado para facturación, cobros pendientes y control económico.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="showToast('Facturas será una fase siguiente')">Abrir</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="agenda calendario citas avisos reloj">
+            <div class="card-top">
+              <div class="card-icon">📅</div>
+              <div class="card-tag">Activo</div>
+            </div>
+            <h3>Agenda</h3>
+            <p>Calendario, día actual, control de fechas y base para citas y recordatorios.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="scrollToCalendar()">Ver calendario</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="vehículos furgonetas mantenimiento">
+            <div class="card-top">
+              <div class="card-icon">🚐</div>
+              <div class="card-tag">Preparación</div>
+            </div>
+            <h3>Vehículos</h3>
+            <p>Preparado para gestionar revisiones, ITV, seguros y uso de flota.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="showToast('Vehículos será una fase siguiente')">Abrir</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="stock almacén material referencias">
+            <div class="card-top">
+              <div class="card-icon">📦</div>
+              <div class="card-tag">Preparación</div>
+            </div>
+            <h3>Stock</h3>
+            <p>Reserva para materiales, referencias, control de faltas y entradas de almacén.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="showToast('Stock será una fase siguiente')">Abrir</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="documentos pdf fotos fichas técnicas">
+            <div class="card-top">
+              <div class="card-icon">📁</div>
+              <div class="card-tag">Preparación</div>
+            </div>
+            <h3>Documentos</h3>
+            <p>Espacio para PDFs, fotos, fichas técnicas, manuales y archivos por cliente u obra.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="showToast('Documentos será una fase siguiente')">Abrir</button>
+            </div>
+          </div>
+
+          <div class="card" data-search="mantenimiento avisos revisiones">
+            <div class="card-top">
+              <div class="card-icon">🛠️</div>
+              <div class="card-tag">Preparación</div>
+            </div>
+            <h3>Mantenimiento</h3>
+            <p>Base para revisiones periódicas, avisos y seguimiento postinstalación.</p>
+            <div class="card-btns">
+              <button class="card-btn" onclick="showToast('Mantenimiento será una fase siguiente')">Abrir</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="right">
+      <div id="calendarPanel" class="side-panel">
+        <div class="calendar-head">
+          <h2 id="calendarTitle" class="calendar-title">Calendario</h2>
+          <div class="calendar-nav">
+            <button onclick="changeMonth(-1)">‹</button>
+            <button onclick="goToday()">Hoy</button>
+            <button onclick="changeMonth(1)">›</button>
+          </div>
+        </div>
+
+        <div class="calendar-weekdays">
+          <div class="wday">L</div>
+          <div class="wday">M</div>
+          <div class="wday">X</div>
+          <div class="wday">J</div>
+          <div class="wday">V</div>
+          <div class="wday">S</div>
+          <div class="wday">D</div>
+        </div>
+
+        <div id="calendarGrid" class="calendar-grid"></div>
+      </div>
+
+      <div class="side-panel">
+        <div class="section-head" style="margin-bottom:10px">
+          <h2 class="calendar-title">Acciones rápidas</h2>
+        </div>
+        <div class="mini-list">
+          <div class="mini-item">
+            <strong>Nuevo cliente</strong>
+            <span>Alta rápida y ficha inicial.</span>
+            <div style="margin-top:10px">
+              <button class="card-btn" onclick="goNuevoCliente()">Abrir</button>
+            </div>
+          </div>
+
+          <div class="mini-item">
+            <strong>Nueva obra</strong>
+            <span>Acceso preparado para crear trabajos nuevos.</span>
+            <div style="margin-top:10px">
+              <button class="card-btn" onclick="goObras()">Abrir</button>
+            </div>
+          </div>
+
+          <div class="mini-item">
+            <strong>Configuración general</strong>
+            <span>Contraseñas, colores, nombre, logo y aspecto.</span>
+            <div style="margin-top:10px">
+              <button class="card-btn" onclick="goConfig()">Abrir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <div class="section-head" style="margin-bottom:10px">
+          <h2 class="calendar-title">Estado actual</h2>
+        </div>
+        <div class="mini-list">
+          <div class="mini-item">
+            <strong>Clientes cargados</strong>
+            <span id="resumeClientes">0 registrados</span>
+          </div>
+          <div class="mini-item">
+            <strong>Obras registradas</strong>
+            <span id="resumeObras">0 registradas</span>
+          </div>
+          <div class="mini-item">
+            <strong>Planos detectados</strong>
+            <span id="resumePlanos">0 detectados</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="container">
-
-  <div class="card">
-    <h2>Panel principal</h2>
-    <p>Desde aquí accedes a todos los módulos.</p>
-  </div>
-
-  <div class="grid">
-    <div class="modulo">
-      <h3>Clientes</h3>
-      <p>Listado general y gestión de fichas.</p>
-      <button type="button" onclick="location.href='clientes.html'">Abrir</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Obras</h3>
-      <p>Seguimiento de trabajos y estado.</p>
-      <button type="button" onclick="location.href='clientes.html'">Abrir</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Planos</h3>
-      <p>Editor de estancias, zonas muertas, puertas y ventanas.</p>
-      <button type="button" onclick="location.href='plano.html'">Abrir</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Presupuestos</h3>
-      <p>Módulo pendiente.</p>
-      <button type="button">Pendiente</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Facturas</h3>
-      <p>Módulo pendiente.</p>
-      <button type="button">Pendiente</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Agenda</h3>
-      <p>Módulo pendiente.</p>
-      <button type="button">Pendiente</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Vehículos</h3>
-      <p>Módulo pendiente.</p>
-      <button type="button">Pendiente</button>
-    </div>
-
-    <div class="modulo">
-      <h3>Stock</h3>
-      <p>Módulo pendiente.</p>
-      <button type="button">Pendiente</button>
-    </div>
-  </div>
-
-</div>
+<div id="toast" class="toast"></div>
 
 <script>
-function irConfig(){
-  window.location.href = "configuracion.html";
-}
-
-const CONFIG_DEFAULT = {
-  nombre: "ALLCALOR PRO",
-  subtitulo: "Centro de control",
-  logo: "",
-  fuente: "Arial, sans-serif",
-  tamNombre: 22,
-  pesoNombre: 700,
-  espacioLetras: 0,
-  sombraNombre: 0,
-  mayusculas: false,
-  cursiva: false,
-  colorPrincipal: "#f39b2f",
-  colorFondo: "#0b0b0b",
-  colorPanel: "#151515",
-  colorTexto: "#ffffff",
-  colorLinea: "#2b2b2b",
-  colorBotonTexto: "#111111"
+const MODULES = {
+  clientes: "clientes.html",
+  obras: "obras.html",
+  configuracion: "configuracion.html"
 };
 
-function leerConfig(){
+const today = new Date();
+let calendarDate = new Date(today.getFullYear(), today.getMonth(), 1);
+let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+const brandName = document.getElementById("brandName");
+const brandSub = document.getElementById("brandSub");
+const brandLogo = document.getElementById("brandLogo");
+const clockTime = document.getElementById("clockTime");
+const clockDate = document.getElementById("clockDate");
+const globalSearch = document.getElementById("globalSearch");
+const modulesGrid = document.getElementById("modulesGrid");
+const calendarGrid = document.getElementById("calendarGrid");
+const calendarTitle = document.getElementById("calendarTitle");
+const toast = document.getElementById("toast");
+
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove("show"), 1800);
+}
+
+function leerConfigVisual(){
+  const base = {
+    nombre:"ALLCALOR",
+    subtitulo:"Centro de control",
+    logo:"",
+    fuente:"Arial, sans-serif",
+    tamNombre:28,
+    pesoNombre:800,
+    espacioLetras:0,
+    sombraNombre:0,
+    mayusculas:false,
+    cursiva:false,
+    colorPrincipal:"#f39b2f",
+    colorFondo:"#0b0b0b",
+    colorPanel:"#151515",
+    colorTexto:"#ffffff",
+    colorLinea:"#2b2b2b",
+    colorBotonTexto:"#111111"
+  };
   try{
-    return {
-      ...CONFIG_DEFAULT,
-      ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})
-    };
+    return {...base, ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})};
   }catch(e){
-    return { ...CONFIG_DEFAULT };
+    return base;
   }
 }
 
-function aplicarConfig(){
-  const cfg = leerConfig();
+let visualCache = null;
 
-  document.title = cfg.nombre || CONFIG_DEFAULT.nombre;
+function aplicarConfigVisual(force=false){
+  const cfg = leerConfigVisual();
+  const sig = JSON.stringify(cfg);
+  if(!force && sig === visualCache) return;
+  visualCache = sig;
 
-  document.documentElement.style.setProperty("--bg", cfg.colorFondo || CONFIG_DEFAULT.colorFondo);
-  document.documentElement.style.setProperty("--panel", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
-  document.documentElement.style.setProperty("--panel2", cfg.colorPanel || CONFIG_DEFAULT.colorPanel);
-  document.documentElement.style.setProperty("--text", cfg.colorTexto || CONFIG_DEFAULT.colorTexto);
-  document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal);
-  document.documentElement.style.setProperty("--border", cfg.colorLinea || CONFIG_DEFAULT.colorLinea);
-  document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto);
+  document.documentElement.style.setProperty("--bg", cfg.colorFondo || "#0b0b0b");
+  document.documentElement.style.setProperty("--panel", cfg.colorPanel || "#151515");
+  document.documentElement.style.setProperty("--panel2", cfg.colorPanel || "#1d1d1d");
+  document.documentElement.style.setProperty("--text", cfg.colorTexto || "#ffffff");
+  document.documentElement.style.setProperty("--muted", cfg.colorTexto || "#bdbdbd");
+  document.documentElement.style.setProperty("--line", cfg.colorLinea || "#2b2b2b");
+  document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || "#f39b2f");
+  document.documentElement.style.setProperty("--accent2", cfg.colorPrincipal || "#d9861f");
+  document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || "#111111");
 
-  const titulo = document.getElementById("titulo");
-  const subtitulo = document.getElementById("subtitulo");
-  const logo = document.getElementById("logo");
+  document.body.style.fontFamily = cfg.fuente || "Arial, sans-serif";
 
-  const nombreFinal = cfg.mayusculas
-    ? (cfg.nombre || CONFIG_DEFAULT.nombre).toUpperCase()
-    : (cfg.nombre || CONFIG_DEFAULT.nombre);
+  const nombre = cfg.mayusculas ? String(cfg.nombre || "ALLCALOR").toUpperCase() : String(cfg.nombre || "ALLCALOR");
+  brandName.textContent = nombre;
+  brandSub.textContent = cfg.subtitulo || "Centro de control";
 
-  titulo.textContent = nombreFinal;
-  subtitulo.textContent = cfg.subtitulo || CONFIG_DEFAULT.subtitulo;
-
-  titulo.style.color = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
-  titulo.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
-  titulo.style.fontSize = (cfg.tamNombre || CONFIG_DEFAULT.tamNombre) + "px";
-  titulo.style.fontWeight = cfg.pesoNombre || CONFIG_DEFAULT.pesoNombre;
-  titulo.style.letterSpacing = (cfg.espacioLetras || CONFIG_DEFAULT.espacioLetras) + "px";
-  titulo.style.textShadow = "0 0 " + (cfg.sombraNombre || CONFIG_DEFAULT.sombraNombre) + "px #000";
-  titulo.style.fontStyle = cfg.cursiva ? "italic" : "normal";
-
-  subtitulo.style.fontFamily = cfg.fuente || CONFIG_DEFAULT.fuente;
-  subtitulo.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+  brandName.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+  brandName.style.fontSize = Math.max(18, Number(cfg.tamNombre || 28)) + "px";
+  brandName.style.fontWeight = cfg.pesoNombre || 800;
+  brandName.style.letterSpacing = (cfg.espacioLetras || 0) + "px";
+  brandName.style.textShadow = "0 0 " + (cfg.sombraNombre || 0) + "px #000";
+  brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+  brandName.style.color = cfg.colorPrincipal || "#f39b2f";
 
   if(cfg.logo){
-    logo.src = cfg.logo;
-    logo.style.display = "block";
+    brandLogo.src = cfg.logo;
+    brandLogo.style.display = "block";
   }else{
-    logo.style.display = "none";
+    brandLogo.style.display = "none";
+  }
+}
+
+function pad(n){
+  return String(n).padStart(2, "0");
+}
+
+function updateClock(){
+  const now = new Date();
+  clockTime.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  clockDate.textContent = `${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+  document.getElementById("statHoy").textContent = `${pad(now.getDate())}/${pad(now.getMonth()+1)}`;
+}
+
+function getClientes(){
+  try{
+    return JSON.parse(localStorage.getItem("clientes")) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function getAllObrasCount(){
+  const clientes = getClientes();
+  let total = 0;
+  for(const c of clientes){
+    try{
+      const obras = JSON.parse(localStorage.getItem("obras_" + c.id)) || [];
+      total += obras.length;
+    }catch(e){}
+  }
+  return total;
+}
+
+function getAllPlanosCount(){
+  const clientes = getClientes();
+  let total = 0;
+
+  for(const c of clientes){
+    try{
+      const obras = JSON.parse(localStorage.getItem("obras_" + c.id)) || [];
+      for(const obra of obras){
+        if(obra && obra.plano && Array.isArray(obra.plano.estancias) && obra.plano.estancias.length){
+          total += 1;
+        }
+      }
+    }catch(e){}
   }
 
-  document.querySelectorAll(".modulo button").forEach(btn=>{
-    btn.style.background = cfg.colorPrincipal || CONFIG_DEFAULT.colorPrincipal;
-    btn.style.color = cfg.colorBotonTexto || CONFIG_DEFAULT.colorBotonTexto;
+  return total;
+}
+
+function updateStats(){
+  const totalClientes = getClientes().length;
+  const totalObras = getAllObrasCount();
+  const totalPlanos = getAllPlanosCount();
+
+  document.getElementById("statClientes").textContent = totalClientes;
+  document.getElementById("statObras").textContent = totalObras;
+  document.getElementById("statPlanos").textContent = totalPlanos;
+
+  document.getElementById("resumeClientes").textContent = `${totalClientes} registrados`;
+  document.getElementById("resumeObras").textContent = `${totalObras} registradas`;
+  document.getElementById("resumePlanos").textContent = `${totalPlanos} detectados`;
+}
+
+function renderCalendar(){
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  calendarTitle.textContent = `${meses[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
+  calendarGrid.innerHTML = "";
+
+  const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+  const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+
+  let startWeekday = firstDay.getDay();
+  if(startWeekday === 0) startWeekday = 7;
+
+  const daysPrev = startWeekday - 1;
+  const prevMonthLast = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 0).getDate();
+
+  for(let i = daysPrev; i > 0; i--){
+    const div = document.createElement("button");
+    div.type = "button";
+    div.className = "day out";
+    div.textContent = prevMonthLast - i + 1;
+    calendarGrid.appendChild(div);
+  }
+
+  for(let d = 1; d <= lastDay.getDate(); d++){
+    const div = document.createElement("button");
+    div.type = "button";
+    div.className = "day";
+    div.textContent = d;
+
+    const thisDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d);
+
+    if(
+      d === today.getDate() &&
+      calendarDate.getMonth() === today.getMonth() &&
+      calendarDate.getFullYear() === today.getFullYear()
+    ){
+      div.classList.add("today");
+    }
+
+    if(
+      d === selectedDate.getDate() &&
+      calendarDate.getMonth() === selectedDate.getMonth() &&
+      calendarDate.getFullYear() === selectedDate.getFullYear()
+    ){
+      div.classList.add("sel");
+    }
+
+    div.onclick = () => {
+      selectedDate = thisDate;
+      renderCalendar();
+      showToast(`Día seleccionado: ${pad(d)}/${pad(calendarDate.getMonth()+1)}/${calendarDate.getFullYear()}`);
+    };
+
+    calendarGrid.appendChild(div);
+  }
+
+  const totalCells = daysPrev + lastDay.getDate();
+  const nextDays = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
+  for(let i = 1; i <= nextDays; i++){
+    const div = document.createElement("button");
+    div.type = "button";
+    div.className = "day out";
+    div.textContent = i;
+    calendarGrid.appendChild(div);
+  }
+}
+
+function changeMonth(step){
+  calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + step, 1);
+  renderCalendar();
+}
+
+function goToday(){
+  calendarDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  renderCalendar();
+}
+
+function scrollToCalendar(){
+  document.getElementById("calendarPanel").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function filterModules(){
+  const txt = globalSearch.value.trim().toLowerCase();
+  const cards = modulesGrid.querySelectorAll(".card");
+
+  cards.forEach(card => {
+    const raw = (card.dataset.search || "") + " " + card.textContent;
+    card.style.display = raw.toLowerCase().includes(txt) ? "" : "none";
   });
 }
 
-aplicarConfig();
-</script>
+function goClientes(){
+  window.location.href = MODULES.clientes;
+}
 
+function goObras(){
+  window.location.href = MODULES.obras;
+}
+
+function goConfig(){
+  window.location.href = MODULES.configuracion;
+}
+
+function goNuevoCliente(){
+  window.location.href = "nuevo-cliente.html";
+}
+
+function goPlanos(){
+  showToast("La vista global de planos será el siguiente paso");
+}
+
+globalSearch.addEventListener("input", filterModules);
+
+globalSearch.addEventListener("keydown", e => {
+  if(e.key !== "Enter") return;
+  const txt = globalSearch.value.trim().toLowerCase();
+
+  if(!txt) return;
+  if(txt.includes("cliente")) return goClientes();
+  if(txt.includes("obra")) return goObras();
+  if(txt.includes("config")) return goConfig();
+  if(txt.includes("plano")) return goPlanos();
+
+  showToast("Sin coincidencia directa todavía");
+});
+
+window.addEventListener("storage", e => {
+  if(e.key === "configAllcalor") aplicarConfigVisual(true);
+});
+window.addEventListener("pageshow", () => aplicarConfigVisual(true));
+window.addEventListener("focus", () => aplicarConfigVisual(true));
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden) aplicarConfigVisual(true);
+});
+
+window.changeMonth = changeMonth;
+window.goToday = goToday;
+window.goClientes = goClientes;
+window.goObras = goObras;
+window.goPlanos = goPlanos;
+window.goConfig = goConfig;
+window.goNuevoCliente = goNuevoCliente;
+window.scrollToCalendar = scrollToCalendar;
+
+aplicarConfigVisual(true);
+updateClock();
+setInterval(updateClock, 1000);
+updateStats();
+renderCalendar();
+</script>
 </body>
 </html>
