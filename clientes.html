@@ -6,161 +6,644 @@
 <title>Clientes</title>
 
 <style>
+:root{
+    --bg:#0b0b0b;
+    --panel:#141414;
+    --line:#2a2a2a;
+    --text:#ffffff;
+    --muted:#bdbdbd;
+    --accent:#f39b2f;
+    --btnText:#111111;
+    --danger:#b30000;
+}
+
+*{box-sizing:border-box}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #0b0b0b;
-    color: white;
+    background: var(--bg);
+    color: var(--text);
 }
 
-/* HEADER */
 .header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:12px;
-    border-bottom:2px solid orange;
+    padding: 12px 15px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
 }
 
-.header-center{
+.header-titulo-wrap{
     flex:1;
     text-align:center;
+    min-width:0;
 }
 
-.header-title{
-    font-size:20px;
-    font-weight:bold;
+.header-titulo {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--accent);
+    line-height:1.1;
+    word-break:break-word;
 }
 
-.btn{
-    background:orange;
-    border:none;
-    padding:10px 14px;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
+.header-subtitulo{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
 }
 
-/* CONTENIDO */
-.wrap{
-    padding:10px;
+.header-btn {
+    background: var(--accent);
+    border: none;
+    color: var(--btnText);
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    min-width:72px;
 }
 
-.input{
-    width:100%;
-    padding:12px;
-    margin-bottom:10px;
-    border-radius:8px;
-    border:none;
+.wrap {
+    padding: 10px;
+    position: relative;
 }
 
-/* CLIENTES */
-.cliente{
-    background:#1a1a1a;
-    padding:15px;
-    margin-bottom:10px;
-    border-radius:10px;
-    position:relative;
-    cursor:pointer;
+.tools {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
 }
 
-.nombre{
-    font-size:18px;
-    font-weight:bold;
+.tools.abierto {
+    display: block;
 }
 
-.eliminar{
-    position:absolute;
-    right:10px;
-    top:10px;
-    background:red;
-    border:none;
-    color:white;
-    padding:6px 10px;
-    border-radius:6px;
+.subtitulo {
+    margin: 4px 0 6px 0;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.info {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.mensaje {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+    color: var(--text);
+}
+
+.buscador {
+    margin-bottom: 10px;
+}
+
+.input-busqueda {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background:#101010;
+    color:var(--text);
+}
+
+.btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    border: none;
+    margin-top: 7px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--btnText);
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.cliente {
+    background: #1a1a1a;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    position: relative;
+    border: 1px solid #252525;
+    cursor: pointer;
+}
+
+.eliminar {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: var(--danger);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.nombre {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding-right: 55px;
+}
+
+.nombre a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.nombre a:hover {
+    text-decoration: underline;
+}
+
+.linea-enlace {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+.linea-enlace:hover {
+    text-decoration: underline;
+}
+
+.linea-boton {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text);
+    margin-bottom: 5px;
+    padding: 0;
+    font-size: 16px;
+    cursor: pointer;
+    word-break: break-word;
+}
+
+.linea-boton:hover {
+    text-decoration: underline;
+}
+
+.obras {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #d9d9d9;
+}
+
+.fecha {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.selector-mapa-fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.selector-mapa {
+    width: calc(100% - 30px);
+    max-width: 420px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.selector-mapa-titulo {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.selector-mapa-btn {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--btnText);
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.selector-mapa-cancelar {
+    background: #2a2a2a;
+    color: white;
 }
 </style>
 </head>
-
 <body>
 
-<!-- HEADER -->
 <div class="header">
-    <button class="btn" id="btnVolver">Volver</button>
+    <button class="header-btn" id="btnVolver">Volver</button>
 
-    <div class="header-center">
-        <div class="header-title">Clientes</div>
+    <div class="header-titulo-wrap">
+        <div class="header-titulo" id="headerTitulo">Clientes</div>
+        <div class="header-subtitulo" id="headerSubtitulo">Gestión de clientes</div>
     </div>
 
-    <button class="btn" onclick="alert('Menú')">Menú</button>
+    <button class="header-btn" onclick="toggleTools()">Menú</button>
 </div>
 
 <div class="wrap">
 
-    <input id="busqueda" class="input" placeholder="Buscar..." oninput="render()">
+    <div id="mensaje" class="mensaje"></div>
+    <div id="info" class="info"></div>
 
-    <div id="lista"></div>
+    <div class="buscador">
+        <input
+            id="busqueda"
+            class="input-busqueda"
+            type="text"
+            placeholder="Buscar por nombre, dirección, email, teléfono, fecha o nº de obras"
+            oninput="mostrarClientes()"
+        >
+    </div>
+
+    <div class="tools" id="tools">
+        <div class="subtitulo">Acciones</div>
+        <button class="btn" onclick="window.location.href='nuevo-cliente.html'">Nuevo cliente</button>
+    </div>
+
+    <div class="clientes" id="listaClientes"></div>
 
 </div>
 
+<div id="selectorMapaFondo" class="selector-mapa-fondo">
+    <div class="selector-mapa">
+        <div class="selector-mapa-titulo">Abrir dirección con</div>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('apple')">Apple Mapas</button>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('google')">Google Maps</button>
+        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('waze')">Waze</button>
+        <button class="selector-mapa-btn selector-mapa-cancelar" onclick="cerrarSelectorMapa()">Cancelar</button>
+    </div>
+</div>
+
 <script>
+const PIN_ADMIN = "1234";
+
+const tools = document.getElementById("tools");
+const mensaje = document.getElementById("mensaje");
+const info = document.getElementById("info");
+const inputBusqueda = document.getElementById("busqueda");
 const btnVolver = document.getElementById("btnVolver");
-const lista = document.getElementById("lista");
-const input = document.getElementById("busqueda");
+const headerTitulo = document.getElementById("headerTitulo");
+const headerSubtitulo = document.getElementById("headerSubtitulo");
 
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let direccionMapaActual = "";
+let visualConfigCache = null;
 
-/* BOTÓN VOLVER */
-btnVolver.onclick = () => {
-    window.location.replace("index.html");
-};
+function leerConfigVisual(){
+    const base = {
+        nombre:"ALLCALOR",
+        subtituloClientes:"Gestión de clientes",
+        fuente:"Arial, sans-serif",
+        tamNombre:20,
+        pesoNombre:700,
+        espacioLetras:0,
+        sombraNombre:0,
+        mayusculas:false,
+        cursiva:false,
+        colorPrincipal:"#f39b2f",
+        colorFondo:"#0b0b0b",
+        colorPanel:"#141414",
+        colorTexto:"#ffffff",
+        colorLinea:"#2a2a2a",
+        colorBotonTexto:"#111111"
+    };
 
-/* GUARDAR */
-function guardar(){
+    try{
+        return {...base, ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})};
+    }catch(e){
+        return base;
+    }
+}
+
+function aplicarConfigVisual(force = false){
+    const cfg = leerConfigVisual();
+    const sig = JSON.stringify(cfg);
+    if (!force && visualConfigCache === sig) return;
+    visualConfigCache = sig;
+
+    document.documentElement.style.setProperty("--bg", cfg.colorFondo || "#0b0b0b");
+    document.documentElement.style.setProperty("--panel", cfg.colorPanel || "#141414");
+    document.documentElement.style.setProperty("--text", cfg.colorTexto || "#ffffff");
+    document.documentElement.style.setProperty("--muted", cfg.colorTexto || "#bdbdbd");
+    document.documentElement.style.setProperty("--line", cfg.colorLinea || "#2a2a2a");
+    document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || "#f39b2f");
+    document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || "#111111");
+
+    document.body.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+
+    headerTitulo.textContent = "Clientes";
+    headerSubtitulo.textContent = cfg.subtituloClientes || "Gestión de clientes";
+
+    headerTitulo.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+    headerTitulo.style.fontSize = Math.max(14, Number(cfg.tamNombre || 20)) + "px";
+    headerTitulo.style.fontWeight = cfg.pesoNombre || 700;
+    headerTitulo.style.letterSpacing = (cfg.espacioLetras || 0) + "px";
+    headerTitulo.style.textShadow = "0 0 " + (cfg.sombraNombre || 0) + "px #000";
+    headerTitulo.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+    headerTitulo.style.color = cfg.colorPrincipal || "#f39b2f";
+
+    headerSubtitulo.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+}
+
+function toggleTools() {
+    tools.classList.toggle("abierto");
+}
+
+function mostrarMensaje(texto) {
+    mensaje.textContent = texto;
+    mensaje.style.display = "block";
+    setTimeout(() => {
+        mensaje.style.display = "none";
+    }, 2000);
+}
+
+function guardar() {
     localStorage.setItem("clientes", JSON.stringify(clientes));
 }
 
-/* ELIMINAR */
-function eliminar(id){
-    if(!confirm("Eliminar cliente?")) return;
-    clientes = clientes.filter(c => c.id !== id);
-    guardar();
-    render();
+function formatearFecha(fechaISO) {
+    if (!fechaISO) return "-";
+    const fecha = new Date(fechaISO);
+    if (isNaN(fecha.getTime())) return "-";
+
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    const hora = String(fecha.getHours()).padStart(2, "0");
+    const minutos = String(fecha.getMinutes()).padStart(2, "0");
+
+    return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
 }
 
-/* RENDER */
-function render(){
-    lista.innerHTML = "";
-    const texto = input.value.toLowerCase();
+function obtenerTelefonos(cliente) {
+    let telefonosTexto = cliente.telefonos || cliente.telefono || "";
+    if (!telefonosTexto) return [];
 
-    const filtrados = clientes.filter(c =>
-        (c.nombre || "").toLowerCase().includes(texto)
-    );
+    return telefonosTexto
+        .replace(/\r/g, "")
+        .split(/\n|,/)
+        .map(t => t.trim())
+        .filter(Boolean);
+}
 
-    filtrados.forEach(c=>{
-        const div = document.createElement("div");
-        div.className="cliente";
+function obtenerEmails(cliente) {
+    let emailsTexto = cliente.emails || cliente.email || "";
+    if (!emailsTexto) return [];
 
-        div.innerHTML = `
-            <button class="eliminar">X</button>
-            <div class="nombre">${c.nombre || ""}</div>
-        `;
+    return emailsTexto
+        .replace(/\r/g, "")
+        .split(/\n|,/)
+        .map(e => e.trim())
+        .filter(Boolean);
+}
 
-        div.onclick = () => {
-            localStorage.setItem("clienteActivo", c.id);
-            location.href = "cliente.html";
-        };
+function obtenerDireccionMapa(cliente) {
+    if (cliente.direccion && cliente.direccion.trim()) {
+        return cliente.direccion.trim();
+    }
 
-        div.querySelector(".eliminar").onclick = (e)=>{
-            e.stopPropagation();
-            eliminar(c.id);
-        };
+    const partes = [
+        cliente.tipoVia || "",
+        cliente.nombreVia || "",
+        cliente.numero || "",
+        cliente.portal ? "Portal " + cliente.portal : "",
+        cliente.escalera ? "Escalera " + cliente.escalera : "",
+        cliente.piso ? "Piso " + cliente.piso : "",
+        cliente.puerta ? "Puerta " + cliente.puerta : "",
+        cliente.poblacion || "",
+        cliente.cp || "",
+        cliente.provincia || ""
+    ].filter(Boolean);
 
-        lista.appendChild(div);
+    return partes.join(", ").trim();
+}
+
+function contarObras(clienteId) {
+    const obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+    return obras.length;
+}
+
+function actualizarInfo() {
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const visibles = filtrarClientes(textoBusqueda).length;
+    info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
+}
+
+function pedirPin() {
+    let pin = prompt("Introduce PIN de administrador:");
+    if (pin === null) return false;
+    return pin === PIN_ADMIN;
+}
+
+function eliminarCliente(id) {
+    let confirmar = confirm("¿Seguro que quieres eliminar este cliente?");
+    if (!confirmar) return;
+
+    let pinCorrecto = pedirPin();
+    if (!pinCorrecto) {
+        alert("PIN incorrecto");
+        return;
+    }
+
+    clientes = clientes.filter(c => c.id !== id);
+    guardar();
+
+    localStorage.removeItem("obras_" + id);
+
+    if (localStorage.getItem("clienteActivo") == id) {
+        localStorage.removeItem("clienteActivo");
+    }
+
+    mostrarClientes();
+    actualizarInfo();
+    mostrarMensaje("Cliente eliminado");
+}
+
+function filtrarClientes(textoBusqueda) {
+    if (!textoBusqueda) return clientes;
+
+    return clientes.filter(cliente => {
+        const nombre = (cliente.nombre || "").toLowerCase();
+        const telefonos = (cliente.telefonos || cliente.telefono || "").toLowerCase();
+        const emails = (cliente.emails || cliente.email || "").toLowerCase();
+        const direccion = obtenerDireccionMapa(cliente).toLowerCase();
+        const fecha = formatearFecha(cliente.fechaCreacion).toLowerCase();
+        const numeroObras = String(contarObras(cliente.id)).toLowerCase();
+
+        return (
+            nombre.includes(textoBusqueda) ||
+            telefonos.includes(textoBusqueda) ||
+            emails.includes(textoBusqueda) ||
+            direccion.includes(textoBusqueda) ||
+            fecha.includes(textoBusqueda) ||
+            numeroObras.includes(textoBusqueda)
+        );
     });
 }
 
-render();
+function abrirCliente(id) {
+    localStorage.setItem("clienteActivo", id);
+    window.location.href = "cliente.html";
+}
+
+function elegirMapa(event, direccion) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!direccion) return;
+
+    direccionMapaActual = direccion;
+    document.getElementById("selectorMapaFondo").style.display = "flex";
+}
+
+function cerrarSelectorMapa() {
+    direccionMapaActual = "";
+    document.getElementById("selectorMapaFondo").style.display = "none";
+}
+
+function abrirMapaSeleccionado(tipo) {
+    if (!direccionMapaActual) return;
+
+    const encoded = encodeURIComponent(direccionMapaActual);
+    let url = "";
+
+    if (tipo === "apple") {
+        url = "http://maps.apple.com/?q=" + encoded;
+    }
+
+    if (tipo === "google") {
+        url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    }
+
+    if (tipo === "waze") {
+        url = "https://waze.com/ul?q=" + encoded;
+    }
+
+    cerrarSelectorMapa();
+    window.open(url, "_blank");
+}
+
+function mostrarClientes() {
+    const contenedor = document.getElementById("listaClientes");
+    contenedor.innerHTML = "";
+
+    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
+    const clientesFiltrados = filtrarClientes(textoBusqueda);
+
+    clientesFiltrados.forEach(cliente => {
+        const div = document.createElement("div");
+        div.className = "cliente";
+
+        const telefonos = obtenerTelefonos(cliente);
+        const emails = obtenerEmails(cliente);
+        const fechaTexto = formatearFecha(cliente.fechaCreacion);
+        const direccionMapa = obtenerDireccionMapa(cliente);
+        const obras = contarObras(cliente.id);
+
+        const telefonosHtml = telefonos.map(t =>
+            `<a class="linea-enlace" href="tel:${t.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${t}</a>`
+        ).join("");
+
+        const emailsHtml = emails.map(e =>
+            `<a class="linea-enlace" href="mailto:${e}" onclick="event.stopPropagation()">✉️ ${e}</a>`
+        ).join("");
+
+        const direccionHtml = direccionMapa
+            ? `<button class="linea-boton" onclick='elegirMapa(event, ${JSON.stringify(direccionMapa)})'>📍 ${direccionMapa}</button>`
+            : "";
+
+        div.innerHTML = `
+            <button class="eliminar">X</button>
+
+            <div class="nombre">
+                <a href="#" onclick="event.preventDefault(); event.stopPropagation(); abrirCliente(${cliente.id})">${cliente.nombre || ""}</a>
+            </div>
+
+            ${telefonosHtml}
+            ${emailsHtml}
+            ${direccionHtml}
+
+            <div class="obras">Obras: ${obras}</div>
+            <div class="fecha">Creado: ${fechaTexto}</div>
+        `;
+
+        div.onclick = () => abrirCliente(cliente.id);
+
+        div.querySelector(".eliminar").onclick = (e) => {
+            e.stopPropagation();
+            eliminarCliente(cliente.id);
+        };
+
+        contenedor.appendChild(div);
+    });
+
+    actualizarInfo();
+}
+
+btnVolver.addEventListener("click", () => {
+    window.location.replace("index.html");
+});
+
+window.addEventListener("storage", e => {
+    if (e.key === "configAllcalor") aplicarConfigVisual(true);
+});
+window.addEventListener("pageshow", () => aplicarConfigVisual(true));
+window.addEventListener("focus", () => aplicarConfigVisual(true));
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) aplicarConfigVisual(true);
+});
+
+aplicarConfigVisual(true);
+mostrarClientes();
 </script>
 
 </body>
