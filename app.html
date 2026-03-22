@@ -1215,5 +1215,59 @@ btnNotas.onclick = ()=>{
     panelNotas.style.display === "block" ? "none" : "block";
 };
 </script>
+<!-- RELOJ -->
+<div id="relojBox">
+  <div id="hora"></div>
+  <div id="fecha"></div>
+</div>
+
+<style>
+#relojBox{
+  position:fixed;
+  top:15px;
+  right:15px;
+  background:#151515;
+  border:1px solid #333;
+  border-radius:12px;
+  padding:10px 14px;
+  text-align:right;
+  z-index:999;
+}
+
+#hora{
+  font-size:18px;
+  font-weight:bold;
+  color:#f39b2f;
+}
+
+#fecha{
+  font-size:12px;
+  color:#aaa;
+}
+</style>
+
+<script>
+function actualizarReloj(){
+  const ahora = new Date();
+
+  const hora = ahora.toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  const fecha = ahora.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+
+  document.getElementById("hora").textContent = hora;
+  document.getElementById("fecha").textContent = fecha;
+}
+
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
 </body>
 </html>
