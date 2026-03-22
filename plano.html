@@ -2,1703 +2,244 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Plano</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALLCALOR - Plano móvil</title>
+
 <style>
-:root{
-  --bg:#0b0b0b;
-  --panel:#151515;
-  --panel2:#1b1b1b;
-  --line:#2b2b2b;
-  --text:#ffffff;
-  --muted:#c8c8c8;
-  --accent:#f39b2f;
-  --accent2:#d5a23d;
-  --danger:#c93b2f;
-  --ok:#4caf50;
-  --btnText:#111111;
-}
-*{box-sizing:border-box}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
+    margin:0;
+    font-family:Arial;
+    background:#111;
+    color:#fff;
+    overflow:hidden;
 }
-input,select,button{font:inherit}
-button{touch-action:manipulation}
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:12px 14px;
-  border-bottom:2px solid var(--accent);
-  position:sticky;
-  top:0;
-  background:var(--bg);
-  z-index:100;
+
+/* CABECERA */
+.topbar{
+    height:50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 10px;
+    background:#000;
+    border-bottom:2px solid #ff7a00;
 }
-.brand{
-  text-align:center;
-  min-width:0;
-}
-.brand-name{
-  font-size:20px;
-  font-weight:700;
-  color:#fff;
-  line-height:1;
-}
-.brand-sub{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:4px;
-}
-.btn-top{
-  border:none;
-  background:var(--accent);
-  color:var(--btnText);
-  font-weight:bold;
-  border-radius:10px;
-  padding:10px 14px;
-  cursor:pointer;
-}
-.main{padding:10px}
-.info{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px;
-  font-size:14px;
-  line-height:1.45;
-  margin-bottom:10px;
-}
-.info-grid{
-  display:grid;
-  grid-template-columns:minmax(240px,1fr) minmax(260px,360px);
-  gap:10px;
-}
-.card{
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px;
-}
-.card h3{
-  margin:0 0 8px 0;
-  color:var(--accent);
-  font-size:15px;
-}
-.small{
-  font-size:11px;
-  color:var(--muted);
-}
-.label{
-  font-size:11px;
-  color:var(--muted);
-  margin-bottom:4px;
-}
-.in{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#101010;
-  color:#fff;
-  padding:8px 9px;
-  font-size:12px;
-}
-.verify-bar{
-  display:none;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px;
-  margin-bottom:10px;
-}
-.verify-bar.show{display:block}
-.verify-grid{
-  display:grid;
-  grid-template-columns:minmax(260px,1fr) minmax(320px,520px);
-  gap:10px;
-  align-items:end;
-}
-.verify-title{
-  color:var(--accent);
-  font-size:18px;
-  font-weight:bold;
-  margin-bottom:8px;
-}
-.verify-line{
-  font-size:14px;
-  line-height:1.35;
-}
-.verify-help{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:6px;
-}
-.verify-actions{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr 1fr;
-  gap:6px;
-}
-.canvas-wrap{position:relative}
-canvas{
-  width:100%;
-  height:calc(100vh - 340px);
-  min-height:420px;
-  display:block;
-  background:#101010;
-  border:1px solid var(--line);
-  border-radius:10px;
-  touch-action:none;
-}
-.panel{
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:260px;
-  background:rgba(21,21,21,.97);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:8px;
-  box-shadow:0 10px 28px rgba(0,0,0,.42);
-  z-index:30;
-  display:none;
-}
-.panel.open{display:block}
-.group{
-  border:1px solid var(--line);
-  border-radius:10px;
-  overflow:hidden;
-  margin-bottom:8px;
-}
-.group:last-child{margin-bottom:0}
-.group-title{
-  width:100%;
-  border:none;
-  background:#1f1f1f;
-  color:var(--accent);
-  text-align:left;
-  padding:8px 10px;
-  font-weight:bold;
-  font-size:12px;
-  cursor:pointer;
-}
-.group-content{
-  display:none;
-  padding:8px;
-  background:#171717;
-}
-.group.open .group-content{display:block}
-.grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:6px;
-}
+
 .btn{
-  border:none;
-  border-radius:8px;
-  padding:9px 10px;
-  font-weight:bold;
-  cursor:pointer;
-  background:var(--accent);
-  color:var(--btnText);
-  width:100%;
-  font-size:12px;
+    background:#ff7a00;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    color:#000;
+    font-weight:bold;
 }
-.btn.secondary{background:var(--accent2)}
-.btn.neutral{background:#c8c8c8;color:#111}
-.btn.danger{background:var(--danger);color:#fff}
-.btn.ok{background:var(--ok);color:#fff}
-.note{
-  margin-top:6px;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.3;
+
+/* CANVAS */
+#canvas{
+    display:block;
+    background:#1a1a1a;
 }
-.quickbar{
-  position:absolute;
-  left:10px;
-  bottom:10px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  z-index:25;
+
+/* BARRA INFERIOR */
+.bottombar{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    height:60px;
+    background:#000;
+    display:flex;
 }
-.chip{
-  background:rgba(21,21,21,.92);
-  border:1px solid var(--line);
-  color:var(--text);
-  border-radius:999px;
-  padding:7px 11px;
-  font-size:12px;
+
+.bottombar button{
+    flex:1;
+    border:none;
+    background:#111;
+    color:#fff;
+    font-size:14px;
 }
-.mode-badge{
-  position:absolute;
-  left:10px;
-  top:10px;
-  background:rgba(243,155,47,.95);
-  color:var(--btnText);
-  font-weight:bold;
-  border-radius:999px;
-  padding:8px 12px;
-  z-index:20;
-  display:none;
-  font-size:12px;
+
+/* PANEL INFERIOR */
+.panel{
+    position:fixed;
+    bottom:-300px;
+    width:100%;
+    background:#222;
+    padding:10px;
+    transition:0.3s;
 }
-.mode-badge.show{display:block}
-.room-action-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.55);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:200;
-  padding:18px;
+
+.panel.active{
+    bottom:60px;
 }
-.room-action-overlay.show{display:flex}
-.dialog{
-  width:min(430px,100%);
-  background:#151515;
-  border:1px solid #333;
-  border-radius:14px;
-  padding:14px;
-  box-shadow:0 16px 50px rgba(0,0,0,.5);
+
+/* VERIFICACIÓN */
+.verificacion{
+    position:fixed;
+    bottom:60px;
+    width:100%;
+    background:#222;
+    padding:10px;
+    display:none;
 }
-.dialog h3{
-  margin:0 0 10px 0;
-  color:var(--accent);
-  font-size:18px;
+
+.verificacion input{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
 }
-.dialog p{
-  margin:0 0 12px 0;
-  color:#fff;
-  line-height:1.4;
-}
-.row{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:8px;
-}
-@media (max-width:900px){
-  .info-grid{
-    grid-template-columns:1fr;
-  }
-  .verify-grid{
-    grid-template-columns:1fr;
-  }
-  .verify-actions{
-    grid-template-columns:1fr 1fr;
-  }
-  canvas{
-    height:calc(100vh - 520px);
-    min-height:360px;
-  }
-  .panel{
-    left:10px;
-    right:10px;
-    top:auto;
-    bottom:10px;
-    width:auto;
-    max-height:64vh;
-    overflow:auto;
-  }
+
+.verificacion button{
+    width:32%;
+    margin:1%;
+    padding:10px;
+    border:none;
 }
 </style>
 </head>
+
 <body>
 
-<div class="header">
-  <button class="btn-top" onclick="volver()">Volver</button>
-  <div class="brand">
-    <div class="brand-name">ALLCALOR</div>
-    <div class="brand-sub">Geometría base estable</div>
-  </div>
-  <button class="btn-top" onclick="togglePanel()">Herramientas</button>
+<div class="topbar">
+    <button class="btn">Volver</button>
+    <div>ALLCALOR</div>
+    <button class="btn" onclick="togglePanel()">⚙</button>
 </div>
 
-<div class="main">
-  <div class="verify-bar" id="verifyBar">
-    <div class="verify-grid">
-      <div>
-        <div class="verify-title">Verificación</div>
-        <div class="small" id="diagIndex">Diagonal 1 / 1</div>
-        <div class="verify-line" id="diagText">Diagonal</div>
-        <div class="verify-help" id="diagHelp">La diagonal activa se ve en el plano.</div>
-      </div>
+<canvas id="canvas"></canvas>
 
-      <div>
-        <div class="label">Medida real (m)</div>
-        <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
-        <div class="verify-actions" style="margin-top:8px">
-          <button class="btn neutral" onclick="diagAnterior()">Anterior</button>
-          <button class="btn secondary" onclick="diagSaltar()">Siguiente</button>
-          <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
-          <button class="btn neutral" onclick="diagRestaurar()">Restaurar</button>
-          <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="info">
-    <div class="info-grid">
-      <div class="card" id="infoBox">Cargando...</div>
-
-      <div class="card">
-        <h3>Movimiento</h3>
-        <div class="label">Modo</div>
-        <select class="in" id="moveMode">
-          <option value="single">Solo esta estancia</option>
-          <option value="group">Conjunto pegado</option>
-        </select>
-        <div class="small" id="groupInfo" style="margin-top:8px">Sin grupo activo</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="canvas-wrap">
-    <div class="mode-badge" id="modeBadge"></div>
-
-    <div class="panel" id="panel">
-      <div class="group open">
-        <button class="group-title" type="button" onclick="toggleGroup(this)">Plano</button>
-        <div class="group-content">
-          <div class="grid">
-            <button class="btn neutral" onclick="guardarPlano()">Guardar</button>
-            <button class="btn secondary" onclick="definirEscala()">Escala</button>
-            <button class="btn danger" onclick="eliminarSeleccionado()">Eliminar</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="group open">
-        <button class="group-title" type="button" onclick="toggleGroup(this)">Estancia</button>
-        <div class="group-content">
-          <div class="grid">
-            <button class="btn" onclick="nuevaEstancia()">Nueva</button>
-            <button class="btn" onclick="cerrarEstancia()">Cerrar</button>
-            <button class="btn" onclick="guardarEstancia()">Guardar estancia</button>
-            <button class="btn secondary" onclick="verificarSeleccion()">Verificar diagonales</button>
-          </div>
-          <div class="note">
-            Toca una estancia guardada y elige ver o editar.<br>
-            Toca una medida para cambiarla.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <canvas id="canvas"></canvas>
-
-    <div class="quickbar">
-      <div class="chip" id="chipSeleccion">Sin selección</div>
-      <div class="chip" id="chipEscala">Escala sin definir</div>
-      <div class="chip" id="chipEdicion">Sin edición</div>
-    </div>
-  </div>
+<div class="bottombar">
+    <button onclick="modo='dibujar'">Dibujar</button>
+    <button onclick="modo='editar'">Editar</button>
+    <button onclick="modo='medir'">Medidas</button>
+    <button onclick="verificar()">Verificar</button>
 </div>
 
-<div class="room-action-overlay" id="roomActionOverlay">
-  <div class="dialog">
-    <h3>Estancia guardada</h3>
-    <p id="roomActionText">¿Qué quieres hacer?</p>
-    <div class="row">
-      <button class="btn neutral" onclick="accionEstancia('view')">Ver</button>
-      <button class="btn ok" onclick="accionEstancia('edit')">Editar</button>
-      <button class="btn danger" onclick="accionEstancia('cancel')">Cancelar</button>
+<div class="panel" id="panel">
+    <button onclick="nuevaEstancia()">Nueva estancia</button>
+    <button onclick="guardar()">Guardar</button>
+</div>
+
+<div class="verificacion" id="verif">
+    <div id="textoDiag"></div>
+    <input id="inputDiag" type="number">
+    <div>
+        <button onclick="cancelar()">Cancelar</button>
+        <button onclick="saltar()">Saltar</button>
+        <button onclick="aceptar()">Aceptar</button>
     </div>
-  </div>
 </div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const infoBox = document.getElementById("infoBox");
-const panel = document.getElementById("panel");
-const modeBadge = document.getElementById("modeBadge");
-const chipSeleccion = document.getElementById("chipSeleccion");
-const chipEscala = document.getElementById("chipEscala");
-const chipEdicion = document.getElementById("chipEdicion");
-const moveMode = document.getElementById("moveMode");
-const groupInfo = document.getElementById("groupInfo");
 
-const roomActionOverlay = document.getElementById("roomActionOverlay");
-const roomActionText = document.getElementById("roomActionText");
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
 
-const verifyBar = document.getElementById("verifyBar");
-const diagIndex = document.getElementById("diagIndex");
-const diagText = document.getElementById("diagText");
-const diagInput = document.getElementById("diagInput");
-const diagHelp = document.getElementById("diagHelp");
+let W = window.innerWidth;
+let H = window.innerHeight - 110;
 
-function ajustarCanvas(){
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = Math.max(300, Math.floor(rect.width));
-  canvas.height = Math.max(300, Math.floor(rect.height));
-}
-window.addEventListener("resize", () => {
-  ajustarCanvas();
-  dibujar();
-});
-
-function togglePanel(){ panel.classList.toggle("open"); }
-function toggleGroup(btn){ btn.parentElement.classList.toggle("open"); }
-function autoCerrarPanel(){ if(window.innerWidth <= 900) panel.classList.remove("open"); }
-
-const clienteId = localStorage.getItem("clienteActivo");
-const obraId = localStorage.getItem("obraActiva");
-const obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
-const obra = obras.find(o => String(o.id) === String(obraId));
-
-if(!obra){
-  alert("Obra no encontrada");
-  window.location.href = "obras.html";
-}
-
-if(!obra.plano) obra.plano = {};
-if(!Array.isArray(obra.plano.estancias)) obra.plano.estancias = [];
-if(typeof obra.plano.metrosPorPixel !== "number") obra.plano.metrosPorPixel = null;
-
-let estancias = limpiarEstancias(obra.plano.estancias);
-let metrosPorPixel = obra.plano.metrosPorPixel;
+canvas.width = W;
+canvas.height = H;
 
 let puntos = [];
-let cerrado = false;
-let enEdicionNuevaEstancia = false;
-let arrastrando = false;
-let ultimoX = 0;
-let ultimoY = 0;
+let modo = "dibujar";
 
-const SNAP_DIST = 18;
-const HIT_POINT = 14;
-const GROUP_SEG_DIST = 10;
-const GROUP_ANGLE_COS = 0.97;
-const GROUP_MIN_OVERLAP = 20;
-const EPS = 0.00001;
+function draw(){
+    ctx.clearRect(0,0,W,H);
 
-const seleccion = {
-  tipo:null,
-  estanciaIndex:-1,
-  puntoIndex:-1,
-  editEnabled:false
-};
-
-const accionState = {
-  roomIndex:-1
-};
-
-const diagState = {
-  active:false,
-  roomIndex:-1,
-  diagonals:[],
-  index:0,
-  results:[],
-  originalPoints:null
-};
-
-function clonePoints(arr){
-  return arr.map(p => ({x:p.x, y:p.y}));
-}
-
-function limpiarEstancias(arr){
-  return (Array.isArray(arr) ? arr : []).filter(e =>
-    e && typeof e.nombre === "string" && Array.isArray(e.puntos) && e.puntos.length >= 3
-  );
-}
-
-function guardarMemoria(){
-  obra.plano.estancias = estancias;
-  obra.plano.metrosPorPixel = metrosPorPixel;
-  localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-}
-
-function volver(){
-  window.location.href = "obra.html";
-}
-
-function dist(a,b){
-  return Math.hypot(b.x-a.x, b.y-a.y);
-}
-
-function midpoint(a,b){
-  return {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
-}
-
-function centroid(poly){
-  let sx = 0, sy = 0;
-  for(const p of poly){
-    sx += p.x;
-    sy += p.y;
-  }
-  return {x:sx/poly.length, y:sy/poly.length};
-}
-
-function polygonAreaPx(poly){
-  if(!poly || poly.length < 3) return 0;
-  let area = 0;
-  for(let i=0;i<poly.length;i++){
-    const j = (i+1)%poly.length;
-    area += poly[i].x * poly[j].y - poly[j].x * poly[i].y;
-  }
-  return Math.abs(area / 2);
-}
-
-function polygonAreaM2(poly){
-  if(!metrosPorPixel) return 0;
-  return polygonAreaPx(poly) * metrosPorPixel * metrosPorPixel;
-}
-
-function pointInPolygon(x,y,poly){
-  let inside = false;
-  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-    const xi = poly[i].x, yi = poly[i].y;
-    const xj = poly[j].x, yj = poly[j].y;
-    const inter = ((yi > y) !== (yj > y)) &&
-      (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 0.000001) + xi);
-    if(inter) inside = !inside;
-  }
-  return inside;
-}
-
-function findPoint(poly,x,y){
-  for(let i=0;i<poly.length;i++){
-    if(Math.hypot(poly[i].x - x, poly[i].y - y) <= HIT_POINT) return i;
-  }
-  return -1;
-}
-
-function segPointDistance(px, py, ax, ay, bx, by){
-  const dx = bx - ax;
-  const dy = by - ay;
-  const len2 = dx*dx + dy*dy;
-  if(len2 === 0){
-    return {d:Math.hypot(px-ax, py-ay), t:0, qx:ax, qy:ay};
-  }
-  let t = ((px-ax)*dx + (py-ay)*dy) / len2;
-  t = Math.max(0, Math.min(1, t));
-  const qx = ax + t*dx;
-  const qy = ay + t*dy;
-  return {d:Math.hypot(px-qx, py-qy), t, qx, qy};
-}
-
-function getPos(ev){
-  const rect = canvas.getBoundingClientRect();
-  if(ev.touches && ev.touches.length){
-    return {x:ev.touches[0].clientX - rect.left, y:ev.touches[0].clientY - rect.top};
-  }
-  if(ev.changedTouches && ev.changedTouches.length){
-    return {x:ev.changedTouches[0].clientX - rect.left, y:ev.changedTouches[0].clientY - rect.top};
-  }
-  return {x:ev.clientX - rect.left, y:ev.clientY - rect.top};
-}
-
-function allSavedPoints(ignoreRoom=-999, ignorePoint=-999){
-  const arr = [];
-  for(let i=0;i<estancias.length;i++){
-    const pts = estancias[i].puntos || [];
-    for(let j=0;j<pts.length;j++){
-      if(i===ignoreRoom && j===ignorePoint) continue;
-      arr.push({x:pts[j].x, y:pts[j].y});
-    }
-  }
-  return arr;
-}
-
-function allSavedSegments(ignoreRoom=-999){
-  const arr = [];
-  for(let i=0;i<estancias.length;i++){
-    if(i===ignoreRoom) continue;
-    const pts = estancias[i].puntos || [];
-    if(pts.length < 2) continue;
-    for(let j=0;j<pts.length;j++){
-      arr.push({a:pts[j], b:pts[(j+1)%pts.length]});
-    }
-  }
-  return arr;
-}
-
-function snapPoint(pos, ignoreRoom=-999, ignorePoint=-999){
-  let best = {x:pos.x, y:pos.y, d:Infinity};
-
-  const pts = allSavedPoints(ignoreRoom, ignorePoint);
-  for(const p of pts){
-    const d = Math.hypot(pos.x-p.x, pos.y-p.y);
-    if(d < best.d && d <= SNAP_DIST){
-      best = {x:p.x, y:p.y, d};
-    }
-  }
-
-  const segs = allSavedSegments(ignoreRoom);
-  for(const s of segs){
-    const hit = segPointDistance(pos.x, pos.y, s.a.x, s.a.y, s.b.x, s.b.y);
-    if(hit.d < best.d && hit.d <= SNAP_DIST){
-      best = {x:hit.qx, y:hit.qy, d:hit.d};
-    }
-  }
-
-  return {x:best.x, y:best.y};
-}
-
-function limpiarSeleccion(){
-  seleccion.tipo = null;
-  seleccion.estanciaIndex = -1;
-  seleccion.puntoIndex = -1;
-  seleccion.editEnabled = false;
-}
-
-function getSelectedSavedRoomIndex(){
-  if(seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") return seleccion.estanciaIndex;
-  return -1;
-}
-
-function getSelectedRoomData(){
-  if(seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual"){
-    return {nombre:"Estancia actual", puntos};
-  }
-  if(seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado"){
-    return estancias[seleccion.estanciaIndex] || null;
-  }
-  return null;
-}
-
-function getSegments(poly){
-  const out = [];
-  for(let i=0;i<poly.length;i++){
-    out.push({a:poly[i], b:poly[(i+1)%poly.length], i});
-  }
-  return out;
-}
-
-function sharedVertexCount(a, b){
-  let n = 0;
-  for(const pa of a){
-    for(const pb of b){
-      if(Math.hypot(pa.x - pb.x, pa.y - pb.y) <= SNAP_DIST){
-        n++;
-        break;
-      }
-    }
-  }
-  return n;
-}
-
-function overlap1D(a1,a2,b1,b2){
-  const minA = Math.min(a1,a2);
-  const maxA = Math.max(a1,a2);
-  const minB = Math.min(b1,b2);
-  const maxB = Math.max(b1,b2);
-  return Math.max(0, Math.min(maxA,maxB) - Math.max(minA,minB));
-}
-
-function roomsTouchByWall(polyA, polyB){
-  const segsA = getSegments(polyA);
-  const segsB = getSegments(polyB);
-
-  for(const sa of segsA){
-    const dax = sa.b.x - sa.a.x;
-    const day = sa.b.y - sa.a.y;
-    const lenA = Math.hypot(dax, day);
-    if(lenA < 1) continue;
-    const uax = dax / lenA;
-    const uay = day / lenA;
-
-    for(const sb of segsB){
-      const dbx = sb.b.x - sb.a.x;
-      const dby = sb.b.y - sb.a.y;
-      const lenB = Math.hypot(dbx, dby);
-      if(lenB < 1) continue;
-      const ubx = dbx / lenB;
-      const uby = dby / lenB;
-
-      const dot = Math.abs(uax*ubx + uay*uby);
-      if(dot < GROUP_ANGLE_COS) continue;
-
-      const d1 = segPointDistance(sa.a.x, sa.a.y, sb.a.x, sb.a.y, sb.b.x, sb.b.y).d;
-      const d2 = segPointDistance(sa.b.x, sa.b.y, sb.a.x, sb.a.y, sb.b.x, sb.b.y).d;
-      const d3 = segPointDistance(sb.a.x, sb.a.y, sa.a.x, sa.a.y, sa.b.x, sa.b.y).d;
-      const d4 = segPointDistance(sb.b.x, sb.b.y, sa.a.x, sa.a.y, sa.b.x, sa.b.y).d;
-      const minDist = Math.min(d1,d2,d3,d4);
-      if(minDist > GROUP_SEG_DIST) continue;
-
-      const axisX = Math.abs(uax) >= Math.abs(uay);
-      let ov = 0;
-      if(axisX) ov = overlap1D(sa.a.x, sa.b.x, sb.a.x, sb.b.x);
-      else ov = overlap1D(sa.a.y, sa.b.y, sb.a.y, sb.b.y);
-
-      if(ov >= GROUP_MIN_OVERLAP) return true;
-    }
-  }
-  return false;
-}
-
-function roomsAreConnected(idxA, idxB){
-  if(idxA === idxB) return true;
-  const a = estancias[idxA]?.puntos;
-  const b = estancias[idxB]?.puntos;
-  if(!a || !b) return false;
-
-  if(sharedVertexCount(a,b) >= 2) return true;
-  if(roomsTouchByWall(a,b)) return true;
-  return false;
-}
-
-function getConnectedGroup(startIdx){
-  const group = new Set([startIdx]);
-  let changed = true;
-
-  while(changed){
-    changed = false;
-    for(let i=0;i<estancias.length;i++){
-      if(group.has(i)) continue;
-      for(const g of group){
-        if(roomsAreConnected(i,g)){
-          group.add(i);
-          changed = true;
-          break;
-        }
-      }
-    }
-  }
-  return Array.from(group);
-}
-
-function updateGroupInfo(){
-  const idx = getSelectedSavedRoomIndex();
-  if(idx < 0){
-    groupInfo.textContent = "Sin grupo activo";
-    return;
-  }
-  const ids = getConnectedGroup(idx);
-  if(ids.length <= 1) groupInfo.textContent = "La estancia seleccionada no forma grupo";
-  else groupInfo.textContent = "Grupo detectado: " + ids.length + " estancia(s)";
-}
-
-function actualizarUI(){
-  modeBadge.textContent = seleccion.editEnabled ? "Editando" : "Vista";
-  modeBadge.classList.add("show");
-
-  chipEscala.textContent = metrosPorPixel ? "Escala definida" : "Escala sin definir";
-  chipEdicion.textContent = enEdicionNuevaEstancia ? "Editando estancia nueva" : (seleccion.editEnabled ? "Edición activa" : "Sin edición");
-
-  if(seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual") chipSeleccion.textContent = "Estancia actual";
-  else if(seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado") chipSeleccion.textContent = seleccion.editEnabled ? "Estancia guardada · editar" : "Estancia guardada · ver";
-  else chipSeleccion.textContent = "Sin selección";
-
-  updateGroupInfo();
-}
-
-function drawRoom(poly, selected, fillColor, strokeColor){
-  ctx.beginPath();
-  poly.forEach((p,i)=>{
-    if(i===0) ctx.moveTo(p.x,p.y);
-    else ctx.lineTo(p.x,p.y);
-  });
-  ctx.closePath();
-  ctx.fillStyle = fillColor;
-  ctx.fill();
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = selected ? 3 : 2;
-  ctx.stroke();
-}
-
-function drawSideMeasures(poly, closedPoly, colorText){
-  if(!metrosPorPixel || !poly || poly.length < 2) return;
-  ctx.fillStyle = colorText;
-  ctx.font = "12px Arial";
-  const totalSides = closedPoly ? poly.length : poly.length - 1;
-  for(let i=0;i<totalSides;i++){
-    const j = (i+1)%poly.length;
-    const a = poly[i];
-    const b = poly[j];
-    const m = midpoint(a,b);
-    const mm = dist(a,b) * metrosPorPixel;
-    ctx.fillText("L" + (i+1) + ": " + mm.toFixed(2) + " m", m.x + 6, m.y - 6);
-  }
-}
-
-function drawVertexNumbers(poly, prefix, selectedPointIndex=-1, current=false){
-  poly.forEach((p,i)=>{
-    const sel = i === selectedPointIndex;
+    ctx.strokeStyle="white";
     ctx.beginPath();
-    ctx.arc(p.x, p.y, sel ? 8 : 6, 0, Math.PI*2);
-    ctx.fillStyle = sel ? "#ffffff" : (current ? "#f39b2f" : "#ffd28a");
-    ctx.fill();
 
-    ctx.fillStyle = "#111";
-    ctx.font = "bold 11px Arial";
-    ctx.fillText(String(i+1), p.x-3, p.y+4);
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "11px Arial";
-    ctx.fillText(prefix + (i+1), p.x+10, p.y-10);
-  });
-}
-
-function drawConnections(){
-  for(let i=0;i<estancias.length;i++){
-    for(let j=i+1;j<estancias.length;j++){
-      if(roomsAreConnected(i,j)){
-        const c1 = centroid(estancias[i].puntos);
-        const c2 = centroid(estancias[j].puntos);
-        ctx.save();
-        ctx.setLineDash([6,6]);
-        ctx.strokeStyle = "rgba(125,255,155,.7)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(c1.x,c1.y);
-        ctx.lineTo(c2.x,c2.y);
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-  }
-}
-
-function drawSelectedGroup(){
-  const idx = getSelectedSavedRoomIndex();
-  if(idx < 0 || moveMode.value !== "group") return;
-  const ids = getConnectedGroup(idx);
-  if(ids.length <= 1) return;
-
-  ctx.save();
-  ctx.setLineDash([10,6]);
-  ctx.strokeStyle = "rgba(125,255,155,.9)";
-  ctx.lineWidth = 3;
-  ids.forEach(roomIdx=>{
-    const poly = estancias[roomIdx].puntos;
-    ctx.beginPath();
-    poly.forEach((p,i)=>{
-      if(i===0) ctx.moveTo(p.x,p.y);
-      else ctx.lineTo(p.x,p.y);
+    puntos.forEach((p,i)=>{
+        if(i==0) ctx.moveTo(p.x,p.y);
+        else ctx.lineTo(p.x,p.y);
     });
-    ctx.closePath();
+
     ctx.stroke();
-  });
-  ctx.restore();
+
+    puntos.forEach((p,i)=>{
+        ctx.fillStyle="orange";
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,5,0,Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle="white";
+        ctx.fillText("V"+(i+1),p.x+5,p.y-5);
+    });
 }
 
-function drawSavedRooms(){
-  for(let i=0;i<estancias.length;i++){
-    const est = estancias[i];
-    if(!est.puntos || est.puntos.length < 3) continue;
-
-    const selected =
-      (seleccion.tipo === "estanciaGuardada" && seleccion.estanciaIndex === i) ||
-      (seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === i);
-
-    drawRoom(
-      est.puntos,
-      selected,
-      selected ? "rgba(255,255,255,.12)" : "rgba(243,155,47,.10)",
-      selected ? "#ffffff" : "#f39b2f"
-    );
-
-    drawVertexNumbers(
-      est.puntos,
-      "V",
-      (seleccion.tipo === "puntoGuardado" && seleccion.estanciaIndex === i) ? seleccion.puntoIndex : -1,
-      false
-    );
-
-    const c = centroid(est.puntos);
-    const area = polygonAreaM2(est.puntos);
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "16px Arial";
-    ctx.fillText(est.nombre || "Estancia", c.x - 24, c.y - 14);
-
-    if(metrosPorPixel){
-      ctx.font = "13px Arial";
-      ctx.fillText(area.toFixed(2) + " m²", c.x - 18, c.y + 8);
+canvas.addEventListener("click",(e)=>{
+    if(modo=="dibujar"){
+        puntos.push({x:e.offsetX,y:e.offsetY});
+        draw();
     }
+});
 
-    drawSideMeasures(est.puntos, true, "#fff");
-  }
-}
-
-function drawCurrentRoom(){
-  if(!puntos.length) return;
-
-  const selected = seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual";
-
-  ctx.beginPath();
-  puntos.forEach((p,i)=>{
-    if(i===0) ctx.moveTo(p.x,p.y);
-    else ctx.lineTo(p.x,p.y);
-  });
-
-  if(cerrado && puntos.length >= 3){
-    ctx.closePath();
-    ctx.fillStyle = selected ? "rgba(255,255,255,.12)" : "rgba(255,255,255,.05)";
-    ctx.fill();
-  }
-
-  ctx.strokeStyle = selected ? "#ffffff" : "#dddddd";
-  ctx.lineWidth = selected ? 3 : 2;
-  ctx.stroke();
-
-  drawVertexNumbers(
-    puntos,
-    "V",
-    seleccion.tipo === "puntoActual" ? seleccion.puntoIndex : -1,
-    true
-  );
-
-  drawSideMeasures(puntos, cerrado, "#fff");
-
-  if(cerrado && metrosPorPixel && puntos.length >= 3){
-    const c = centroid(puntos);
-    const area = polygonAreaM2(puntos);
-    ctx.fillStyle = "#fff";
-    ctx.font = "16px Arial";
-    ctx.fillText("actual", c.x - 16, c.y - 14);
-    ctx.font = "13px Arial";
-    ctx.fillText(area.toFixed(2) + " m²", c.x - 18, c.y + 8);
-  }
-}
-
-function drawActiveDiagonal(){
-  if(!diagState.active) return;
-  const room = estancias[diagState.roomIndex];
-  if(!room) return;
-  const d = diagState.diagonals[diagState.index];
-  if(!d) return;
-
-  const a = room.puntos[d.i];
-  const b = room.puntos[d.j];
-
-  ctx.save();
-  ctx.setLineDash([8,6]);
-  ctx.strokeStyle = "#7dd3ff";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(a.x,a.y);
-  ctx.lineTo(b.x,b.y);
-  ctx.stroke();
-  ctx.fillStyle = "#7dd3ff";
-  ctx.font = "bold 13px Arial";
-  ctx.fillText("Diagonal V" + (d.i+1) + " - V" + (d.j+1), midpoint(a,b).x + 8, midpoint(a,b).y - 8);
-  ctx.restore();
-}
-
-function hitSideLabel(x,y){
-  if(!metrosPorPixel || diagState.active) return null;
-
-  function testPoly(poly, roomIndex, currentRoom){
-    const totalSides = currentRoom ? (cerrado ? poly.length : poly.length - 1) : poly.length;
-    for(let i=0;i<totalSides;i++){
-      const j = (i+1)%poly.length;
-      const a = poly[i];
-      const b = poly[j];
-      const m = midpoint(a,b);
-      const tx = m.x + 40;
-      const ty = m.y - 12;
-      if(Math.abs(x-tx) <= 55 && Math.abs(y-ty) <= 16){
-        return {roomIndex, currentRoom, sideIndex:i};
-      }
-    }
-    return null;
-  }
-
-  if(puntos.length >= 2){
-    const hit = testPoly(puntos, -1, true);
-    if(hit) return hit;
-  }
-
-  for(let i=estancias.length-1;i>=0;i--){
-    const hit = testPoly(estancias[i].puntos, i, false);
-    if(hit) return hit;
-  }
-
-  return null;
-}
-
-function updateInfo(){
-  let html = "";
-  const room = getSelectedRoomData();
-
-  if(room && room.puntos && room.puntos.length >= 2){
-    html += "<h3>Datos de la estancia</h3>";
-    html += "Nombre: " + (room.nombre || "Sin nombre");
-    html += "<br>Vértices: " + room.puntos.length;
-
-    if(metrosPorPixel && room.puntos.length >= 3){
-      html += "<br>Superficie: " + polygonAreaM2(room.puntos).toFixed(2) + " m²";
-    }
-
-    if(seleccion.tipo === "puntoActual" || seleccion.tipo === "puntoGuardado"){
-      html += "<br>Vértice: V" + (seleccion.puntoIndex + 1);
-    }
-
-    if(seleccion.editEnabled){
-      html += "<br><span style='color:#8ee08e'>Modo edición activo</span>";
-    }else if(seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado"){
-      html += "<br><span style='color:#ffd27d'>Modo vista</span>";
-    }
-
-    const idx = getSelectedSavedRoomIndex();
-    if(idx >= 0){
-      const ids = getConnectedGroup(idx);
-      html += "<br>Grupo detectado: " + ids.length + " estancia(s)";
-    }
-
-    if(diagState.active){
-      html += "<br><span style='color:#7dd3ff'>Verificación activa</span>";
-    }
-
-    infoBox.innerHTML = html;
-    actualizarUI();
-    return;
-  }
-
-  let total = 0;
-  for(const est of estancias) total += polygonAreaM2(est.puntos);
-
-  html += "<h3>Resumen del plano</h3>";
-  html += "Estancias guardadas: " + estancias.length;
-  html += "<br>Escala: " + (metrosPorPixel ? "definida" : "sin definir");
-  if(metrosPorPixel) html += "<br>Superficie total: " + total.toFixed(2) + " m²";
-  if(puntos.length > 0) html += "<br>Estancia actual: " + (cerrado ? "cerrada" : "abierta");
-  if(diagState.active) html += "<br><span style='color:#7dd3ff'>Verificación activa</span>";
-
-  infoBox.innerHTML = html;
-  actualizarUI();
-}
-
-function dibujar(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawSavedRooms();
-  drawCurrentRoom();
-  drawConnections();
-  drawSelectedGroup();
-  drawActiveDiagonal();
-  updateInfo();
+function togglePanel(){
+    document.getElementById("panel").classList.toggle("active");
 }
 
 function nuevaEstancia(){
-  puntos = [];
-  cerrado = false;
-  enEdicionNuevaEstancia = true;
-  limpiarSeleccion();
-  dibujar();
-  autoCerrarPanel();
+    puntos=[];
+    draw();
 }
 
-function cerrarEstancia(){
-  if(!enEdicionNuevaEstancia) return alert("Primero pulsa Nueva");
-  if(puntos.length < 3) return alert("Necesitas al menos 3 puntos");
-  cerrado = true;
-  limpiarSeleccion();
-  dibujar();
-  autoCerrarPanel();
+function guardar(){
+    alert("Guardado");
 }
 
-function guardarEstancia(){
-  if(!enEdicionNuevaEstancia) return alert("Primero pulsa Nueva");
-  if(!cerrado || puntos.length < 3) return alert("Primero cierra la estancia");
+/* -------- VERIFICACIÓN -------- */
 
-  const nombre = prompt("Nombre estancia:");
-  if(!nombre || !nombre.trim()) return;
+let diagIndex=0;
 
-  estancias.push({
-    nombre:nombre.trim(),
-    puntos:clonePoints(puntos)
-  });
+function verificar(){
+    if(puntos.length<4)return;
 
-  guardarMemoria();
-  puntos = [];
-  cerrado = false;
-  enEdicionNuevaEstancia = false;
-  limpiarSeleccion();
-  dibujar();
-  autoCerrarPanel();
-
-  const nuevoIdx = estancias.length - 1;
-  seleccion.tipo = "estanciaGuardada";
-  seleccion.estanciaIndex = nuevoIdx;
-  seleccion.editEnabled = false;
-  actualizarUI();
-
-  if(confirm("¿Quieres verificar diagonales ahora?")){
-    verificarSeleccion();
-  }
+    diagIndex=0;
+    mostrarDiag();
+    document.getElementById("verif").style.display="block";
 }
 
-function definirEscala(){
-  const ref = puntos.length >= 2 ? puntos : (estancias[0]?.puntos || null);
-  if(!ref || ref.length < 2) return alert("Necesitas una estancia con al menos 2 puntos");
-
-  const valor = prompt("Introduce la medida real entre punto 1 y punto 2, en metros:");
-  if(!valor) return;
-
-  const metros = parseFloat(String(valor).replace(",", "."));
-  if(!metros || metros <= 0) return alert("Medida no válida");
-
-  const px = dist(ref[0], ref[1]);
-  if(!px || px <= 0) return alert("No se pudo calcular la escala");
-
-  metrosPorPixel = metros / px;
-  guardarMemoria();
-  dibujar();
-  autoCerrarPanel();
-  alert("Escala guardada");
+function mostrarDiag(){
+    let d = distancia(puntos[0], puntos[2]);
+    document.getElementById("textoDiag").innerText="Diagonal: "+d.toFixed(2)+" m";
+    document.getElementById("inputDiag").value=d.toFixed(2);
 }
 
-function guardarPlano(){
-  guardarMemoria();
-  autoCerrarPanel();
-  alert("Plano guardado");
+function aceptar(){
+    let real = parseFloat(document.getElementById("inputDiag").value);
+
+    let p1=puntos[0];
+    let p2=puntos[2];
+
+    let dx = p2.x - p1.x;
+    let dy = p2.y - p1.y;
+    let actual = Math.sqrt(dx*dx+dy*dy);
+
+    let factor = real/actual;
+
+    p2.x = p1.x + dx*factor;
+    p2.y = p1.y + dy*factor;
+
+    draw();
 }
 
-function getAllDiagonals(poly, closed=true){
-  const res = [];
-  const n = poly.length;
-  if(n < 4) return res;
-  for(let i=0;i<n;i++){
-    for(let j=i+2;j<n;j++){
-      if(closed && i===0 && j===n-1) continue;
-      res.push({i,j});
-    }
-  }
-  return res;
+function cancelar(){
+    document.getElementById("verif").style.display="none";
 }
 
-function signedSide(a,b,p){
-  return (b.x-a.x)*(p.y-a.y) - (b.y-a.y)*(p.x-a.x);
+function saltar(){
+    cancelar();
 }
 
-function circleIntersections(c1, r1, c2, r2){
-  const d = dist(c1,c2);
-  if(d < EPS) return [];
-  if(d > r1 + r2 + EPS) return [];
-  if(d < Math.abs(r1 - r2) - EPS) return [];
-
-  const a = (r1*r1 - r2*r2 + d*d) / (2*d);
-  const h2 = r1*r1 - a*a;
-  if(h2 < -EPS) return [];
-
-  const h = Math.sqrt(Math.max(0, h2));
-  const x2 = c1.x + a * (c2.x - c1.x) / d;
-  const y2 = c1.y + a * (c2.y - c1.y) / d;
-
-  const rx = -(c2.y - c1.y) * (h / d);
-  const ry =  (c2.x - c1.x) * (h / d);
-
-  return [
-    {x:x2 + rx, y:y2 + ry},
-    {x:x2 - rx, y:y2 - ry}
-  ];
+function distancia(a,b){
+    let dx=a.x-b.x;
+    let dy=a.y-b.y;
+    return Math.sqrt(dx*dx+dy*dy);
 }
 
-function chooseByOriginalSide(options, desiredSign){
-  if(!options.length) return null;
-  if(options.length === 1) return options[0];
+draw();
 
-  let best = options[0];
-  let bestScore = Infinity;
-
-  for(const p of options){
-    const sign = Math.sign(p.y || 0);
-    const score = Math.abs(sign - desiredSign);
-    if(score < bestScore){
-      bestScore = score;
-      best = p;
-    }
-  }
-  return best;
-}
-
-function localToWorld(origin, ux, uy, nx, ny, p){
-  return {
-    x: origin.x + ux * p.x + nx * p.y,
-    y: origin.y + uy * p.x + ny * p.y
-  };
-}
-
-function diagonalPossibleForQuad(lengths, diagKey, d){
-  if(diagKey === "0-2"){
-    const [l12,l23,l34,l41] = lengths;
-    const tri1 = (d < l12 + l23 - EPS) && (d > Math.abs(l12 - l23) + EPS);
-    const tri2 = (d < l34 + l41 - EPS) && (d > Math.abs(l34 - l41) + EPS);
-    return tri1 && tri2;
-  }
-  if(diagKey === "1-3"){
-    const [l12,l23,l34,l41] = lengths;
-    const tri1 = (d < l12 + l41 - EPS) && (d > Math.abs(l12 - l41) + EPS);
-    const tri2 = (d < l23 + l34 - EPS) && (d > Math.abs(l23 - l34) + EPS);
-    return tri1 && tri2;
-  }
-  return false;
-}
-
-function corregirQuadPorDiagonal(room, i, j, nuevaDiagonalM){
-  const pts = room.puntos;
-  if(pts.length !== 4) return {ok:false, msg:"Esta fase corrige solo estancias de 4 vértices"};
-
-  const dNew = nuevaDiagonalM / metrosPorPixel;
-  if(dNew <= 0) return {ok:false, msg:"Diagonal no válida"};
-
-  const l12 = dist(pts[0],pts[1]);
-  const l23 = dist(pts[1],pts[2]);
-  const l34 = dist(pts[2],pts[3]);
-  const l41 = dist(pts[3],pts[0]);
-
-  const key = i + "-" + j;
-
-  if(!diagonalPossibleForQuad([l12,l23,l34,l41], key, dNew)){
-    return {ok:false, msg:"Esa diagonal no es compatible con los lados de la estancia"};
-  }
-
-  if(key === "0-2"){
-    const p1 = pts[0], p2 = pts[1], p3 = pts[2], p4 = pts[3];
-
-    const diagOrig = dist(p1,p3);
-    if(diagOrig < EPS) return {ok:false, msg:"Diagonal original no válida"};
-
-    const ux = (p3.x - p1.x) / diagOrig;
-    const uy = (p3.y - p1.y) / diagOrig;
-    const nx = -uy;
-    const ny = ux;
-
-    const sign2 = Math.sign(signedSide(p1,p3,p2)) || 1;
-    const sign4 = Math.sign(signedSide(p1,p3,p4)) || -1;
-
-    const A = {x:0,y:0};
-    const C = {x:dNew,y:0};
-
-    const cand2 = circleIntersections(A, l12, C, l23);
-    const cand4 = circleIntersections(A, l41, C, l34);
-    if(!cand2.length || !cand4.length) return {ok:false, msg:"No hay solución geométrica válida"};
-
-    const p2Local = chooseByOriginalSide(cand2, sign2);
-    const p4Local = chooseByOriginalSide(cand4, sign4);
-    if(!p2Local || !p4Local) return {ok:false, msg:"No se pudo resolver la geometría"};
-
-    pts[0] = {x:p1.x, y:p1.y};
-    pts[1] = localToWorld(p1, ux, uy, nx, ny, p2Local);
-    pts[2] = localToWorld(p1, ux, uy, nx, ny, C);
-    pts[3] = localToWorld(p1, ux, uy, nx, ny, p4Local);
-    return {ok:true};
-  }
-
-  if(key === "1-3"){
-    const p1 = pts[0], p2 = pts[1], p3 = pts[2], p4 = pts[3];
-
-    const diagOrig = dist(p2,p4);
-    if(diagOrig < EPS) return {ok:false, msg:"Diagonal original no válida"};
-
-    const ux = (p4.x - p2.x) / diagOrig;
-    const uy = (p4.y - p2.y) / diagOrig;
-    const nx = -uy;
-    const ny = ux;
-
-    const sign1 = Math.sign(signedSide(p2,p4,p1)) || 1;
-    const sign3 = Math.sign(signedSide(p2,p4,p3)) || -1;
-
-    const A = {x:0,y:0};
-    const C = {x:dNew,y:0};
-
-    const cand1 = circleIntersections(A, l12, C, l41);
-    const cand3 = circleIntersections(A, l23, C, l34);
-    if(!cand1.length || !cand3.length) return {ok:false, msg:"No hay solución geométrica válida"};
-
-    const p1Local = chooseByOriginalSide(cand1, sign1);
-    const p3Local = chooseByOriginalSide(cand3, sign3);
-    if(!p1Local || !p3Local) return {ok:false, msg:"No se pudo resolver la geometría"};
-
-    pts[1] = {x:p2.x, y:p2.y};
-    pts[0] = localToWorld(p2, ux, uy, nx, ny, p1Local);
-    pts[2] = localToWorld(p2, ux, uy, nx, ny, p3Local);
-    pts[3] = localToWorld(p2, ux, uy, nx, ny, C);
-    return {ok:true};
-  }
-
-  return {ok:false, msg:"Diagonal no soportada en esta fase"};
-}
-
-function iniciarDiag(roomIdx){
-  const poly = estancias[roomIdx]?.puntos;
-  if(!poly || poly.length < 4) return alert("Esta estancia no necesita diagonales");
-  diagState.active = true;
-  diagState.roomIndex = roomIdx;
-  diagState.diagonals = getAllDiagonals(poly, true);
-  diagState.index = 0;
-  diagState.results = [];
-  diagState.originalPoints = clonePoints(poly);
-  verifyBar.classList.add("show");
-  mostrarDiagActual();
-}
-
-function mostrarDiagActual(){
-  const d = diagState.diagonals[diagState.index];
-  const room = estancias[diagState.roomIndex];
-  if(!d || !room){
-    terminarDiag();
-    return;
-  }
-  const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
-  diagIndex.textContent = "Diagonal " + (diagState.index + 1) + " / " + diagState.diagonals.length;
-  diagText.textContent = "Diagonal V" + (d.i+1) + " - V" + (d.j+1) + " · calculada: " + calc.toFixed(2) + " m";
-
-  if(room.puntos.length === 4){
-    diagHelp.textContent = "Corrección geométrica activa para 4 vértices. Se mantienen los lados y se recalcula la forma.";
-  }else{
-    diagHelp.textContent = "Esta estancia tiene más de 4 vértices. Aquí la verificación es informativa.";
-  }
-
-  diagInput.value = calc.toFixed(2);
-  dibujar();
-}
-
-function diagAceptar(){
-  const room = estancias[diagState.roomIndex];
-  const d = diagState.diagonals[diagState.index];
-  if(!room || !d) return;
-
-  const real = parseFloat(String(diagInput.value).replace(",", "."));
-  if(!real || real <= 0) return alert("Medida no válida");
-
-  const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
-  const dif = Math.abs(real - calc);
-  diagState.results.push(dif);
-
-  if(dif > 0.001){
-    const res = corregirQuadPorDiagonal(room, d.i, d.j, real);
-    if(!res.ok){
-      alert(res.msg);
-      return;
-    }
-    guardarMemoria();
-  }
-
-  diagState.index++;
-  if(diagState.index >= diagState.diagonals.length) terminarDiag();
-  else mostrarDiagActual();
-}
-
-function diagSaltar(){
-  diagState.index++;
-  if(diagState.index >= diagState.diagonals.length) terminarDiag();
-  else mostrarDiagActual();
-}
-
-function diagAnterior(){
-  if(!diagState.active) return;
-  if(diagState.index <= 0) return;
-  diagState.index--;
-  mostrarDiagActual();
-}
-
-function diagRestaurar(){
-  if(!diagState.active) return;
-  const room = estancias[diagState.roomIndex];
-  if(!room || !diagState.originalPoints) return;
-  room.puntos = clonePoints(diagState.originalPoints);
-  guardarMemoria();
-  mostrarDiagActual();
-}
-
-function diagCancelar(){
-  diagState.active = false;
-  verifyBar.classList.remove("show");
-  dibujar();
-}
-
-function terminarDiag(){
-  verifyBar.classList.remove("show");
-  diagState.active = false;
-  if(!diagState.results.length){
-    dibujar();
-    return alert("No se introdujo ninguna diagonal");
-  }
-  const media = diagState.results.reduce((a,b)=>a+b,0) / diagState.results.length;
-  let msg = "Verificación terminada\n";
-  msg += "Diagonales usadas: " + diagState.results.length + "\n";
-  msg += "Desviación media: " + media.toFixed(2) + " m\n";
-  if(media <= 0.03) msg += "Resultado: muy bien";
-  else if(media <= 0.08) msg += "Resultado: aceptable";
-  else msg += "Resultado: revisar forma";
-  dibujar();
-  alert(msg);
-}
-
-function verificarSeleccion(){
-  if(!metrosPorPixel) return alert("Define escala primero");
-  const idx = getSelectedSavedRoomIndex();
-  if(idx < 0) return alert("Selecciona una estancia guardada");
-  iniciarDiag(idx);
-}
-
-function eliminarSeleccionado(){
-  if(seleccion.tipo === "estanciaGuardada" || seleccion.tipo === "puntoGuardado"){
-    const idx = Number(seleccion.estanciaIndex);
-    if(idx >= 0 && idx < estancias.length){
-      if(confirm("¿Eliminar estancia guardada?")){
-        estancias.splice(idx, 1);
-        guardarMemoria();
-        limpiarSeleccion();
-        dibujar();
-      }
-    }
-    return;
-  }
-
-  if(seleccion.tipo === "estanciaActual" || seleccion.tipo === "puntoActual"){
-    if(confirm("¿Eliminar estancia actual?")){
-      puntos = [];
-      cerrado = false;
-      enEdicionNuevaEstancia = false;
-      guardarMemoria();
-      limpiarSeleccion();
-      dibujar();
-    }
-    return;
-  }
-
-  alert("Primero selecciona algo");
-}
-
-function abrirAccionEstancia(idx){
-  accionState.roomIndex = idx;
-  roomActionText.textContent = "Estancia: " + (estancias[idx]?.nombre || "Sin nombre");
-  roomActionOverlay.classList.add("show");
-}
-
-function accionEstancia(tipo){
-  const idx = accionState.roomIndex;
-  roomActionOverlay.classList.remove("show");
-  if(idx < 0 || !estancias[idx]) return;
-  if(tipo === "cancel") return;
-
-  seleccion.tipo = "estanciaGuardada";
-  seleccion.estanciaIndex = idx;
-  seleccion.puntoIndex = -1;
-  seleccion.editEnabled = tipo === "edit";
-  dibujar();
-}
-
-function aplicarMedidaDirecta(hit){
-  if(!metrosPorPixel) return alert("Define escala primero");
-
-  let poly = null;
-  let closed = true;
-
-  if(hit.currentRoom){
-    poly = puntos;
-    closed = cerrado;
-  }else{
-    poly = estancias[hit.roomIndex]?.puntos || null;
-  }
-  if(!poly) return;
-
-  const sideIdx = hit.sideIndex;
-  const maxSide = hit.currentRoom ? (closed ? poly.length : poly.length - 1) : poly.length;
-  if(sideIdx < 0 || sideIdx >= maxSide) return;
-
-  const a = poly[sideIdx];
-  const b = poly[(sideIdx + 1) % poly.length];
-  const actual = dist(a,b) * metrosPorPixel;
-  const valor = prompt("Nueva medida para lado " + (sideIdx + 1) + " en metros:", actual.toFixed(2));
-  if(!valor) return;
-
-  const lenM = parseFloat(String(valor).replace(",", "."));
-  if(!lenM || lenM <= 0) return alert("Medida no válida");
-
-  const old = dist(a,b);
-  const newPx = lenM / metrosPorPixel;
-  const dx = (b.x - a.x) / old;
-  const dy = (b.y - a.y) / old;
-  b.x = a.x + dx * newPx;
-  b.y = a.y + dy * newPx;
-
-  guardarMemoria();
-  dibujar();
-}
-
-function onStart(ev){
-  const raw = getPos(ev);
-
-  if(diagState.active){
-    if(ev.cancelable) ev.preventDefault();
-    return;
-  }
-
-  const sideHit = hitSideLabel(raw.x, raw.y);
-  if(sideHit){
-    if(!sideHit.currentRoom){
-      const idx = sideHit.roomIndex;
-      if(seleccion.estanciaIndex !== idx || !seleccion.editEnabled){
-        seleccion.tipo = "estanciaGuardada";
-        seleccion.estanciaIndex = idx;
-        seleccion.editEnabled = true;
-      }
-    }
-    aplicarMedidaDirecta(sideHit);
-    if(ev.cancelable) ev.preventDefault();
-    return;
-  }
-
-  const posSnap = snapPoint(raw);
-  ultimoX = posSnap.x;
-  ultimoY = posSnap.y;
-
-  let idx = findPoint(puntos, raw.x, raw.y);
-  if(idx >= 0){
-    if(!enEdicionNuevaEstancia && !seleccion.editEnabled) return;
-    seleccion.tipo = "puntoActual";
-    seleccion.puntoIndex = idx;
-    arrastrando = true;
-    dibujar();
-    if(ev.cancelable) ev.preventDefault();
-    return;
-  }
-
-  for(let i=estancias.length-1;i>=0;i--){
-    idx = findPoint(estancias[i].puntos, raw.x, raw.y);
-    if(idx >= 0){
-      if(!seleccion.editEnabled || seleccion.estanciaIndex !== i){
-        abrirAccionEstancia(i);
-        if(ev.cancelable) ev.preventDefault();
-        return;
-      }
-      seleccion.tipo = "puntoGuardado";
-      seleccion.estanciaIndex = i;
-      seleccion.puntoIndex = idx;
-      arrastrando = true;
-      dibujar();
-      if(ev.cancelable) ev.preventDefault();
-      return;
-    }
-  }
-
-  if(cerrado && puntos.length >= 3 && pointInPolygon(raw.x, raw.y, puntos)){
-    if(!enEdicionNuevaEstancia && !seleccion.editEnabled) return;
-    seleccion.tipo = "estanciaActual";
-    arrastrando = true;
-    dibujar();
-    if(ev.cancelable) ev.preventDefault();
-    return;
-  }
-
-  for(let i=estancias.length-1;i>=0;i--){
-    if(pointInPolygon(raw.x, raw.y, estancias[i].puntos)){
-      if(!seleccion.editEnabled || seleccion.estanciaIndex !== i){
-        abrirAccionEstancia(i);
-        if(ev.cancelable) ev.preventDefault();
-        return;
-      }
-      seleccion.tipo = "estanciaGuardada";
-      seleccion.estanciaIndex = i;
-      arrastrando = true;
-      dibujar();
-      if(ev.cancelable) ev.preventDefault();
-      return;
-    }
-  }
-
-  if(enEdicionNuevaEstancia && !cerrado){
-    puntos.push({x:posSnap.x, y:posSnap.y});
-    seleccion.tipo = "puntoActual";
-    seleccion.puntoIndex = puntos.length - 1;
-    dibujar();
-    if(ev.cancelable) ev.preventDefault();
-    return;
-  }
-
-  limpiarSeleccion();
-  dibujar();
-}
-
-function onMove(ev){
-  if(diagState.active) return;
-  const raw = getPos(ev);
-  if(!arrastrando || !seleccion.tipo) return;
-
-  let pos = {x:raw.x, y:raw.y};
-
-  if(seleccion.tipo === "puntoGuardado"){
-    pos = snapPoint(raw, seleccion.estanciaIndex, seleccion.puntoIndex);
-  }else if(seleccion.tipo === "puntoActual"){
-    pos = snapPoint(raw);
-  }
-
-  const dx = pos.x - ultimoX;
-  const dy = pos.y - ultimoY;
-
-  if(seleccion.tipo === "puntoActual"){
-    puntos[seleccion.puntoIndex].x += dx;
-    puntos[seleccion.puntoIndex].y += dy;
-  }else if(seleccion.tipo === "puntoGuardado"){
-    const est = estancias[seleccion.estanciaIndex];
-    est.puntos[seleccion.puntoIndex].x += dx;
-    est.puntos[seleccion.puntoIndex].y += dy;
-    guardarMemoria();
-  }else if(seleccion.tipo === "estanciaActual"){
-    for(const p of puntos){
-      p.x += dx;
-      p.y += dy;
-    }
-  }else if(seleccion.tipo === "estanciaGuardada"){
-    const idx = seleccion.estanciaIndex;
-    const ids = (moveMode.value === "group") ? getConnectedGroup(idx) : [idx];
-    for(const roomIdx of ids){
-      const est = estancias[roomIdx];
-      for(const p of est.puntos){
-        p.x += dx;
-        p.y += dy;
-      }
-    }
-    guardarMemoria();
-  }
-
-  ultimoX = pos.x;
-  ultimoY = pos.y;
-  dibujar();
-  if(ev.cancelable) ev.preventDefault();
-}
-
-function onEnd(ev){
-  if(!arrastrando) return;
-  arrastrando = false;
-
-  if(
-    seleccion.tipo === "puntoGuardado" ||
-    seleccion.tipo === "estanciaGuardada"
-  ){
-    guardarMemoria();
-  }
-
-  if(ev && ev.cancelable) ev.preventDefault();
-}
-
-canvas.addEventListener("mousedown", onStart);
-canvas.addEventListener("mousemove", onMove);
-canvas.addEventListener("mouseup", onEnd);
-canvas.addEventListener("mouseleave", onEnd);
-
-canvas.addEventListener("touchstart", onStart, {passive:false});
-canvas.addEventListener("touchmove", onMove, {passive:false});
-canvas.addEventListener("touchend", onEnd, {passive:false});
-canvas.addEventListener("touchcancel", onEnd, {passive:false});
-
-window.addEventListener("keydown", e=>{
-  if(e.key === "Delete" || e.key === "Backspace"){
-    const tag = document.activeElement ? document.activeElement.tagName : "";
-    if(tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT"){
-      if(seleccion.tipo) eliminarSeleccionado();
-    }
-  }
-});
-
-requestAnimationFrame(()=>{
-  ajustarCanvas();
-  guardarMemoria();
-  actualizarUI();
-  dibujar();
-});
 </script>
+
 </body>
 </html>
