@@ -3,534 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clientes</title>
+<title>ALLCALOR</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0b0b;
-    color: white;
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b0b0b;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
 }
 
-.header {
-    padding: 12px 15px;
-    border-bottom: 2px solid orange;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
+.container{
+  text-align:center;
 }
 
-.header-titulo {
-    font-size: 20px;
-    font-weight: bold;
+h1{
+  color:orange;
+  margin-bottom:30px;
 }
 
-.header-btn {
-    background: orange;
-    border: none;
-    color: #111;
-    font-weight: bold;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.wrap {
-    padding: 10px;
-    position: relative;
-}
-
-.tools {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 210px;
-    max-height: 75vh;
-    overflow-y: auto;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    padding: 8px;
-    display: none;
-    z-index: 30;
-    box-shadow: 0 8px 24px rgba(0,0,0,.45);
-}
-
-.tools.abierto {
-    display: block;
-}
-
-.subtitulo {
-    margin: 4px 0 6px 0;
-    font-size: 12px;
-    color: orange;
-    font-weight: bold;
-}
-
-.info {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-.mensaje {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    font-size: 14px;
-    display: none;
-}
-
-.buscador {
-    margin-bottom: 10px;
-}
-
-.input-busqueda {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.btn {
-    width: 100%;
-    padding: 11px;
-    background: orange;
-    border: none;
-    margin-top: 7px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #111;
-    font-weight: bold;
-    border-radius: 8px;
-}
-
-.cliente {
-    background: #1a1a1a;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    position: relative;
-    border: 1px solid #252525;
-    cursor: pointer;
-}
-
-.eliminar {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    background: #b30000;
-    border: none;
-    color: white;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 6px;
-    font-weight: bold;
-}
-
-.nombre {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    padding-right: 55px;
-}
-
-.nombre a {
-    color: white;
-    text-decoration: none;
-}
-
-.nombre a:hover {
-    text-decoration: underline;
-}
-
-.linea-enlace {
-    display: block;
-    color: white;
-    text-decoration: none;
-    margin-bottom: 5px;
-    word-break: break-word;
-}
-
-.linea-enlace:hover {
-    text-decoration: underline;
-}
-
-.linea-boton {
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    color: white;
-    margin-bottom: 5px;
-    padding: 0;
-    font-size: 16px;
-    cursor: pointer;
-    word-break: break-word;
-}
-
-.linea-boton:hover {
-    text-decoration: underline;
-}
-
-.obras {
-    margin-top: 8px;
-    font-size: 13px;
-    color: #d9d9d9;
-}
-
-.fecha {
-    margin-top: 6px;
-    font-size: 12px;
-    color: #bdbdbd;
-}
-
-.selector-mapa-fondo {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.selector-mapa {
-    width: calc(100% - 30px);
-    max-width: 420px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 14px;
-    padding: 16px;
-    box-sizing: border-box;
-}
-
-.selector-mapa-titulo {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 12px;
-    color: white;
-}
-
-.selector-mapa-btn {
-    width: 100%;
-    padding: 14px;
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 10px;
-    background: orange;
-    color: #111;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.selector-mapa-cancelar {
-    background: #2a2a2a;
-    color: white;
+.btn{
+  display:block;
+  width:220px;
+  margin:10px auto;
+  padding:15px;
+  border:none;
+  border-radius:10px;
+  background:orange;
+  color:#111;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
 }
 </style>
 </head>
+
 <body>
 
-<div class="header">
-    <div></div>
-    <div class="header-titulo">Clientes</div>
-    <button class="header-btn" onclick="toggleTools()">Menú</button>
-</div>
+<div class="container">
+  <h1>ALLCALOR</h1>
 
-<div class="wrap">
-
-    <div id="mensaje" class="mensaje"></div>
-    <div id="info" class="info"></div>
-
-    <div class="buscador">
-        <input
-            id="busqueda"
-            class="input-busqueda"
-            type="text"
-            placeholder="Buscar por nombre, dirección, email, teléfono, fecha o nº de obras"
-            oninput="mostrarClientes()"
-        >
-    </div>
-
-    <div class="tools" id="tools">
-        <div class="subtitulo">Acciones</div>
-        <button class="btn" onclick="window.location.href='nuevo-cliente.html'">Nuevo cliente</button>
-    </div>
-
-    <div class="clientes" id="listaClientes"></div>
-
-</div>
-
-<div id="selectorMapaFondo" class="selector-mapa-fondo">
-    <div class="selector-mapa">
-        <div class="selector-mapa-titulo">Abrir dirección con</div>
-        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('apple')">Apple Mapas</button>
-        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('google')">Google Maps</button>
-        <button class="selector-mapa-btn" onclick="abrirMapaSeleccionado('waze')">Waze</button>
-        <button class="selector-mapa-btn selector-mapa-cancelar" onclick="cerrarSelectorMapa()">Cancelar</button>
-    </div>
+  <button class="btn" onclick="irClientes()">Clientes</button>
+  <button class="btn" onclick="irConfiguracion()">Configuración</button>
 </div>
 
 <script>
-const PIN_ADMIN = "1234";
-
-const tools = document.getElementById("tools");
-const mensaje = document.getElementById("mensaje");
-const info = document.getElementById("info");
-const inputBusqueda = document.getElementById("busqueda");
-
-let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-let direccionMapaActual = "";
-
-function toggleTools() {
-    tools.classList.toggle("abierto");
+function irClientes(){
+  window.location.href = "clientes.html";
 }
 
-function mostrarMensaje(texto) {
-    mensaje.textContent = texto;
-    mensaje.style.display = "block";
-    setTimeout(() => {
-        mensaje.style.display = "none";
-    }, 2000);
+function irConfiguracion(){
+  window.location.href = "configuracion.html";
 }
-
-function guardar() {
-    localStorage.setItem("clientes", JSON.stringify(clientes));
-}
-
-function formatearFecha(fechaISO) {
-    if (!fechaISO) return "-";
-    const fecha = new Date(fechaISO);
-    if (isNaN(fecha.getTime())) return "-";
-
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = fecha.getFullYear();
-    const hora = String(fecha.getHours()).padStart(2, "0");
-    const minutos = String(fecha.getMinutes()).padStart(2, "0");
-
-    return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
-}
-
-function obtenerTelefonos(cliente) {
-    let telefonosTexto = cliente.telefonos || cliente.telefono || "";
-    if (!telefonosTexto) return [];
-
-    return telefonosTexto
-        .replace(/\r/g, "")
-        .split(/\n|,/)
-        .map(t => t.trim())
-        .filter(Boolean);
-}
-
-function obtenerEmails(cliente) {
-    let emailsTexto = cliente.emails || cliente.email || "";
-    if (!emailsTexto) return [];
-
-    return emailsTexto
-        .replace(/\r/g, "")
-        .split(/\n|,/)
-        .map(e => e.trim())
-        .filter(Boolean);
-}
-
-function obtenerDireccionMapa(cliente) {
-    if (cliente.direccion && cliente.direccion.trim()) {
-        return cliente.direccion.trim();
-    }
-
-    const partes = [
-        cliente.tipoVia || "",
-        cliente.nombreVia || "",
-        cliente.numero || "",
-        cliente.portal ? "Portal " + cliente.portal : "",
-        cliente.escalera ? "Escalera " + cliente.escalera : "",
-        cliente.piso ? "Piso " + cliente.piso : "",
-        cliente.puerta ? "Puerta " + cliente.puerta : "",
-        cliente.poblacion || "",
-        cliente.cp || "",
-        cliente.provincia || ""
-    ].filter(Boolean);
-
-    return partes.join(", ").trim();
-}
-
-function contarObras(clienteId) {
-    const obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
-    return obras.length;
-}
-
-function actualizarInfo() {
-    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
-    const visibles = filtrarClientes(textoBusqueda).length;
-    info.innerHTML = "Total de clientes: " + clientes.length + " | Mostrados: " + visibles;
-}
-
-function pedirPin() {
-    let pin = prompt("Introduce PIN de administrador:");
-    if (pin === null) return false;
-    return pin === PIN_ADMIN;
-}
-
-function eliminarCliente(id) {
-    let confirmar = confirm("¿Seguro que quieres eliminar este cliente?");
-    if (!confirmar) return;
-
-    let pinCorrecto = pedirPin();
-    if (!pinCorrecto) {
-        alert("PIN incorrecto");
-        return;
-    }
-
-    clientes = clientes.filter(c => c.id !== id);
-    guardar();
-
-    localStorage.removeItem("obras_" + id);
-
-    if (localStorage.getItem("clienteActivo") == id) {
-        localStorage.removeItem("clienteActivo");
-    }
-
-    mostrarClientes();
-    actualizarInfo();
-    mostrarMensaje("Cliente eliminado");
-}
-
-function filtrarClientes(textoBusqueda) {
-    if (!textoBusqueda) return clientes;
-
-    return clientes.filter(cliente => {
-        const nombre = (cliente.nombre || "").toLowerCase();
-        const telefonos = (cliente.telefonos || cliente.telefono || "").toLowerCase();
-        const emails = (cliente.emails || cliente.email || "").toLowerCase();
-        const direccion = obtenerDireccionMapa(cliente).toLowerCase();
-        const fecha = formatearFecha(cliente.fechaCreacion).toLowerCase();
-        const numeroObras = String(contarObras(cliente.id)).toLowerCase();
-
-        return (
-            nombre.includes(textoBusqueda) ||
-            telefonos.includes(textoBusqueda) ||
-            emails.includes(textoBusqueda) ||
-            direccion.includes(textoBusqueda) ||
-            fecha.includes(textoBusqueda) ||
-            numeroObras.includes(textoBusqueda)
-        );
-    });
-}
-
-function abrirCliente(id) {
-    localStorage.setItem("clienteActivo", id);
-    window.location.href = "cliente.html";
-}
-
-function elegirMapa(event, direccion) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (!direccion) return;
-
-    direccionMapaActual = direccion;
-    document.getElementById("selectorMapaFondo").style.display = "flex";
-}
-
-function cerrarSelectorMapa() {
-    direccionMapaActual = "";
-    document.getElementById("selectorMapaFondo").style.display = "none";
-}
-
-function abrirMapaSeleccionado(tipo) {
-    if (!direccionMapaActual) return;
-
-    const encoded = encodeURIComponent(direccionMapaActual);
-    let url = "";
-
-    if (tipo === "apple") {
-        url = "http://maps.apple.com/?q=" + encoded;
-    }
-
-    if (tipo === "google") {
-        url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
-    }
-
-    if (tipo === "waze") {
-        url = "https://waze.com/ul?q=" + encoded;
-    }
-
-    cerrarSelectorMapa();
-    window.open(url, "_blank");
-}
-
-function mostrarClientes() {
-    const contenedor = document.getElementById("listaClientes");
-    contenedor.innerHTML = "";
-
-    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
-    const clientesFiltrados = filtrarClientes(textoBusqueda);
-
-    clientesFiltrados.forEach(cliente => {
-        const div = document.createElement("div");
-        div.className = "cliente";
-
-        const telefonos = obtenerTelefonos(cliente);
-        const emails = obtenerEmails(cliente);
-        const fechaTexto = formatearFecha(cliente.fechaCreacion);
-        const direccionMapa = obtenerDireccionMapa(cliente);
-        const obras = contarObras(cliente.id);
-
-        const telefonosHtml = telefonos.map(t =>
-            `<a class="linea-enlace" href="tel:${t.replace(/\s+/g, "")}" onclick="event.stopPropagation()">📞 ${t}</a>`
-        ).join("");
-
-        const emailsHtml = emails.map(e =>
-            `<a class="linea-enlace" href="mailto:${e}" onclick="event.stopPropagation()">✉️ ${e}</a>`
-        ).join("");
-
-        const direccionHtml = direccionMapa
-            ? `<button class="linea-boton" onclick='elegirMapa(event, ${JSON.stringify(direccionMapa)})'>📍 ${direccionMapa}</button>`
-            : "";
-
-        div.innerHTML = `
-            <button class="eliminar">X</button>
-
-            <div class="nombre">
-                <a href="#" onclick="event.preventDefault(); event.stopPropagation(); abrirCliente(${cliente.id})">${cliente.nombre || ""}</a>
-            </div>
-
-            ${telefonosHtml}
-            ${emailsHtml}
-            ${direccionHtml}
-
-            <div class="obras">Obras: ${obras}</div>
-            <div class="fecha">Creado: ${fechaTexto}</div>
-        `;
-
-        div.onclick = () => abrirCliente(cliente.id);
-
-        div.querySelector(".eliminar").onclick = (e) => {
-            e.stopPropagation();
-            eliminarCliente(cliente.id);
-        };
-
-        contenedor.appendChild(div);
-    });
-
-    actualizarInfo();
-}
-
-mostrarClientes();
 </script>
 
 </body>
