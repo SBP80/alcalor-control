@@ -395,7 +395,6 @@ function aplicarConfigVisual(force = false){
 
   draw();
 }
-aplicarConfigVisual(true);
 
 window.addEventListener("storage", e => {
   if (e.key === "configAllcalor") aplicarConfigVisual(true);
@@ -1159,7 +1158,8 @@ window.renameSelectedRoom = renameSelectedRoom;
 window.deleteSelectedRoomAndCloseSheet = deleteSelectedRoomAndCloseSheet;
 window.selectMoveRoomMode = selectMoveRoomMode;
 window.selectMovePointMode = selectMovePointMode;
-
+  
+aplicarConfigVisual(true);
 resizeCanvas();
 updateUI();
 draw();
