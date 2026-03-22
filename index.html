@@ -4,62 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ALLCALOR</title>
-
+<meta http-equiv="refresh" content="0; url=app.html">
+<script>
+window.location.replace("app.html");
+</script>
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   background:#0b0b0b;
-  color:white;
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
   height:100vh;
 }
-
-.container{
-  text-align:center;
-}
-
-h1{
-  color:orange;
-  margin-bottom:30px;
-}
-
-.btn{
-  display:block;
-  width:220px;
-  margin:10px auto;
-  padding:15px;
-  border:none;
-  border-radius:10px;
-  background:orange;
-  color:#111;
-  font-size:18px;
+a{
+  color:#f39b2f;
   font-weight:bold;
-  cursor:pointer;
 }
 </style>
 </head>
-
 <body>
-
-<div class="container">
-  <h1>ALLCALOR</h1>
-
-  <button class="btn" onclick="irClientes()">Clientes</button>
-  <button class="btn" onclick="irConfiguracion()">Configuración</button>
-</div>
-
-<script>
-function irClientes(){
-  window.location.href = "clientes.html";
-}
-
-function irConfiguracion(){
-  window.location.href = "configuracion.html";
-}
-</script>
-
+  <div>Abriendo panel principal... <a href="app.html">Entrar</a></div>
 </body>
 </html>
