@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Clientes</title>
+<title>Clientes V3</title>
 <style>
 :root{
   --bg:#0b0b0b;
@@ -165,9 +165,6 @@ textarea{
   border-radius:12px;
   padding:10px 12px;
 }
-.line strong{
-  color:var(--text);
-}
 .card-actions{
   display:flex;
   gap:8px;
@@ -198,11 +195,6 @@ textarea{
   padding:24px 12px;
   border:1px dashed var(--line);
   border-radius:16px;
-}
-hr.sep{
-  border:none;
-  border-top:1px solid var(--line);
-  margin:10px 0 16px 0;
 }
 .modal-back{
   position:fixed;
@@ -251,7 +243,7 @@ hr.sep{
 <body>
 <div class="wrap">
   <div class="top">
-    <h1>Clientes</h1>
+    <h1>Clientes V3</h1>
     <div class="top-actions">
       <button class="btn btn-main" id="btnNuevoCliente">Nuevo cliente</button>
       <button class="btn btn-sec" onclick="volver()">Volver</button>
@@ -287,28 +279,26 @@ hr.sep{
         <label>Nombre del cliente</label>
         <input id="nombreCliente" placeholder="Nombre y apellidos">
       </div>
-      <div class="field tipo-empresa hidden" id="fieldEmpresa">
+      <div class="field hidden" id="fieldEmpresa">
         <label>Nombre de la empresa</label>
         <input id="nombreEmpresa" placeholder="Razón social">
       </div>
     </div>
 
     <div class="grid">
-      <div class="field tipo-particular" id="fieldDni">
+      <div class="field" id="fieldDni">
         <label>DNI</label>
         <input id="dniCliente" placeholder="DNI">
       </div>
-      <div class="field tipo-empresa hidden" id="fieldCif">
+      <div class="field hidden" id="fieldCif">
         <label>CIF</label>
         <input id="cifEmpresa" placeholder="CIF">
       </div>
-      <div class="field tipo-empresa hidden" id="fieldContacto">
+      <div class="field hidden" id="fieldContacto">
         <label>Persona de contacto</label>
         <input id="contactoEmpresa" placeholder="Nombre del contacto">
       </div>
     </div>
-
-    <hr class="sep">
 
     <div class="grid">
       <div class="field">
@@ -331,8 +321,6 @@ hr.sep{
         <input id="email2" placeholder="Correo secundario">
       </div>
     </div>
-
-    <hr class="sep">
 
     <div class="grid-3">
       <div class="field">
@@ -389,8 +377,6 @@ hr.sep{
         <input id="provinciaVia" placeholder="Provincia">
       </div>
     </div>
-
-    <hr class="sep">
 
     <div class="field">
       <label>Notas</label>
@@ -458,6 +444,7 @@ function volver(){
 function abrirFormulario(){
   document.getElementById("panelFormulario").classList.remove("hidden");
   document.getElementById("numeroCliente").value = siguienteNumeroCliente();
+  refrescarTipoCliente();
   window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"});
 }
 
@@ -580,7 +567,7 @@ function pintarClientes(){
 
     const telefonos = (c.telefonos || []).map(t => `
       <div class="line">
-        <strong>📞 ${t}</strong>
+        <strong>📞 ${escapeHtml(t)}</strong>
         <div class="card-actions">
           <button class="mini-btn sec" onclick="abrirTelefono('${escapeJs(t)}')">Acciones</button>
         </div>
@@ -589,7 +576,7 @@ function pintarClientes(){
 
     const emails = (c.emails || []).map(e => `
       <div class="line">
-        <strong>📧 ${e}</strong>
+        <strong>📧 ${escapeHtml(e)}</strong>
         <div class="card-actions">
           <button class="mini-btn sec" onclick="abrirEmail('${escapeJs(e)}')">Enviar email</button>
         </div>
@@ -695,8 +682,9 @@ function escapeJs(str){
 
 document.getElementById("btnNuevoCliente").addEventListener("click", () => {
   const panel = document.getElementById("panelFormulario");
+  const abrir = panel.classList.contains("hidden");
   panel.classList.toggle("hidden");
-  if(!panel.classList.contains("hidden")){
+  if(abrir){
     document.getElementById("numeroCliente").value = siguienteNumeroCliente();
     refrescarTipoCliente();
   }
@@ -708,6 +696,7 @@ document.getElementById("buscador").addEventListener("input", pintarClientes);
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("numeroCliente").value = siguienteNumeroCliente();
   refrescarTipoCliente();
+  cerrarFormulario();
   pintarClientes();
 });
 </script>
