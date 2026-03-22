@@ -4,1086 +4,139 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Configuración</title>
+
 <style>
-:root{
-  --bg:#0b0b0b;
-  --panel:#151515;
-  --panel2:#1d1d1d;
-  --line:#2b2b2b;
-  --text:#ffffff;
-  --muted:#bdbdbd;
-  --accent:#f39b2f;
-  --btnText:#111111;
-}
-
-*{box-sizing:border-box}
-
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
+  font-family:Arial,sans-serif;
+  background:#0b0b0b;
+  color:#fff;
 }
 
-.oculto{display:none!important}
-
-/* acceso */
-#pantallaAcceso{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.wrap{
+  max-width:600px;
+  margin:40px auto;
   padding:20px;
 }
 
-.acceso-box{
-  width:100%;
-  max-width:380px;
-  background:var(--panel);
-  border:1px solid var(--line);
+.panel{
+  background:#151515;
+  border:1px solid #2b2b2b;
   border-radius:16px;
   padding:20px;
 }
 
-.acceso-box h1{
-  margin:0 0 14px 0;
-  color:var(--accent);
-  font-size:30px;
+h1{
+  color:#f39b2f;
+  margin-bottom:20px;
 }
 
-.acceso-box p{
-  margin:0 0 16px 0;
-  color:var(--muted);
-}
-
-.input,
-select{
+input{
   width:100%;
-  border:1px solid var(--line);
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid #333;
   background:#101010;
   color:#fff;
-  border-radius:12px;
-  padding:12px 14px;
-  font-size:15px;
 }
 
-.fila-btn{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 .btn{
-  border:none;
-  border-radius:12px;
-  padding:12px 16px;
-  cursor:pointer;
-  font-weight:700;
-}
-
-.btn-pri{
-  background:var(--accent);
-  color:var(--btnText);
+  background:#f39b2f;
+  color:#111;
 }
 
 .btn-sec{
   background:#2b2b2b;
   color:#fff;
 }
-
-.btn-full{
-  flex:1;
-}
-
-/* app */
-#appCfg{
-  min-height:100vh;
-}
-
-.header{
-  position:sticky;
-  top:0;
-  z-index:30;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 16px;
-  background:rgba(11,11,11,.96);
-  border-bottom:1px solid var(--line);
-}
-
-.header h1{
-  margin:0;
-  font-size:28px;
-  color:var(--accent);
-}
-
-.wrap{
-  display:grid;
-  grid-template-columns:420px 1fr;
-  gap:18px;
-  padding:18px;
-  max-width:1500px;
-  margin:0 auto;
-}
-
-.left{
-  min-width:0;
-}
-
-.right{
-  min-width:0;
-}
-
-.panel{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
-}
-
-.panel h2{
-  margin:0 0 14px 0;
-  font-size:18px;
-  color:var(--accent);
-}
-
-.label{
-  display:block;
-  font-size:13px;
-  color:var(--muted);
-  margin:0 0 6px 0;
-}
-
-.campo{
-  margin-bottom:14px;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="file"]{
-  width:100%;
-  border:1px solid var(--line);
-  background:#101010;
-  color:#fff;
-  border-radius:12px;
-  padding:12px 14px;
-  font-size:15px;
-}
-
-input[type="range"]{
-  width:100%;
-}
-
-.grid-2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-
-.color-box{
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-}
-
-.color-box input[type="color"]{
-  width:100%;
-  height:44px;
-  padding:0;
-  border:none;
-  background:none;
-  cursor:pointer;
-}
-
-.valor-mini{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:6px;
-}
-
-.paletas{
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:10px;
-}
-
-.paleta{
-  height:34px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.15);
-  cursor:pointer;
-}
-
-.font-list{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:8px;
-  max-height:280px;
-  overflow:auto;
-  padding-right:4px;
-}
-
-.font-item{
-  width:100%;
-  text-align:left;
-  border:1px solid var(--line);
-  background:#101010;
-  color:#fff;
-  border-radius:12px;
-  padding:12px 14px;
-  cursor:pointer;
-}
-
-.font-item.activa{
-  outline:2px solid var(--accent);
-}
-
-.row-inline{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.check{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px 12px;
-}
-
-.check input{
-  width:auto;
-  margin:0;
-}
-
-.preview-panel{
-  position:sticky;
-  top:74px;
-}
-
-.preview-box{
-  background:#000;
-  border:1px solid var(--line);
-  border-radius:18px;
-  overflow:hidden;
-}
-
-.preview-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 16px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-
-.preview-brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-
-.preview-logo{
-  width:52px;
-  height:52px;
-  object-fit:contain;
-  border-radius:10px;
-  background:#fff;
-  display:none;
-  flex:0 0 auto;
-}
-
-.preview-name{
-  margin:0;
-  line-height:1.1;
-  word-break:break-word;
-}
-
-.preview-sub{
-  margin:6px 0 0 0;
-  font-size:12px;
-  opacity:.85;
-}
-
-.preview-btn{
-  border:none;
-  border-radius:12px;
-  padding:10px 14px;
-  font-weight:700;
-}
-
-.preview-body{
-  padding:16px;
-}
-
-.preview-hero,
-.preview-card{
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:16px;
-  background:rgba(255,255,255,.02);
-}
-
-.preview-hero{
-  margin-bottom:14px;
-}
-
-.preview-cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:12px;
-}
-
-.preview-card h3{
-  margin:0 0 6px 0;
-  font-size:16px;
-}
-
-.preview-card p{
-  margin:0;
-  font-size:13px;
-  opacity:.84;
-}
-
-.preview-chip{
-  display:inline-block;
-  margin-top:10px;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:700;
-}
-
-.logo-real{
-  max-width:140px;
-  max-height:90px;
-  object-fit:contain;
-  display:none;
-  margin-top:8px;
-  background:#fff;
-  border-radius:10px;
-  padding:4px;
-}
-
-.tabs-mobile{
-  display:none;
-  gap:10px;
-  padding:12px 18px 0 18px;
-}
-
-.tab-btn{
-  flex:1;
-  border:none;
-  border-radius:12px;
-  padding:12px 14px;
-  font-weight:700;
-  cursor:pointer;
-  background:#2b2b2b;
-  color:#fff;
-}
-
-.tab-btn.activa{
-  background:var(--accent);
-  color:var(--btnText);
-}
-
-.help{
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.4;
-}
-
-@media (max-width: 980px){
-  .wrap{
-    grid-template-columns:1fr;
-  }
-  .preview-panel{
-    position:static;
-  }
-}
-
-@media (max-width: 760px){
-  .tabs-mobile{
-    display:flex;
-  }
-  .wrap{
-    padding-top:10px;
-  }
-  .solo-movil-oculto{
-    display:none;
-  }
-  .solo-movil-visible{
-    display:block!important;
-  }
-}
-
-@media (max-width: 520px){
-  .grid-2{
-    grid-template-columns:1fr;
-  }
-  .paletas{
-    grid-template-columns:repeat(3,1fr);
-  }
-  .header h1{
-    font-size:22px;
-  }
-}
 </style>
 </head>
+
 <body>
 
-<div id="pantallaAcceso">
-  <div class="acceso-box">
+<div class="wrap">
+
+  <div id="login" class="panel">
     <h1>Configuración</h1>
-    <p>Introduce el código para entrar.</p>
-    <input id="claveAcceso" class="input" type="password" placeholder="Código">
-    <div class="fila-btn">
-      <button class="btn btn-sec btn-full" onclick="volver()">Volver</button>
-      <button class="btn btn-pri btn-full" onclick="entrar()">Entrar</button>
-    </div>
-  </div>
-</div>
-
-<div id="appCfg" class="oculto">
-  <div class="header">
-    <h1>Configuración</h1>
-    <div class="fila-btn" style="margin-top:0">
-      <button class="btn btn-sec" onclick="volver()">Volver</button>
-      <button class="btn btn-pri" onclick="guardarYVolver()">Guardar y volver</button>
-    </div>
+    <input id="clave" type="password" placeholder="Código">
+    <button class="btn" onclick="entrar()">Entrar</button>
+    <button class="btn-sec" onclick="volver()">Volver</button>
   </div>
 
-  <div class="tabs-mobile">
-    <button id="tabEditar" class="tab-btn activa" onclick="mostrarTab('editar')">Editar</button>
-    <button id="tabVista" class="tab-btn" onclick="mostrarTab('vista')">Vista previa</button>
+  <div id="config" class="panel" style="display:none;">
+    <h1>Ajustes</h1>
+
+    <input id="nombre" placeholder="Nombre empresa">
+    <input id="color" type="color">
+
+    <button class="btn" onclick="guardar()">Guardar y volver</button>
+    <button class="btn-sec" onclick="volver()">Volver</button>
   </div>
 
-  <div class="wrap">
-    <div id="colEditar" class="left">
-      <div class="panel">
-        <h2>Acceso</h2>
-        <div class="campo">
-          <label class="label">Cambiar código</label>
-          <input id="nuevaClave" type="password" placeholder="Nueva clave">
-        </div>
-        <div class="help">Si lo dejas vacío, seguirá la clave actual.</div>
-      </div>
-
-      <div class="panel">
-        <h2>Identidad</h2>
-
-        <div class="campo">
-          <label class="label">Nombre de empresa</label>
-          <input id="nombreEmpresa" type="text" placeholder="ALLCALOR PRO">
-        </div>
-
-        <div class="campo">
-          <label class="label">Subtítulo</label>
-          <input id="subtituloEmpresa" type="text" placeholder="Centro de control">
-        </div>
-
-        <div class="campo">
-          <label class="label">Logo</label>
-          <input id="logoInput" type="file" accept="image/*">
-          <img id="logoGuardado" class="logo-real" alt="">
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Texto</h2>
-
-        <div class="campo">
-          <label class="label">Fuentes</label>
-          <div class="font-list" id="fontList"></div>
-        </div>
-
-        <div class="campo">
-          <label class="label">Tamaño del nombre</label>
-          <input id="tamNombre" type="range" min="16" max="52" step="1">
-          <div class="valor-mini"><span id="valorTamNombre"></span> px</div>
-        </div>
-
-        <div class="campo">
-          <label class="label">Grosor</label>
-          <input id="pesoNombre" type="range" min="400" max="900" step="100">
-          <div class="valor-mini"><span id="valorPesoNombre"></span></div>
-        </div>
-
-        <div class="campo">
-          <label class="label">Espaciado entre letras</label>
-          <input id="espacioLetras" type="range" min="0" max="8" step="0.5">
-          <div class="valor-mini"><span id="valorEspacioLetras"></span> px</div>
-        </div>
-
-        <div class="campo">
-          <label class="label">Sombra</label>
-          <input id="sombraNombre" type="range" min="0" max="20" step="1">
-          <div class="valor-mini"><span id="valorSombraNombre"></span> px</div>
-        </div>
-
-        <div class="row-inline">
-          <label class="check"><input id="textoMayus" type="checkbox"> Mayúsculas</label>
-          <label class="check"><input id="textoCursiva" type="checkbox"> Cursiva</label>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Colores</h2>
-
-        <div class="grid-2">
-          <div class="color-box">
-            <label class="label">Color principal</label>
-            <input id="colorPrincipal" type="color">
-            <div class="valor-mini" id="txtColorPrincipal"></div>
-          </div>
-
-          <div class="color-box">
-            <label class="label">Color fondo</label>
-            <input id="colorFondo" type="color">
-            <div class="valor-mini" id="txtColorFondo"></div>
-          </div>
-
-          <div class="color-box">
-            <label class="label">Color panel</label>
-            <input id="colorPanel" type="color">
-            <div class="valor-mini" id="txtColorPanel"></div>
-          </div>
-
-          <div class="color-box">
-            <label class="label">Color texto</label>
-            <input id="colorTexto" type="color">
-            <div class="valor-mini" id="txtColorTexto"></div>
-          </div>
-
-          <div class="color-box">
-            <label class="label">Color línea</label>
-            <input id="colorLinea" type="color">
-            <div class="valor-mini" id="txtColorLinea"></div>
-          </div>
-
-          <div class="color-box">
-            <label class="label">Color texto botón</label>
-            <input id="colorBotonTexto" type="color">
-            <div class="valor-mini" id="txtColorBotonTexto"></div>
-          </div>
-        </div>
-
-        <div class="campo" style="margin-top:14px">
-          <label class="label">Paletas rápidas</label>
-          <div class="paletas">
-            <div class="paleta" style="background:#f39b2f" onclick="aplicarPaleta('#f39b2f','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
-            <div class="paleta" style="background:#4caf50" onclick="aplicarPaleta('#4caf50','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
-            <div class="paleta" style="background:#2196f3" onclick="aplicarPaleta('#2196f3','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
-            <div class="paleta" style="background:#9c27b0" onclick="aplicarPaleta('#9c27b0','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
-            <div class="paleta" style="background:#e91e63" onclick="aplicarPaleta('#e91e63','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
-            <div class="paleta" style="background:#ff5722" onclick="aplicarPaleta('#ff5722','#0b0b0b','#151515','#ffffff','#2b2b2b','#111111')"></div>
-            <div class="paleta" style="background:#ffd600" onclick="aplicarPaleta('#ffd600','#101010','#1a1a1a','#ffffff','#313131','#111111')"></div>
-            <div class="paleta" style="background:#00bcd4" onclick="aplicarPaleta('#00bcd4','#071014','#101a20','#ffffff','#24333d','#111111')"></div>
-            <div class="paleta" style="background:#8bc34a" onclick="aplicarPaleta('#8bc34a','#0b0f08','#141914','#ffffff','#2c3429','#111111')"></div>
-            <div class="paleta" style="background:#ff9800" onclick="aplicarPaleta('#ff9800','#120d05','#1b150c','#ffffff','#3a2d17','#111111')"></div>
-            <div class="paleta" style="background:#607d8b" onclick="aplicarPaleta('#607d8b','#0b0d0e','#171c1f','#ffffff','#2b3337','#111111')"></div>
-            <div class="paleta" style="background:#ffffff" onclick="aplicarPaleta('#ffffff','#121212','#1d1d1d','#ffffff','#333333','#111111')"></div>
-          </div>
-        </div>
-
-        <div class="campo" style="margin-top:16px">
-          <label class="label">Ajuste fino color principal</label>
-          <div class="valor-mini">Tono</div>
-          <input id="hueRange" type="range" min="0" max="360" step="1">
-          <div class="valor-mini">Saturación</div>
-          <input id="satRange" type="range" min="0" max="100" step="1">
-          <div class="valor-mini">Luminosidad</div>
-          <input id="ligRange" type="range" min="0" max="100" step="1">
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Empresa</h2>
-
-        <div class="campo">
-          <label class="label">Teléfono</label>
-          <input id="telefonoEmpresa" type="text">
-        </div>
-
-        <div class="campo">
-          <label class="label">Email</label>
-          <input id="emailEmpresa" type="email">
-        </div>
-
-        <div class="campo">
-          <label class="label">Dirección</label>
-          <input id="direccionEmpresa" type="text">
-        </div>
-
-        <div class="campo">
-          <label class="label">CIF</label>
-          <input id="cifEmpresa" type="text">
-        </div>
-      </div>
-    </div>
-
-    <div id="colVista" class="right">
-      <div class="preview-panel">
-        <div class="panel">
-          <h2>Vista previa</h2>
-
-          <div class="preview-box" id="previewApp">
-            <div class="preview-top" id="previewTop">
-              <div class="preview-brand">
-                <img id="previewLogo" class="preview-logo" alt="">
-                <div>
-                  <h3 class="preview-name" id="previewNombre">ALLCALOR PRO</h3>
-                  <p class="preview-sub" id="previewSub">Centro de control</p>
-                </div>
-              </div>
-              <button class="preview-btn" id="previewBoton">Configuración</button>
-            </div>
-
-            <div class="preview-body">
-              <div class="preview-hero" id="previewHero">
-                Panel principal de la app con cambios en directo.
-              </div>
-
-              <div class="preview-cards">
-                <div class="preview-card" id="card1">
-                  <h3>Clientes</h3>
-                  <p>Listado general y gestión de fichas.</p>
-                  <span class="preview-chip" id="chip1">Abrir</span>
-                </div>
-
-                <div class="preview-card" id="card2">
-                  <h3>Obras</h3>
-                  <p>Seguimiento de trabajos y estado.</p>
-                  <span class="preview-chip" id="chip2">Abrir</span>
-                </div>
-
-                <div class="preview-card" id="card3">
-                  <h3>Planos</h3>
-                  <p>Editor de estancias y zonas muertas.</p>
-                  <span class="preview-chip" id="chip3">Abrir</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="help" style="margin-top:12px">
-            Todo cambia al momento en esta vista. Solo se guarda al pulsar <b>Guardar y volver</b>.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-const CLAVE_POR_DEFECTO = "1234";
 
-const CONFIG_DEFAULT = {
-  clave: CLAVE_POR_DEFECTO,
-  nombre: "ALLCALOR PRO",
-  subtitulo: "Centro de control",
-  logo: "",
-  fuente: "Arial, sans-serif",
-  tamNombre: 22,
-  pesoNombre: 700,
-  espacioLetras: 0,
-  sombraNombre: 0,
-  mayusculas: false,
-  cursiva: false,
-  colorPrincipal: "#f39b2f",
-  colorFondo: "#0b0b0b",
-  colorPanel: "#151515",
-  colorTexto: "#ffffff",
-  colorLinea: "#2b2b2b",
-  colorBotonTexto: "#111111",
-  telefono: "",
-  email: "",
-  direccion: "",
-  cif: ""
-};
-
-const FUENTES = [
-  {nombre:"Arial", valor:"Arial, sans-serif"},
-  {nombre:"Verdana", valor:"Verdana, sans-serif"},
-  {nombre:"Tahoma", valor:"Tahoma, sans-serif"},
-  {nombre:"Trebuchet MS", valor:"'Trebuchet MS', sans-serif"},
-  {nombre:"Georgia", valor:"Georgia, serif"},
-  {nombre:"Times New Roman", valor:"'Times New Roman', serif"},
-  {nombre:"Courier New", valor:"'Courier New', monospace"},
-  {nombre:"Lucida Sans", valor:"'Lucida Sans Unicode', sans-serif"},
-  {nombre:"Palatino", valor:"Palatino, serif"},
-  {nombre:"Garamond", valor:"Garamond, serif"}
-];
-
-function leerConfig(){
-  try{
-    return {...CONFIG_DEFAULT, ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})};
-  }catch(e){
-    return {...CONFIG_DEFAULT};
-  }
+// CONFIG BASE
+function getConfig(){
+  return JSON.parse(localStorage.getItem("configAllcalor")) || {
+    clave:"1234",
+    nombre:"ALLCALOR",
+    color:"#f39b2f"
+  };
 }
 
-function guardarConfig(cfg){
+function setConfig(cfg){
   localStorage.setItem("configAllcalor", JSON.stringify(cfg));
 }
 
-function volver(){
-  window.location.replace("index.html");
-}
-}
-
+// ACCESO
 function entrar(){
-  const cfg = leerConfig();
-  const clave = document.getElementById("claveAcceso").value;
-  if(clave === (cfg.clave || CLAVE_POR_DEFECTO)){
-    document.getElementById("pantallaAcceso").classList.add("oculto");
-    document.getElementById("appCfg").classList.remove("oculto");
-    cargarCampos();
+  const cfg = getConfig();
+  const clave = document.getElementById("clave").value;
+
+  // SIEMPRE PUEDES ENTRAR CON 1234
+  if(clave === "1234" || clave === cfg.clave){
+    document.getElementById("login").style.display = "none";
+    document.getElementById("config").style.display = "block";
+
+    document.getElementById("nombre").value = cfg.nombre;
+    document.getElementById("color").value = cfg.color;
+
   }else{
     alert("Código incorrecto");
   }
 }
 
-function crearListaFuentes(){
-  const cont = document.getElementById("fontList");
-  cont.innerHTML = "";
-  FUENTES.forEach(f=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "font-item";
-    b.dataset.valor = f.valor;
-    b.style.fontFamily = f.valor;
-    b.textContent = f.nombre + " — ABC abc 123";
-    b.onclick = () => {
-      document.getElementById("fuenteTexto").value = f.valor;
-      marcarFuenteActiva();
-      actualizarVista();
-    };
-    cont.appendChild(b);
-  });
+// GUARDAR
+function guardar(){
+  const cfg = getConfig();
+
+  cfg.nombre = document.getElementById("nombre").value;
+  cfg.color = document.getElementById("color").value;
+
+  setConfig(cfg);
+
+  window.location.replace("app.html");
 }
 
-function marcarFuenteActiva(){
-  const actual = document.getElementById("fuenteTexto").value;
-  document.querySelectorAll(".font-item").forEach(el=>{
-    el.classList.toggle("activa", el.dataset.valor === actual);
-  });
+// VOLVER
+function volver(){
+  window.location.replace("app.html");
 }
 
-function rgbToHex(r, g, b) {
-  return "#" + [r, g, b].map(x => {
-    const hex = x.toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
-  }).join("");
-}
-
-function hslToHex(h, s, l){
-  s /= 100;
-  l /= 100;
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-  const m = l - c/2;
-  let r=0,g=0,b=0;
-
-  if (0 <= h && h < 60) { r = c; g = x; b = 0; }
-  else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
-  else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
-  else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
-  else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
-  else { r = c; g = 0; b = x; }
-
-  r = Math.round((r + m) * 255);
-  g = Math.round((g + m) * 255);
-  b = Math.round((b + m) * 255);
-
-  return rgbToHex(r, g, b);
-}
-
-function hexToHsl(hex){
-  hex = hex.replace("#","");
-
-  let r = parseInt(hex.substring(0,2),16)/255;
-  let g = parseInt(hex.substring(2,4),16)/255;
-  let b = parseInt(hex.substring(4,6),16)/255;
-
-  let max = Math.max(r,g,b), min = Math.min(r,g,b);
-  let h, s, l = (max + min) / 2;
-
-  if(max === min){
-    h = s = 0;
-  }else{
-    let d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-
-    switch(max){
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      default: h = (r - g) / d + 4;
-    }
-    h /= 6;
-  }
-
-  return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100)
-  };
-}
-
-function aplicarPaleta(principal, fondo, panel, texto, linea, botonTexto){
-  colorPrincipal.value = principal;
-  colorFondo.value = fondo;
-  colorPanel.value = panel;
-  colorTexto.value = texto;
-  colorLinea.value = linea;
-  colorBotonTexto.value = botonTexto;
-  sincronizarHSLDesdePrincipal();
-  actualizarVista();
-}
-
-function sincronizarHSLDesdePrincipal(){
-  const hsl = hexToHsl(colorPrincipal.value);
-  hueRange.value = hsl.h;
-  satRange.value = hsl.s;
-  ligRange.value = hsl.l;
-}
-
-function aplicarPrincipalDesdeHSL(){
-  colorPrincipal.value = hslToHex(Number(hueRange.value), Number(satRange.value), Number(ligRange.value));
-  actualizarVista();
-}
-
-function cargarCampos(){
-  const cfg = leerConfig();
-
-  nombreEmpresa.value = cfg.nombre;
-  subtituloEmpresa.value = cfg.subtitulo;
-  nuevaClave.value = "";
-  fuenteTexto.value = cfg.fuente;
-  tamNombre.value = cfg.tamNombre;
-  pesoNombre.value = cfg.pesoNombre;
-  espacioLetras.value = cfg.espacioLetras;
-  sombraNombre.value = cfg.sombraNombre;
-  textoMayus.checked = !!cfg.mayusculas;
-  textoCursiva.checked = !!cfg.cursiva;
-
-  colorPrincipal.value = cfg.colorPrincipal;
-  colorFondo.value = cfg.colorFondo;
-  colorPanel.value = cfg.colorPanel;
-  colorTexto.value = cfg.colorTexto;
-  colorLinea.value = cfg.colorLinea;
-  colorBotonTexto.value = cfg.colorBotonTexto;
-
-  telefonoEmpresa.value = cfg.telefono;
-  emailEmpresa.value = cfg.email;
-  direccionEmpresa.value = cfg.direccion;
-  cifEmpresa.value = cfg.cif;
-
-  if(cfg.logo){
-    logoGuardado.src = cfg.logo;
-    logoGuardado.style.display = "block";
-  }else{
-    logoGuardado.style.display = "none";
-  }
-
-  sincronizarHSLDesdePrincipal();
-  marcarFuenteActiva();
-  actualizarVista();
-}
-
-function recogerCampos(logoFinal){
-  const cfgActual = leerConfig();
-
-  return {
-    clave: nuevaClave.value.trim() || cfgActual.clave || CLAVE_POR_DEFECTO,
-    nombre: nombreEmpresa.value.trim() || CONFIG_DEFAULT.nombre,
-    subtitulo: subtituloEmpresa.value.trim() || CONFIG_DEFAULT.subtitulo,
-    logo: logoFinal,
-    fuente: fuenteTexto.value,
-    tamNombre: Number(tamNombre.value),
-    pesoNombre: Number(pesoNombre.value),
-    espacioLetras: Number(espacioLetras.value),
-    sombraNombre: Number(sombraNombre.value),
-    mayusculas: textoMayus.checked,
-    cursiva: textoCursiva.checked,
-    colorPrincipal: colorPrincipal.value,
-    colorFondo: colorFondo.value,
-    colorPanel: colorPanel.value,
-    colorTexto: colorTexto.value,
-    colorLinea: colorLinea.value,
-    colorBotonTexto: colorBotonTexto.value,
-    telefono: telefonoEmpresa.value.trim(),
-    email: emailEmpresa.value.trim(),
-    direccion: direccionEmpresa.value.trim(),
-    cif: cifEmpresa.value.trim()
-  };
-}
-
-function guardarYVolver(){
-  const cfgActual = leerConfig();
-
-  if(logoInput.files && logoInput.files[0]){
-    const reader = new FileReader();
-    reader.onload = function(e){
-      const nuevo = recogerCampos(e.target.result);
-      guardarConfig(nuevo);
-      window.location.replace("index.html");
-    };
-    reader.readAsDataURL(logoInput.files[0]);
-  }else{
-    const nuevo = recogerCampos(cfgActual.logo || "");
-    guardarConfig(nuevo);
-    window.location.replace("index.html");
-  }
-}
-
-function actualizarVista(){
-  valorTamNombre.textContent = tamNombre.value;
-  valorPesoNombre.textContent = pesoNombre.value;
-  valorEspacioLetras.textContent = espacioLetras.value;
-  valorSombraNombre.textContent = sombraNombre.value;
-
-  txtColorPrincipal.textContent = colorPrincipal.value;
-  txtColorFondo.textContent = colorFondo.value;
-  txtColorPanel.textContent = colorPanel.value;
-  txtColorTexto.textContent = colorTexto.value;
-  txtColorLinea.textContent = colorLinea.value;
-  txtColorBotonTexto.textContent = colorBotonTexto.value;
-
-  const cfgActual = leerConfig();
-  const logoTemp = logoInput.files && logoInput.files[0]
-    ? URL.createObjectURL(logoInput.files[0])
-    : (cfgActual.logo || "");
-
-  previewApp.style.background = colorFondo.value;
-  previewApp.style.color = colorTexto.value;
-  previewTop.style.borderBottomColor = colorLinea.value;
-  previewHero.style.borderColor = colorLinea.value;
-  previewHero.style.background = colorPanel.value;
-
-  [card1, card2, card3].forEach(card=>{
-    card.style.background = colorPanel.value;
-    card.style.borderColor = colorLinea.value;
-    card.style.color = colorTexto.value;
-  });
-
-  previewBoton.style.background = colorPrincipal.value;
-  previewBoton.style.color = colorBotonTexto.value;
-
-  [chip1, chip2, chip3].forEach(chip=>{
-    chip.style.background = colorPrincipal.value;
-    chip.style.color = colorBotonTexto.value;
-  });
-
-  previewNombre.textContent = textoMayus.checked
-    ? (nombreEmpresa.value.trim() || CONFIG_DEFAULT.nombre).toUpperCase()
-    : (nombreEmpresa.value.trim() || CONFIG_DEFAULT.nombre);
-
-  previewSub.textContent = subtituloEmpresa.value.trim() || CONFIG_DEFAULT.subtitulo;
-
-  previewNombre.style.color = colorPrincipal.value;
-  previewNombre.style.fontFamily = fuenteTexto.value;
-  previewNombre.style.fontSize = tamNombre.value + "px";
-  previewNombre.style.fontWeight = pesoNombre.value;
-  previewNombre.style.letterSpacing = espacioLetras.value + "px";
-  previewNombre.style.textShadow = "0 0 " + sombraNombre.value + "px #000";
-  previewNombre.style.fontStyle = textoCursiva.checked ? "italic" : "normal";
-
-  previewSub.style.fontFamily = fuenteTexto.value;
-  previewSub.style.fontStyle = textoCursiva.checked ? "italic" : "normal";
-
-  if(logoTemp){
-    previewLogo.src = logoTemp;
-    previewLogo.style.display = "block";
-  }else{
-    previewLogo.style.display = "none";
-  }
-}
-
-function mostrarTab(tab){
-  const esMovil = window.innerWidth <= 760;
-  if(!esMovil) return;
-
-  const editar = document.getElementById("colEditar");
-  const vista = document.getElementById("colVista");
-  const b1 = document.getElementById("tabEditar");
-  const b2 = document.getElementById("tabVista");
-
-  if(tab === "editar"){
-    editar.classList.remove("solo-movil-oculto");
-    vista.classList.add("solo-movil-oculto");
-    b1.classList.add("activa");
-    b2.classList.remove("activa");
-  }else{
-    vista.classList.remove("solo-movil-oculto");
-    editar.classList.add("solo-movil-oculto");
-    b2.classList.add("activa");
-    b1.classList.remove("activa");
-  }
-}
-
-function ajustarTabs(){
-  if(window.innerWidth <= 760){
-    mostrarTab("editar");
-  }else{
-    document.getElementById("colEditar").classList.remove("solo-movil-oculto");
-    document.getElementById("colVista").classList.remove("solo-movil-oculto");
-  }
-}
-
-const fuenteTexto = document.createElement("input");
-fuenteTexto.type = "hidden";
-fuenteTexto.id = "fuenteTexto";
-document.body.appendChild(fuenteTexto);
-
-crearListaFuentes();
-
-[
-  nombreEmpresa,
-  subtituloEmpresa,
-  tamNombre,
-  pesoNombre,
-  espacioLetras,
-  sombraNombre,
-  colorPrincipal,
-  colorFondo,
-  colorPanel,
-  colorTexto,
-  colorLinea,
-  colorBotonTexto,
-  telefonoEmpresa,
-  emailEmpresa,
-  direccionEmpresa,
-  cifEmpresa,
-  textoMayus,
-  textoCursiva
-].forEach(el=>{
-  el.addEventListener("input", actualizarVista);
-  el.addEventListener("change", actualizarVista);
-});
-
-logoInput.addEventListener("change", actualizarVista);
-
-colorPrincipal.addEventListener("input", sincronizarHSLDesdePrincipal);
-hueRange.addEventListener("input", aplicarPrincipalDesdeHSL);
-satRange.addEventListener("input", aplicarPrincipalDesdeHSL);
-ligRange.addEventListener("input", aplicarPrincipalDesdeHSL);
-
-window.addEventListener("resize", ajustarTabs);
-document.getElementById("claveAcceso").addEventListener("keydown", e=>{
-  if(e.key === "Enter") entrar();
-});
-
-ajustarTabs();
 </script>
+
 </body>
 </html>
