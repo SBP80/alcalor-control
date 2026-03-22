@@ -37,7 +37,7 @@ button{touch-action:manipulation}
   position:sticky;
   top:0;
   background:var(--bg);
-  z-index:50;
+  z-index:100;
 }
 .brand{
   text-align:center;
@@ -107,10 +107,45 @@ button{touch-action:manipulation}
   padding:8px 9px;
   font-size:12px;
 }
+.verify-bar{
+  display:none;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  margin-bottom:10px;
+}
+.verify-bar.show{display:block}
+.verify-grid{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) minmax(260px,420px);
+  gap:10px;
+  align-items:end;
+}
+.verify-title{
+  color:var(--accent);
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+.verify-line{
+  font-size:14px;
+  line-height:1.35;
+}
+.verify-help{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:6px;
+}
+.verify-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:6px;
+}
 .canvas-wrap{position:relative}
 canvas{
   width:100%;
-  height:calc(100vh - 260px);
+  height:calc(100vh - 320px);
   min-height:420px;
   display:block;
   background:#101010;
@@ -159,11 +194,6 @@ canvas{
 .grid{
   display:grid;
   grid-template-columns:1fr;
-  gap:6px;
-}
-.grid-2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
   gap:6px;
 }
 .btn{
@@ -218,7 +248,6 @@ canvas{
   font-size:12px;
 }
 .mode-badge.show{display:block}
-
 .room-action-overlay{
   position:fixed;
   inset:0;
@@ -253,44 +282,18 @@ canvas{
   grid-template-columns:1fr;
   gap:8px;
 }
-
-.diag-panel{
-  position:absolute;
-  left:10px;
-  top:56px;
-  width:320px;
-  max-width:calc(100% - 20px);
-  background:rgba(21,21,21,.96);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-  z-index:35;
-  box-shadow:0 10px 24px rgba(0,0,0,.4);
-  display:none;
-}
-.diag-panel.show{display:block}
-.diag-panel h3{
-  margin:0 0 8px 0;
-  color:var(--accent);
-  font-size:18px;
-}
-.diag-line{
-  font-size:13px;
-  line-height:1.35;
-  margin-bottom:8px;
-}
-.diag-help{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:6px;
-}
-
 @media (max-width:900px){
   .info-grid{
     grid-template-columns:1fr;
   }
+  .verify-grid{
+    grid-template-columns:1fr;
+  }
+  .verify-actions{
+    grid-template-columns:1fr 1fr;
+  }
   canvas{
-    height:calc(100vh - 330px);
+    height:calc(100vh - 470px);
     min-height:360px;
   }
   .panel{
@@ -301,14 +304,6 @@ canvas{
     width:auto;
     max-height:64vh;
     overflow:auto;
-  }
-  .diag-panel{
-    left:10px;
-    right:10px;
-    top:auto;
-    bottom:58px;
-    width:auto;
-    max-width:none;
   }
 }
 </style>
@@ -325,6 +320,28 @@ canvas{
 </div>
 
 <div class="main">
+  <div class="verify-bar" id="verifyBar">
+    <div class="verify-grid">
+      <div>
+        <div class="verify-title">Verificación</div>
+        <div class="small" id="diagIndex">Diagonal 1 / 1</div>
+        <div class="verify-line" id="diagText">Diagonal</div>
+        <div class="verify-help" id="diagHelp">La diagonal activa se ve en el plano. En esta fase la corrección geométrica actúa sobre estancias de 4 vértices.</div>
+      </div>
+
+      <div>
+        <div class="label">Medida real (m)</div>
+        <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
+        <div class="verify-actions" style="margin-top:8px">
+          <button class="btn neutral" onclick="diagAnterior()">Anterior</button>
+          <button class="btn secondary" onclick="diagSaltar()">Siguiente</button>
+          <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
+          <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="info">
     <div class="info-grid">
       <div class="card" id="infoBox">Cargando...</div>
@@ -343,21 +360,6 @@ canvas{
 
   <div class="canvas-wrap">
     <div class="mode-badge" id="modeBadge"></div>
-
-    <div class="diag-panel" id="diagPanel">
-      <h3>Verificación</h3>
-      <div class="diag-line" id="diagText">Diagonal</div>
-      <div class="label">Medida real (m)</div>
-      <input class="in" id="diagInput" type="number" min="0.01" step="0.01">
-      <div class="grid-2" style="margin-top:8px">
-        <button class="btn secondary" onclick="diagSaltar()">Saltar</button>
-        <button class="btn ok" onclick="diagAceptar()">Aceptar</button>
-      </div>
-      <div class="grid" style="margin-top:6px">
-        <button class="btn danger" onclick="diagCancelar()">Cancelar</button>
-      </div>
-      <div class="diag-help">La diagonal activa se ve en el plano. Solo aparece una cada vez.</div>
-    </div>
 
     <div class="panel" id="panel">
       <div class="group open">
@@ -425,9 +427,11 @@ const groupInfo = document.getElementById("groupInfo");
 const roomActionOverlay = document.getElementById("roomActionOverlay");
 const roomActionText = document.getElementById("roomActionText");
 
-const diagPanel = document.getElementById("diagPanel");
+const verifyBar = document.getElementById("verifyBar");
+const diagIndex = document.getElementById("diagIndex");
 const diagText = document.getElementById("diagText");
 const diagInput = document.getElementById("diagInput");
+const diagHelp = document.getElementById("diagHelp");
 
 function ajustarCanvas(){
   const rect = canvas.getBoundingClientRect();
@@ -974,7 +978,7 @@ function drawActiveDiagonal(){
 }
 
 function hitSideLabel(x,y){
-  if(!metrosPorPixel) return null;
+  if(!metrosPorPixel || diagState.active) return null;
 
   function testPoly(poly, roomIndex, currentRoom){
     const totalSides = currentRoom ? (cerrado ? poly.length : poly.length - 1) : poly.length;
@@ -1163,7 +1167,7 @@ function iniciarDiag(roomIdx){
   diagState.diagonals = getAllDiagonals(poly, true);
   diagState.index = 0;
   diagState.results = [];
-  diagPanel.classList.add("show");
+  verifyBar.classList.add("show");
   mostrarDiagActual();
 }
 
@@ -1175,20 +1179,141 @@ function mostrarDiagActual(){
     return;
   }
   const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
+  diagIndex.textContent = "Diagonal " + (diagState.index + 1) + " / " + diagState.diagonals.length;
   diagText.textContent = "Diagonal V" + (d.i+1) + " - V" + (d.j+1) + " · calculada: " + calc.toFixed(2) + " m";
+
+  if(room.puntos.length === 4){
+    diagHelp.textContent = "Esta estancia tiene 4 vértices. Al aceptar una medida distinta, la forma se recalcula.";
+  }else{
+    diagHelp.textContent = "Esta estancia tiene más de 4 vértices. En esta fase la verificación es informativa.";
+  }
+
   diagInput.value = calc.toFixed(2);
   dibujar();
+}
+
+function circleIntersections(c1, r1, c2, r2){
+  const d = dist(c1, c2);
+  if(d <= 0.00001) return [];
+  if(d > r1 + r2) return [];
+  if(d < Math.abs(r1 - r2)) return [];
+
+  const a = (r1*r1 - r2*r2 + d*d) / (2*d);
+  const h2 = r1*r1 - a*a;
+  if(h2 < 0) return [];
+
+  const h = Math.sqrt(Math.max(0, h2));
+  const x2 = c1.x + a*(c2.x - c1.x)/d;
+  const y2 = c1.y + a*(c2.y - c1.y)/d;
+
+  const rx = -(c2.y - c1.y) * (h / d);
+  const ry =  (c2.x - c1.x) * (h / d);
+
+  return [
+    {x:x2 + rx, y:y2 + ry},
+    {x:x2 - rx, y:y2 - ry}
+  ];
+}
+
+function chooseClosestPoint(options, target){
+  if(!options.length) return null;
+  let best = options[0];
+  let bestD = dist(options[0], target);
+  for(let i=1;i<options.length;i++){
+    const d = dist(options[i], target);
+    if(d < bestD){
+      bestD = d;
+      best = options[i];
+    }
+  }
+  return best;
+}
+
+function corregirQuadPorDiagonal(room, i, j, nuevaDiagonalM){
+  const pts = room.puntos;
+  if(pts.length !== 4) return false;
+
+  const nuevaDiagPx = nuevaDiagonalM / metrosPorPixel;
+  if(nuevaDiagPx <= 0) return false;
+
+  const key = i + "-" + j;
+
+  if(key === "0-2"){
+    const p0 = pts[0], p1 = pts[1], p2 = pts[2], p3 = pts[3];
+    const l12 = dist(p1, p2);
+    const l23 = dist(p2, p3);
+
+    const dir = {x:p2.x - p0.x, y:p2.y - p0.y};
+    const len = Math.hypot(dir.x, dir.y);
+    if(len <= 0.00001) return false;
+
+    const newP2 = {
+      x:p0.x + dir.x/len * nuevaDiagPx,
+      y:p0.y + dir.y/len * nuevaDiagPx
+    };
+
+    const ints = circleIntersections(p1, l12, newP2, l23);
+    const newP3 = chooseClosestPoint(ints, p3);
+    if(!newP3) return false;
+
+    pts[2].x = newP2.x; pts[2].y = newP2.y;
+    pts[3].x = newP3.x; pts[3].y = newP3.y;
+    return true;
+  }
+
+  if(key === "1-3"){
+    const p0 = pts[0], p1 = pts[1], p2 = pts[2], p3 = pts[3];
+    const l01 = dist(p0, p1);
+    const l30 = dist(p3, p0);
+
+    const dir = {x:p3.x - p1.x, y:p3.y - p1.y};
+    const len = Math.hypot(dir.x, dir.y);
+    if(len <= 0.00001) return false;
+
+    const newP3 = {
+      x:p1.x + dir.x/len * nuevaDiagPx,
+      y:p1.y + dir.y/len * nuevaDiagPx
+    };
+
+    const ints = circleIntersections(p0, l01, newP3, l30);
+    const newP0 = chooseClosestPoint(ints, p0);
+    if(!newP0) return false;
+
+    pts[3].x = newP3.x; pts[3].y = newP3.y;
+    pts[0].x = newP0.x; pts[0].y = newP0.y;
+    return true;
+  }
+
+  return false;
 }
 
 function diagAceptar(){
   const room = estancias[diagState.roomIndex];
   const d = diagState.diagonals[diagState.index];
   if(!room || !d) return;
+
   const real = parseFloat(String(diagInput.value).replace(",", "."));
   if(!real || real <= 0) return alert("Medida no válida");
 
   const calc = dist(room.puntos[d.i], room.puntos[d.j]) * metrosPorPixel;
-  diagState.results.push(Math.abs(real - calc));
+  const dif = Math.abs(real - calc);
+  diagState.results.push(dif);
+
+  if(dif > 0.001){
+    let corregido = false;
+
+    if(room.puntos.length === 4){
+      corregido = corregirQuadPorDiagonal(room, d.i, d.j, real);
+    }
+
+    if(corregido){
+      guardarMemoria();
+    }else if(room.puntos.length === 4){
+      alert("No se pudo corregir esa diagonal con la geometría actual");
+    }else{
+      alert("Esta fase corrige solo estancias de 4 vértices");
+    }
+  }
 
   diagState.index++;
   if(diagState.index >= diagState.diagonals.length) terminarDiag();
@@ -1201,14 +1326,21 @@ function diagSaltar(){
   else mostrarDiagActual();
 }
 
+function diagAnterior(){
+  if(!diagState.active) return;
+  if(diagState.index <= 0) return;
+  diagState.index--;
+  mostrarDiagActual();
+}
+
 function diagCancelar(){
   diagState.active = false;
-  diagPanel.classList.remove("show");
+  verifyBar.classList.remove("show");
   dibujar();
 }
 
 function terminarDiag(){
-  diagPanel.classList.remove("show");
+  verifyBar.classList.remove("show");
   diagState.active = false;
   if(!diagState.results.length){
     dibujar();
@@ -1319,16 +1451,15 @@ function aplicarMedidaDirecta(hit){
 }
 
 function onStart(ev){
-  if(diagState.active && ev.target === canvas){
-    const rawView = getPos(ev);
-    ultimoX = rawView.x;
-    ultimoY = rawView.y;
-  }
-
   const raw = getPos(ev);
 
+  if(diagState.active){
+    if(ev.cancelable) ev.preventDefault();
+    return;
+  }
+
   const sideHit = hitSideLabel(raw.x, raw.y);
-  if(sideHit && !diagState.active){
+  if(sideHit){
     if(!sideHit.currentRoom){
       const idx = sideHit.roomIndex;
       if(seleccion.estanciaIndex !== idx || !seleccion.editEnabled){
@@ -1338,11 +1469,6 @@ function onStart(ev){
       }
     }
     aplicarMedidaDirecta(sideHit);
-    if(ev.cancelable) ev.preventDefault();
-    return;
-  }
-
-  if(diagState.active){
     if(ev.cancelable) ev.preventDefault();
     return;
   }
