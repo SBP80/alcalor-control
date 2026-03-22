@@ -737,7 +737,8 @@ function guardarConfig(cfg){
 }
 
 function volver(){
-  window.location.href = "app.html";
+  window.location.replace("index.html");
+}
 }
 
 function entrar(){
@@ -935,13 +936,13 @@ function guardarYVolver(){
     reader.onload = function(e){
       const nuevo = recogerCampos(e.target.result);
       guardarConfig(nuevo);
-      window.location.href = "app.html";
+      window.location.replace("index.html");
     };
     reader.readAsDataURL(logoInput.files[0]);
   }else{
     const nuevo = recogerCampos(cfgActual.logo || "");
     guardarConfig(nuevo);
-    window.location.href = "app.html";
+    window.location.replace("index.html");
   }
 }
 
