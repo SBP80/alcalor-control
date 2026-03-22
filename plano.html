@@ -291,8 +291,8 @@ canvas{
   <div class="bottom-bar">
     <button class="bottom-btn active" id="tabVer">Ver</button>
     <button class="bottom-btn" id="tabDibujar">Dibujar</button>
-    <button class="bottom-btn" id="tabMover">Mover</button>
-    <button class="bottom-btn" id="tabEscala">Escala</button>
+    <button class="bottom-btn" id="tabMoverEstancia">Estancia</button>
+    <button class="bottom-btn" id="tabMoverVertice">Vértice</button>
     <button class="bottom-btn" id="tabMas">Más</button>
   </div>
 
@@ -321,8 +321,8 @@ const toast = document.getElementById("toast");
 
 const tabVer = document.getElementById("tabVer");
 const tabDibujar = document.getElementById("tabDibujar");
-const tabMover = document.getElementById("tabMover");
-const tabEscala = document.getElementById("tabEscala");
+const tabMoverEstancia = document.getElementById("tabMoverEstancia");
+const tabMoverVertice = document.getElementById("tabMoverVertice");
 const tabMas = document.getElementById("tabMas");
 
 const sheet = document.getElementById("sheet");
@@ -359,8 +359,13 @@ function leerConfigVisual(){
   }
 }
 
-function aplicarConfigVisual(){
+let visualConfigCache = null;
+
+function aplicarConfigVisual(force = false){
   const cfg = leerConfigVisual();
+  const sig = JSON.stringify(cfg);
+  if (!force && visualConfigCache === sig) return;
+  visualConfigCache = sig;
 
   document.documentElement.style.setProperty("--bg", cfg.colorFondo || "#0f1115");
   document.documentElement.style.setProperty("--panel", cfg.colorPanel || "#171a21");
@@ -387,8 +392,19 @@ function aplicarConfigVisual(){
   brandTitle.style.color = cfg.colorPrincipal || "#f39b2f";
 
   brandSub.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+
+  draw();
 }
-aplicarConfigVisual();
+aplicarConfigVisual(true);
+
+window.addEventListener("storage", e => {
+  if (e.key === "configAllcalor") aplicarConfigVisual(true);
+});
+window.addEventListener("pageshow", () => aplicarConfigVisual(true));
+window.addEventListener("focus", () => aplicarConfigVisual(true));
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) aplicarConfigVisual(true);
+});
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
@@ -415,7 +431,7 @@ let estancias = obra.plano.estancias
 
 let metrosPorPixel = obra.plano.metrosPorPixel;
 
-let modo = "ver"; // ver | dibujar | mover | escala
+let modo = "ver"; // ver | dibujar | mover-room | mover-point | escala
 
 let draft = [];
 let draftClosed = false;
@@ -491,11 +507,11 @@ function setMode(next) {
 }
 
 function updateTabs() {
-  [tabVer, tabDibujar, tabMover, tabEscala, tabMas].forEach(b => b.classList.remove("active"));
+  [tabVer, tabDibujar, tabMoverEstancia, tabMoverVertice, tabMas].forEach(b => b.classList.remove("active"));
   if (modo === "ver") tabVer.classList.add("active");
   if (modo === "dibujar") tabDibujar.classList.add("active");
-  if (modo === "mover") tabMover.classList.add("active");
-  if (modo === "escala") tabEscala.classList.add("active");
+  if (modo === "mover-room") tabMoverEstancia.classList.add("active");
+  if (modo === "mover-point") tabMoverVertice.classList.add("active");
 }
 
 function updateUI() {
@@ -527,8 +543,10 @@ function updateUI() {
     else modeBadge.textContent = "Escala lista";
   } else if (modo === "dibujar") {
     modeBadge.textContent = draftClosed ? "Dibujar · cerrada" : "Dibujar";
-  } else if (modo === "mover") {
-    modeBadge.textContent = "Mover";
+  } else if (modo === "mover-room") {
+    modeBadge.textContent = "Mover estancia";
+  } else if (modo === "mover-point") {
+    modeBadge.textContent = "Mover vértice";
   } else {
     modeBadge.textContent = "Ver";
   }
@@ -875,7 +893,8 @@ function openMainActions() {
       room.nombre,
       "Acciones sobre la estancia seleccionada",
       `
-      <button class="action-btn primary" onclick="selectMoveMode()">Mover estancia</button>
+      <button class="action-btn primary" onclick="selectMoveRoomMode()">Mover estancia</button>
+      <button class="action-btn primary" onclick="selectMovePointMode()">Mover vértice</button>
       <button class="action-btn primary" onclick="renameSelectedRoom()">Cambiar nombre</button>
       <button class="action-btn danger" onclick="deleteSelectedRoomAndCloseSheet()">Eliminar estancia</button>
       <button class="action-btn" onclick="closeSheet()">Cerrar</button>
@@ -946,9 +965,14 @@ function deleteSelectedRoomAndCloseSheet() {
   deleteSelectedRoom();
 }
 
-function selectMoveMode() {
+function selectMoveRoomMode() {
   closeSheet();
-  setMode("mover");
+  setMode("mover-room");
+}
+
+function selectMovePointMode() {
+  closeSheet();
+  setMode("mover-point");
 }
 
 function handleScaleTap(pos) {
@@ -1001,16 +1025,27 @@ function onPointerStart(ev) {
     selectRoom(room.id);
     const pointIndex = findPointIndex(room.puntos, pos.x, pos.y, 18);
 
-    if (modo === "mover") {
+    if (modo === "mover-room") {
       dragging = true;
       lastPos = pos;
-      if (pointIndex >= 0) {
-        selectedPointIndex = pointIndex;
-        dragKind = "point";
-      } else {
-        selectedPointIndex = -1;
-        dragKind = "room";
+      selectedPointIndex = -1;
+      dragKind = "room";
+      updateUI();
+      draw();
+      if (ev.cancelable) ev.preventDefault();
+      return;
+    }
+
+    if (modo === "mover-point") {
+      if (pointIndex < 0) {
+        showToast("Toca un vértice");
+        if (ev.cancelable) ev.preventDefault();
+        return;
       }
+      dragging = true;
+      lastPos = pos;
+      selectedPointIndex = pointIndex;
+      dragKind = "point";
       updateUI();
       draw();
       if (ev.cancelable) ev.preventDefault();
@@ -1090,29 +1125,25 @@ tabVer.addEventListener("click", () => {
 
 tabDibujar.addEventListener("click", () => {
   closeSheet();
-  if (!draft.length) {
-    setMode("dibujar");
-    return;
-  }
   setMode("dibujar");
 });
 
-tabMover.addEventListener("click", () => {
+tabMoverEstancia.addEventListener("click", () => {
   closeSheet();
   if (draft.length) {
     showToast("Primero guarda o descarta el borrador");
     return;
   }
-  setMode("mover");
+  setMode("mover-room");
 });
 
-tabEscala.addEventListener("click", () => {
+tabMoverVertice.addEventListener("click", () => {
   closeSheet();
   if (draft.length) {
     showToast("Primero guarda o descarta el borrador");
     return;
   }
-  beginScale();
+  setMode("mover-point");
 });
 
 tabMas.addEventListener("click", openMainActions);
@@ -1126,7 +1157,8 @@ window.beginScaleAndCloseSheet = beginScaleAndCloseSheet;
 window.savePlanAndCloseSheet = savePlanAndCloseSheet;
 window.renameSelectedRoom = renameSelectedRoom;
 window.deleteSelectedRoomAndCloseSheet = deleteSelectedRoomAndCloseSheet;
-window.selectMoveMode = selectMoveMode;
+window.selectMoveRoomMode = selectMoveRoomMode;
+window.selectMovePointMode = selectMovePointMode;
 
 resizeCanvas();
 updateUI();
