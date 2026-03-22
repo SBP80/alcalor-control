@@ -2,249 +2,714 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Clientes</title>
-
 <style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+  --danger:#c94b4b;
+}
+*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial;
-  background:#0b0b0b;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.wrap{
+  max-width:1100px;
+  margin:auto;
+  padding:18px;
+}
+.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+h1{
+  margin:0;
+  color:var(--accent);
+  font-size:42px;
+}
+.top-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+button,input,select,textarea{
+  font:inherit;
+}
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:800;
+  cursor:pointer;
+}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  background:#2b2b2b;
   color:#fff;
 }
-
-.wrap{
-  max-width:1000px;
-  margin:auto;
-  padding:20px;
-}
-
-h1{
-  color:#f39b2f;
-}
-
-input, textarea{
+.search{
   width:100%;
-  padding:10px;
-  margin-bottom:8px;
-  border-radius:10px;
-  border:1px solid #333;
   background:#101010;
   color:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:15px 16px;
+  font-size:18px;
+  margin-bottom:16px;
 }
-
-textarea{
-  min-height:60px;
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
 }
-
-button{
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
+.panel-title{
+  margin:0 0 14px 0;
+  color:var(--accent);
+  font-size:22px;
 }
-
-.btn{
-  background:#f39b2f;
-  color:#111;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
 }
-
-.card{
-  background:#151515;
-  border:1px solid #333;
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.field label{
+  font-size:13px;
+  color:var(--muted);
+}
+input,select,textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
   border-radius:12px;
-  padding:12px;
-  margin-top:10px;
+  padding:12px 14px;
 }
-
-.row{
+textarea{
+  min-height:90px;
+  resize:vertical;
+}
+.hidden{
+  display:none !important;
+}
+.cards{
+  display:grid;
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.card-top{
   display:flex;
   justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.card-title{
+  margin:0;
+  font-size:22px;
+}
+.card-sub{
+  margin:6px 0 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.badge{
+  display:inline-block;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+.lines{
+  margin-top:12px;
+  display:grid;
+  gap:8px;
+}
+.line{
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.line strong{
+  color:var(--text);
+}
+.card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.mini-btn{
+  border:none;
+  border-radius:12px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
+}
+.mini-btn.sec{
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.mini-btn.danger{
+  background:var(--danger);
+  color:#fff;
+}
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:24px 12px;
+  border:1px dashed var(--line);
+  border-radius:16px;
+}
+hr.sep{
+  border:none;
+  border-top:1px solid var(--line);
+  margin:10px 0 16px 0;
+}
+.modal-back{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  display:none;
   align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:16px;
+}
+.modal-back.show{
+  display:flex;
+}
+.modal{
+  width:min(460px,100%);
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.modal h3{
+  margin:0 0 14px 0;
+  color:var(--accent);
+}
+.modal-actions{
+  display:grid;
   gap:10px;
 }
-
-.mini{
-  font-size:12px;
-  color:#aaa;
+.modal-actions button{
+  border:none;
+  border-radius:12px;
+  padding:14px;
+  font-weight:800;
   cursor:pointer;
 }
-
+@media (max-width:760px){
+  h1{font-size:34px}
+  .top{flex-direction:column;align-items:stretch}
+  .top-actions{justify-content:stretch}
+  .top-actions .btn{width:100%}
+  .grid,.grid-3{grid-template-columns:1fr}
+}
 </style>
 </head>
-
 <body>
-
 <div class="wrap">
+  <div class="top">
+    <h1>Clientes</h1>
+    <div class="top-actions">
+      <button class="btn btn-main" id="btnNuevoCliente">Nuevo cliente</button>
+      <button class="btn btn-sec" onclick="volver()">Volver</button>
+    </div>
+  </div>
 
-<h1>Clientes</h1>
+  <input id="buscador" class="search" placeholder="Buscar cliente, empresa, teléfono, email, dirección, DNI o CIF">
 
-<input id="buscador" placeholder="Buscar cliente..." oninput="pintar()">
+  <div class="panel">
+    <div class="panel-title">Listado de clientes</div>
+    <div id="listaClientes" class="cards"></div>
+  </div>
 
-<hr>
+  <div id="panelFormulario" class="panel hidden">
+    <div class="panel-title">Nuevo cliente</div>
 
-<input id="nombre" placeholder="Nombre cliente">
-<input id="empresa" placeholder="Empresa">
-<input id="dni" placeholder="DNI / CIF">
+    <div class="grid">
+      <div class="field">
+        <label>Tipo de cliente</label>
+        <select id="tipoCliente">
+          <option value="particular">Particular</option>
+          <option value="empresa">Empresa</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Número de cliente</label>
+        <input id="numeroCliente" readonly>
+      </div>
+    </div>
 
-<input id="telefono1" placeholder="Teléfono 1">
-<input id="telefono2" placeholder="Teléfono 2">
+    <div class="grid">
+      <div class="field">
+        <label>Nombre del cliente</label>
+        <input id="nombreCliente" placeholder="Nombre y apellidos">
+      </div>
+      <div class="field tipo-empresa hidden" id="fieldEmpresa">
+        <label>Nombre de la empresa</label>
+        <input id="nombreEmpresa" placeholder="Razón social">
+      </div>
+    </div>
 
-<input id="email1" placeholder="Email 1">
-<input id="email2" placeholder="Email 2">
+    <div class="grid">
+      <div class="field tipo-particular" id="fieldDni">
+        <label>DNI</label>
+        <input id="dniCliente" placeholder="DNI">
+      </div>
+      <div class="field tipo-empresa hidden" id="fieldCif">
+        <label>CIF</label>
+        <input id="cifEmpresa" placeholder="CIF">
+      </div>
+      <div class="field tipo-empresa hidden" id="fieldContacto">
+        <label>Persona de contacto</label>
+        <input id="contactoEmpresa" placeholder="Nombre del contacto">
+      </div>
+    </div>
 
-<input id="direccion" placeholder="Dirección">
+    <hr class="sep">
 
-<textarea id="notas" placeholder="Notas"></textarea>
+    <div class="grid">
+      <div class="field">
+        <label>Teléfono 1</label>
+        <input id="telefono1" placeholder="Teléfono principal">
+      </div>
+      <div class="field">
+        <label>Teléfono 2</label>
+        <input id="telefono2" placeholder="Teléfono secundario">
+      </div>
+    </div>
 
-<button class="btn" onclick="crearCliente()">Crear cliente</button>
+    <div class="grid">
+      <div class="field">
+        <label>Email 1</label>
+        <input id="email1" placeholder="Correo principal">
+      </div>
+      <div class="field">
+        <label>Email 2</label>
+        <input id="email2" placeholder="Correo secundario">
+      </div>
+    </div>
 
-<hr>
+    <hr class="sep">
 
-<div id="lista"></div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Tipo de vía</label>
+        <select id="tipoVia">
+          <option value="">Seleccionar</option>
+          <option>Calle</option>
+          <option>Avenida</option>
+          <option>Plaza</option>
+          <option>Paseo</option>
+          <option>Camino</option>
+          <option>Carretera</option>
+          <option>Ronda</option>
+          <option>Travesía</option>
+          <option>Urbanización</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Nombre de la vía</label>
+        <input id="nombreVia" placeholder="Nombre de la vía">
+      </div>
+      <div class="field">
+        <label>Número</label>
+        <input id="numeroVia" placeholder="Nº">
+      </div>
+    </div>
 
-<button onclick="volver()" style="margin-top:20px;">Volver</button>
+    <div class="grid-3">
+      <div class="field">
+        <label>Portal</label>
+        <input id="portalVia" placeholder="Portal">
+      </div>
+      <div class="field">
+        <label>Piso</label>
+        <input id="pisoVia" placeholder="Piso">
+      </div>
+      <div class="field">
+        <label>Puerta</label>
+        <input id="puertaVia" placeholder="Puerta">
+      </div>
+    </div>
 
+    <div class="grid-3">
+      <div class="field">
+        <label>Código postal</label>
+        <input id="cpVia" placeholder="C.P.">
+      </div>
+      <div class="field">
+        <label>Población</label>
+        <input id="poblacionVia" placeholder="Población">
+      </div>
+      <div class="field">
+        <label>Provincia</label>
+        <input id="provinciaVia" placeholder="Provincia">
+      </div>
+    </div>
+
+    <hr class="sep">
+
+    <div class="field">
+      <label>Notas</label>
+      <textarea id="notasCliente" placeholder="Observaciones, horarios, datos útiles, incidencias..."></textarea>
+    </div>
+
+    <div class="card-actions">
+      <button class="mini-btn" onclick="guardarCliente()">Guardar cliente</button>
+      <button class="mini-btn sec" onclick="cerrarFormulario()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalTelefonos" class="modal-back">
+  <div class="modal">
+    <h3>Acciones de teléfono</h3>
+    <div class="modal-actions">
+      <button class="btn btn-main" id="btnLlamar">Llamar</button>
+      <button class="btn btn-main" id="btnSms">Mensaje SMS</button>
+      <button class="btn btn-main" id="btnWa">WhatsApp</button>
+      <button class="btn btn-sec" onclick="cerrarModal('modalTelefonos')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalDireccion" class="modal-back">
+  <div class="modal">
+    <h3>Abrir dirección</h3>
+    <div class="modal-actions">
+      <button class="btn btn-main" id="btnGoogleMaps">Google Maps</button>
+      <button class="btn btn-main" id="btnWaze">Waze</button>
+      <button class="btn btn-main" id="btnAppleMaps">Mapas</button>
+      <button class="btn btn-sec" onclick="cerrarModal('modalDireccion')">Cerrar</button>
+    </div>
+  </div>
 </div>
 
 <script>
+const KEY_CLIENTES = "clientes";
+let telefonoActivo = "";
+let direccionActiva = "";
 
 function getClientes(){
-  return JSON.parse(localStorage.getItem("clientes")) || [];
+  try{
+    return JSON.parse(localStorage.getItem(KEY_CLIENTES)) || [];
+  }catch(e){
+    return [];
+  }
 }
 
-function setClientes(data){
-  localStorage.setItem("clientes", JSON.stringify(data));
+function setClientes(clientes){
+  localStorage.setItem(KEY_CLIENTES, JSON.stringify(clientes));
 }
 
-// CREAR
-function crearCliente(){
-
+function siguienteNumeroCliente(){
   const clientes = getClientes();
+  if(!clientes.length) return 1;
+  return Math.max(...clientes.map(c => Number(c.numero) || 0)) + 1;
+}
 
-  const nuevo = {
+function volver(){
+  window.location.href = "app.html";
+}
+
+function abrirFormulario(){
+  document.getElementById("panelFormulario").classList.remove("hidden");
+  document.getElementById("numeroCliente").value = siguienteNumeroCliente();
+  window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"});
+}
+
+function cerrarFormulario(){
+  document.getElementById("panelFormulario").classList.add("hidden");
+}
+
+function limpiarFormulario(){
+  [
+    "nombreCliente","nombreEmpresa","dniCliente","cifEmpresa","contactoEmpresa",
+    "telefono1","telefono2","email1","email2","tipoVia","nombreVia","numeroVia",
+    "portalVia","pisoVia","puertaVia","cpVia","poblacionVia","provinciaVia","notasCliente"
+  ].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("tipoCliente").value = "particular";
+  document.getElementById("numeroCliente").value = siguienteNumeroCliente();
+  refrescarTipoCliente();
+}
+
+function refrescarTipoCliente(){
+  const tipo = document.getElementById("tipoCliente").value;
+  const isEmpresa = tipo === "empresa";
+
+  document.getElementById("fieldEmpresa").classList.toggle("hidden", !isEmpresa);
+  document.getElementById("fieldCif").classList.toggle("hidden", !isEmpresa);
+  document.getElementById("fieldContacto").classList.toggle("hidden", !isEmpresa);
+  document.getElementById("fieldDni").classList.toggle("hidden", isEmpresa);
+}
+
+function montarDireccionTexto(data){
+  const partes = [];
+  const linea1 = [data.tipoVia, data.nombreVia, data.numeroVia].filter(Boolean).join(" ");
+  if(linea1) partes.push(linea1);
+  const linea2 = [
+    data.portalVia ? "Portal " + data.portalVia : "",
+    data.pisoVia ? "Piso " + data.pisoVia : "",
+    data.puertaVia ? "Puerta " + data.puertaVia : ""
+  ].filter(Boolean).join(", ");
+  if(linea2) partes.push(linea2);
+  const linea3 = [data.cpVia, data.poblacionVia, data.provinciaVia].filter(Boolean).join(" ");
+  if(linea3) partes.push(linea3);
+  return partes.join(" · ");
+}
+
+function guardarCliente(){
+  const tipo = document.getElementById("tipoCliente").value;
+  const numero = Number(document.getElementById("numeroCliente").value);
+  const nombre = document.getElementById("nombreCliente").value.trim();
+
+  if(!nombre){
+    alert("Introduce el nombre del cliente.");
+    return;
+  }
+
+  const cliente = {
     id: Date.now(),
-    numero: clientes.length + 1,
-    nombre: nombre.value,
-    empresa: empresa.value,
-    dni: dni.value,
-    telefonos: [telefono1.value, telefono2.value].filter(t=>t),
-    emails: [email1.value, email2.value].filter(e=>e),
-    direccion: direccion.value,
-    notas: notas.value
+    numero,
+    tipo,
+    nombre,
+    empresa: document.getElementById("nombreEmpresa").value.trim(),
+    dni: document.getElementById("dniCliente").value.trim(),
+    cif: document.getElementById("cifEmpresa").value.trim(),
+    contacto: document.getElementById("contactoEmpresa").value.trim(),
+    telefonos: [
+      document.getElementById("telefono1").value.trim(),
+      document.getElementById("telefono2").value.trim()
+    ].filter(Boolean),
+    emails: [
+      document.getElementById("email1").value.trim(),
+      document.getElementById("email2").value.trim()
+    ].filter(Boolean),
+    tipoVia: document.getElementById("tipoVia").value.trim(),
+    nombreVia: document.getElementById("nombreVia").value.trim(),
+    numeroVia: document.getElementById("numeroVia").value.trim(),
+    portalVia: document.getElementById("portalVia").value.trim(),
+    pisoVia: document.getElementById("pisoVia").value.trim(),
+    puertaVia: document.getElementById("puertaVia").value.trim(),
+    cpVia: document.getElementById("cpVia").value.trim(),
+    poblacionVia: document.getElementById("poblacionVia").value.trim(),
+    provinciaVia: document.getElementById("provinciaVia").value.trim(),
+    notas: document.getElementById("notasCliente").value.trim(),
+    fechaAlta: new Date().toISOString()
   };
 
-  clientes.push(nuevo);
+  const clientes = getClientes();
+  clientes.push(cliente);
   setClientes(clientes);
 
-  limpiar();
-  pintar();
+  limpiarFormulario();
+  cerrarFormulario();
+  pintarClientes();
 }
 
-function limpiar(){
-  document.querySelectorAll("input,textarea").forEach(el=>el.value="");
-}
+function pintarClientes(){
+  const cont = document.getElementById("listaClientes");
+  const txt = document.getElementById("buscador").value.trim().toLowerCase();
+  const clientes = getClientes();
 
-// ACCIONES
+  const filtrados = clientes.filter(c => {
+    const bolsa = [
+      c.numero, c.nombre, c.tipo, c.empresa, c.contacto, c.dni, c.cif,
+      ...(c.telefonos || []),
+      ...(c.emails || []),
+      montarDireccionTexto(c),
+      c.notas
+    ].join(" ").toLowerCase();
 
-function llamar(tel){
-  if(confirm("¿Llamar?")){
-    window.location.href = "tel:" + tel;
-  }
-}
-
-function whatsapp(tel){
-  window.open("https://wa.me/" + tel);
-}
-
-function sms(tel){
-  window.location.href = "sms:" + tel;
-}
-
-function emailAccion(mail){
-  window.location.href = "mailto:" + mail;
-}
-
-function abrirMapa(dir){
-  const url = encodeURIComponent(dir);
-
-  const opcion = prompt("1 Google Maps\n2 Waze");
-
-  if(opcion=="1"){
-    window.open("https://www.google.com/maps/search/?api=1&query="+url);
-  }
-  if(opcion=="2"){
-    window.open("https://waze.com/ul?q="+url);
-  }
-}
-
-// LISTAR
-function pintar(){
-
-  const lista = document.getElementById("lista");
-  lista.innerHTML="";
-
-  const txt = buscador.value.toLowerCase();
-
-  getClientes().forEach(c=>{
-
-    if(!c.nombre.toLowerCase().includes(txt)) return;
-
-    const div = document.createElement("div");
-    div.className="card";
-
-    div.innerHTML=`
-      <b>#${c.numero} - ${c.nombre}</b><br>
-      ${c.empresa || ""}<br>
-      ${c.dni || ""}<br><br>
-
-      ${c.telefonos.map(t=>`
-        <div class="mini">
-          📞 ${t}
-          <span onclick="llamar('${t}')">[Llamar]</span>
-          <span onclick="whatsapp('${t}')">[WA]</span>
-          <span onclick="sms('${t}')">[SMS]</span>
-        </div>
-      `).join("")}
-
-      ${c.emails.map(e=>`
-        <div class="mini" onclick="emailAccion('${e}')">
-          📧 ${e}
-        </div>
-      `).join("")}
-
-      <div class="mini" onclick="abrirMapa('${c.direccion}')">
-        📍 ${c.direccion}
-      </div>
-
-      <div class="mini">
-        📝 ${c.notas || ""}
-      </div>
-
-      <br>
-      <button onclick="abrirCliente(${c.id})">Entrar</button>
-    `;
-
-    lista.appendChild(div);
+    return bolsa.includes(txt);
   });
+
+  if(!filtrados.length){
+    cont.innerHTML = `<div class="empty">No hay clientes que coincidan.</div>`;
+    return;
+  }
+
+  cont.innerHTML = filtrados.map(c => {
+    const direccion = montarDireccionTexto(c);
+    const tituloSec = c.tipo === "empresa"
+      ? [c.empresa, c.contacto ? "Contacto: " + c.contacto : ""].filter(Boolean).join(" · ")
+      : (c.dni || "");
+
+    const telefonos = (c.telefonos || []).map(t => `
+      <div class="line">
+        <strong>📞 ${t}</strong>
+        <div class="card-actions">
+          <button class="mini-btn sec" onclick="abrirTelefono('${escapeJs(t)}')">Acciones</button>
+        </div>
+      </div>
+    `).join("");
+
+    const emails = (c.emails || []).map(e => `
+      <div class="line">
+        <strong>📧 ${e}</strong>
+        <div class="card-actions">
+          <button class="mini-btn sec" onclick="abrirEmail('${escapeJs(e)}')">Enviar email</button>
+        </div>
+      </div>
+    `).join("");
+
+    return `
+      <div class="card">
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">#${c.numero} · ${escapeHtml(c.nombre)}</h3>
+            <div class="card-sub">${escapeHtml(tituloSec || "Cliente sin datos extra")}</div>
+          </div>
+          <span class="badge">${c.tipo === "empresa" ? "Empresa" : "Particular"}</span>
+        </div>
+
+        <div class="lines">
+          ${telefonos || ""}
+          ${emails || ""}
+          ${direccion ? `
+            <div class="line">
+              <strong>📍 ${escapeHtml(direccion)}</strong>
+              <div class="card-actions">
+                <button class="mini-btn sec" onclick="abrirDireccion('${escapeJs(direccion)}')">Abrir mapa</button>
+              </div>
+            </div>
+          ` : ""}
+          ${c.dni ? `<div class="line"><strong>DNI:</strong> ${escapeHtml(c.dni)}</div>` : ""}
+          ${c.cif ? `<div class="line"><strong>CIF:</strong> ${escapeHtml(c.cif)}</div>` : ""}
+          ${c.notas ? `<div class="line"><strong>📝 Notas:</strong><br>${escapeHtml(c.notas)}</div>` : ""}
+        </div>
+
+        <div class="card-actions">
+          <button class="mini-btn" onclick="entrarCliente(${c.id})">Entrar</button>
+          <button class="mini-btn sec" onclick="editarNoDisponible()">Editar</button>
+          <button class="mini-btn danger" onclick="borrarCliente(${c.id})">Borrar</button>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
-// SIGUIENTE PASO
-function abrirCliente(id){
+function entrarCliente(id){
   localStorage.setItem("clienteActivo", id);
-  alert("Siguiente: obras de este cliente");
+  alert("Siguiente paso: obras de este cliente.");
 }
 
-// VOLVER
-function volver(){
-  window.location.href="app.html";
+function editarNoDisponible(){
+  alert("La edición detallada será el siguiente paso.");
 }
 
-// INIT
-pintar();
+function borrarCliente(id){
+  if(!confirm("¿Borrar este cliente?")) return;
+  const clientes = getClientes().filter(c => c.id !== id);
+  setClientes(clientes);
+  pintarClientes();
+}
 
+function abrirTelefono(tel){
+  telefonoActivo = tel;
+  document.getElementById("btnLlamar").onclick = () => { window.location.href = "tel:" + telefonoActivo; };
+  document.getElementById("btnSms").onclick = () => { window.location.href = "sms:" + telefonoActivo; };
+  document.getElementById("btnWa").onclick = () => { window.open("https://wa.me/" + telefonoActivo.replace(/\s+/g,''), "_blank"); };
+  document.getElementById("modalTelefonos").classList.add("show");
+}
+
+function abrirEmail(email){
+  window.location.href = "mailto:" + email;
+}
+
+function abrirDireccion(dir){
+  direccionActiva = dir;
+  document.getElementById("btnGoogleMaps").onclick = () => {
+    window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(direccionActiva), "_blank");
+  };
+  document.getElementById("btnWaze").onclick = () => {
+    window.open("https://waze.com/ul?q=" + encodeURIComponent(direccionActiva), "_blank");
+  };
+  document.getElementById("btnAppleMaps").onclick = () => {
+    window.open("http://maps.apple.com/?q=" + encodeURIComponent(direccionActiva), "_blank");
+  };
+  document.getElementById("modalDireccion").classList.add("show");
+}
+
+function cerrarModal(id){
+  document.getElementById(id).classList.remove("show");
+}
+
+function escapeHtml(str){
+  return String(str || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function escapeJs(str){
+  return String(str || "")
+    .replaceAll("\\","\\\\")
+    .replaceAll("'","\\'");
+}
+
+document.getElementById("btnNuevoCliente").addEventListener("click", () => {
+  const panel = document.getElementById("panelFormulario");
+  panel.classList.toggle("hidden");
+  if(!panel.classList.contains("hidden")){
+    document.getElementById("numeroCliente").value = siguienteNumeroCliente();
+    refrescarTipoCliente();
+  }
+});
+
+document.getElementById("tipoCliente").addEventListener("change", refrescarTipoCliente);
+document.getElementById("buscador").addEventListener("input", pintarClientes);
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("numeroCliente").value = siguienteNumeroCliente();
+  refrescarTipoCliente();
+  pintarClientes();
+});
 </script>
-
 </body>
 </html>
