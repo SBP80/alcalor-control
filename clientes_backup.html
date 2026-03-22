@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0b0b;
+    color: white;
+}
+
+/* HEADER */
+.header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px;
+    border-bottom:2px solid orange;
+}
+
+.header-center{
+    flex:1;
+    text-align:center;
+}
+
+.header-title{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.btn{
+    background:orange;
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* CONTENIDO */
+.wrap{
+    padding:10px;
+}
+
+.input{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:8px;
+    border:none;
+}
+
+/* CLIENTES */
+.cliente{
+    background:#1a1a1a;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
+    position:relative;
+    cursor:pointer;
+}
+
+.nombre{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.eliminar{
+    position:absolute;
+    right:10px;
+    top:10px;
+    background:red;
+    border:none;
+    color:white;
+    padding:6px 10px;
+    border-radius:6px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <button class="btn" id="btnVolver">Volver</button>
+
+    <div class="header-center">
+        <div class="header-title">Clientes</div>
+    </div>
+
+    <button class="btn" onclick="alert('Menú')">Menú</button>
+</div>
+
+<div class="wrap">
+
+    <input id="busqueda" class="input" placeholder="Buscar..." oninput="render()">
+
+    <div id="lista"></div>
+
+</div>
+
+<script>
+const btnVolver = document.getElementById("btnVolver");
+const lista = document.getElementById("lista");
+const input = document.getElementById("busqueda");
+
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+/* BOTÓN VOLVER */
+btnVolver.onclick = () => {
+    window.location.replace("index.html");
+};
+
+/* GUARDAR */
+function guardar(){
+    localStorage.setItem("clientes", JSON.stringify(clientes));
+}
+
+/* ELIMINAR */
+function eliminar(id){
+    if(!confirm("Eliminar cliente?")) return;
+    clientes = clientes.filter(c => c.id !== id);
+    guardar();
+    render();
+}
+
+/* RENDER */
+function render(){
+    lista.innerHTML = "";
+    const texto = input.value.toLowerCase();
+
+    const filtrados = clientes.filter(c =>
+        (c.nombre || "").toLowerCase().includes(texto)
+    );
+
+    filtrados.forEach(c=>{
+        const div = document.createElement("div");
+        div.className="cliente";
+
+        div.innerHTML = `
+            <button class="eliminar">X</button>
+            <div class="nombre">${c.nombre || ""}</div>
+        `;
+
+        div.onclick = () => {
+            localStorage.setItem("clienteActivo", c.id);
+            location.href = "cliente.html";
+        };
+
+        div.querySelector(".eliminar").onclick = (e)=>{
+            e.stopPropagation();
+            eliminar(c.id);
+        };
+
+        lista.appendChild(div);
+    });
+}
+
+render();
+</script>
+
+</body>
+</html>
