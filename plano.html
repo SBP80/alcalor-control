@@ -17,6 +17,7 @@
   --ok:#39a96b;
   --danger:#c94b4b;
   --chip:#12161d;
+  --btnText:#111111;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -55,6 +56,7 @@ button{touch-action:manipulation}
   font-size:18px;
   font-weight:700;
   line-height:1;
+  word-break:break-word;
 }
 .brand-sub{
   font-size:11px;
@@ -65,7 +67,7 @@ button{touch-action:manipulation}
   border:none;
   border-radius:10px;
   background:var(--accent);
-  color:#111;
+  color:var(--btnText);
   font-weight:700;
   padding:10px 12px;
   min-width:72px;
@@ -112,6 +114,26 @@ canvas{
   font-size:12px;
   font-weight:700;
 }
+
+.toast{
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.78);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.14);
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:12px;
+  z-index:15;
+  display:none;
+  white-space:nowrap;
+  max-width:90%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.toast.show{display:block}
 
 .bottom-bar{
   display:grid;
@@ -202,47 +224,6 @@ canvas{
 .action-btn[disabled]{
   opacity:.45;
 }
-.field{
-  display:grid;
-  gap:6px;
-}
-.label{
-  font-size:12px;
-  color:var(--muted);
-}
-.input{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#0f131a;
-  color:var(--text);
-  padding:11px 12px;
-}
-.row2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-
-.toast{
-  position:absolute;
-  left:50%;
-  bottom:14px;
-  transform:translateX(-50%);
-  background:rgba(0,0,0,.78);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.14);
-  padding:10px 14px;
-  border-radius:12px;
-  font-size:12px;
-  z-index:15;
-  display:none;
-  white-space:nowrap;
-  max-width:90%;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.toast.show{display:block}
 
 @media (min-width:901px){
   .app{
@@ -287,8 +268,8 @@ canvas{
   <div class="topbar">
     <button class="btn-top" id="btnVolver">Volver</button>
     <div class="brand">
-      <div class="brand-title">ALLCALOR</div>
-      <div class="brand-sub">Plano fase 1</div>
+      <div class="brand-title" id="brandTitle">ALLCALOR</div>
+      <div class="brand-sub" id="brandSub">Plano fase 1 estable</div>
     </div>
     <button class="btn-top" id="btnAcciones">Acciones</button>
   </div>
@@ -298,6 +279,7 @@ canvas{
     <div class="chip" id="chipModo">Modo: ver</div>
     <div class="chip" id="chipEscala">Escala sin definir</div>
     <div class="chip" id="chipSeleccion">Sin selección</div>
+    <div class="chip" id="chipBorrador">Sin borrador</div>
   </div>
 
   <div class="canvas-wrap">
@@ -333,6 +315,7 @@ const chipObra = document.getElementById("chipObra");
 const chipModo = document.getElementById("chipModo");
 const chipEscala = document.getElementById("chipEscala");
 const chipSeleccion = document.getElementById("chipSeleccion");
+const chipBorrador = document.getElementById("chipBorrador");
 const modeBadge = document.getElementById("modeBadge");
 const toast = document.getElementById("toast");
 
@@ -347,6 +330,65 @@ const sheetBackdrop = document.getElementById("sheetBackdrop");
 const sheetTitle = document.getElementById("sheetTitle");
 const sheetSub = document.getElementById("sheetSub");
 const sheetContent = document.getElementById("sheetContent");
+
+const brandTitle = document.getElementById("brandTitle");
+const brandSub = document.getElementById("brandSub");
+
+function leerConfigVisual(){
+  const base = {
+    nombre:"ALLCALOR",
+    subtitulo:"Plano fase 1 estable",
+    fuente:"Arial, sans-serif",
+    tamNombre:20,
+    pesoNombre:700,
+    espacioLetras:0,
+    sombraNombre:0,
+    mayusculas:false,
+    cursiva:false,
+    colorPrincipal:"#f39b2f",
+    colorFondo:"#0f1115",
+    colorPanel:"#171a21",
+    colorTexto:"#f5f7fb",
+    colorLinea:"#2b3242",
+    colorBotonTexto:"#111111"
+  };
+  try{
+    return {...base, ...(JSON.parse(localStorage.getItem("configAllcalor")) || {})};
+  }catch(e){
+    return base;
+  }
+}
+
+function aplicarConfigVisual(){
+  const cfg = leerConfigVisual();
+
+  document.documentElement.style.setProperty("--bg", cfg.colorFondo || "#0f1115");
+  document.documentElement.style.setProperty("--panel", cfg.colorPanel || "#171a21");
+  document.documentElement.style.setProperty("--panel2", cfg.colorPanel || "#171a21");
+  document.documentElement.style.setProperty("--text", cfg.colorTexto || "#f5f7fb");
+  document.documentElement.style.setProperty("--muted", cfg.colorTexto || "#aeb7c8");
+  document.documentElement.style.setProperty("--line", cfg.colorLinea || "#2b3242");
+  document.documentElement.style.setProperty("--accent", cfg.colorPrincipal || "#f39b2f");
+  document.documentElement.style.setProperty("--accent2", cfg.colorPrincipal || "#d9861f");
+  document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || "#111111");
+
+  document.body.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+
+  const nombre = cfg.mayusculas ? String(cfg.nombre || "ALLCALOR").toUpperCase() : String(cfg.nombre || "ALLCALOR");
+  brandTitle.textContent = nombre;
+  brandSub.textContent = cfg.subtitulo || "Plano fase 1 estable";
+
+  brandTitle.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+  brandTitle.style.fontSize = Math.max(14, Number(cfg.tamNombre || 20)) + "px";
+  brandTitle.style.fontWeight = cfg.pesoNombre || 700;
+  brandTitle.style.letterSpacing = (cfg.espacioLetras || 0) + "px";
+  brandTitle.style.textShadow = "0 0 " + (cfg.sombraNombre || 0) + "px #000";
+  brandTitle.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+  brandTitle.style.color = cfg.colorPrincipal || "#f39b2f";
+
+  brandSub.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+}
+aplicarConfigVisual();
 
 const clienteId = localStorage.getItem("clienteActivo");
 const obraId = localStorage.getItem("obraActiva");
@@ -374,6 +416,7 @@ let estancias = obra.plano.estancias
 let metrosPorPixel = obra.plano.metrosPorPixel;
 
 let modo = "ver"; // ver | dibujar | mover | escala
+
 let draft = [];
 let draftClosed = false;
 
@@ -381,7 +424,7 @@ let selectedRoomId = null;
 let selectedPointIndex = -1;
 
 let dragging = false;
-let dragKind = null; // point | room | draft-point | draft-room | scale
+let dragKind = null; // point | room
 let lastPos = null;
 
 let scaleStep = null; // p1 | p2 | done
@@ -392,11 +435,15 @@ function cryptoRandomId() {
   return "r" + Math.random().toString(36).slice(2, 10);
 }
 
+function clonePoints(arr){
+  return arr.map(p => ({x:p.x, y:p.y}));
+}
+
 function saveData() {
   obra.plano.estancias = estancias.map(e => ({
     id: e.id,
     nombre: e.nombre,
-    puntos: e.puntos.map(p => ({x:p.x, y:p.y}))
+    puntos: clonePoints(e.puntos)
   }));
   obra.plano.metrosPorPixel = metrosPorPixel;
   localStorage.setItem(obrasKey, JSON.stringify(obras));
@@ -415,7 +462,7 @@ function showToast(text) {
   toast.textContent = text;
   toast.classList.add("show");
   clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => toast.classList.remove("show"), 1600);
+  showToast._t = setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
 function getRoomById(id) {
@@ -428,15 +475,17 @@ function getSelectedRoom() {
 
 function setMode(next) {
   modo = next;
+  dragging = false;
+  dragKind = null;
+  lastPos = null;
   selectedPointIndex = -1;
+
   if (modo !== "escala") {
     scaleStep = null;
     scaleP1 = null;
     scaleP2 = null;
   }
-  if (modo !== "dibujar") {
-    draftClosed = false;
-  }
+
   updateUI();
   draw();
 }
@@ -461,10 +510,14 @@ function updateUI() {
     chipSeleccion.textContent = selectedPointIndex >= 0
       ? selRoom.nombre + " · V" + (selectedPointIndex + 1)
       : selRoom.nombre;
-  } else if (draft.length) {
-    chipSeleccion.textContent = "Estancia nueva";
   } else {
     chipSeleccion.textContent = "Sin selección";
+  }
+
+  if (draft.length) {
+    chipBorrador.textContent = draftClosed ? "Borrador cerrado" : "Borrador abierto";
+  } else {
+    chipBorrador.textContent = "Sin borrador";
   }
 
   if (modo === "escala") {
@@ -549,6 +602,15 @@ function polygonAreaM2(poly) {
   return polygonAreaPx(poly) * metrosPorPixel * metrosPorPixel;
 }
 
+function centroid(poly) {
+  let sx = 0, sy = 0;
+  for (const p of poly) {
+    sx += p.x;
+    sy += p.y;
+  }
+  return {x:sx / poly.length, y:sy / poly.length};
+}
+
 function drawPolygon(poly, opts = {}) {
   if (!poly.length) return;
   const {
@@ -615,17 +677,9 @@ function drawRoomLabel(room) {
   }
 }
 
-function centroid(poly) {
-  let sx = 0, sy = 0;
-  for (const p of poly) {
-    sx += p.x;
-    sy += p.y;
-  }
-  return {x:sx / poly.length, y:sy / poly.length};
-}
-
 function drawScaleLine() {
   if (!scaleP1) return;
+
   ctx.strokeStyle = "#7dd3ff";
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 6]);
@@ -693,7 +747,12 @@ function unselectAll() {
 }
 
 function addDraftPoint(pos) {
+  if (draftClosed) {
+    showToast("El borrador ya está cerrado");
+    return;
+  }
   draft.push({x: pos.x, y: pos.y});
+  updateUI();
   draw();
 }
 
@@ -703,6 +762,7 @@ function closeDraft() {
     return;
   }
   draftClosed = true;
+  updateUI();
   draw();
   showToast("Estancia cerrada");
 }
@@ -710,6 +770,7 @@ function closeDraft() {
 function clearDraft() {
   draft = [];
   draftClosed = false;
+  updateUI();
   draw();
 }
 
@@ -718,6 +779,7 @@ function saveDraftRoom() {
     showToast("Primero cierra la estancia");
     return;
   }
+
   const nombre = prompt("Nombre de la estancia:");
   if (!nombre || !nombre.trim()) return;
 
@@ -726,10 +788,13 @@ function saveDraftRoom() {
     nombre: nombre.trim(),
     puntos: clonePoints(draft)
   };
+
   estancias.push(room);
   saveData();
+
   selectedRoomId = room.id;
   selectedPointIndex = -1;
+
   clearDraft();
   setMode("ver");
   showToast("Estancia guardada");
@@ -748,20 +813,25 @@ function finishScale() {
     showToast("Faltan puntos de escala");
     return;
   }
+
   const px = pointDist(scaleP1, scaleP2);
   if (px <= 0) {
     showToast("Escala no válida");
     return;
   }
+
   const value = prompt("Distancia real entre esos dos puntos, en metros:");
   if (!value) return;
+
   const meters = parseFloat(String(value).replace(",", "."));
   if (!meters || meters <= 0) {
     showToast("Medida no válida");
     return;
   }
+
   metrosPorPixel = meters / px;
   saveData();
+
   scaleStep = "done";
   updateUI();
   draw();
@@ -774,7 +844,9 @@ function deleteSelectedRoom() {
     showToast("No hay estancia seleccionada");
     return;
   }
+
   if (!confirm("¿Eliminar estancia seleccionada?")) return;
+
   estancias = estancias.filter(r => r.id !== room.id);
   saveData();
   unselectAll();
@@ -783,14 +855,16 @@ function deleteSelectedRoom() {
 
 function openMainActions() {
   const room = getSelectedRoom();
-  if (modo === "dibujar") {
+
+  if (draft.length) {
     openSheet(
-      "Dibujo",
-      "Acciones para la estancia nueva",
+      "Borrador",
+      draftClosed ? "La estancia nueva está cerrada" : "La estancia nueva está abierta",
       `
       <button class="action-btn primary" onclick="closeDraftAndKeep()">Cerrar estancia</button>
       <button class="action-btn ok" onclick="saveDraftRoomAndCloseSheet()">Guardar estancia</button>
-      <button class="action-btn danger" onclick="discardDraftAndCloseSheet()">Descartar estancia</button>
+      <button class="action-btn danger" onclick="discardDraftAndCloseSheet()">Descartar borrador</button>
+      <button class="action-btn" onclick="closeSheet()">Cerrar</button>
       `
     );
     return;
@@ -840,8 +914,8 @@ function discardDraftAndCloseSheet() {
 
 function startNewDrawing() {
   closeSheet();
-  clearDraft();
   unselectAll();
+  clearDraft();
   setMode("dibujar");
 }
 
@@ -883,6 +957,7 @@ function handleScaleTap(pos) {
     scaleP1 = null;
     scaleP2 = null;
   }
+
   if (scaleStep === "p1") {
     scaleP1 = {x: pos.x, y: pos.y};
     scaleP2 = null;
@@ -891,6 +966,7 @@ function handleScaleTap(pos) {
     showToast("Toca el punto 2");
     return;
   }
+
   if (scaleStep === "p2") {
     scaleP2 = {x: pos.x, y: pos.y};
     draw();
@@ -907,10 +983,16 @@ function onPointerStart(ev) {
     return;
   }
 
-  if (modo === "dibujar" && !draftClosed) {
-    addDraftPoint(pos);
-    if (ev.cancelable) ev.preventDefault();
-    return;
+  if (modo === "dibujar") {
+    if (!draftClosed) {
+      addDraftPoint(pos);
+      if (ev.cancelable) ev.preventDefault();
+      return;
+    } else {
+      showToast("Guarda o descarta el borrador");
+      if (ev.cancelable) ev.preventDefault();
+      return;
+    }
   }
 
   const room = getRoomAt(pos.x, pos.y);
@@ -947,6 +1029,7 @@ function onPointerStart(ev) {
 
 function onPointerMove(ev) {
   if (!dragging) return;
+
   const pos = getPos(ev);
   const dx = pos.x - lastPos.x;
   const dy = pos.y - lastPos.y;
@@ -1004,20 +1087,34 @@ tabVer.addEventListener("click", () => {
   closeSheet();
   setMode("ver");
 });
+
 tabDibujar.addEventListener("click", () => {
   closeSheet();
-  clearDraft();
-  unselectAll();
+  if (!draft.length) {
+    setMode("dibujar");
+    return;
+  }
   setMode("dibujar");
 });
+
 tabMover.addEventListener("click", () => {
   closeSheet();
+  if (draft.length) {
+    showToast("Primero guarda o descarta el borrador");
+    return;
+  }
   setMode("mover");
 });
+
 tabEscala.addEventListener("click", () => {
   closeSheet();
+  if (draft.length) {
+    showToast("Primero guarda o descarta el borrador");
+    return;
+  }
   beginScale();
 });
+
 tabMas.addEventListener("click", openMainActions);
 
 window.closeSheet = closeSheet;
