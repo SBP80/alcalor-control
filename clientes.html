@@ -14,7 +14,7 @@ body{
 }
 
 .wrap{
-  max-width:900px;
+  max-width:1000px;
   margin:auto;
   padding:20px;
 }
@@ -23,18 +23,22 @@ h1{
   color:#f39b2f;
 }
 
-input{
+input, textarea{
   width:100%;
-  padding:12px;
-  margin-bottom:10px;
+  padding:10px;
+  margin-bottom:8px;
   border-radius:10px;
   border:1px solid #333;
   background:#101010;
   color:#fff;
 }
 
+textarea{
+  min-height:60px;
+}
+
 button{
-  padding:12px;
+  padding:10px;
   border:none;
   border-radius:10px;
   cursor:pointer;
@@ -50,7 +54,7 @@ button{
   background:#151515;
   border:1px solid #333;
   border-radius:12px;
-  padding:15px;
+  padding:12px;
   margin-top:10px;
 }
 
@@ -60,6 +64,13 @@ button{
   align-items:center;
   gap:10px;
 }
+
+.mini{
+  font-size:12px;
+  color:#aaa;
+  cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -67,21 +78,33 @@ button{
 
 <div class="wrap">
 
-  <h1>Clientes</h1>
+<h1>Clientes</h1>
 
-  <!-- CREAR -->
-  <input id="nombre" placeholder="Nombre cliente">
-  <input id="telefono" placeholder="Teléfono">
-  <input id="direccion" placeholder="Dirección">
+<input id="buscador" placeholder="Buscar cliente..." oninput="pintar()">
 
-  <button class="btn" onclick="crearCliente()">Crear cliente</button>
+<hr>
 
-  <hr style="margin:20px 0; border:1px solid #333;">
+<input id="nombre" placeholder="Nombre cliente">
+<input id="empresa" placeholder="Empresa">
+<input id="dni" placeholder="DNI / CIF">
 
-  <!-- LISTA -->
-  <div id="lista"></div>
+<input id="telefono1" placeholder="Teléfono 1">
+<input id="telefono2" placeholder="Teléfono 2">
 
-  <button onclick="volver()" style="margin-top:20px;">Volver</button>
+<input id="email1" placeholder="Email 1">
+<input id="email2" placeholder="Email 2">
+
+<input id="direccion" placeholder="Dirección">
+
+<textarea id="notas" placeholder="Notas"></textarea>
+
+<button class="btn" onclick="crearCliente()">Crear cliente</button>
+
+<hr>
+
+<div id="lista"></div>
+
+<button onclick="volver()" style="margin-top:20px;">Volver</button>
 
 </div>
 
@@ -98,29 +121,62 @@ function setClientes(data){
 // CREAR
 function crearCliente(){
 
-  const nombre = document.getElementById("nombre").value;
-
-  if(!nombre){
-    alert("Pon nombre");
-    return;
-  }
-
   const clientes = getClientes();
 
-  clientes.push({
+  const nuevo = {
     id: Date.now(),
-    nombre: nombre,
-    telefono: document.getElementById("telefono").value,
-    direccion: document.getElementById("direccion").value
-  });
+    numero: clientes.length + 1,
+    nombre: nombre.value,
+    empresa: empresa.value,
+    dni: dni.value,
+    telefonos: [telefono1.value, telefono2.value].filter(t=>t),
+    emails: [email1.value, email2.value].filter(e=>e),
+    direccion: direccion.value,
+    notas: notas.value
+  };
 
+  clientes.push(nuevo);
   setClientes(clientes);
 
-  document.getElementById("nombre").value="";
-  document.getElementById("telefono").value="";
-  document.getElementById("direccion").value="";
-
+  limpiar();
   pintar();
+}
+
+function limpiar(){
+  document.querySelectorAll("input,textarea").forEach(el=>el.value="");
+}
+
+// ACCIONES
+
+function llamar(tel){
+  if(confirm("¿Llamar?")){
+    window.location.href = "tel:" + tel;
+  }
+}
+
+function whatsapp(tel){
+  window.open("https://wa.me/" + tel);
+}
+
+function sms(tel){
+  window.location.href = "sms:" + tel;
+}
+
+function emailAccion(mail){
+  window.location.href = "mailto:" + mail;
+}
+
+function abrirMapa(dir){
+  const url = encodeURIComponent(dir);
+
+  const opcion = prompt("1 Google Maps\n2 Waze");
+
+  if(opcion=="1"){
+    window.open("https://www.google.com/maps/search/?api=1&query="+url);
+  }
+  if(opcion=="2"){
+    window.open("https://waze.com/ul?q="+url);
+  }
 }
 
 // LISTAR
@@ -129,32 +185,55 @@ function pintar(){
   const lista = document.getElementById("lista");
   lista.innerHTML="";
 
-  const clientes = getClientes();
+  const txt = buscador.value.toLowerCase();
 
-  clientes.forEach(c=>{
+  getClientes().forEach(c=>{
+
+    if(!c.nombre.toLowerCase().includes(txt)) return;
 
     const div = document.createElement("div");
     div.className="card";
 
     div.innerHTML=`
-      <div class="row">
-        <div>
-          <b>${c.nombre}</b><br>
-          ${c.telefono}<br>
-          ${c.direccion}
+      <b>#${c.numero} - ${c.nombre}</b><br>
+      ${c.empresa || ""}<br>
+      ${c.dni || ""}<br><br>
+
+      ${c.telefonos.map(t=>`
+        <div class="mini">
+          📞 ${t}
+          <span onclick="llamar('${t}')">[Llamar]</span>
+          <span onclick="whatsapp('${t}')">[WA]</span>
+          <span onclick="sms('${t}')">[SMS]</span>
         </div>
-        <button onclick="abrirCliente(${c.id})">Abrir</button>
+      `).join("")}
+
+      ${c.emails.map(e=>`
+        <div class="mini" onclick="emailAccion('${e}')">
+          📧 ${e}
+        </div>
+      `).join("")}
+
+      <div class="mini" onclick="abrirMapa('${c.direccion}')">
+        📍 ${c.direccion}
       </div>
+
+      <div class="mini">
+        📝 ${c.notas || ""}
+      </div>
+
+      <br>
+      <button onclick="abrirCliente(${c.id})">Entrar</button>
     `;
 
     lista.appendChild(div);
   });
 }
 
-// ABRIR (SIGUIENTE PASO)
+// SIGUIENTE PASO
 function abrirCliente(id){
   localStorage.setItem("clienteActivo", id);
-  alert("Cliente seleccionado (siguiente paso: obras)");
+  alert("Siguiente: obras de este cliente");
 }
 
 // VOLVER
