@@ -66,16 +66,8 @@ button{
 <body>
 
 <div class="wrap">
-
-  <div id="login" class="panel">
+  <div class="panel">
     <h1>Configuración</h1>
-    <input id="clave" type="password" placeholder="Código">
-    <button class="btn" onclick="entrar()">Entrar</button>
-    <button class="btn-sec" onclick="volver()">Volver</button>
-  </div>
-
-  <div id="config" class="panel" style="display:none;">
-    <h1>Ajustes</h1>
 
     <input id="nombre" placeholder="Nombre empresa">
     <input id="color" type="color">
@@ -83,41 +75,29 @@ button{
     <button class="btn" onclick="guardar()">Guardar y volver</button>
     <button class="btn-sec" onclick="volver()">Volver</button>
   </div>
-
 </div>
 
 <script>
 
-// CONFIG BASE
+// CARGAR CONFIG
 function getConfig(){
   return JSON.parse(localStorage.getItem("configAllcalor")) || {
-    clave:"1234",
     nombre:"ALLCALOR",
     color:"#f39b2f"
   };
 }
 
+// GUARDAR CONFIG
 function setConfig(cfg){
   localStorage.setItem("configAllcalor", JSON.stringify(cfg));
 }
 
-// ACCESO
-function entrar(){
+// AL CARGAR
+window.onload = function(){
   const cfg = getConfig();
-  const clave = document.getElementById("clave").value;
-
-  // SIEMPRE PUEDES ENTRAR CON 1234
-  if(clave === "1234" || clave === cfg.clave){
-    document.getElementById("login").style.display = "none";
-    document.getElementById("config").style.display = "block";
-
-    document.getElementById("nombre").value = cfg.nombre;
-    document.getElementById("color").value = cfg.color;
-
-  }else{
-    alert("Código incorrecto");
-  }
-}
+  document.getElementById("nombre").value = cfg.nombre;
+  document.getElementById("color").value = cfg.color;
+};
 
 // GUARDAR
 function guardar(){
@@ -128,12 +108,12 @@ function guardar(){
 
   setConfig(cfg);
 
-  window.location.replace("app.html");
+  window.location.href = "app.html";
 }
 
 // VOLVER
 function volver(){
-  window.location.replace("app.html");
+  window.location.href = "app.html";
 }
 
 </script>
