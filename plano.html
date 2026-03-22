@@ -3,44 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALLCALOR - Plano móvil</title>
+<title>ALLCALOR PRO</title>
 
 <style>
 body{
     margin:0;
-    font-family:Arial;
     background:#111;
     color:#fff;
+    font-family:Arial;
     overflow:hidden;
 }
 
-/* CABECERA */
+/* HEADER */
 .topbar{
     height:50px;
+    background:#000;
     display:flex;
     justify-content:space-between;
     align-items:center;
     padding:0 10px;
-    background:#000;
     border-bottom:2px solid #ff7a00;
 }
 
 .btn{
     background:#ff7a00;
     border:none;
-    padding:8px 12px;
-    border-radius:8px;
+    padding:8px;
+    border-radius:6px;
     color:#000;
     font-weight:bold;
 }
 
 /* CANVAS */
 #canvas{
-    display:block;
     background:#1a1a1a;
+    display:block;
 }
 
-/* BARRA INFERIOR */
+/* BOTTOM BAR */
 .bottombar{
     position:fixed;
     bottom:0;
@@ -52,28 +52,13 @@ body{
 
 .bottombar button{
     flex:1;
-    border:none;
     background:#111;
     color:#fff;
-    font-size:14px;
+    border:none;
 }
 
-/* PANEL INFERIOR */
-.panel{
-    position:fixed;
-    bottom:-300px;
-    width:100%;
-    background:#222;
-    padding:10px;
-    transition:0.3s;
-}
-
-.panel.active{
-    bottom:60px;
-}
-
-/* VERIFICACIÓN */
-.verificacion{
+/* VERIFICACION ABAJO */
+.verif{
     position:fixed;
     bottom:60px;
     width:100%;
@@ -82,13 +67,12 @@ body{
     display:none;
 }
 
-.verificacion input{
+.verif input{
     width:100%;
     padding:10px;
-    margin:5px 0;
 }
 
-.verificacion button{
+.verif button{
     width:32%;
     margin:1%;
     padding:10px;
@@ -102,7 +86,7 @@ body{
 <div class="topbar">
     <button class="btn">Volver</button>
     <div>ALLCALOR</div>
-    <button class="btn" onclick="togglePanel()">⚙</button>
+    <button class="btn">⚙</button>
 </div>
 
 <canvas id="canvas"></canvas>
@@ -111,25 +95,22 @@ body{
     <button onclick="modo='dibujar'">Dibujar</button>
     <button onclick="modo='editar'">Editar</button>
     <button onclick="modo='medir'">Medidas</button>
-    <button onclick="verificar()">Verificar</button>
+    <button onclick="iniciarVerificacion()">Verificar</button>
 </div>
 
-<div class="panel" id="panel">
-    <button onclick="nuevaEstancia()">Nueva estancia</button>
-    <button onclick="guardar()">Guardar</button>
-</div>
-
-<div class="verificacion" id="verif">
-    <div id="textoDiag"></div>
-    <input id="inputDiag" type="number">
+<div class="verif" id="verif">
+    <div id="texto"></div>
+    <input id="valor">
     <div>
         <button onclick="cancelar()">Cancelar</button>
         <button onclick="saltar()">Saltar</button>
-        <button onclick="aceptar()">Aceptar</button>
+        <button onclick="aplicar()">Aceptar</button>
     </div>
 </div>
 
 <script>
+
+/* -------- BASE ESTABLE -------- */
 
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
@@ -143,14 +124,18 @@ canvas.height = H;
 let puntos = [];
 let modo = "dibujar";
 
+/* -------- DIBUJO -------- */
+
 function draw(){
     ctx.clearRect(0,0,W,H);
 
-    ctx.strokeStyle="white";
+    if(puntos.length<1) return;
+
     ctx.beginPath();
+    ctx.strokeStyle="white";
 
     puntos.forEach((p,i)=>{
-        if(i==0) ctx.moveTo(p.x,p.y);
+        if(i===0) ctx.moveTo(p.x,p.y);
         else ctx.lineTo(p.x,p.y);
     });
 
@@ -163,65 +148,76 @@ function draw(){
         ctx.fill();
 
         ctx.fillStyle="white";
-        ctx.fillText("V"+(i+1),p.x+5,p.y-5);
+        ctx.fillText("V"+(i+1),p.x+6,p.y-6);
     });
 }
 
+/* -------- INPUT -------- */
+
 canvas.addEventListener("click",(e)=>{
-    if(modo=="dibujar"){
+    if(modo==="dibujar"){
         puntos.push({x:e.offsetX,y:e.offsetY});
         draw();
     }
 });
 
-function togglePanel(){
-    document.getElementById("panel").classList.toggle("active");
+/* -------- VERIFICACIÓN REAL -------- */
+
+let diagActual = null;
+
+function iniciarVerificacion(){
+    if(puntos.length < 4) return;
+
+    // diagonal entre primer y tercer punto
+    diagActual = [0,2];
+
+    mostrarDiagonal();
 }
 
-function nuevaEstancia(){
-    puntos=[];
-    draw();
+function mostrarDiagonal(){
+    let p1 = puntos[diagActual[0]];
+    let p2 = puntos[diagActual[1]];
+
+    let d = distancia(p1,p2);
+
+    document.getElementById("texto").innerText =
+        "Diagonal V"+(diagActual[0]+1)+" - V"+(diagActual[1]+1)+" = "+d.toFixed(2)+" m";
+
+    document.getElementById("valor").value = d.toFixed(2);
+
+    document.getElementById("verif").style.display = "block";
 }
 
-function guardar(){
-    alert("Guardado");
-}
+/* -------- CORRECCIÓN REAL -------- */
 
-/* -------- VERIFICACIÓN -------- */
+function aplicar(){
+    let real = parseFloat(document.getElementById("valor").value);
 
-let diagIndex=0;
+    let i1 = diagActual[0];
+    let i2 = diagActual[1];
 
-function verificar(){
-    if(puntos.length<4)return;
-
-    diagIndex=0;
-    mostrarDiag();
-    document.getElementById("verif").style.display="block";
-}
-
-function mostrarDiag(){
-    let d = distancia(puntos[0], puntos[2]);
-    document.getElementById("textoDiag").innerText="Diagonal: "+d.toFixed(2)+" m";
-    document.getElementById("inputDiag").value=d.toFixed(2);
-}
-
-function aceptar(){
-    let real = parseFloat(document.getElementById("inputDiag").value);
-
-    let p1=puntos[0];
-    let p2=puntos[2];
+    let p1 = puntos[i1];
+    let p2 = puntos[i2];
 
     let dx = p2.x - p1.x;
     let dy = p2.y - p1.y;
-    let actual = Math.sqrt(dx*dx+dy*dy);
 
-    let factor = real/actual;
+    let actual = Math.sqrt(dx*dx + dy*dy);
 
-    p2.x = p1.x + dx*factor;
-    p2.y = p1.y + dy*factor;
+    if(actual === 0) return;
+
+    let factor = real / actual;
+
+    // SOLO mueve el punto final (estable)
+    puntos[i2] = {
+        x: p1.x + dx * factor,
+        y: p1.y + dy * factor
+    };
 
     draw();
 }
+
+/* -------- CONTROLES -------- */
 
 function cancelar(){
     document.getElementById("verif").style.display="none";
@@ -231,10 +227,12 @@ function saltar(){
     cancelar();
 }
 
+/* -------- UTILS -------- */
+
 function distancia(a,b){
-    let dx=a.x-b.x;
-    let dy=a.y-b.y;
-    return Math.sqrt(dx*dx+dy*dy);
+    let dx = a.x - b.x;
+    let dy = a.y - b.y;
+    return Math.sqrt(dx*dx + dy*dy);
 }
 
 draw();
