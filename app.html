@@ -1145,5 +1145,75 @@ setInterval(updateClock, 1000);
 updateStats();
 renderCalendar();
 </script>
+<!-- BOTÓN NOTAS -->
+<div id="btnNotas">📝</div>
+
+<!-- PANEL NOTAS -->
+<div id="panelNotas">
+  <textarea id="textoNotas" placeholder="Escribe aquí..."></textarea>
+</div>
+
+<style>
+#btnNotas{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#f39b2f;
+  color:#111;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  cursor:pointer;
+  z-index:999;
+}
+
+#panelNotas{
+  position:fixed;
+  bottom:90px;
+  right:20px;
+  width:300px;
+  height:250px;
+  background:#151515;
+  border:1px solid #333;
+  border-radius:12px;
+  padding:10px;
+  display:none;
+  z-index:999;
+}
+
+#panelNotas textarea{
+  width:100%;
+  height:100%;
+  background:#0b0b0b;
+  color:#fff;
+  border:none;
+  outline:none;
+  resize:none;
+}
+</style>
+
+<script>
+const btnNotas = document.getElementById("btnNotas");
+const panelNotas = document.getElementById("panelNotas");
+const textoNotas = document.getElementById("textoNotas");
+
+// Cargar notas
+textoNotas.value = localStorage.getItem("notasAllcalor") || "";
+
+// Guardar automático
+textoNotas.addEventListener("input", ()=>{
+  localStorage.setItem("notasAllcalor", textoNotas.value);
+});
+
+// Mostrar / ocultar
+btnNotas.onclick = ()=>{
+  panelNotas.style.display =
+    panelNotas.style.display === "block" ? "none" : "block";
+};
+</script>
 </body>
 </html>
