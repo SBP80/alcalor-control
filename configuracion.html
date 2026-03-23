@@ -8,6 +8,7 @@
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
+  --panel2:#1d1d1d;
   --line:#2b2b2b;
   --text:#ffffff;
   --muted:#bdbdbd;
@@ -22,7 +23,7 @@ body{
   color:var(--text);
 }
 .wrap{
-  max-width:860px;
+  max-width:980px;
   margin:0 auto;
   padding:18px;
 }
@@ -31,15 +32,26 @@ body{
   border:1px solid var(--line);
   border-radius:18px;
   padding:16px;
+  margin-bottom:16px;
 }
 h1{
   margin:0 0 16px 0;
   color:var(--accent);
   font-size:38px;
 }
+h2{
+  margin:0 0 12px 0;
+  color:var(--accent);
+  font-size:22px;
+}
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
   gap:12px;
 }
 .field{
@@ -54,6 +66,7 @@ h1{
 }
 input[type="text"],
 input[type="password"],
+input[type="email"],
 input[type="color"]{
   width:100%;
   border:1px solid var(--line);
@@ -95,6 +108,11 @@ input[type="color"]{
 .btn-sec{
   background:#2b2b2b;
   color:#fff;
+}
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
 }
 .preview{
   margin-top:16px;
@@ -140,15 +158,25 @@ input[type="color"]{
 .hidden{
   display:none !important;
 }
-.help{
+.badge{
+  display:inline-block;
+  padding:8px 12px;
+  border-radius:999px;
+  background:var(--panel2);
+  border:1px solid var(--line);
   color:var(--muted);
   font-size:12px;
-  line-height:1.45;
-  margin-top:4px;
+  font-weight:700;
 }
-@media (max-width:760px){
+.msg{
+  margin-top:10px;
+  min-height:20px;
+  color:#b7ffcb;
+  font-size:13px;
+}
+@media (max-width:800px){
   h1{font-size:34px}
-  .grid{grid-template-columns:1fr}
+  .grid,.grid-3{grid-template-columns:1fr}
   .actions .btn{width:100%}
 }
 </style>
@@ -156,7 +184,12 @@ input[type="color"]{
 <body>
 <div class="wrap">
   <div class="panel">
-    <h1>Ajustes</h1>
+    <h1>Configuración</h1>
+    <div class="badge" id="infoUsuario">Usuario actual: -</div>
+  </div>
+
+  <div class="panel">
+    <h2>Visual</h2>
 
     <div class="field">
       <label>Nombre de la app</label>
@@ -175,9 +208,8 @@ input[type="color"]{
       </div>
 
       <div class="field">
-        <label>Nueva clave del usuario actual</label>
-        <input id="cfgClave" type="password" placeholder="Dejar vacío para no cambiar">
-        <div class="help">Aquí cambia la clave del usuario que ha iniciado sesión.</div>
+        <label>Nombre comercial de la empresa</label>
+        <input id="cfgEmpresa" type="text" placeholder="ALLCALOR">
       </div>
     </div>
 
@@ -197,14 +229,65 @@ input[type="color"]{
         Mostrar notas rápidas
       </label>
     </div>
+  </div>
 
-    <div class="actions">
-      <button class="btn btn-main" onclick="guardarYVolver()">Guardar y volver</button>
-      <button class="btn btn-sec" onclick="volver()">Volver</button>
+  <div class="panel">
+    <h2>Empresa</h2>
+
+    <div class="grid">
+      <div class="field">
+        <label>Razón social</label>
+        <input id="cfgRazonSocial" type="text" placeholder="Razón social">
+      </div>
+
+      <div class="field">
+        <label>CIF</label>
+        <input id="cfgCif" type="text" placeholder="CIF">
+      </div>
     </div>
 
+    <div class="grid">
+      <div class="field">
+        <label>Teléfono principal</label>
+        <input id="cfgTelefono" type="text" placeholder="Teléfono">
+      </div>
+
+      <div class="field">
+        <label>Email principal</label>
+        <input id="cfgEmail" type="email" placeholder="Email">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dirección</label>
+      <input id="cfgDireccion" type="text" placeholder="Dirección de empresa">
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Acceso</h2>
+
+    <div class="grid">
+      <div class="field">
+        <label>Nueva clave del usuario actual</label>
+        <input id="cfgClaveNueva" type="password" placeholder="Nueva clave">
+      </div>
+
+      <div class="field">
+        <label>Repetir nueva clave</label>
+        <input id="cfgClaveNueva2" type="password" placeholder="Repetir nueva clave">
+      </div>
+    </div>
+
+    <div class="help">
+      La clave de emergencia <b>admin / 1234</b> sigue entrando para que no vuelvas a quedarte fuera.
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Vista previa</h2>
+
     <div class="preview">
-      <h2 style="margin:0 0 12px 0;color:var(--accent);font-size:22px;">Vista previa</h2>
       <h3 id="prevNombre" class="preview-name">ALLCALOR</h3>
       <div id="prevSub" class="preview-sub">Centro de control</div>
 
@@ -216,6 +299,13 @@ input[type="color"]{
 
         <div id="prevNotes" class="preview-notes">📝</div>
       </div>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="actions">
+      <button class="btn btn-main" onclick="guardarYVolver()">Guardar y volver</button>
+      <button class="btn btn-sec" onclick="volver()">Volver</button>
     </div>
   </div>
 </div>
@@ -273,28 +363,51 @@ function cargar(){
     nombre:"ALLCALOR",
     subtitulo:"Centro de control",
     color:"#f39b2f",
+    empresa:"ALLCALOR",
+    razonSocial:"",
+    cif:"",
+    telefono:"",
+    email:"",
+    direccion:"",
     mostrarReloj:true,
     mostrarFecha:true,
     mostrarNotas:true
   }, getConfig());
 
+  document.getElementById("infoUsuario").textContent =
+    "Usuario actual: " + (currentSession?.username || "-") + " · Rol: " + (currentSession?.role || "-");
+
   document.getElementById("cfgNombre").value = cfg.nombre;
   document.getElementById("cfgSubtitulo").value = cfg.subtitulo;
   document.getElementById("cfgColor").value = cfg.color;
-  document.getElementById("cfgClave").value = "";
+  document.getElementById("cfgEmpresa").value = cfg.empresa || "";
+  document.getElementById("cfgRazonSocial").value = cfg.razonSocial || "";
+  document.getElementById("cfgCif").value = cfg.cif || "";
+  document.getElementById("cfgTelefono").value = cfg.telefono || "";
+  document.getElementById("cfgEmail").value = cfg.email || "";
+  document.getElementById("cfgDireccion").value = cfg.direccion || "";
   document.getElementById("cfgMostrarReloj").checked = !!cfg.mostrarReloj;
   document.getElementById("cfgMostrarFecha").checked = !!cfg.mostrarFecha;
   document.getElementById("cfgMostrarNotas").checked = !!cfg.mostrarNotas;
+  document.getElementById("cfgClaveNueva").value = "";
+  document.getElementById("cfgClaveNueva2").value = "";
 
   actualizarVista();
 }
 
 function recogerConfig(){
+  const actual = getConfig();
   return {
-    ...getConfig(),
+    ...actual,
     nombre: document.getElementById("cfgNombre").value.trim() || "ALLCALOR",
     subtitulo: document.getElementById("cfgSubtitulo").value.trim() || "Centro de control",
     color: document.getElementById("cfgColor").value || "#f39b2f",
+    empresa: document.getElementById("cfgEmpresa").value.trim(),
+    razonSocial: document.getElementById("cfgRazonSocial").value.trim(),
+    cif: document.getElementById("cfgCif").value.trim(),
+    telefono: document.getElementById("cfgTelefono").value.trim(),
+    email: document.getElementById("cfgEmail").value.trim(),
+    direccion: document.getElementById("cfgDireccion").value.trim(),
     mostrarReloj: document.getElementById("cfgMostrarReloj").checked,
     mostrarFecha: document.getElementById("cfgMostrarFecha").checked,
     mostrarNotas: document.getElementById("cfgMostrarNotas").checked
@@ -313,21 +426,41 @@ function actualizarVista(){
   document.getElementById("prevNotes").classList.toggle("hidden", !cfg.mostrarNotas);
 }
 
-function guardarClaveUsuarioActual(){
-  const nuevaClave = document.getElementById("cfgClave").value.trim();
-  if(!nuevaClave) return;
+function cambiarClaveUsuarioActual(){
+  const c1 = document.getElementById("cfgClaveNueva").value.trim();
+  const c2 = document.getElementById("cfgClaveNueva2").value.trim();
+
+  if(!c1 && !c2) return {ok:true};
+
+  if(c1.length < 4){
+    return {ok:false, msg:"La nueva clave debe tener al menos 4 caracteres."};
+  }
+
+  if(c1 !== c2){
+    return {ok:false, msg:"Las dos claves no coinciden."};
+  }
 
   const users = getUsers();
-  const idx = users.findIndex(u => u.username === currentSession.username);
-  if(idx === -1) return;
+  const idx = users.findIndex(u => (u.username || "") === currentSession.username);
 
-  users[idx].password = nuevaClave;
+  if(idx === -1){
+    return {ok:false, msg:"No se encontró el usuario actual."};
+  }
+
+  users[idx].password = c1;
   setUsers(users);
+
+  return {ok:true, msg:"Clave cambiada correctamente."};
 }
 
 function guardarYVolver(){
+  const cambio = cambiarClaveUsuarioActual();
+  if(!cambio.ok){
+    document.getElementById("msg").textContent = cambio.msg;
+    return;
+  }
+
   setConfig(recogerConfig());
-  guardarClaveUsuarioActual();
   window.location.href = "app.html";
 }
 
@@ -349,7 +482,11 @@ function relojPreview(){
     dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
 }
 
-["cfgNombre","cfgSubtitulo","cfgColor","cfgClave","cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas"].forEach(id => {
+[
+  "cfgNombre","cfgSubtitulo","cfgColor","cfgEmpresa","cfgRazonSocial","cfgCif",
+  "cfgTelefono","cfgEmail","cfgDireccion","cfgClaveNueva","cfgClaveNueva2",
+  "cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas"
+].forEach(id => {
   document.getElementById(id).addEventListener("input", actualizarVista);
   document.getElementById(id).addEventListener("change", actualizarVista);
 });
