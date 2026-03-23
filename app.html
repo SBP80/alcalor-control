@@ -15,6 +15,7 @@
   --accent:#f39b2f;
   --btnText:#111111;
   --danger:#c94b4b;
+  --ok:#39a96b;
   --shadow:0 10px 24px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box}
@@ -55,8 +56,8 @@ button{
   min-width:0;
 }
 .brand-logo{
-  width:50px;
-  height:50px;
+  width:52px;
+  height:52px;
   border-radius:12px;
   object-fit:contain;
   background:#fff;
@@ -88,7 +89,7 @@ button{
   border-radius:14px;
   padding:10px 14px;
   text-align:right;
-  min-width:200px;
+  min-width:210px;
   box-shadow:var(--shadow);
 }
 .clock-time{
@@ -111,7 +112,7 @@ button{
   color:var(--btnText);
 }
 .wrap{
-  max-width:1450px;
+  max-width:1500px;
   margin:0 auto;
   padding:16px;
 }
@@ -214,6 +215,9 @@ button{
   font-weight:800;
   color:var(--accent);
 }
+.section{
+  margin-top:18px;
+}
 .section-head{
   display:flex;
   justify-content:space-between;
@@ -298,6 +302,42 @@ button{
   color:var(--text);
   border:1px solid var(--line);
 }
+.side{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:18px;
+}
+.side-box{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+.side-box h3{
+  margin:0 0 10px 0;
+  color:var(--accent);
+  font-size:18px;
+}
+.side-list{
+  display:grid;
+  gap:8px;
+}
+.side-item{
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.side-item strong{
+  display:block;
+  margin-bottom:4px;
+}
+.side-item span{
+  font-size:12px;
+  color:var(--muted);
+}
 .toast{
   position:fixed;
   left:50%;
@@ -357,10 +397,15 @@ button{
 .hidden{
   display:none !important;
 }
-@media (max-width:980px){
+@media (max-width:1100px){
   .hero-grid{
     grid-template-columns:1fr;
   }
+  .side{
+    grid-template-columns:1fr;
+  }
+}
+@media (max-width:900px){
   .search-row{
     grid-template-columns:1fr;
   }
@@ -409,20 +454,21 @@ button{
 
   <div class="wrap">
     <div class="search-row">
-      <input id="globalSearch" class="search" type="text" placeholder="Buscar módulo, cliente, obra, plano o acción">
+      <input id="globalSearch" class="search" type="text" placeholder="Buscar módulo, cliente, obra, plano, personal, stock o proveedor">
       <div class="quick-actions">
         <button class="quick-btn" onclick="goClientes()">+ Cliente</button>
         <button class="quick-btn" onclick="goObras()">+ Obra</button>
         <button class="quick-btn" onclick="goPlanos()">+ Plano</button>
+        <button class="quick-btn" onclick="pendiente('Alta rápida de trabajador')">+ Trabajador</button>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-grid">
         <div class="hero-box">
-          <h2 class="hero-title">Panel principal de trabajo</h2>
+          <h2 class="hero-title">Centro principal de trabajo</h2>
           <p class="hero-text">
-            Desde aquí debe salir todo: clientes, obras, planos, agenda, documentos y trabajo diario. Esta base queda limpia y lista para seguir creciendo.
+            Esta base queda lista para crecer con clientes, obras, planos, personal, stock, pedidos a proveedor, agenda, documentos y control interno de empresa.
           </p>
           <div class="hero-actions">
             <button class="hero-btn" onclick="goClientes()">Clientes</button>
@@ -455,81 +501,223 @@ button{
       </div>
     </div>
 
-    <div class="section-head">
-      <h2 class="section-title">Módulos</h2>
-      <div class="section-note">Accesos directos al sistema</div>
-    </div>
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Módulos principales</h2>
+        <div class="section-note">Base general del sistema</div>
+      </div>
 
-    <div id="modulesGrid" class="modules">
-      <div class="card" data-search="clientes fichas teléfonos emails">
-        <div class="card-top">
-          <div class="card-icon">👤</div>
-          <div class="card-tag">Global</div>
+      <div id="modulesGrid" class="modules">
+        <div class="card" data-search="clientes fichas teléfonos emails direcciones">
+          <div class="card-top">
+            <div class="card-icon">👤</div>
+            <div class="card-tag">Activo</div>
+          </div>
+          <h3>Clientes</h3>
+          <p>Listado general, fichas, teléfonos, correos, dirección y acceso a cada cliente.</p>
+          <div class="card-btns">
+            <button class="card-btn" onclick="goClientes()">Abrir</button>
+          </div>
         </div>
-        <h3>Clientes</h3>
-        <p>Listado general, fichas, teléfonos, correos y acceso a cada cliente.</p>
-        <div class="card-btns">
-          <button class="card-btn" onclick="goClientes()">Abrir</button>
+
+        <div class="card" data-search="obras trabajos instalaciones">
+          <div class="card-top">
+            <div class="card-icon">🏗️</div>
+            <div class="card-tag">Siguiente fase</div>
+          </div>
+          <h3>Obras</h3>
+          <p>Vista general de trabajos, estado y acceso a cada obra del sistema.</p>
+          <div class="card-btns">
+            <button class="card-btn" onclick="goObras()">Abrir</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="planos plano dibujo estancias">
+          <div class="card-top">
+            <div class="card-icon">📐</div>
+            <div class="card-tag">Base creada</div>
+          </div>
+          <h3>Planos</h3>
+          <p>Acceso al editor y siguiente fase para vista general de todos los planos.</p>
+          <div class="card-btns">
+            <button class="card-btn" onclick="goPlanos()">Abrir</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="personal trabajadores vacaciones ausencias bajas permisos">
+          <div class="card-top">
+            <div class="card-icon">👷</div>
+            <div class="card-tag">Próximo</div>
+          </div>
+          <h3>Personal</h3>
+          <p>Trabajadores, vacaciones, ausencias, datos internos y seguimiento laboral.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Módulo Personal será el siguiente bloque interno')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="usuarios permisos claves roles accesos seguridad">
+          <div class="card-top">
+            <div class="card-icon">🔐</div>
+            <div class="card-tag">Próximo</div>
+          </div>
+          <h3>Usuarios y permisos</h3>
+          <p>Accesos por rol, claves, módulos permitidos y control de seguridad.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Usuarios y permisos será la fase de seguridad')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="stock materiales almacén compras pedidos saltoki proveedor">
+          <div class="card-top">
+            <div class="card-icon">📦</div>
+            <div class="card-tag">Próximo</div>
+          </div>
+          <h3>Compras y stock</h3>
+          <p>Material previsto por obra, cruce con almacén, faltas y generación de pedido.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Compras y stock será fase clave con obras')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="proveedores saltoki compras referencias">
+          <div class="card-top">
+            <div class="card-icon">🏪</div>
+            <div class="card-tag">Próximo</div>
+          </div>
+          <h3>Proveedores</h3>
+          <p>Saltoki como proveedor principal y otros para referencias, precios y pedidos.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Proveedores irá unido a compras y stock')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="agenda calendario avisos citas">
+          <div class="card-top">
+            <div class="card-icon">📅</div>
+            <div class="card-tag">Después</div>
+          </div>
+          <h3>Agenda</h3>
+          <p>Calendario de trabajo, citas, arranque de obras, revisiones y avisos.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Agenda irá después de usuarios y personal')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="documentos pdf fotos fichas técnicas manuales">
+          <div class="card-top">
+            <div class="card-icon">📁</div>
+            <div class="card-tag">Después</div>
+          </div>
+          <h3>Documentos</h3>
+          <p>PDFs, fotos, fichas técnicas, manuales y archivos por cliente y por obra.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Documentos irá después de obras y personal')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="mantenimiento revisiones avisos postventa">
+          <div class="card-top">
+            <div class="card-icon">🛠️</div>
+            <div class="card-tag">Después</div>
+          </div>
+          <h3>Mantenimiento</h3>
+          <p>Revisiones, avisos, postventa y control de servicio periódico.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Mantenimiento irá unido a agenda y clientes')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="vehículos furgonetas itv seguros">
+          <div class="card-top">
+            <div class="card-icon">🚐</div>
+            <div class="card-tag">Después</div>
+          </div>
+          <h3>Vehículos</h3>
+          <p>Control de flota, seguros, ITV, mantenimientos y uso interno.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Vehículos será fase interna')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="presupuestos precios ofertas">
+          <div class="card-top">
+            <div class="card-icon">💶</div>
+            <div class="card-tag">Después</div>
+          </div>
+          <h3>Presupuestos</h3>
+          <p>Ofertas, partidas, precios y salida comercial.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Presupuestos irá después de obras')">Preparar</button>
+          </div>
+        </div>
+
+        <div class="card" data-search="facturas cobros pagos">
+          <div class="card-top">
+            <div class="card-icon">🧾</div>
+            <div class="card-tag">Después</div>
+          </div>
+          <h3>Facturas</h3>
+          <p>Facturación, cobros y seguimiento económico.</p>
+          <div class="card-btns">
+            <button class="card-btn sec" onclick="pendiente('Facturas irá después de presupuestos')">Preparar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="side">
+      <div class="side-box">
+        <h3>Trabajo del día</h3>
+        <div class="side-list">
+          <div class="side-item">
+            <strong>Clientes</strong>
+            <span>Fichas, contacto y acceso rápido.</span>
+          </div>
+          <div class="side-item">
+            <strong>Obras</strong>
+            <span>La siguiente fase fuerte de la app.</span>
+          </div>
+          <div class="side-item">
+            <strong>Planos</strong>
+            <span>Ya existe base para seguir afinando.</span>
+          </div>
         </div>
       </div>
 
-      <div class="card" data-search="obras trabajos instalaciones">
-        <div class="card-top">
-          <div class="card-icon">🏗️</div>
-          <div class="card-tag">Global</div>
-        </div>
-        <h3>Obras</h3>
-        <p>Vista general de trabajos y acceso a cada obra.</p>
-        <div class="card-btns">
-          <button class="card-btn" onclick="goObras()">Abrir</button>
-        </div>
-      </div>
-
-      <div class="card" data-search="planos plano dibujo estancias">
-        <div class="card-top">
-          <div class="card-icon">📐</div>
-          <div class="card-tag">Global</div>
-        </div>
-        <h3>Planos</h3>
-        <p>Acceso al editor y próxima vista global de planos.</p>
-        <div class="card-btns">
-          <button class="card-btn" onclick="goPlanos()">Abrir</button>
+      <div class="side-box">
+        <h3>Próximo bloque</h3>
+        <div class="side-list">
+          <div class="side-item">
+            <strong>Usuarios y permisos</strong>
+            <span>Acceso por rol y claves.</span>
+          </div>
+          <div class="side-item">
+            <strong>Personal</strong>
+            <span>Vacaciones, ausencias y datos laborales.</span>
+          </div>
+          <div class="side-item">
+            <strong>Compras y stock</strong>
+            <span>Con Saltoki como proveedor principal.</span>
+          </div>
         </div>
       </div>
 
-      <div class="card" data-search="presupuestos precios ofertas">
-        <div class="card-top">
-          <div class="card-icon">💶</div>
-          <div class="card-tag">Pendiente</div>
-        </div>
-        <h3>Presupuestos</h3>
-        <p>Espacio reservado para ofertas y partidas.</p>
-        <div class="card-btns">
-          <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Pendiente</button>
-        </div>
-      </div>
-
-      <div class="card" data-search="facturas cobros pagos">
-        <div class="card-top">
-          <div class="card-icon">🧾</div>
-          <div class="card-tag">Pendiente</div>
-        </div>
-        <h3>Facturas</h3>
-        <p>Espacio reservado para facturación y cobros.</p>
-        <div class="card-btns">
-          <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Pendiente</button>
-        </div>
-      </div>
-
-      <div class="card" data-search="agenda calendario avisos">
-        <div class="card-top">
-          <div class="card-icon">📅</div>
-          <div class="card-tag">Pendiente</div>
-        </div>
-        <h3>Agenda</h3>
-        <p>Calendario y avisos se montarán como bloque global después.</p>
-        <div class="card-btns">
-          <button class="card-btn sec" onclick="showToast('Agenda se montará como bloque global')">Pendiente</button>
+      <div class="side-box">
+        <h3>Estado actual</h3>
+        <div class="side-list">
+          <div class="side-item">
+            <strong>Clientes</strong>
+            <span id="resumeClientes">0 registrados</span>
+          </div>
+          <div class="side-item">
+            <strong>Obras</strong>
+            <span id="resumeObras">0 registradas</span>
+          </div>
+          <div class="side-item">
+            <strong>Planos</strong>
+            <span id="resumePlanos">0 detectados</span>
+          </div>
         </div>
       </div>
     </div>
@@ -569,18 +757,17 @@ function applyConfig(){
   }, getConfig());
 
   document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
-
   document.getElementById("brandName").textContent = cfg.nombre || "ALLCALOR";
   document.getElementById("brandSub").textContent = cfg.subtitulo || "Centro de control";
 
-  const clockBox = document.getElementById("clockBox");
-  const clockDate = document.getElementById("clockDate");
-  const btnNotas = document.getElementById("btnNotas");
-
-  clockBox.classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+  document.getElementById("clockBox").classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
   document.getElementById("clockTime").classList.toggle("hidden", !cfg.mostrarReloj);
-  clockDate.classList.toggle("hidden", !cfg.mostrarFecha);
-  btnNotas.classList.toggle("hidden", !cfg.mostrarNotas);
+  document.getElementById("clockDate").classList.toggle("hidden", !cfg.mostrarFecha);
+  document.getElementById("btnNotas").classList.toggle("hidden", !cfg.mostrarNotas);
+
+  if(document.getElementById("btnNotas").classList.contains("hidden")){
+    document.getElementById("panelNotas").style.display = "none";
+  }
 }
 
 function pad(n){
@@ -638,9 +825,17 @@ function getAllPlanosCount(){
 }
 
 function updateStats(){
-  document.getElementById("statClientes").textContent = getClientes().length;
-  document.getElementById("statObras").textContent = getAllObrasCount();
-  document.getElementById("statPlanos").textContent = getAllPlanosCount();
+  const c = getClientes().length;
+  const o = getAllObrasCount();
+  const p = getAllPlanosCount();
+
+  document.getElementById("statClientes").textContent = c;
+  document.getElementById("statObras").textContent = o;
+  document.getElementById("statPlanos").textContent = p;
+
+  document.getElementById("resumeClientes").textContent = c + " registrados";
+  document.getElementById("resumeObras").textContent = o + " registradas";
+  document.getElementById("resumePlanos").textContent = p + " detectados";
 }
 
 function showToast(text){
@@ -648,7 +843,13 @@ function showToast(text){
   toast.textContent = text;
   toast.classList.add("show");
   clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => toast.classList.remove("show"), 1800);
+  showToast._t = setTimeout(function(){
+    toast.classList.remove("show");
+  }, 1800);
+}
+
+function pendiente(text){
+  showToast(text);
 }
 
 function goClientes(){
@@ -669,7 +870,7 @@ function goPlanos(){
 
 document.getElementById("globalSearch").addEventListener("input", function(){
   const txt = this.value.trim().toLowerCase();
-  document.querySelectorAll("#modulesGrid .card").forEach(card => {
+  document.querySelectorAll("#modulesGrid .card").forEach(function(card){
     const raw = ((card.dataset.search || "") + " " + card.textContent).toLowerCase();
     card.style.display = raw.indexOf(txt) !== -1 ? "" : "none";
   });
