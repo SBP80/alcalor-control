@@ -28,7 +28,7 @@ body{
 }
 .box{
   width:100%;
-  max-width:420px;
+  max-width:430px;
   background:var(--panel);
   border:1px solid var(--line);
   border-radius:20px;
@@ -38,6 +38,7 @@ h1{
   margin:0 0 8px 0;
   color:var(--accent);
   font-size:34px;
+  line-height:1;
 }
 .sub{
   margin:0 0 18px 0;
@@ -96,17 +97,17 @@ button{
 </head>
 <body>
   <div class="box">
-    <h1>ALLCALOR</h1>
-    <p class="sub">Acceso al panel principal</p>
+    <h1 id="brandName">ALLCALOR</h1>
+    <p id="brandSub" class="sub">Acceso al panel principal</p>
 
     <div class="field">
       <label for="usuario">Usuario</label>
-      <input id="usuario" type="text" placeholder="admin">
+      <input id="usuario" type="text" placeholder="admin" autocapitalize="off" autocomplete="username">
     </div>
 
     <div class="field">
       <label for="clave">Clave</label>
-      <input id="clave" type="password" placeholder="1234">
+      <input id="clave" type="password" placeholder="1234" autocomplete="current-password">
     </div>
 
     <button class="btn-main" onclick="entrar()">Entrar</button>
@@ -115,13 +116,33 @@ button{
     <div id="msg" class="msg"></div>
 
     <div class="help">
-      Acceso inicial:<br>
+      Acceso de emergencia:<br>
       Usuario: <b>admin</b><br>
       Clave: <b>1234</b>
     </div>
   </div>
 
 <script>
+function getConfig(){
+  try{
+    return JSON.parse(localStorage.getItem("configAllcalor")) || {};
+  }catch(e){
+    return {};
+  }
+}
+
+function applyConfig(){
+  const cfg = Object.assign({
+    nombre:"ALLCALOR",
+    subtitulo:"Acceso al panel principal",
+    color:"#f39b2f"
+  }, getConfig());
+
+  document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
+  document.getElementById("brandName").textContent = cfg.nombre || "ALLCALOR";
+  document.getElementById("brandSub").textContent = cfg.subtitulo || "Acceso al panel principal";
+}
+
 function getUsers(){
   try{
     const users = JSON.parse(localStorage.getItem("allcalor_users"));
@@ -140,6 +161,10 @@ function getUsers(){
   return inicial;
 }
 
+function setUsers(users){
+  localStorage.setItem("allcalor_users", JSON.stringify(users));
+}
+
 function setSession(user){
   localStorage.setItem("allcalor_session", JSON.stringify({
     username:user.username,
@@ -149,17 +174,54 @@ function setSession(user){
   }));
 }
 
+function normalizarUsuario(v){
+  return String(v || "").trim().toLowerCase();
+}
+
+function asegurarAdminEmergencia(){
+  const users = getUsers();
+  const idx = users.findIndex(u => normalizarUsuario(u.username) === "admin");
+
+  if(idx === -1){
+    users.push({
+      username:"admin",
+      password:"1234",
+      nombre:"Administrador",
+      role:"administrador",
+      active:true
+    });
+    setUsers(users);
+    return users;
+  }
+
+  users[idx].username = "admin";
+  if(users[idx].active === false) users[idx].active = true;
+  if(!users[idx].role) users[idx].role = "administrador";
+  if(!users[idx].nombre) users[idx].nombre = "Administrador";
+  setUsers(users);
+  return users;
+}
+
 function entrar(){
-  const usuario = document.getElementById("usuario").value.trim();
-  const clave = document.getElementById("clave").value.trim();
+  const usuario = normalizarUsuario(document.getElementById("usuario").value);
+  const clave = String(document.getElementById("clave").value || "").trim();
   const msg = document.getElementById("msg");
   msg.textContent = "";
 
-  const users = getUsers();
+  let users = asegurarAdminEmergencia();
+
+  // Acceso de emergencia siempre disponible
+  if(usuario === "admin" && clave === "1234"){
+    const admin = users.find(u => normalizarUsuario(u.username) === "admin");
+    setSession(admin);
+    window.location.href = "app.html";
+    return;
+  }
+
   const user = users.find(u =>
     u.active !== false &&
-    u.username === usuario &&
-    u.password === clave
+    normalizarUsuario(u.username) === usuario &&
+    String(u.password || "") === clave
   );
 
   if(!user){
@@ -181,6 +243,9 @@ document.getElementById("clave").addEventListener("keydown", function(e){
 document.getElementById("usuario").addEventListener("keydown", function(e){
   if(e.key === "Enter") document.getElementById("clave").focus();
 });
+
+applyConfig();
+asegurarAdminEmergencia();
 </script>
 </body>
 </html>
