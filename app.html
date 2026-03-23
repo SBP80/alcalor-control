@@ -896,6 +896,20 @@ window.addEventListener("storage", function(e){
 
 window.addEventListener("pageshow", applyConfig);
 window.addEventListener("focus", applyConfig);
+<script>
+function getSession(){
+  try{
+    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+  }catch(e){
+    return null;
+  }
+}
+
+const currentSession = getSession();
+if(!currentSession){
+  window.location.href = "login.html";
+}
+</script>
 
 applyConfig();
 updateClock();
