@@ -396,7 +396,7 @@ button{
       <div id="clockTime" class="clock-time">00:00:00</div>
       <div id="clockDate" class="clock-date">Cargando fecha…</div>
     </div>
-    <button class="btn-top" onclick="goConfig()">Configuración</button>
+    <button id="btnConfig" class="btn-top" onclick="goConfig()">Configuración</button>
     <button class="btn-top" onclick="logout()">Salir</button>
   </div>
 </div>
@@ -405,9 +405,10 @@ button{
   <div class="search-row">
     <input id="globalSearch" class="search" type="text" placeholder="Buscar módulo, cliente, obra, plano, personal o stock">
     <div class="quick-actions">
-      <button class="quick-btn" onclick="goClientes()">+ Cliente</button>
-      <button class="quick-btn" onclick="goObras()">+ Obra</button>
-      <button class="quick-btn" onclick="goPlanos()">+ Plano</button>
+      <button id="qaClientes" class="quick-btn" onclick="goClientes()">+ Cliente</button>
+      <button id="qaObras" class="quick-btn" onclick="goObras()">+ Obra</button>
+      <button id="qaPlanos" class="quick-btn" onclick="goPlanos()">+ Plano</button>
+      <button id="qaUsuarios" class="quick-btn" onclick="goUsuarios()">+ Usuario</button>
     </div>
   </div>
 
@@ -419,10 +420,10 @@ button{
           Base lista para clientes, obras, planos, personal, stock, compras y permisos.
         </p>
         <div class="hero-actions">
-          <button class="hero-btn" onclick="goClientes()">Clientes</button>
-          <button class="hero-btn" onclick="goObras()">Obras</button>
-          <button class="hero-btn" onclick="goPlanos()">Planos</button>
-          <button class="hero-btn sec" onclick="goConfig()">Ajustes</button>
+          <button id="heroClientes" class="hero-btn" onclick="goClientes()">Clientes</button>
+          <button id="heroObras" class="hero-btn" onclick="goObras()">Obras</button>
+          <button id="heroPlanos" class="hero-btn" onclick="goPlanos()">Planos</button>
+          <button id="heroConfig" class="hero-btn sec" onclick="goConfig()">Ajustes</button>
         </div>
       </div>
 
@@ -460,7 +461,7 @@ button{
   </div>
 
   <div id="modulesGrid" class="modules">
-    <div class="card" data-search="clientes fichas teléfonos emails">
+    <div class="card" data-module="clientes" data-search="clientes fichas teléfonos emails">
       <div class="card-top">
         <div class="card-icon">👤</div>
         <div class="card-tag">Activo</div>
@@ -472,7 +473,7 @@ button{
       </div>
     </div>
 
-    <div class="card" data-search="obras trabajos instalaciones">
+    <div class="card" data-module="obras" data-search="obras trabajos instalaciones">
       <div class="card-top">
         <div class="card-icon">🏗️</div>
         <div class="card-tag">Siguiente</div>
@@ -484,7 +485,7 @@ button{
       </div>
     </div>
 
-    <div class="card" data-search="planos plano dibujo estancias">
+    <div class="card" data-module="planos" data-search="planos plano dibujo estancias">
       <div class="card-top">
         <div class="card-icon">📐</div>
         <div class="card-tag">Base</div>
@@ -496,19 +497,19 @@ button{
       </div>
     </div>
 
-    <div class="card" data-search="usuarios permisos claves seguridad">
+    <div class="card" data-module="usuarios" data-search="usuarios permisos claves seguridad">
       <div class="card-top">
         <div class="card-icon">🔐</div>
-        <div class="card-tag">Próximo</div>
+        <div class="card-tag">Activo</div>
       </div>
       <h3>Usuarios y permisos</h3>
-      <p>Accesos por rol, claves y módulos permitidos.</p>
+      <p>Usuarios, roles y permisos por módulo.</p>
       <div class="card-btns">
-        <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Preparar</button>
+        <button class="card-btn" onclick="goUsuarios()">Abrir</button>
       </div>
     </div>
 
-    <div class="card" data-search="personal trabajadores vacaciones ausencias">
+    <div class="card" data-module="personal" data-search="personal trabajadores vacaciones ausencias">
       <div class="card-top">
         <div class="card-icon">👷</div>
         <div class="card-tag">Próximo</div>
@@ -520,7 +521,7 @@ button{
       </div>
     </div>
 
-    <div class="card" data-search="stock compras materiales proveedor saltoki">
+    <div class="card" data-module="stock" data-search="stock compras materiales proveedor saltoki">
       <div class="card-top">
         <div class="card-icon">📦</div>
         <div class="card-tag">Próximo</div>
@@ -553,6 +554,32 @@ function getSession(){
 const currentSession = getSession();
 if(!currentSession){
   window.location.href = "login.html";
+}
+
+function getUsers(){
+  try{
+    const users = JSON.parse(localStorage.getItem("allcalor_users"));
+    if(Array.isArray(users) && users.length) return users;
+  }catch(e){}
+  return [];
+}
+
+function normalizarUsername(v){
+  return String(v || "").trim().toLowerCase();
+}
+
+function getCurrentUserRecord(){
+  const users = getUsers();
+  return users.find(u => normalizarUsername(u.username) === normalizarUsername(currentSession?.username)) || null;
+}
+
+const currentUser = getCurrentUserRecord();
+
+function hasAccess(module){
+  if(!currentUser) return false;
+  if((currentUser.role || "") === "administrador") return true;
+  const perms = Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
+  return perms.includes(module);
 }
 
 function getConfig(){
@@ -648,24 +675,51 @@ function updateStats(){
 }
 
 function updateUserInfo(){
-  if(!currentSession) return;
-  document.getElementById("userName").textContent = "Usuario: " + (currentSession.nombre || currentSession.username || "-");
-  document.getElementById("userRole").textContent = "Rol: " + (currentSession.role || "-");
+  const nombre = currentUser?.nombre || currentSession?.nombre || currentSession?.username || "-";
+  const role = currentUser?.role || currentSession?.role || "-";
+  document.getElementById("userName").textContent = "Usuario: " + nombre;
+  document.getElementById("userRole").textContent = "Rol: " + role;
+}
+
+function applyPermissionsToUI(){
+  document.querySelectorAll("[data-module]").forEach(el => {
+    const mod = el.getAttribute("data-module");
+    el.classList.toggle("hidden", !hasAccess(mod));
+  });
+
+  document.getElementById("btnConfig").classList.toggle("hidden", !hasAccess("configuracion"));
+  document.getElementById("heroConfig").classList.toggle("hidden", !hasAccess("configuracion"));
+  document.getElementById("qaUsuarios").classList.toggle("hidden", !hasAccess("usuarios"));
+  document.getElementById("qaClientes").classList.toggle("hidden", !hasAccess("clientes"));
+  document.getElementById("qaObras").classList.toggle("hidden", !hasAccess("obras"));
+  document.getElementById("qaPlanos").classList.toggle("hidden", !hasAccess("planos"));
+  document.getElementById("heroClientes").classList.toggle("hidden", !hasAccess("clientes"));
+  document.getElementById("heroObras").classList.toggle("hidden", !hasAccess("obras"));
+  document.getElementById("heroPlanos").classList.toggle("hidden", !hasAccess("planos"));
 }
 
 function goClientes(){
+  if(!hasAccess("clientes")) return showToast("No tienes acceso a Clientes");
   window.location.href = "clientes.html";
 }
 
 function goObras(){
+  if(!hasAccess("obras")) return showToast("No tienes acceso a Obras");
   window.location.href = "obras.html";
 }
 
 function goPlanos(){
+  if(!hasAccess("planos")) return showToast("No tienes acceso a Planos");
   showToast("La vista global de planos será el siguiente paso");
 }
 
+function goUsuarios(){
+  if(!hasAccess("usuarios")) return showToast("No tienes acceso a Usuarios");
+  window.location.href = "usuarios.html";
+}
+
 function goConfig(){
+  if(!hasAccess("configuracion")) return showToast("No tienes acceso a Configuración");
   window.location.href = "configuracion.html";
 }
 
@@ -685,6 +739,10 @@ function showToast(text){
 document.getElementById("globalSearch").addEventListener("input", function(){
   const txt = this.value.trim().toLowerCase();
   document.querySelectorAll("#modulesGrid .card").forEach(card => {
+    if(card.classList.contains("hidden")){
+      card.style.display = "none";
+      return;
+    }
     const raw = ((card.dataset.search || "") + " " + card.textContent).toLowerCase();
     card.style.display = raw.indexOf(txt) !== -1 ? "" : "none";
   });
@@ -716,6 +774,7 @@ updateClock();
 setInterval(updateClock, 1000);
 updateStats();
 updateUserInfo();
+applyPermissionsToUI();
 </script>
 </body>
 </html>
