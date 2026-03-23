@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Acceso · ALLCALOR</title>
+<style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.box{
+  width:100%;
+  max-width:420px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:22px;
+}
+h1{
+  margin:0 0 8px 0;
+  color:var(--accent);
+  font-size:34px;
+}
+.sub{
+  margin:0 0 18px 0;
+  color:var(--muted);
+  font-size:14px;
+}
+.field{
+  margin-bottom:12px;
+}
+label{
+  display:block;
+  margin-bottom:6px;
+  font-size:13px;
+  color:var(--muted);
+}
+input{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
+  font:inherit;
+}
+button{
+  width:100%;
+  border:none;
+  border-radius:12px;
+  padding:12px 14px;
+  font-weight:800;
+  font:inherit;
+  cursor:pointer;
+}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  margin-top:10px;
+  background:#2b2b2b;
+  color:#fff;
+}
+.msg{
+  min-height:22px;
+  margin-top:10px;
+  color:#ffb4b4;
+  font-size:13px;
+}
+.help{
+  margin-top:14px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>ALLCALOR</h1>
+    <p class="sub">Acceso al panel principal</p>
+
+    <div class="field">
+      <label for="usuario">Usuario</label>
+      <input id="usuario" type="text" placeholder="admin">
+    </div>
+
+    <div class="field">
+      <label for="clave">Clave</label>
+      <input id="clave" type="password" placeholder="1234">
+    </div>
+
+    <button class="btn-main" onclick="entrar()">Entrar</button>
+    <button class="btn-sec" onclick="volverInicio()">Volver</button>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="help">
+      Acceso inicial:<br>
+      Usuario: <b>admin</b><br>
+      Clave: <b>1234</b>
+    </div>
+  </div>
+
+<script>
+function getUsers(){
+  try{
+    const users = JSON.parse(localStorage.getItem("allcalor_users"));
+    if(Array.isArray(users) && users.length) return users;
+  }catch(e){}
+  const inicial = [
+    {
+      username:"admin",
+      password:"1234",
+      nombre:"Administrador",
+      role:"administrador",
+      active:true
+    }
+  ];
+  localStorage.setItem("allcalor_users", JSON.stringify(inicial));
+  return inicial;
+}
+
+function setSession(user){
+  localStorage.setItem("allcalor_session", JSON.stringify({
+    username:user.username,
+    nombre:user.nombre,
+    role:user.role,
+    loginAt:new Date().toISOString()
+  }));
+}
+
+function entrar(){
+  const usuario = document.getElementById("usuario").value.trim();
+  const clave = document.getElementById("clave").value.trim();
+  const msg = document.getElementById("msg");
+  msg.textContent = "";
+
+  const users = getUsers();
+  const user = users.find(u =>
+    u.active !== false &&
+    u.username === usuario &&
+    u.password === clave
+  );
+
+  if(!user){
+    msg.textContent = "Usuario o clave incorrectos.";
+    return;
+  }
+
+  setSession(user);
+  window.location.href = "app.html";
+}
+
+function volverInicio(){
+  window.location.href = "index.html";
+}
+
+document.getElementById("clave").addEventListener("keydown", function(e){
+  if(e.key === "Enter") entrar();
+});
+document.getElementById("usuario").addEventListener("keydown", function(e){
+  if(e.key === "Enter") document.getElementById("clave").focus();
+});
+</script>
+</body>
+</html>
