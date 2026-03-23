@@ -22,7 +22,7 @@ body{
   color:var(--text);
 }
 .wrap{
-  max-width:760px;
+  max-width:820px;
   margin:0 auto;
   padding:18px;
 }
@@ -35,7 +35,7 @@ body{
 h1{
   margin:0 0 16px 0;
   color:var(--accent);
-  font-size:40px;
+  font-size:38px;
 }
 .grid{
   display:grid;
@@ -53,6 +53,7 @@ h1{
   color:var(--muted);
 }
 input[type="text"],
+input[type="password"],
 input[type="color"]{
   width:100%;
   border:1px solid var(--line);
@@ -139,6 +140,12 @@ input[type="color"]{
 .hidden{
   display:none !important;
 }
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+  margin-top:4px;
+}
 @media (max-width:760px){
   h1{font-size:34px}
   .grid{grid-template-columns:1fr}
@@ -161,9 +168,17 @@ input[type="color"]{
       <input id="cfgSubtitulo" type="text" placeholder="Centro de control">
     </div>
 
-    <div class="field">
-      <label>Color principal</label>
-      <input id="cfgColor" type="color">
+    <div class="grid">
+      <div class="field">
+        <label>Color principal</label>
+        <input id="cfgColor" type="color">
+      </div>
+
+      <div class="field">
+        <label>Clave de acceso</label>
+        <input id="cfgClave" type="password" placeholder="1234">
+        <div class="help">Si lo dejas vacío, mantiene la clave actual.</div>
+      </div>
     </div>
 
     <div class="grid">
@@ -223,6 +238,7 @@ function cargar(){
     nombre:"ALLCALOR",
     subtitulo:"Centro de control",
     color:"#f39b2f",
+    clave:"1234",
     mostrarReloj:true,
     mostrarFecha:true,
     mostrarNotas:true
@@ -231,6 +247,7 @@ function cargar(){
   document.getElementById("cfgNombre").value = cfg.nombre;
   document.getElementById("cfgSubtitulo").value = cfg.subtitulo;
   document.getElementById("cfgColor").value = cfg.color;
+  document.getElementById("cfgClave").value = "";
   document.getElementById("cfgMostrarReloj").checked = !!cfg.mostrarReloj;
   document.getElementById("cfgMostrarFecha").checked = !!cfg.mostrarFecha;
   document.getElementById("cfgMostrarNotas").checked = !!cfg.mostrarNotas;
@@ -239,10 +256,15 @@ function cargar(){
 }
 
 function recoger(){
+  const actual = Object.assign({ clave:"1234" }, getConfig());
+  const nuevaClave = document.getElementById("cfgClave").value.trim();
+
   return {
+    ...actual,
     nombre: document.getElementById("cfgNombre").value.trim() || "ALLCALOR",
     subtitulo: document.getElementById("cfgSubtitulo").value.trim() || "Centro de control",
     color: document.getElementById("cfgColor").value || "#f39b2f",
+    clave: nuevaClave || actual.clave || "1234",
     mostrarReloj: document.getElementById("cfgMostrarReloj").checked,
     mostrarFecha: document.getElementById("cfgMostrarFecha").checked,
     mostrarNotas: document.getElementById("cfgMostrarNotas").checked
@@ -284,7 +306,7 @@ function relojPreview(){
     dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
 }
 
-["cfgNombre","cfgSubtitulo","cfgColor","cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas"].forEach(id => {
+["cfgNombre","cfgSubtitulo","cfgColor","cfgClave","cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas"].forEach(id => {
   document.getElementById(id).addEventListener("input", actualizarVista);
   document.getElementById(id).addEventListener("change", actualizarVista);
 });
