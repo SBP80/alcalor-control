@@ -22,7 +22,7 @@ body{
   color:var(--text);
 }
 .wrap{
-  max-width:820px;
+  max-width:860px;
   margin:0 auto;
   padding:18px;
 }
@@ -175,9 +175,9 @@ input[type="color"]{
       </div>
 
       <div class="field">
-        <label>Clave de acceso</label>
-        <input id="cfgClave" type="password" placeholder="1234">
-        <div class="help">Si lo dejas vacío, mantiene la clave actual.</div>
+        <label>Nueva clave del usuario actual</label>
+        <input id="cfgClave" type="password" placeholder="Dejar vacío para no cambiar">
+        <div class="help">Aquí cambia la clave del usuario que ha iniciado sesión.</div>
       </div>
     </div>
 
@@ -221,6 +221,19 @@ input[type="color"]{
 </div>
 
 <script>
+function getSession(){
+  try{
+    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+  }catch(e){
+    return null;
+  }
+}
+
+const currentSession = getSession();
+if(!currentSession){
+  window.location.href = "login.html";
+}
+
 function getConfig(){
   try{
     return JSON.parse(localStorage.getItem("configAllcalor")) || {};
@@ -233,12 +246,33 @@ function setConfig(cfg){
   localStorage.setItem("configAllcalor", JSON.stringify(cfg));
 }
 
+function getUsers(){
+  try{
+    const users = JSON.parse(localStorage.getItem("allcalor_users"));
+    if(Array.isArray(users) && users.length) return users;
+  }catch(e){}
+  const inicial = [
+    {
+      username:"admin",
+      password:"1234",
+      nombre:"Administrador",
+      role:"administrador",
+      active:true
+    }
+  ];
+  localStorage.setItem("allcalor_users", JSON.stringify(inicial));
+  return inicial;
+}
+
+function setUsers(users){
+  localStorage.setItem("allcalor_users", JSON.stringify(users));
+}
+
 function cargar(){
   const cfg = Object.assign({
     nombre:"ALLCALOR",
     subtitulo:"Centro de control",
     color:"#f39b2f",
-    clave:"1234",
     mostrarReloj:true,
     mostrarFecha:true,
     mostrarNotas:true
@@ -255,16 +289,12 @@ function cargar(){
   actualizarVista();
 }
 
-function recoger(){
-  const actual = Object.assign({ clave:"1234" }, getConfig());
-  const nuevaClave = document.getElementById("cfgClave").value.trim();
-
+function recogerConfig(){
   return {
-    ...actual,
+    ...getConfig(),
     nombre: document.getElementById("cfgNombre").value.trim() || "ALLCALOR",
     subtitulo: document.getElementById("cfgSubtitulo").value.trim() || "Centro de control",
     color: document.getElementById("cfgColor").value || "#f39b2f",
-    clave: nuevaClave || actual.clave || "1234",
     mostrarReloj: document.getElementById("cfgMostrarReloj").checked,
     mostrarFecha: document.getElementById("cfgMostrarFecha").checked,
     mostrarNotas: document.getElementById("cfgMostrarNotas").checked
@@ -272,7 +302,7 @@ function recoger(){
 }
 
 function actualizarVista(){
-  const cfg = recoger();
+  const cfg = recogerConfig();
   document.documentElement.style.setProperty("--accent", cfg.color);
 
   document.getElementById("prevNombre").textContent = cfg.nombre;
@@ -283,8 +313,21 @@ function actualizarVista(){
   document.getElementById("prevNotes").classList.toggle("hidden", !cfg.mostrarNotas);
 }
 
+function guardarClaveUsuarioActual(){
+  const nuevaClave = document.getElementById("cfgClave").value.trim();
+  if(!nuevaClave) return;
+
+  const users = getUsers();
+  const idx = users.findIndex(u => u.username === currentSession.username);
+  if(idx === -1) return;
+
+  users[idx].password = nuevaClave;
+  setUsers(users);
+}
+
 function guardarYVolver(){
-  setConfig(recoger());
+  setConfig(recogerConfig());
+  guardarClaveUsuarioActual();
   window.location.href = "app.html";
 }
 
