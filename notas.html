@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notas</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b0b0b;
+  color:#fff;
+}
+
+.wrap{
+  padding:20px;
+  max-width:700px;
+  margin:auto;
+}
+
+h1{
+  color:#f39b2f;
+}
+
+input, textarea{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#111;
+  color:#fff;
+}
+
+textarea{
+  min-height:80px;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn{
+  background:#f39b2f;
+  color:#000;
+  width:100%;
+  margin-bottom:10px;
+}
+
+.btn-sec{
+  background:#333;
+  color:#fff;
+  width:100%;
+}
+
+.nota{
+  background:#151515;
+  border:1px solid #2b2b2b;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.nota.done{
+  opacity:0.5;
+  text-decoration:line-through;
+}
+
+.actions{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
+}
+
+.actions button{
+  flex:1;
+  font-size:12px;
+}
+
+.small{
+  font-size:12px;
+  color:#aaa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<h1>Notas</h1>
+
+<input id="titulo" placeholder="Título">
+<textarea id="texto" placeholder="Texto de la nota"></textarea>
+
+<input id="fecha" type="date">
+<input id="hora" type="time">
+
+<button class="btn" onclick="guardarNota()">Guardar nota</button>
+<button class="btn-sec" onclick="volver()">Volver</button>
+
+<hr>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+function getNotas(){
+  return JSON.parse(localStorage.getItem("notas") || "[]");
+}
+
+function setNotas(n){
+  localStorage.setItem("notas", JSON.stringify(n));
+}
+
+function guardarNota(){
+
+  const titulo = document.getElementById("titulo").value;
+  const texto = document.getElementById("texto").value;
+  const fecha = document.getElementById("fecha").value;
+  const hora = document.getElementById("hora").value;
+
+  if(!titulo && !texto) return;
+
+  const notas = getNotas();
+
+  notas.unshift({
+    id: Date.now(),
+    titulo,
+    texto,
+    fecha,
+    hora,
+    done:false
+  });
+
+  setNotas(notas);
+
+  limpiar();
+  pintar();
+}
+
+function limpiar(){
+  titulo.value="";
+  texto.value="";
+  fecha.value="";
+  hora.value="";
+}
+
+function pintar(){
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML="";
+
+  const notas = getNotas();
+
+  notas.forEach(n => {
+
+    const div = document.createElement("div");
+    div.className = "nota " + (n.done ? "done":"");
+
+    div.innerHTML = `
+      <b>${n.titulo || "(Sin título)"}</b>
+      <div>${n.texto || ""}</div>
+      <div class="small">${n.fecha || ""} ${n.hora || ""}</div>
+
+      <div class="actions">
+        <button onclick="toggle(${n.id})">✔</button>
+        <button onclick="editar(${n.id})">✏</button>
+        <button onclick="borrar(${n.id})">🗑</button>
+      </div>
+    `;
+
+    lista.appendChild(div);
+  });
+}
+
+function toggle(id){
+  const notas = getNotas();
+  const n = notas.find(x=>x.id===id);
+  n.done = !n.done;
+  setNotas(notas);
+  pintar();
+}
+
+function borrar(id){
+  let notas = getNotas();
+  notas = notas.filter(x=>x.id!==id);
+  setNotas(notas);
+  pintar();
+}
+
+function editar(id){
+  const notas = getNotas();
+  const n = notas.find(x=>x.id===id);
+
+  titulo.value = n.titulo;
+  texto.value = n.texto;
+  fecha.value = n.fecha;
+  hora.value = n.hora;
+
+  borrar(id);
+}
+
+function volver(){
+  window.location.href="app.html";
+}
+
+pintar();
+
+</script>
+
+</body>
+</html>
