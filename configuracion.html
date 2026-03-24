@@ -2,498 +2,218 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Configuración</title>
+
 <style>
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
-  --panel2:#1d1d1d;
   --line:#2b2b2b;
-  --text:#ffffff;
-  --muted:#bdbdbd;
+  --text:#fff;
+  --muted:#aaa;
   --accent:#f39b2f;
-  --btnText:#111111;
 }
-*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:Arial;
   background:var(--bg);
   color:var(--text);
 }
 .wrap{
-  max-width:980px;
-  margin:0 auto;
-  padding:18px;
+  padding:20px;
+  max-width:800px;
+  margin:auto;
+}
+h1{
+  color:var(--accent);
 }
 .panel{
   background:var(--panel);
   border:1px solid var(--line);
-  border-radius:18px;
+  border-radius:14px;
   padding:16px;
   margin-bottom:16px;
 }
-h1{
-  margin:0 0 16px 0;
-  color:var(--accent);
-  font-size:38px;
-}
-h2{
-  margin:0 0 12px 0;
-  color:var(--accent);
-  font-size:22px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-.grid-3{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:12px;
-}
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  margin-bottom:12px;
-}
-.field label{
-  font-size:13px;
+label{
+  font-size:12px;
   color:var(--muted);
 }
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="color"]{
+input, select{
   width:100%;
+  padding:10px;
+  margin-top:6px;
+  margin-bottom:12px;
+  border-radius:10px;
   border:1px solid var(--line);
-  background:#101010;
+  background:#111;
   color:#fff;
-  border-radius:12px;
-  padding:12px 14px;
 }
-input[type="color"]{
-  padding:6px;
-  height:52px;
-}
-.check{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  background:#101010;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px 14px;
-}
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
-.btn{
+button{
+  padding:12px;
   border:none;
-  border-radius:14px;
-  padding:12px 16px;
-  font-weight:800;
+  border-radius:10px;
+  font-weight:bold;
   cursor:pointer;
 }
-.btn-main{
+.btn{
   background:var(--accent);
-  color:var(--btnText);
+  color:#000;
+  width:100%;
+  margin-bottom:10px;
 }
 .btn-sec{
-  background:#2b2b2b;
+  background:#333;
   color:#fff;
-}
-.help{
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.45;
-}
-.preview{
-  margin-top:16px;
-  background:#101010;
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-}
-.preview-name{
-  margin:0;
-  font-size:28px;
-  color:var(--accent);
-}
-.preview-sub{
-  margin:6px 0 0 0;
-  color:var(--muted);
-}
-.preview-box{
-  margin-top:14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.preview-clock{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:10px 14px;
-  min-width:180px;
-}
-.preview-notes{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--accent);
-  color:var(--btnText);
-  font-size:28px;
-}
-.hidden{
-  display:none !important;
-}
-.badge{
-  display:inline-block;
-  padding:8px 12px;
-  border-radius:999px;
-  background:var(--panel2);
-  border:1px solid var(--line);
-  color:var(--muted);
-  font-size:12px;
-  font-weight:700;
-}
-.msg{
-  margin-top:10px;
-  min-height:20px;
-  color:#b7ffcb;
-  font-size:13px;
-}
-@media (max-width:800px){
-  h1{font-size:34px}
-  .grid,.grid-3{grid-template-columns:1fr}
-  .actions .btn{width:100%}
+  width:100%;
 }
 </style>
 </head>
+
 <body>
+
 <div class="wrap">
-  <div class="panel">
-    <h1>Configuración</h1>
-    <div class="badge" id="infoUsuario">Usuario actual: -</div>
-  </div>
 
-  <div class="panel">
-    <h2>Visual</h2>
+<h1>Configuración</h1>
 
-    <div class="field">
-      <label>Nombre de la app</label>
-      <input id="cfgNombre" type="text" placeholder="ALLCALOR">
-    </div>
+<div class="panel">
+<h3>Empresa</h3>
 
-    <div class="field">
-      <label>Subtítulo</label>
-      <input id="cfgSubtitulo" type="text" placeholder="Centro de control">
-    </div>
+<label>Nombre comercial</label>
+<input id="nombre">
 
-    <div class="grid">
-      <div class="field">
-        <label>Color principal</label>
-        <input id="cfgColor" type="color">
-      </div>
+<label>Razón social</label>
+<input id="razon">
 
-      <div class="field">
-        <label>Nombre comercial de la empresa</label>
-        <input id="cfgEmpresa" type="text" placeholder="ALLCALOR">
-      </div>
-    </div>
+<label>CIF</label>
+<input id="cif">
 
-    <div class="grid">
-      <label class="check">
-        <input id="cfgMostrarReloj" type="checkbox">
-        Mostrar reloj
-      </label>
+<label>Teléfono</label>
+<input id="telefono">
 
-      <label class="check">
-        <input id="cfgMostrarFecha" type="checkbox">
-        Mostrar fecha
-      </label>
+<label>Email</label>
+<input id="email">
 
-      <label class="check">
-        <input id="cfgMostrarNotas" type="checkbox">
-        Mostrar notas rápidas
-      </label>
-    </div>
-  </div>
+<label>Dirección</label>
+<input id="direccion">
+</div>
 
-  <div class="panel">
-    <h2>Empresa</h2>
+<div class="panel">
+<h3>Diseño</h3>
 
-    <div class="grid">
-      <div class="field">
-        <label>Razón social</label>
-        <input id="cfgRazonSocial" type="text" placeholder="Razón social">
-      </div>
+<label>Color principal</label>
+<input id="color" type="color">
 
-      <div class="field">
-        <label>CIF</label>
-        <input id="cfgCif" type="text" placeholder="CIF">
-      </div>
-    </div>
+<label>Mostrar reloj</label>
+<select id="reloj">
+<option value="true">Sí</option>
+<option value="false">No</option>
+</select>
 
-    <div class="grid">
-      <div class="field">
-        <label>Teléfono principal</label>
-        <input id="cfgTelefono" type="text" placeholder="Teléfono">
-      </div>
+<label>Mostrar fecha</label>
+<select id="fecha">
+<option value="true">Sí</option>
+<option value="false">No</option>
+</select>
 
-      <div class="field">
-        <label>Email principal</label>
-        <input id="cfgEmail" type="email" placeholder="Email">
-      </div>
-    </div>
+<label>Mostrar botón notas</label>
+<select id="notas">
+<option value="true">Sí</option>
+<option value="false">No</option>
+</select>
+</div>
 
-    <div class="field">
-      <label>Dirección</label>
-      <input id="cfgDireccion" type="text" placeholder="Dirección de empresa">
-    </div>
-  </div>
+<div class="panel">
+<h3>Seguridad</h3>
 
-  <div class="panel">
-    <h2>Acceso</h2>
+<label>Nueva clave admin</label>
+<input id="clave" type="password">
+</div>
 
-    <div class="grid">
-      <div class="field">
-        <label>Nueva clave del usuario actual</label>
-        <input id="cfgClaveNueva" type="password" placeholder="Nueva clave">
-      </div>
+<div class="panel">
+<h3>Notificaciones (preparado)</h3>
 
-      <div class="field">
-        <label>Repetir nueva clave</label>
-        <input id="cfgClaveNueva2" type="password" placeholder="Repetir nueva clave">
-      </div>
-    </div>
+<label>Activar notificaciones</label>
+<select id="notificaciones">
+<option value="true">Sí</option>
+<option value="false">No</option>
+</select>
 
-    <div class="help">
-      La clave de emergencia <b>admin / 1234</b> sigue entrando para que no vuelvas a quedarte fuera.
-    </div>
-  </div>
+<label>Sonido</label>
+<select id="sonido">
+<option value="true">Sí</option>
+<option value="false">No</option>
+</select>
+</div>
 
-  <div class="panel">
-    <h2>Vista previa</h2>
+<button class="btn" onclick="guardar()">Guardar todo</button>
+<button class="btn-sec" onclick="volver()">Volver</button>
 
-    <div class="preview">
-      <h3 id="prevNombre" class="preview-name">ALLCALOR</h3>
-      <div id="prevSub" class="preview-sub">Centro de control</div>
-
-      <div class="preview-box">
-        <div id="prevClock" class="preview-clock">
-          <div id="prevHora" style="font-size:24px;font-weight:800;color:var(--accent);">00:00:00</div>
-          <div id="prevFecha" style="font-size:12px;color:var(--muted);margin-top:6px;">lunes, 1 de enero de 2026</div>
-        </div>
-
-        <div id="prevNotes" class="preview-notes">📝</div>
-      </div>
-    </div>
-
-    <div id="msg" class="msg"></div>
-
-    <div class="actions">
-      <button class="btn btn-main" onclick="guardarYVolver()">Guardar y volver</button>
-      <button class="btn btn-sec" onclick="volver()">Volver</button>
-    </div>
-  </div>
 </div>
 
 <script>
-function getSession(){
-  try{
-    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
-  }catch(e){
-    return null;
-  }
-}
-
-const currentSession = getSession();
-if(!currentSession){
-  window.location.href = "login.html";
-}
-
-function getConfig(){
-  try{
-    return JSON.parse(localStorage.getItem("configAllcalor")) || {};
-  }catch(e){
-    return {};
-  }
-}
-
-function setConfig(cfg){
-  localStorage.setItem("configAllcalor", JSON.stringify(cfg));
-}
-
-function getUsers(){
-  try{
-    const users = JSON.parse(localStorage.getItem("allcalor_users"));
-    if(Array.isArray(users) && users.length) return users;
-  }catch(e){}
-  const inicial = [
-    {
-      username:"admin",
-      password:"1234",
-      nombre:"Administrador",
-      role:"administrador",
-      active:true
-    }
-  ];
-  localStorage.setItem("allcalor_users", JSON.stringify(inicial));
-  return inicial;
-}
-
-function setUsers(users){
-  localStorage.setItem("allcalor_users", JSON.stringify(users));
-}
 
 function cargar(){
-  const cfg = Object.assign({
-    nombre:"ALLCALOR",
-    subtitulo:"Centro de control",
-    color:"#f39b2f",
-    empresa:"ALLCALOR",
-    razonSocial:"",
-    cif:"",
-    telefono:"",
-    email:"",
-    direccion:"",
-    mostrarReloj:true,
-    mostrarFecha:true,
-    mostrarNotas:true
-  }, getConfig());
+  const c = JSON.parse(localStorage.getItem("configAllcalor")) || {};
 
-  document.getElementById("infoUsuario").textContent =
-    "Usuario actual: " + (currentSession?.username || "-") + " · Rol: " + (currentSession?.role || "-");
+  nombre.value = c.nombre || "ALLCALOR";
+  razon.value = c.razon || "";
+  cif.value = c.cif || "";
+  telefono.value = c.telefono || "";
+  email.value = c.email || "";
+  direccion.value = c.direccion || "";
 
-  document.getElementById("cfgNombre").value = cfg.nombre;
-  document.getElementById("cfgSubtitulo").value = cfg.subtitulo;
-  document.getElementById("cfgColor").value = cfg.color;
-  document.getElementById("cfgEmpresa").value = cfg.empresa || "";
-  document.getElementById("cfgRazonSocial").value = cfg.razonSocial || "";
-  document.getElementById("cfgCif").value = cfg.cif || "";
-  document.getElementById("cfgTelefono").value = cfg.telefono || "";
-  document.getElementById("cfgEmail").value = cfg.email || "";
-  document.getElementById("cfgDireccion").value = cfg.direccion || "";
-  document.getElementById("cfgMostrarReloj").checked = !!cfg.mostrarReloj;
-  document.getElementById("cfgMostrarFecha").checked = !!cfg.mostrarFecha;
-  document.getElementById("cfgMostrarNotas").checked = !!cfg.mostrarNotas;
-  document.getElementById("cfgClaveNueva").value = "";
-  document.getElementById("cfgClaveNueva2").value = "";
+  color.value = c.color || "#f39b2f";
 
-  actualizarVista();
+  reloj.value = c.mostrarReloj !== false ? "true":"false";
+  fecha.value = c.mostrarFecha !== false ? "true":"false";
+  notas.value = c.mostrarNotas !== false ? "true":"false";
+
+  notificaciones.value = c.notificaciones !== false ? "true":"false";
+  sonido.value = c.sonido !== false ? "true":"false";
 }
 
-function recogerConfig(){
-  const actual = getConfig();
-  return {
-    ...actual,
-    nombre: document.getElementById("cfgNombre").value.trim() || "ALLCALOR",
-    subtitulo: document.getElementById("cfgSubtitulo").value.trim() || "Centro de control",
-    color: document.getElementById("cfgColor").value || "#f39b2f",
-    empresa: document.getElementById("cfgEmpresa").value.trim(),
-    razonSocial: document.getElementById("cfgRazonSocial").value.trim(),
-    cif: document.getElementById("cfgCif").value.trim(),
-    telefono: document.getElementById("cfgTelefono").value.trim(),
-    email: document.getElementById("cfgEmail").value.trim(),
-    direccion: document.getElementById("cfgDireccion").value.trim(),
-    mostrarReloj: document.getElementById("cfgMostrarReloj").checked,
-    mostrarFecha: document.getElementById("cfgMostrarFecha").checked,
-    mostrarNotas: document.getElementById("cfgMostrarNotas").checked
+function guardar(){
+
+  const cfg = {
+    nombre: nombre.value,
+    razon: razon.value,
+    cif: cif.value,
+    telefono: telefono.value,
+    email: email.value,
+    direccion: direccion.value,
+
+    color: color.value,
+
+    mostrarReloj: reloj.value === "true",
+    mostrarFecha: fecha.value === "true",
+    mostrarNotas: notas.value === "true",
+
+    notificaciones: notificaciones.value === "true",
+    sonido: sonido.value === "true"
   };
-}
 
-function actualizarVista(){
-  const cfg = recogerConfig();
-  document.documentElement.style.setProperty("--accent", cfg.color);
+  localStorage.setItem("configAllcalor", JSON.stringify(cfg));
 
-  document.getElementById("prevNombre").textContent = cfg.nombre;
-  document.getElementById("prevSub").textContent = cfg.subtitulo;
-  document.getElementById("prevClock").classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
-  document.getElementById("prevHora").classList.toggle("hidden", !cfg.mostrarReloj);
-  document.getElementById("prevFecha").classList.toggle("hidden", !cfg.mostrarFecha);
-  document.getElementById("prevNotes").classList.toggle("hidden", !cfg.mostrarNotas);
-}
-
-function cambiarClaveUsuarioActual(){
-  const c1 = document.getElementById("cfgClaveNueva").value.trim();
-  const c2 = document.getElementById("cfgClaveNueva2").value.trim();
-
-  if(!c1 && !c2) return {ok:true};
-
-  if(c1.length < 4){
-    return {ok:false, msg:"La nueva clave debe tener al menos 4 caracteres."};
+  if(clave.value){
+    let users = JSON.parse(localStorage.getItem("allcalor_users")) || [];
+    const admin = users.find(u => u.username === "admin");
+    if(admin){
+      admin.password = clave.value;
+      localStorage.setItem("allcalor_users", JSON.stringify(users));
+    }
   }
 
-  if(c1 !== c2){
-    return {ok:false, msg:"Las dos claves no coinciden."};
-  }
-
-  const users = getUsers();
-  const idx = users.findIndex(u => (u.username || "") === currentSession.username);
-
-  if(idx === -1){
-    return {ok:false, msg:"No se encontró el usuario actual."};
-  }
-
-  users[idx].password = c1;
-  setUsers(users);
-
-  return {ok:true, msg:"Clave cambiada correctamente."};
-}
-
-function guardarYVolver(){
-  const cambio = cambiarClaveUsuarioActual();
-  if(!cambio.ok){
-    document.getElementById("msg").textContent = cambio.msg;
-    return;
-  }
-
-  setConfig(recogerConfig());
-  window.location.href = "app.html";
+  alert("Guardado correctamente");
 }
 
 function volver(){
-  window.location.href = "app.html";
+  window.location.href="app.html";
 }
-
-function pad(n){
-  return String(n).padStart(2,"0");
-}
-
-function relojPreview(){
-  const now = new Date();
-  const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
-  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-  document.getElementById("prevHora").textContent =
-    pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
-  document.getElementById("prevFecha").textContent =
-    dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
-}
-
-[
-  "cfgNombre","cfgSubtitulo","cfgColor","cfgEmpresa","cfgRazonSocial","cfgCif",
-  "cfgTelefono","cfgEmail","cfgDireccion","cfgClaveNueva","cfgClaveNueva2",
-  "cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas"
-].forEach(id => {
-  document.getElementById(id).addEventListener("input", actualizarVista);
-  document.getElementById(id).addEventListener("change", actualizarVista);
-});
 
 cargar();
-relojPreview();
-setInterval(relojPreview, 1000);
+
 </script>
+
 </body>
 </html>
