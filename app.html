@@ -24,7 +24,7 @@ body{
   background:var(--bg);
   color:var(--text);
 }
-button,input,textarea{
+button,input{
   font:inherit;
 }
 button{
@@ -334,30 +334,6 @@ button{
   z-index:120;
   box-shadow:var(--shadow);
 }
-#panelNotas{
-  position:fixed;
-  right:18px;
-  bottom:96px;
-  width:min(340px,calc(100vw - 24px));
-  height:280px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
-  z-index:120;
-  display:none;
-  box-shadow:var(--shadow);
-}
-#panelNotas textarea{
-  width:100%;
-  height:100%;
-  resize:none;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:#101010;
-  color:#fff;
-  padding:12px;
-}
 @media (max-width:980px){
   .hero-grid{grid-template-columns:1fr}
   .search-row{grid-template-columns:1fr}
@@ -476,7 +452,7 @@ button{
     <div class="card" data-module="obras" data-search="obras trabajos instalaciones">
       <div class="card-top">
         <div class="card-icon">🏗️</div>
-        <div class="card-tag">Siguiente</div>
+        <div class="card-tag">Activo</div>
       </div>
       <h3>Obras</h3>
       <p>Vista general de trabajos y acceso a cada obra.</p>
@@ -512,7 +488,7 @@ button{
     <div class="card" data-module="personal" data-search="personal trabajadores vacaciones ausencias">
       <div class="card-top">
         <div class="card-icon">👷</div>
-        <div class="card-tag">Próximo</div>
+        <div class="card-tag">Pendiente</div>
       </div>
       <h3>Personal</h3>
       <p>Trabajadores, vacaciones, ausencias y datos internos.</p>
@@ -524,7 +500,7 @@ button{
     <div class="card" data-module="stock" data-search="stock compras materiales proveedor saltoki">
       <div class="card-top">
         <div class="card-icon">📦</div>
-        <div class="card-tag">Próximo</div>
+        <div class="card-tag">Pendiente</div>
       </div>
       <h3>Compras y stock</h3>
       <p>Material previsto, almacén, faltas y pedido a proveedor.</p>
@@ -535,10 +511,7 @@ button{
   </div>
 </div>
 
-<button id="btnNotas" title="Notas rápidas">📝</button>
-<div id="panelNotas">
-  <textarea id="textoNotas" placeholder="Escribe aquí tus notas rápidas..."></textarea>
-</div>
+<button id="btnNotas" title="Notas rápidas" onclick="goNotas()">📝</button>
 
 <div id="toast" class="toast"></div>
 
@@ -553,26 +526,6 @@ function getSession(){
 
 const currentSession = getSession();
 
-if(!currentSession || !currentSession.username){
-  localStorage.removeItem("allcalor_session");
-  window.location.href = "login.html";
-}
-
-// Validar que el usuario realmente existe
-function validarSesionReal(){
-  const users = getUsers();
-  const existe = users.find(u => 
-    (u.username || "").toLowerCase() === (currentSession.username || "").toLowerCase()
-  );
-
-  if(!existe || existe.active === false){
-    localStorage.removeItem("allcalor_session");
-    window.location.href = "login.html";
-  }
-}
-
-validarSesionReal();
-
 function getUsers(){
   try{
     const users = JSON.parse(localStorage.getItem("allcalor_users"));
@@ -584,6 +537,25 @@ function getUsers(){
 function normalizarUsername(v){
   return String(v || "").trim().toLowerCase();
 }
+
+if(!currentSession || !currentSession.username){
+  localStorage.removeItem("allcalor_session");
+  window.location.href = "login.html";
+}
+
+function validarSesionReal(){
+  const users = getUsers();
+  const existe = users.find(u =>
+    normalizarUsername(u.username) === normalizarUsername(currentSession.username)
+  );
+
+  if(!existe || existe.active === false){
+    localStorage.removeItem("allcalor_session");
+    window.location.href = "login.html";
+  }
+}
+
+validarSesionReal();
 
 function getCurrentUserRecord(){
   const users = getUsers();
@@ -625,10 +597,6 @@ function applyConfig(){
   document.getElementById("clockTime").classList.toggle("hidden", !cfg.mostrarReloj);
   document.getElementById("clockDate").classList.toggle("hidden", !cfg.mostrarFecha);
   document.getElementById("btnNotas").classList.toggle("hidden", !cfg.mostrarNotas);
-
-  if(document.getElementById("btnNotas").classList.contains("hidden")){
-    document.getElementById("panelNotas").style.display = "none";
-  }
 }
 
 function pad(n){
@@ -740,6 +708,10 @@ function goConfig(){
   window.location.href = "configuracion.html";
 }
 
+function goNotas(){
+  window.location.href = "notas.html";
+}
+
 function logout(){
   localStorage.removeItem("allcalor_session");
   window.location.href = "login.html";
@@ -763,20 +735,6 @@ document.getElementById("globalSearch").addEventListener("input", function(){
     const raw = ((card.dataset.search || "") + " " + card.textContent).toLowerCase();
     card.style.display = raw.indexOf(txt) !== -1 ? "" : "none";
   });
-});
-
-const btnNotas = document.getElementById("btnNotas");
-const panelNotas = document.getElementById("panelNotas");
-const textoNotas = document.getElementById("textoNotas");
-
-textoNotas.value = localStorage.getItem("notasAllcalor") || "";
-
-textoNotas.addEventListener("input", function(){
-  localStorage.setItem("notasAllcalor", textoNotas.value);
-});
-
-btnNotas.addEventListener("click", function(){
-  panelNotas.style.display = panelNotas.style.display === "block" ? "none" : "block";
 });
 
 window.addEventListener("storage", function(e){
