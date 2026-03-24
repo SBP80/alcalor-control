@@ -176,6 +176,16 @@ input,select{
   border-radius:12px;
   padding:12px 14px;
 }
+.check input{
+  width:auto;
+  margin:0;
+  flex:0 0 auto;
+}
+.check span{
+  display:block;
+  color:var(--text);
+  line-height:1.25;
+}
 .hidden{
   display:none !important;
 }
@@ -250,7 +260,7 @@ input,select{
       <label>Estado</label>
       <label class="check">
         <input id="uActive" type="checkbox" checked>
-        Usuario activo
+        <span>Usuario activo</span>
       </label>
     </div>
 
@@ -258,21 +268,21 @@ input,select{
       <div class="panel-title" style="font-size:18px">Permisos</div>
 
       <div class="grid-3">
-        <label class="check"><input class="perm-check" type="checkbox" value="clientes"> Clientes</label>
-        <label class="check"><input class="perm-check" type="checkbox" value="obras"> Obras</label>
-        <label class="check"><input class="perm-check" type="checkbox" value="planos"> Planos</label>
+        <label class="check"><input class="perm-check" type="checkbox" value="clientes"><span>Clientes</span></label>
+        <label class="check"><input class="perm-check" type="checkbox" value="obras"><span>Obras</span></label>
+        <label class="check"><input class="perm-check" type="checkbox" value="planos"><span>Planos</span></label>
 
-        <label class="check"><input class="perm-check" type="checkbox" value="usuarios"> Usuarios</label>
-        <label class="check"><input class="perm-check" type="checkbox" value="personal"> Personal</label>
-        <label class="check"><input class="perm-check" type="checkbox" value="stock"> Compras y stock</label>
+        <label class="check"><input class="perm-check" type="checkbox" value="usuarios"><span>Usuarios</span></label>
+        <label class="check"><input class="perm-check" type="checkbox" value="personal"><span>Personal</span></label>
+        <label class="check"><input class="perm-check" type="checkbox" value="stock"><span>Compras y stock</span></label>
 
-        <label class="check"><input class="perm-check" type="checkbox" value="configuracion"> Configuración</label>
-        <label class="check"><input class="perm-check" type="checkbox" value="presupuestos"> Presupuestos</label>
-        <label class="check"><input class="perm-check" type="checkbox" value="facturas"> Facturas</label>
+        <label class="check"><input class="perm-check" type="checkbox" value="configuracion"><span>Configuración</span></label>
+        <label class="check"><input class="perm-check" type="checkbox" value="presupuestos"><span>Presupuestos</span></label>
+        <label class="check"><input class="perm-check" type="checkbox" value="facturas"><span>Facturas</span></label>
       </div>
 
       <div class="help" style="margin-top:10px">
-        Al cambiar el rol se cargan permisos base. Luego puedes afinar manualmente.
+        Al cambiar el rol se cargan permisos base. Luego puedes retocar manualmente.
       </div>
     </div>
 
@@ -299,10 +309,27 @@ function getSession(){
   }
 }
 
+function getConfig(){
+  try{
+    return JSON.parse(localStorage.getItem("configAllcalor")) || {};
+  }catch(e){
+    return {};
+  }
+}
+
+function applyConfig(){
+  const cfg = Object.assign({
+    color:"#f39b2f"
+  }, getConfig());
+
+  document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
+}
+
 const currentSession = getSession();
 if(!currentSession){
   window.location.href = "login.html";
 }
+
 if((currentSession.role || "") !== "administrador"){
   alert("Solo el administrador puede entrar aquí.");
   window.location.href = "app.html";
@@ -443,6 +470,7 @@ function guardarUsuario(){
     users[idx].role = role;
     users[idx].active = active;
     users[idx].permissions = permissions;
+
     if(password){
       if(password.length < 4){
         msg.textContent = "La nueva clave debe tener al menos 4 caracteres.";
@@ -554,6 +582,13 @@ function escapeJs(str){
 
 document.getElementById("uRole").addEventListener("change", aplicarPermisosRol);
 
+window.addEventListener("storage", function(e){
+  if(e.key === "configAllcalor") applyConfig();
+});
+window.addEventListener("pageshow", applyConfig);
+window.addEventListener("focus", applyConfig);
+
+applyConfig();
 pintarUsuarios();
 </script>
 </body>
