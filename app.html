@@ -552,9 +552,26 @@ function getSession(){
 }
 
 const currentSession = getSession();
-if(!currentSession){
+
+if(!currentSession || !currentSession.username){
+  localStorage.removeItem("allcalor_session");
   window.location.href = "login.html";
 }
+
+// Validar que el usuario realmente existe
+function validarSesionReal(){
+  const users = getUsers();
+  const existe = users.find(u => 
+    (u.username || "").toLowerCase() === (currentSession.username || "").toLowerCase()
+  );
+
+  if(!existe || existe.active === false){
+    localStorage.removeItem("allcalor_session");
+    window.location.href = "login.html";
+  }
+}
+
+validarSesionReal();
 
 function getUsers(){
   try{
