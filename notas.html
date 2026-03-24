@@ -2,219 +2,591 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Notas</title>
-
 <style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+  --danger:#c94b4b;
+  --ok:#39a96b;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
 body{
   margin:0;
-  font-family:Arial;
-  background:#0b0b0b;
-  color:#fff;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
-
-.wrap{
-  padding:20px;
-  max-width:700px;
-  margin:auto;
+button,input,textarea,select{
+  font:inherit;
 }
-
-h1{
-  color:#f39b2f;
-}
-
-input, textarea{
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#111;
-  color:#fff;
-}
-
-textarea{
-  min-height:80px;
-}
-
 button{
-  padding:12px;
-  border:none;
-  border-radius:10px;
   cursor:pointer;
-  font-weight:bold;
+  touch-action:manipulation;
 }
-
-.btn{
-  background:#f39b2f;
-  color:#000;
-  width:100%;
-  margin-bottom:10px;
+.hidden{
+  display:none !important;
 }
-
-.btn-sec{
-  background:#333;
-  color:#fff;
-  width:100%;
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:rgba(11,11,11,.96);
+  border-bottom:1px solid var(--line);
 }
-
-.nota{
-  background:#151515;
-  border:1px solid #2b2b2b;
+.brand-name{
+  margin:0;
+  line-height:1;
+  color:var(--accent);
+  font-size:30px;
+  font-weight:800;
+}
+.brand-sub{
+  margin:6px 0 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn-top{
+  border:none;
   border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
+  padding:12px 16px;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
 }
-
-.nota.done{
-  opacity:0.5;
-  text-decoration:line-through;
+.wrap{
+  max-width:980px;
+  margin:0 auto;
+  padding:16px;
 }
-
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
+}
+.panel-title{
+  margin:0 0 14px 0;
+  color:var(--accent);
+  font-size:24px;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+}
+.field label{
+  font-size:13px;
+  color:var(--muted);
+}
+input,textarea,select{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
+}
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
 .actions{
   display:flex;
-  gap:6px;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:800;
+}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  background:#2b2b2b;
+  color:#fff;
+}
+.btn-danger{
+  background:var(--danger);
+  color:#fff;
+}
+.search{
+  width:100%;
+  background:#101010;
+  color:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:15px 16px;
+  font-size:17px;
+  margin-bottom:12px;
+}
+.filters{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.filter-btn{
+  border:none;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:700;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.filter-btn.active{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.cards{
+  display:grid;
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.card.done{
+  opacity:.72;
+}
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.card-title{
+  margin:0;
+  font-size:24px;
+  line-height:1.2;
+}
+.card.done .card-title{
+  text-decoration:line-through;
+}
+.card-text{
+  margin:10px 0 0 0;
+  white-space:pre-wrap;
+  line-height:1.5;
+}
+.card-meta{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.badge{
+  display:inline-block;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+.badge.ok{
+  color:#d7ffd7;
+  border-color:#285528;
+}
+.badge.pending{
+  color:#ffe5b8;
+}
+.card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.small-btn{
+  border:none;
+  border-radius:12px;
+  padding:10px 12px;
+  font-weight:800;
+}
+.small-btn.ok{
+  background:var(--ok);
+  color:#fff;
+}
+.small-btn.sec{
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.small-btn.danger{
+  background:var(--danger);
+  color:#fff;
+}
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+.msg{
+  min-height:20px;
   margin-top:8px;
+  color:#ffd1d1;
+  font-size:13px;
 }
-
-.actions button{
-  flex:1;
-  font-size:12px;
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:24px 12px;
+  border:1px dashed var(--line);
+  border-radius:16px;
 }
-
-.small{
-  font-size:12px;
-  color:#aaa;
+@media (max-width:760px){
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .topbar-right{
+    justify-content:space-between;
+  }
+  .brand-name{
+    font-size:24px;
+  }
+  .grid{
+    grid-template-columns:1fr;
+  }
+  .actions .btn{
+    width:100%;
+  }
+  .card-actions .small-btn{
+    flex:1 1 calc(50% - 8px);
+  }
 }
 </style>
 </head>
-
 <body>
+<div class="topbar">
+  <div>
+    <h1 id="brandName" class="brand-name">ALLCALOR</h1>
+    <div id="brandSub" class="brand-sub">Notas rápidas</div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="btn-top" onclick="volver()">Volver</button>
+  </div>
+</div>
 
 <div class="wrap">
+  <div class="panel">
+    <h2 id="formTitle" class="panel-title">Nueva nota</h2>
 
-<h1>Notas</h1>
+    <div class="field">
+      <label for="titulo">Título</label>
+      <input id="titulo" type="text" placeholder="Ej. Darle documentación a Antonio">
+    </div>
 
-<input id="titulo" placeholder="Título">
-<textarea id="texto" placeholder="Texto de la nota"></textarea>
+    <div class="field">
+      <label for="texto">Contenido</label>
+      <textarea id="texto" placeholder="Escribe la nota..."></textarea>
+    </div>
 
-<input id="fecha" type="date">
-<input id="hora" type="time">
+    <div class="grid">
+      <div class="field">
+        <label for="fecha">Fecha recordatorio</label>
+        <input id="fecha" type="date">
+      </div>
 
-<button class="btn" onclick="guardarNota()">Guardar nota</button>
-<button class="btn-sec" onclick="volver()">Volver</button>
+      <div class="field">
+        <label for="hora">Hora recordatorio</label>
+        <input id="hora" type="time">
+      </div>
+    </div>
 
-<hr>
+    <div class="help">
+      De momento el recordatorio queda guardado y visible en la nota. Luego lo conectamos con avisos reales.
+    </div>
 
-<div id="lista"></div>
+    <div id="msg" class="msg"></div>
 
+    <div class="actions" style="margin-top:12px">
+      <button class="btn btn-main" onclick="guardarNota()">Guardar nota</button>
+      <button id="btnCancelarEdicion" class="btn btn-sec hidden" onclick="cancelarEdicion()">Cancelar edición</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Notas guardadas</h2>
+
+    <input id="busqueda" class="search" type="text" placeholder="Buscar por título o texto">
+
+    <div class="filters">
+      <button id="fTodas" class="filter-btn active" onclick="setFiltro('todas')">Todas</button>
+      <button id="fPendientes" class="filter-btn" onclick="setFiltro('pendientes')">Pendientes</button>
+      <button id="fHechas" class="filter-btn" onclick="setFiltro('hechas')">Hechas</button>
+    </div>
+
+    <div id="lista" class="cards"></div>
+  </div>
 </div>
 
 <script>
-
-function getNotas(){
-  return JSON.parse(localStorage.getItem("notas") || "[]");
+function getSession(){
+  try{
+    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+  }catch(e){
+    return null;
+  }
 }
 
-function setNotas(n){
-  localStorage.setItem("notas", JSON.stringify(n));
+const currentSession = getSession();
+if(!currentSession){
+  window.location.href = "login.html";
+}
+
+function getConfig(){
+  try{
+    return JSON.parse(localStorage.getItem("configAllcalor")) || {};
+  }catch(e){
+    return {};
+  }
+}
+
+function applyConfig(){
+  const cfg = Object.assign({
+    nombre:"ALLCALOR",
+    color:"#f39b2f"
+  }, getConfig());
+
+  document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
+  document.getElementById("brandName").textContent = cfg.nombre || "ALLCALOR";
+}
+
+function getNotas(){
+  try{
+    return JSON.parse(localStorage.getItem("notas")) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function setNotas(notas){
+  localStorage.setItem("notas", JSON.stringify(notas));
+}
+
+let editId = null;
+let filtro = "todas";
+
+function setFiltro(valor){
+  filtro = valor;
+  document.getElementById("fTodas").classList.toggle("active", valor === "todas");
+  document.getElementById("fPendientes").classList.toggle("active", valor === "pendientes");
+  document.getElementById("fHechas").classList.toggle("active", valor === "hechas");
+  pintar();
+}
+
+function limpiarFormulario(){
+  document.getElementById("titulo").value = "";
+  document.getElementById("texto").value = "";
+  document.getElementById("fecha").value = "";
+  document.getElementById("hora").value = "";
+  document.getElementById("msg").textContent = "";
+}
+
+function ponerModoNuevo(){
+  editId = null;
+  document.getElementById("formTitle").textContent = "Nueva nota";
+  document.getElementById("btnCancelarEdicion").classList.add("hidden");
+  limpiarFormulario();
+}
+
+function ponerModoEdicion(nota){
+  editId = nota.id;
+  document.getElementById("formTitle").textContent = "Editar nota";
+  document.getElementById("btnCancelarEdicion").classList.remove("hidden");
+  document.getElementById("titulo").value = nota.titulo || "";
+  document.getElementById("texto").value = nota.texto || "";
+  document.getElementById("fecha").value = nota.fecha || "";
+  document.getElementById("hora").value = nota.hora || "";
+  document.getElementById("msg").textContent = "";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function cancelarEdicion(){
+  ponerModoNuevo();
 }
 
 function guardarNota(){
-
-  const titulo = document.getElementById("titulo").value;
-  const texto = document.getElementById("texto").value;
+  const titulo = document.getElementById("titulo").value.trim();
+  const texto = document.getElementById("texto").value.trim();
   const fecha = document.getElementById("fecha").value;
   const hora = document.getElementById("hora").value;
+  const msg = document.getElementById("msg");
 
-  if(!titulo && !texto) return;
+  msg.textContent = "";
+
+  if(!titulo && !texto){
+    msg.textContent = "Escribe al menos un título o un texto.";
+    return;
+  }
 
   const notas = getNotas();
 
-  notas.unshift({
-    id: Date.now(),
-    titulo,
-    texto,
-    fecha,
-    hora,
-    done:false
-  });
+  if(editId === null){
+    notas.unshift({
+      id: Date.now(),
+      titulo,
+      texto,
+      fecha,
+      hora,
+      done:false,
+      createdAt:new Date().toISOString()
+    });
+  } else {
+    const idx = notas.findIndex(n => String(n.id) === String(editId));
+    if(idx === -1){
+      msg.textContent = "No se encontró la nota.";
+      return;
+    }
+
+    notas[idx] = {
+      ...notas[idx],
+      titulo,
+      texto,
+      fecha,
+      hora
+    };
+  }
 
   setNotas(notas);
-
-  limpiar();
+  ponerModoNuevo();
   pintar();
 }
 
-function limpiar(){
-  titulo.value="";
-  texto.value="";
-  fecha.value="";
-  hora.value="";
+function toggleNota(id){
+  const notas = getNotas();
+  const idx = notas.findIndex(n => String(n.id) === String(id));
+  if(idx === -1) return;
+
+  notas[idx].done = !notas[idx].done;
+  setNotas(notas);
+  pintar();
+}
+
+function editarNota(id){
+  const nota = getNotas().find(n => String(n.id) === String(id));
+  if(!nota) return;
+  ponerModoEdicion(nota);
+}
+
+function borrarNota(id){
+  if(!confirm("¿Borrar esta nota?")) return;
+  const notas = getNotas().filter(n => String(n.id) !== String(id));
+  setNotas(notas);
+  if(String(editId) === String(id)) ponerModoNuevo();
+  pintar();
+}
+
+function formatFechaHora(fecha, hora){
+  if(!fecha && !hora) return "";
+  const partes = [];
+  if(fecha) partes.push(fecha.split("-").reverse().join("/"));
+  if(hora) partes.push(hora);
+  return partes.join(" · ");
+}
+
+function escapeHtml(str){
+  return String(str || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
 }
 
 function pintar(){
-
   const lista = document.getElementById("lista");
-  lista.innerHTML="";
-
+  const txt = document.getElementById("busqueda").value.trim().toLowerCase();
   const notas = getNotas();
 
-  notas.forEach(n => {
+  const filtradas = notas.filter(n => {
+    if(filtro === "pendientes" && n.done) return false;
+    if(filtro === "hechas" && !n.done) return false;
 
-    const div = document.createElement("div");
-    div.className = "nota " + (n.done ? "done":"");
-
-    div.innerHTML = `
-      <b>${n.titulo || "(Sin título)"}</b>
-      <div>${n.texto || ""}</div>
-      <div class="small">${n.fecha || ""} ${n.hora || ""}</div>
-
-      <div class="actions">
-        <button onclick="toggle(${n.id})">✔</button>
-        <button onclick="editar(${n.id})">✏</button>
-        <button onclick="borrar(${n.id})">🗑</button>
-      </div>
-    `;
-
-    lista.appendChild(div);
+    const bolsa = ((n.titulo || "") + " " + (n.texto || "")).toLowerCase();
+    return bolsa.includes(txt);
   });
-}
 
-function toggle(id){
-  const notas = getNotas();
-  const n = notas.find(x=>x.id===id);
-  n.done = !n.done;
-  setNotas(notas);
-  pintar();
-}
+  if(!filtradas.length){
+    lista.innerHTML = '<div class="empty">No hay notas que coincidan.</div>';
+    return;
+  }
 
-function borrar(id){
-  let notas = getNotas();
-  notas = notas.filter(x=>x.id!==id);
-  setNotas(notas);
-  pintar();
-}
+  lista.innerHTML = filtradas.map(n => `
+    <div class="card ${n.done ? "done" : ""}">
+      <div class="card-top">
+        <div>
+          <h3 class="card-title">${escapeHtml(n.titulo || "Sin título")}</h3>
+        </div>
+        <span class="badge ${n.done ? "ok" : "pending"}">${n.done ? "Hecha" : "Pendiente"}</span>
+      </div>
 
-function editar(id){
-  const notas = getNotas();
-  const n = notas.find(x=>x.id===id);
+      ${n.texto ? `<div class="card-text">${escapeHtml(n.texto)}</div>` : ""}
 
-  titulo.value = n.titulo;
-  texto.value = n.texto;
-  fecha.value = n.fecha;
-  hora.value = n.hora;
+      <div class="card-meta">
+        ${n.fecha || n.hora ? `<span class="badge">${escapeHtml(formatFechaHora(n.fecha, n.hora))}</span>` : ""}
+      </div>
 
-  borrar(id);
+      <div class="card-actions">
+        <button class="small-btn ok" onclick="toggleNota('${String(n.id).replace(/'/g,"\\'")}')">${n.done ? "Reabrir" : "Hecha"}</button>
+        <button class="small-btn sec" onclick="editarNota('${String(n.id).replace(/'/g,"\\'")}')">Editar</button>
+        <button class="small-btn danger" onclick="borrarNota('${String(n.id).replace(/'/g,"\\'")}')">Borrar</button>
+      </div>
+    </div>
+  `).join("");
 }
 
 function volver(){
-  window.location.href="app.html";
+  window.location.href = "app.html";
 }
 
+document.getElementById("busqueda").addEventListener("input", pintar);
+
+window.addEventListener("storage", function(e){
+  if(e.key === "configAllcalor") applyConfig();
+});
+
+window.addEventListener("pageshow", applyConfig);
+window.addEventListener("focus", applyConfig);
+
+applyConfig();
+ponerModoNuevo();
 pintar();
-
 </script>
-
 </body>
 </html>
