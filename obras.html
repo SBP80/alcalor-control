@@ -2,423 +2,912 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Obras</title>
-
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0b0b;
-    color: white;
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+  --danger:#c94b4b;
+  --ok:#39a96b;
 }
-
-.header {
-    padding: 12px 15px;
-    border-bottom: 2px solid orange;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
-
-.header-titulo {
-    font-size: 20px;
-    font-weight: bold;
+.wrap{
+  max-width:1280px;
+  margin:0 auto;
+  padding:18px;
 }
-
-.header-btn {
-    background: orange;
-    border: none;
-    color: #111;
-    font-weight: bold;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
 }
-
-.wrap {
-    padding: 10px;
-    position: relative;
+h1{
+  margin:0;
+  color:var(--accent);
+  font-size:38px;
 }
-
-.tools {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 210px;
-    max-height: 75vh;
-    overflow-y: auto;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    padding: 8px;
-    display: none;
-    z-index: 30;
-    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
 }
-
-.tools.abierto {
-    display: block;
+button,input,select,textarea{
+  font:inherit;
 }
-
-.subtitulo {
-    margin: 4px 0 6px 0;
-    font-size: 12px;
-    color: orange;
-    font-weight: bold;
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:800;
+  cursor:pointer;
 }
-
-.info {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    font-size: 14px;
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
 }
-
-.mensaje {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    font-size: 14px;
-    display: none;
+.btn-sec{
+  background:#2b2b2b;
+  color:#fff;
 }
-
-.buscador {
-    margin-bottom: 10px;
+.btn-danger{
+  background:var(--danger);
+  color:#fff;
 }
-
-.input-busqueda {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
 }
-
-.btn {
-    width: 100%;
-    padding: 11px;
-    background: orange;
-    border: none;
-    margin-top: 7px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #111;
-    font-weight: bold;
-    border-radius: 8px;
+.panel-title{
+  margin:0 0 14px 0;
+  color:var(--accent);
+  font-size:22px;
 }
-
-.obra {
-    background: #1a1a1a;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    position: relative;
-    border: 1px solid #252525;
-    cursor: pointer;
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
 }
-
-.eliminar {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    background: #b30000;
-    border: none;
-    color: white;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 6px;
-    font-weight: bold;
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
 }
-
-.obra-numero {
-    font-size: 12px;
-    color: #bdbdbd;
-    margin-bottom: 6px;
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
-
-.obra-nombre {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    padding-right: 55px;
+.field label{
+  font-size:13px;
+  color:var(--muted);
 }
-
-.obra-nombre a {
-    color: white;
-    text-decoration: none;
+input,select,textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
 }
-
-.obra-nombre a:hover {
-    text-decoration: underline;
+textarea{
+  min-height:90px;
+  resize:vertical;
 }
-
-.linea {
-    margin-bottom: 5px;
-    word-break: break-word;
+.search{
+  width:100%;
+  background:#101010;
+  color:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:15px 16px;
+  font-size:17px;
+  margin-bottom:12px;
 }
-
-.grid-datos {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 12px;
-    margin-top: 8px;
-    font-size: 14px;
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
 }
-
-.fecha {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #bdbdbd;
+.info{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:10px;
 }
-
-@media (max-width: 560px) {
-    .grid-datos {
-        grid-template-columns: 1fr;
-    }
+.hidden{
+  display:none !important;
+}
+.cards{
+  display:grid;
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.card-title{
+  margin:0;
+  font-size:22px;
+}
+.card-sub{
+  margin:6px 0 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.badge{
+  display:inline-block;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:700;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--muted);
+}
+.badge.pendiente{color:#ffe5b8}
+.badge.curso{color:#c8f1ff}
+.badge.parada{color:#ffd1d1}
+.badge.terminada{color:#d4ffd8}
+.lines{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.line{
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.mini-btn{
+  border:none;
+  border-radius:12px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
+}
+.mini-btn.sec{
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.mini-btn.danger{
+  background:var(--danger);
+  color:#fff;
+}
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:24px 12px;
+  border:1px dashed var(--line);
+  border-radius:16px;
+}
+.table-materiales{
+  display:grid;
+  gap:10px;
+}
+.material-row{
+  display:grid;
+  grid-template-columns:1.6fr .7fr .7fr .8fr 1fr 1fr auto;
+  gap:8px;
+  align-items:end;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#101010;
+}
+.material-row .field{
+  margin:0;
+}
+.material-head{
+  display:grid;
+  grid-template-columns:1.6fr .7fr .7fr .8fr 1fr 1fr auto;
+  gap:8px;
+  color:var(--muted);
+  font-size:12px;
+  padding:0 10px 6px 10px;
+}
+.modal-back{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:16px;
+}
+.modal-back.show{
+  display:flex;
+}
+.modal{
+  width:min(860px,100%);
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.modal h3{
+  margin:0 0 12px 0;
+  color:var(--accent);
+}
+textarea#pedidoTexto{
+  min-height:340px;
+}
+.msg{
+  min-height:20px;
+  margin-top:10px;
+  color:#c7ffd5;
+  font-size:13px;
+}
+@media (max-width:980px){
+  .grid,.grid-3{
+    grid-template-columns:1fr;
+  }
+  .material-head{
+    display:none;
+  }
+  .material-row{
+    grid-template-columns:1fr;
+  }
+}
+@media (max-width:760px){
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  h1{font-size:34px}
+  .actions .btn{
+    width:100%;
+  }
 }
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>Obras</h1>
+    <div class="actions">
+      <button class="btn btn-main" onclick="nuevaObra()">Nueva obra</button>
+      <button class="btn btn-sec" onclick="volver()">Volver</button>
+    </div>
+  </div>
 
-<div class="header">
-    <button class="header-btn" onclick="volver()">Volver</button>
-    <div class="header-titulo">Obras</div>
-    <button class="header-btn" onclick="toggleTools()">Menú</button>
+  <input id="buscador" class="search" placeholder="Buscar por cliente, obra, dirección, estado o material">
+
+  <div id="infoObras" class="info"></div>
+
+  <div id="panelFormulario" class="panel hidden">
+    <div class="panel-title" id="tituloFormulario">Nueva obra</div>
+
+    <div class="grid">
+      <div class="field">
+        <label>Cliente</label>
+        <select id="obraCliente"></select>
+      </div>
+
+      <div class="field">
+        <label>Nombre de la obra</label>
+        <input id="obraNombre" type="text" placeholder="Ej. Vivienda Pozuelo">
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="field">
+        <label>Estado</label>
+        <select id="obraEstado">
+          <option value="pendiente">Pendiente</option>
+          <option value="curso">En curso</option>
+          <option value="parada">Parada</option>
+          <option value="terminada">Terminada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fecha inicio</label>
+        <input id="obraFechaInicio" type="date">
+      </div>
+
+      <div class="field">
+        <label>Fecha fin</label>
+        <input id="obraFechaFin" type="date">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dirección de la obra</label>
+      <input id="obraDireccion" type="text" placeholder="Dirección de la obra">
+    </div>
+
+    <div class="field">
+      <label>Notas</label>
+      <textarea id="obraNotas" placeholder="Observaciones, fases, accesos, detalles técnicos..."></textarea>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-title" style="font-size:18px">Materiales previstos</div>
+      <div class="help" style="margin-bottom:10px">
+        Introduce lo previsto, lo que sale de stock y la app calculará lo que hay que pedir. Proveedor por defecto: Saltoki.
+      </div>
+
+      <div class="material-head">
+        <div>Material</div>
+        <div>Previsto</div>
+        <div>Stock</div>
+        <div>Unidad</div>
+        <div>Proveedor</div>
+        <div>Referencia</div>
+        <div></div>
+      </div>
+
+      <div id="tablaMateriales" class="table-materiales"></div>
+
+      <div class="card-actions" style="margin-top:12px">
+        <button class="mini-btn" onclick="agregarMaterialFila()">Añadir material</button>
+      </div>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="card-actions">
+      <button class="btn btn-main" onclick="guardarObra()">Guardar obra</button>
+      <button class="btn btn-sec" onclick="cerrarFormulario()">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Listado de obras</div>
+    <div id="listaObras" class="cards"></div>
+  </div>
 </div>
 
-<div class="wrap">
-
-    <div id="mensaje" class="mensaje"></div>
-    <div id="info" class="info"></div>
-
-    <div class="buscador">
-        <input
-            id="busqueda"
-            class="input-busqueda"
-            type="text"
-            placeholder="Buscar por nº, nombre, dirección, estado, tipo, técnicos o fecha"
-            oninput="mostrarObras()"
-        >
+<div id="modalPedido" class="modal-back">
+  <div class="modal">
+    <h3>Pedido generado</h3>
+    <textarea id="pedidoTexto"></textarea>
+    <div class="card-actions">
+      <button class="btn btn-main" onclick="copiarPedido()">Copiar</button>
+      <button class="btn btn-sec" onclick="cerrarModalPedido()">Cerrar</button>
     </div>
-
-    <div class="tools" id="tools">
-        <div class="subtitulo">Acciones</div>
-        <button class="btn" onclick="nuevaObra()">Nueva obra</button>
-    </div>
-
-    <div id="listaObras"></div>
-
+  </div>
 </div>
 
 <script>
-const PIN_ADMIN = "1234";
-
-const tools = document.getElementById("tools");
-const mensaje = document.getElementById("mensaje");
-const info = document.getElementById("info");
-const inputBusqueda = document.getElementById("busqueda");
-
-const clienteId = localStorage.getItem("clienteActivo");
-
-let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
-
-function toggleTools() {
-    tools.classList.toggle("abierto");
+function getSession(){
+  try{
+    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+  }catch(e){
+    return null;
+  }
+}
+const currentSession = getSession();
+if(!currentSession){
+  window.location.href = "login.html";
 }
 
-function mostrarMensaje(texto) {
-    mensaje.textContent = texto;
-    mensaje.style.display = "block";
-    setTimeout(() => {
-        mensaje.style.display = "none";
-    }, 2000);
+function getUsers(){
+  try{
+    const users = JSON.parse(localStorage.getItem("allcalor_users"));
+    if(Array.isArray(users) && users.length) return users;
+  }catch(e){}
+  return [];
 }
 
-function guardar() {
-    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+function normalizarUsername(v){
+  return String(v || "").trim().toLowerCase();
 }
 
-function formatearFecha(fechaISO) {
-    if (!fechaISO) return "-";
-    const fecha = new Date(fechaISO);
-    if (isNaN(fecha.getTime())) return "-";
-
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = fecha.getFullYear();
-    const hora = String(fecha.getHours()).padStart(2, "0");
-    const minutos = String(fecha.getMinutes()).padStart(2, "0");
-
-    return dia + "/" + mes + "/" + anio + " " + hora + ":" + minutos;
+function getCurrentUserRecord(){
+  const users = getUsers();
+  return users.find(u => normalizarUsername(u.username) === normalizarUsername(currentSession?.username)) || null;
 }
 
-function actualizarInfo() {
-    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
-    const visibles = filtrarObras(textoBusqueda).length;
-    info.innerHTML = "Total de obras: " + obras.length + " | Mostradas: " + visibles;
+const currentUser = getCurrentUserRecord();
+
+function hasAccess(module){
+  if(!currentUser) return false;
+  if((currentUser.role || "") === "administrador") return true;
+  const perms = Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
+  return perms.includes(module);
 }
 
-function pedirPin() {
-    let pin = prompt("Introduce PIN de administrador:");
-    if (pin === null) return false;
-    return pin === PIN_ADMIN;
+if(!hasAccess("obras")){
+  alert("No tienes acceso a Obras.");
+  window.location.href = "app.html";
 }
 
-function nuevaObra() {
-    const nombre = prompt("Nombre de la obra:");
-    if (!nombre || nombre.trim() === "") return;
+let editMode = false;
+let editClienteId = null;
+let editObraId = null;
 
-    const nueva = {
-        id: Date.now(),
-        nombre: nombre.trim(),
-        direccion: "",
-        tipo: "",
-        estado: "",
-        inicio: "",
-        fin: "",
-        tecnicos: "",
-        responsable: "",
-        superficie: 0,
-        paso: 15,
-        metros: 0,
-        circuitos: 0,
-        mCircuito: 0,
-        notas: "",
-        fotos: [],
-        docs: [],
-        fechaCreacion: new Date().toISOString()
+function getClientes(){
+  try{
+    return JSON.parse(localStorage.getItem("clientes")) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function texto(v){
+  return (v == null ? "" : String(v)).trim();
+}
+
+function normalizarCliente(c){
+  return {
+    id: c.id,
+    nombre: texto(c.nombre),
+    empresa: texto(c.empresa),
+    telefono: texto(c.telefono),
+    direccion: texto(c.direccion),
+    tipoVia: texto(c.tipoVia),
+    nombreVia: texto(c.nombreVia),
+    numeroVia: texto(c.numeroVia || c.numero),
+    portalVia: texto(c.portalVia || c.portal),
+    pisoVia: texto(c.pisoVia || c.piso),
+    puertaVia: texto(c.puertaVia || c.puerta),
+    cpVia: texto(c.cpVia || c.cp),
+    poblacionVia: texto(c.poblacionVia || c.poblacion),
+    provinciaVia: texto(c.provinciaVia || c.provincia)
+  };
+}
+
+function direccionClienteTexto(c){
+  const cli = normalizarCliente(c);
+  const partes = [];
+  const l1 = [cli.tipoVia, cli.nombreVia, cli.numeroVia].filter(Boolean).join(" ");
+  if(l1) partes.push(l1);
+  const l2 = [
+    cli.portalVia ? "Portal " + cli.portalVia : "",
+    cli.pisoVia ? "Piso " + cli.pisoVia : "",
+    cli.puertaVia ? "Puerta " + cli.puertaVia : ""
+  ].filter(Boolean).join(", ");
+  if(l2) partes.push(l2);
+  const l3 = [cli.cpVia, cli.poblacionVia, cli.provinciaVia].filter(Boolean).join(" ");
+  if(l3) partes.push(l3);
+
+  const armada = partes.join(" · ");
+  return armada || cli.direccion || "";
+}
+
+function nombreClientePorId(id){
+  const cli = getClientes().find(c => String(c.id) === String(id));
+  if(!cli) return "Cliente desconocido";
+  return texto(cli.nombre) || texto(cli.empresa) || "Cliente sin nombre";
+}
+
+function getObrasCliente(clienteId){
+  try{
+    return JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function setObrasCliente(clienteId, obras){
+  localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+}
+
+function getTodasObras(){
+  const clientes = getClientes();
+  const todas = [];
+
+  clientes.forEach(c => {
+    const obras = getObrasCliente(c.id);
+    obras.forEach(o => {
+      todas.push({
+        ...o,
+        clienteId: c.id,
+        clienteNombre: nombreClientePorId(c.id)
+      });
+    });
+  });
+
+  return todas;
+}
+
+function volver(){
+  window.location.href = "app.html";
+}
+
+function cargarClientesSelect(){
+  const sel = document.getElementById("obraCliente");
+  const clientes = getClientes();
+
+  if(!clientes.length){
+    sel.innerHTML = '<option value="">No hay clientes</option>';
+    return;
+  }
+
+  sel.innerHTML = clientes.map(c =>
+    `<option value="${c.id}">${escapeHtml(texto(c.nombre) || texto(c.empresa) || ("Cliente " + c.id))}</option>`
+  ).join("");
+}
+
+function nuevaObra(){
+  editMode = false;
+  editClienteId = null;
+  editObraId = null;
+
+  document.getElementById("tituloFormulario").textContent = "Nueva obra";
+  document.getElementById("obraNombre").value = "";
+  document.getElementById("obraEstado").value = "pendiente";
+  document.getElementById("obraFechaInicio").value = "";
+  document.getElementById("obraFechaFin").value = "";
+  document.getElementById("obraDireccion").value = "";
+  document.getElementById("obraNotas").value = "";
+  document.getElementById("msg").textContent = "";
+
+  cargarClientesSelect();
+  document.getElementById("tablaMateriales").innerHTML = "";
+  agregarMaterialFila();
+
+  document.getElementById("panelFormulario").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function cerrarFormulario(){
+  document.getElementById("panelFormulario").classList.add("hidden");
+}
+
+function agregarMaterialFila(data = {}){
+  const row = document.createElement("div");
+  row.className = "material-row";
+
+  row.innerHTML = `
+    <div class="field">
+      <label>Material</label>
+      <input class="m-desc" type="text" placeholder="Ej. Tubo PEX 16x2" value="${escapeAttr(texto(data.descripcion))}">
+    </div>
+
+    <div class="field">
+      <label>Previsto</label>
+      <input class="m-prev" type="number" min="0" step="0.01" placeholder="0" value="${escapeAttr(String(data.previsto ?? ""))}">
+    </div>
+
+    <div class="field">
+      <label>Stock</label>
+      <input class="m-stock" type="number" min="0" step="0.01" placeholder="0" value="${escapeAttr(String(data.stock ?? ""))}">
+    </div>
+
+    <div class="field">
+      <label>Unidad</label>
+      <input class="m-unit" type="text" placeholder="ud / m / ml" value="${escapeAttr(texto(data.unidad || "ud"))}">
+    </div>
+
+    <div class="field">
+      <label>Proveedor</label>
+      <input class="m-prov" type="text" placeholder="Saltoki" value="${escapeAttr(texto(data.proveedor || "Saltoki"))}">
+    </div>
+
+    <div class="field">
+      <label>Referencia</label>
+      <input class="m-ref" type="text" placeholder="Ref." value="${escapeAttr(texto(data.referencia))}">
+    </div>
+
+    <div class="field">
+      <label>&nbsp;</label>
+      <button type="button" class="mini-btn danger" onclick="this.closest('.material-row').remove()">Quitar</button>
+    </div>
+  `;
+
+  document.getElementById("tablaMateriales").appendChild(row);
+}
+
+function leerMaterialesFormulario(){
+  return Array.from(document.querySelectorAll(".material-row")).map(row => {
+    const previsto = Number(row.querySelector(".m-prev").value || 0);
+    const stock = Number(row.querySelector(".m-stock").value || 0);
+    const pedir = Math.max(previsto - stock, 0);
+
+    return {
+      descripcion: texto(row.querySelector(".m-desc").value),
+      previsto,
+      stock,
+      pedir,
+      unidad: texto(row.querySelector(".m-unit").value) || "ud",
+      proveedor: texto(row.querySelector(".m-prov").value) || "Saltoki",
+      referencia: texto(row.querySelector(".m-ref").value)
     };
-
-    obras.push(nueva);
-    guardar();
-    tools.classList.remove("abierto");
-    mostrarObras();
-    mostrarMensaje("Obra creada");
-
-    abrirObra(nueva.id);
+  }).filter(m => m.descripcion || m.previsto > 0 || m.stock > 0);
 }
 
-function eliminarObra(id) {
-    const confirmar = confirm("¿Seguro que quieres eliminar esta obra?");
-    if (!confirmar) return;
+function guardarObra(){
+  const clienteId = texto(document.getElementById("obraCliente").value);
+  const nombre = texto(document.getElementById("obraNombre").value);
+  const estado = texto(document.getElementById("obraEstado").value);
+  const fechaInicio = texto(document.getElementById("obraFechaInicio").value);
+  const fechaFin = texto(document.getElementById("obraFechaFin").value);
+  const direccion = texto(document.getElementById("obraDireccion").value);
+  const notas = texto(document.getElementById("obraNotas").value);
+  const materiales = leerMaterialesFormulario();
+  const msg = document.getElementById("msg");
 
-    const pinCorrecto = pedirPin();
-    if (!pinCorrecto) {
-        alert("PIN incorrecto");
-        return;
+  msg.textContent = "";
+
+  if(!clienteId){
+    msg.textContent = "Selecciona un cliente.";
+    return;
+  }
+  if(!nombre){
+    msg.textContent = "Introduce el nombre de la obra.";
+    return;
+  }
+
+  const obras = getObrasCliente(clienteId);
+
+  if(editMode){
+    const idx = obras.findIndex(o => String(o.id) === String(editObraId));
+    if(idx === -1){
+      msg.textContent = "No se encontró la obra.";
+      return;
     }
 
-    obras = obras.filter(o => o.id !== id);
-    guardar();
-
-    if (localStorage.getItem("obraActiva") == id) {
-        localStorage.removeItem("obraActiva");
-    }
-
-    mostrarObras();
-    mostrarMensaje("Obra eliminada");
-}
-
-function obtenerNumeroObra(index) {
-    return index + 1;
-}
-
-function filtrarObras(textoBusqueda) {
-    if (!textoBusqueda) return obras;
-
-    return obras.filter((obra, index) => {
-        const numero = String(obtenerNumeroObra(index)).toLowerCase();
-        const nombre = (obra.nombre || "").toLowerCase();
-        const direccion = (obra.direccion || "").toLowerCase();
-        const estado = (obra.estado || "").toLowerCase();
-        const tipo = (obra.tipo || "").toLowerCase();
-        const tecnicos = (obra.tecnicos || "").toLowerCase();
-        const fecha = formatearFecha(obra.fechaCreacion).toLowerCase();
-
-        return (
-            numero.includes(textoBusqueda) ||
-            nombre.includes(textoBusqueda) ||
-            direccion.includes(textoBusqueda) ||
-            estado.includes(textoBusqueda) ||
-            tipo.includes(textoBusqueda) ||
-            tecnicos.includes(textoBusqueda) ||
-            fecha.includes(textoBusqueda)
-        );
+    obras[idx] = {
+      ...obras[idx],
+      nombre,
+      estado,
+      fechaInicio,
+      fechaFin,
+      direccion,
+      notas,
+      materiales
+    };
+  } else {
+    obras.push({
+      id: Date.now(),
+      nombre,
+      estado,
+      fechaInicio,
+      fechaFin,
+      direccion,
+      notas,
+      materiales,
+      createdAt: new Date().toISOString(),
+      plano: { estancias: [] }
     });
+  }
+
+  setObrasCliente(clienteId, obras);
+  cerrarFormulario();
+  pintarObras();
 }
 
-function abrirObra(id) {
-    localStorage.setItem("obraActiva", id);
-    window.location.href = "obra.html";
+function editarObra(clienteId, obraId){
+  const obras = getObrasCliente(clienteId);
+  const obra = obras.find(o => String(o.id) === String(obraId));
+  if(!obra) return;
+
+  editMode = true;
+  editClienteId = clienteId;
+  editObraId = obraId;
+
+  document.getElementById("tituloFormulario").textContent = "Editar obra";
+  cargarClientesSelect();
+  document.getElementById("obraCliente").value = String(clienteId);
+  document.getElementById("obraNombre").value = obra.nombre || "";
+  document.getElementById("obraEstado").value = obra.estado || "pendiente";
+  document.getElementById("obraFechaInicio").value = obra.fechaInicio || "";
+  document.getElementById("obraFechaFin").value = obra.fechaFin || "";
+  document.getElementById("obraDireccion").value = obra.direccion || "";
+  document.getElementById("obraNotas").value = obra.notas || "";
+  document.getElementById("msg").textContent = "";
+
+  document.getElementById("tablaMateriales").innerHTML = "";
+  const mats = Array.isArray(obra.materiales) ? obra.materiales : [];
+  if(mats.length){
+    mats.forEach(m => agregarMaterialFila(m));
+  } else {
+    agregarMaterialFila();
+  }
+
+  document.getElementById("panelFormulario").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
 }
 
-function volver() {
-    window.location.replace("index.html");
+function borrarObra(clienteId, obraId){
+  if(!confirm("¿Borrar esta obra?")) return;
+  const obras = getObrasCliente(clienteId).filter(o => String(o.id) !== String(obraId));
+  setObrasCliente(clienteId, obras);
+  pintarObras();
 }
 
-function mostrarObras() {
-    const contenedor = document.getElementById("listaObras");
-    contenedor.innerHTML = "";
-
-    const textoBusqueda = inputBusqueda.value.trim().toLowerCase();
-    const obrasFiltradas = filtrarObras(textoBusqueda);
-
-    obrasFiltradas.forEach((obraFiltrada) => {
-        const indexReal = obras.findIndex(o => o.id === obraFiltrada.id);
-        const numeroObra = obtenerNumeroObra(indexReal);
-
-        const div = document.createElement("div");
-        div.className = "obra";
-
-        div.innerHTML = `
-            <button class="eliminar">X</button>
-
-            <div class="obra-numero">Obra ${numeroObra}</div>
-
-            <div class="obra-nombre">
-                <a href="#" onclick="event.preventDefault(); event.stopPropagation(); abrirObra(${obraFiltrada.id})">
-                    ${obraFiltrada.nombre || "Sin nombre"}
-                </a>
-            </div>
-
-            ${obraFiltrada.direccion ? `<div class="linea">📍 ${obraFiltrada.direccion}</div>` : ""}
-            ${obraFiltrada.estado ? `<div class="linea">Estado: ${obraFiltrada.estado}</div>` : ""}
-            ${obraFiltrada.tipo ? `<div class="linea">Tipo: ${obraFiltrada.tipo}</div>` : ""}
-            ${obraFiltrada.tecnicos ? `<div class="linea">Técnicos: ${obraFiltrada.tecnicos}</div>` : ""}
-
-            <div class="grid-datos">
-                ${obraFiltrada.superficie ? `<div>Superficie: ${Number(obraFiltrada.superficie).toFixed(2)} m²</div>` : ""}
-                ${obraFiltrada.circuitos ? `<div>Circuitos: ${obraFiltrada.circuitos}</div>` : ""}
-                ${obraFiltrada.metros ? `<div>Metros tubo: ${Number(obraFiltrada.metros).toFixed(0)}</div>` : ""}
-                ${obraFiltrada.mCircuito ? `<div>m/circuito: ${Number(obraFiltrada.mCircuito).toFixed(1)}</div>` : ""}
-            </div>
-
-            <div class="fecha">Creada: ${formatearFecha(obraFiltrada.fechaCreacion)}</div>
-        `;
-
-        div.onclick = () => abrirObra(obraFiltrada.id);
-
-        div.querySelector(".eliminar").onclick = (e) => {
-            e.stopPropagation();
-            eliminarObra(obraFiltrada.id);
-        };
-
-        contenedor.appendChild(div);
-    });
-
-    actualizarInfo();
+function badgeEstado(estado){
+  const map = {
+    pendiente:"Pendiente",
+    curso:"En curso",
+    parada:"Parada",
+    terminada:"Terminada"
+  };
+  return map[estado] || estado || "Sin estado";
 }
 
-mostrarObras();
+function pintarObras(){
+  const cont = document.getElementById("listaObras");
+  const info = document.getElementById("infoObras");
+  const txt = texto(document.getElementById("buscador").value).toLowerCase();
+  const obras = getTodasObras();
+
+  const filtradas = obras.filter(o => {
+    const bolsa = [
+      o.nombre,
+      o.estado,
+      o.fechaInicio,
+      o.fechaFin,
+      o.direccion,
+      o.notas,
+      o.clienteNombre,
+      ...(Array.isArray(o.materiales) ? o.materiales.map(m => m.descripcion + " " + m.proveedor + " " + m.referencia) : [])
+    ].join(" ").toLowerCase();
+
+    return bolsa.includes(txt);
+  });
+
+  info.textContent = "Total: " + obras.length + " · Mostradas: " + filtradas.length;
+
+  if(!filtradas.length){
+    cont.innerHTML = '<div class="empty">No hay obras que coincidan.</div>';
+    return;
+  }
+
+  cont.innerHTML = filtradas.map(o => {
+    const mats = Array.isArray(o.materiales) ? o.materiales : [];
+    const totalPrev = mats.reduce((a,m) => a + Number(m.previsto || 0), 0);
+    const totalPedir = mats.reduce((a,m) => a + Number(m.pedir || 0), 0);
+
+    return `
+      <div class="card">
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">${escapeHtml(o.nombre || "Obra sin nombre")}</h3>
+            <div class="card-sub">Cliente: ${escapeHtml(o.clienteNombre || "-")}</div>
+          </div>
+          <span class="badge ${escapeHtml(o.estado || "pendiente")}">${escapeHtml(badgeEstado(o.estado))}</span>
+        </div>
+
+        <div class="lines">
+          ${o.direccion ? `<div class="line"><strong>Dirección:</strong> ${escapeHtml(o.direccion)}</div>` : ""}
+          <div class="line"><strong>Inicio:</strong> ${escapeHtml(o.fechaInicio || "-")} · <strong>Fin:</strong> ${escapeHtml(o.fechaFin || "-")}</div>
+          <div class="line"><strong>Materiales:</strong> ${mats.length} líneas · <strong>Previsto:</strong> ${formNum(totalPrev)} · <strong>Pedir:</strong> ${formNum(totalPedir)}</div>
+          ${o.notas ? `<div class="line"><strong>Notas:</strong><br>${escapeHtml(o.notas)}</div>` : ""}
+        </div>
+
+        <div class="card-actions">
+          <button class="mini-btn" onclick="editarObra('${escapeJs(String(o.clienteId))}','${escapeJs(String(o.id))}')">Editar</button>
+          <button class="mini-btn sec" onclick="generarPedido('${escapeJs(String(o.clienteId))}','${escapeJs(String(o.id))}')">Generar pedido</button>
+          <button class="mini-btn sec" onclick="abrirPlanoDesdeObra('${escapeJs(String(o.clienteId))}','${escapeJs(String(o.id))}')">Planos</button>
+          <button class="mini-btn danger" onclick="borrarObra('${escapeJs(String(o.clienteId))}','${escapeJs(String(o.id))}')">Borrar</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function generarPedido(clienteId, obraId){
+  const obra = getObrasCliente(clienteId).find(o => String(o.id) === String(obraId));
+  if(!obra) return;
+
+  const mats = (Array.isArray(obra.materiales) ? obra.materiales : []).filter(m => Number(m.pedir || 0) > 0);
+
+  if(!mats.length){
+    document.getElementById("pedidoTexto").value =
+      "No hay materiales pendientes de pedir para esta obra.";
+    document.getElementById("modalPedido").classList.add("show");
+    return;
+  }
+
+  const cliente = nombreClientePorId(clienteId);
+  const proveedorPrincipal = "Saltoki";
+  const lines = [];
+
+  lines.push("PEDIDO DE MATERIALES");
+  lines.push("");
+  lines.push("Proveedor principal: " + proveedorPrincipal);
+  lines.push("Cliente: " + cliente);
+  lines.push("Obra: " + (obra.nombre || ""));
+  lines.push("Dirección: " + (obra.direccion || "-"));
+  lines.push("Fecha: " + new Date().toLocaleDateString("es-ES"));
+  lines.push("");
+  lines.push("LÍNEAS A PEDIR");
+  lines.push("");
+
+  mats.forEach((m, i) => {
+    lines.push((i + 1) + ". " + (m.descripcion || ""));
+    lines.push("   Cantidad a pedir: " + formNum(m.pedir) + " " + (m.unidad || ""));
+    lines.push("   Previsto: " + formNum(m.previsto || 0) + " " + (m.unidad || ""));
+    lines.push("   Sale de stock: " + formNum(m.stock || 0) + " " + (m.unidad || ""));
+    lines.push("   Proveedor: " + (m.proveedor || "Saltoki"));
+    lines.push("   Referencia: " + (m.referencia || "-"));
+    lines.push("");
+  });
+
+  document.getElementById("pedidoTexto").value = lines.join("\n");
+  document.getElementById("modalPedido").classList.add("show");
+}
+
+function abrirPlanoDesdeObra(clienteId, obraId){
+  localStorage.setItem("clienteActivo", clienteId);
+  localStorage.setItem("obraActiva", obraId);
+  window.location.href = "plano.html";
+}
+
+function cerrarModalPedido(){
+  document.getElementById("modalPedido").classList.remove("show");
+}
+
+async function copiarPedido(){
+  const txt = document.getElementById("pedidoTexto").value;
+  try{
+    await navigator.clipboard.writeText(txt);
+    alert("Pedido copiado.");
+  }catch(e){
+    document.getElementById("pedidoTexto").select();
+    document.execCommand("copy");
+    alert("Pedido copiado.");
+  }
+}
+
+function formNum(v){
+  const n = Number(v || 0);
+  if(Number.isInteger(n)) return String(n);
+  return n.toFixed(2).replace(/\.00$/,"");
+}
+
+function escapeHtml(str){
+  return String(str || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function escapeAttr(str){
+  return escapeHtml(str);
+}
+
+function escapeJs(str){
+  return String(str || "")
+    .replace(/\\/g,"\\\\")
+    .replace(/'/g,"\\'");
+}
+
+document.getElementById("buscador").addEventListener("input", pintarObras);
+
+cargarClientesSelect();
+pintarObras();
 </script>
-
 </body>
 </html>
