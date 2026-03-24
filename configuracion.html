@@ -31,9 +31,8 @@ button{
   cursor:pointer;
   touch-action:manipulation;
 }
-.hidden{
-  display:none !important;
-}
+.hidden{display:none !important}
+
 .topbar{
   position:sticky;
   top:0;
@@ -72,6 +71,7 @@ button{
   background:var(--accent);
   color:var(--btnText);
 }
+
 .wrap{
   max-width:1450px;
   margin:0 auto;
@@ -79,7 +79,7 @@ button{
 }
 .layout{
   display:grid;
-  grid-template-columns:320px 1fr 420px;
+  grid-template-columns:300px 1fr 380px;
   gap:16px;
 }
 .sidebar{
@@ -106,7 +106,7 @@ button{
   text-align:left;
   border:none;
   border-radius:14px;
-  padding:14px 14px;
+  padding:14px;
   font-weight:800;
   background:var(--panel2);
   color:var(--text);
@@ -116,6 +116,7 @@ button{
   background:var(--accent);
   color:var(--btnText);
 }
+
 .main{
   min-width:0;
 }
@@ -160,4 +161,857 @@ button{
 input[type="text"],
 input[type="password"],
 input[type="email"],
-input
+input[type="number"],
+select,
+textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
+}
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+input[type="color"]{
+  width:100%;
+  height:48px;
+  padding:4px;
+  border:none;
+  background:none;
+}
+.check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+}
+.check input{
+  width:auto;
+  margin:0;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:800;
+}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  background:#2b2b2b;
+  color:#fff;
+}
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+.msg{
+  min-height:20px;
+  color:#c7ffd5;
+  font-size:13px;
+  margin-top:8px;
+}
+.badge{
+  display:inline-block;
+  padding:8px 12px;
+  border-radius:999px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+.color-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.color-box{
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+}
+.color-box .mini{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.preview{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  position:sticky;
+  top:88px;
+  height:fit-content;
+}
+.preview-title{
+  margin:0 0 12px 0;
+  color:var(--accent);
+  font-size:22px;
+}
+.preview-shell{
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+}
+.preview-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:14px;
+  background:rgba(0,0,0,.18);
+  border-bottom:1px solid var(--line);
+}
+.preview-brand-name{
+  margin:0;
+  line-height:1;
+  color:var(--accent);
+  word-break:break-word;
+}
+.preview-brand-sub{
+  margin:6px 0 0 0;
+  color:var(--muted);
+  font-size:12px;
+}
+.preview-clock{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+  min-width:160px;
+  text-align:right;
+}
+.preview-time{
+  color:var(--accent);
+  font-size:22px;
+  font-weight:800;
+}
+.preview-date{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+.preview-body{
+  padding:14px;
+}
+.preview-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
+}
+.preview-card h4{
+  margin:0 0 8px 0;
+  color:var(--accent);
+}
+.preview-card p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.45;
+}
+.preview-notes{
+  margin-top:10px;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:var(--accent);
+  color:var(--btnText);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  font-weight:800;
+}
+
+@media (max-width:1200px){
+  .layout{
+    grid-template-columns:280px 1fr;
+  }
+  .preview{
+    grid-column:1 / -1;
+    position:static;
+  }
+}
+@media (max-width:860px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+  .sidebar{
+    position:static;
+  }
+  .grid,.grid-3,.color-grid{
+    grid-template-columns:1fr;
+  }
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .topbar-right{
+    justify-content:space-between;
+  }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <h1 class="brand-name">Configuración</h1>
+    <div class="brand-sub">Panel profesional de ajustes</div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="btn-top" onclick="guardarTodo()">Guardar todo</button>
+    <button class="btn-top" onclick="volver()">Volver</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="layout">
+    <aside class="sidebar">
+      <h2 class="side-title">Secciones</h2>
+      <div class="menu">
+        <button class="menu-btn active" onclick="mostrarSeccion('secVisual', this)">Visual</button>
+        <button class="menu-btn" onclick="mostrarSeccion('secEmpresa', this)">Empresa</button>
+        <button class="menu-btn" onclick="mostrarSeccion('secSeguridad', this)">Seguridad</button>
+        <button class="menu-btn" onclick="mostrarSeccion('secSistema', this)">Sistema</button>
+        <button class="menu-btn" onclick="mostrarSeccion('secNotificaciones', this)">Notificaciones</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="secVisual" class="section">
+        <h3 class="section-title">Visual</h3>
+        <p class="section-sub">Aspecto general de la app.</p>
+
+        <div class="grid">
+          <div class="field">
+            <label>Nombre de la app</label>
+            <input id="cfgNombre" type="text" placeholder="ALLCALOR">
+          </div>
+          <div class="field">
+            <label>Subtítulo</label>
+            <input id="cfgSubtitulo" type="text" placeholder="Centro de control">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Fuente principal</label>
+            <select id="cfgFuente">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+              <option value="Tahoma, sans-serif">Tahoma</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tamaño nombre</label>
+            <input id="cfgTamNombre" type="number" min="18" max="52" step="1">
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label>Peso nombre</label>
+            <select id="cfgPesoNombre">
+              <option value="400">400</option>
+              <option value="500">500</option>
+              <option value="600">600</option>
+              <option value="700">700</option>
+              <option value="800">800</option>
+              <option value="900">900</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Espaciado letras</label>
+            <input id="cfgEspacioLetras" type="number" min="0" max="8" step="0.5">
+          </div>
+          <div class="field">
+            <label>Sombra nombre</label>
+            <input id="cfgSombraNombre" type="number" min="0" max="20" step="1">
+          </div>
+        </div>
+
+        <div class="grid">
+          <label class="check">
+            <input id="cfgMayusculas" type="checkbox">
+            Nombre en mayúsculas
+          </label>
+          <label class="check">
+            <input id="cfgCursiva" type="checkbox">
+            Nombre en cursiva
+          </label>
+        </div>
+
+        <div class="color-grid">
+          <div class="color-box">
+            <label>Color principal</label>
+            <input id="cfgColor" type="color">
+            <div class="mini">Botones y detalles principales</div>
+          </div>
+          <div class="color-box">
+            <label>Color fondo</label>
+            <input id="cfgBg" type="color">
+            <div class="mini">Fondo general</div>
+          </div>
+          <div class="color-box">
+            <label>Color panel</label>
+            <input id="cfgPanel" type="color">
+            <div class="mini">Tarjetas y cajas</div>
+          </div>
+          <div class="color-box">
+            <label>Color línea</label>
+            <input id="cfgLine" type="color">
+            <div class="mini">Bordes y separadores</div>
+          </div>
+          <div class="color-box">
+            <label>Color texto</label>
+            <input id="cfgText" type="color">
+            <div class="mini">Texto principal</div>
+          </div>
+          <div class="color-box">
+            <label>Color texto botón</label>
+            <input id="cfgBtnText" type="color">
+            <div class="mini">Texto sobre botones</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="secEmpresa" class="section hidden">
+        <h3 class="section-title">Empresa</h3>
+        <p class="section-sub">Datos base de la empresa.</p>
+
+        <div class="grid">
+          <div class="field">
+            <label>Nombre comercial</label>
+            <input id="cfgEmpresa" type="text">
+          </div>
+          <div class="field">
+            <label>Razón social</label>
+            <input id="cfgRazonSocial" type="text">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>CIF</label>
+            <input id="cfgCif" type="text">
+          </div>
+          <div class="field">
+            <label>Teléfono principal</label>
+            <input id="cfgTelefono" type="text">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Email principal</label>
+            <input id="cfgEmail" type="email">
+          </div>
+          <div class="field">
+            <label>Dirección</label>
+            <input id="cfgDireccion" type="text">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Anagrama / logo</label>
+          <input id="cfgLogo" type="text" placeholder="Texto o referencia provisional">
+        </div>
+      </section>
+
+      <section id="secSeguridad" class="section hidden">
+        <h3 class="section-title">Seguridad</h3>
+        <p class="section-sub">Cambio de clave del usuario actual.</p>
+
+        <div class="badge" id="infoUsuario">Usuario actual: -</div>
+
+        <div class="grid" style="margin-top:14px">
+          <div class="field">
+            <label>Nueva clave</label>
+            <input id="cfgClaveNueva" type="password" placeholder="Nueva clave">
+          </div>
+          <div class="field">
+            <label>Repetir nueva clave</label>
+            <input id="cfgClaveNueva2" type="password" placeholder="Repetir nueva clave">
+          </div>
+        </div>
+
+        <div class="help">
+          La entrada de emergencia admin / 1234 sigue activa.
+        </div>
+      </section>
+
+      <section id="secSistema" class="section hidden">
+        <h3 class="section-title">Sistema</h3>
+        <p class="section-sub">Elementos visibles y módulos.</p>
+
+        <div class="grid">
+          <label class="check">
+            <input id="cfgMostrarReloj" type="checkbox">
+            Mostrar reloj
+          </label>
+          <label class="check">
+            <input id="cfgMostrarFecha" type="checkbox">
+            Mostrar fecha
+          </label>
+          <label class="check">
+            <input id="cfgMostrarNotas" type="checkbox">
+            Mostrar botón de notas
+          </label>
+          <label class="check">
+            <input id="cfgMostrarUsuarios" type="checkbox">
+            Mostrar módulo usuarios
+          </label>
+          <label class="check">
+            <input id="cfgMostrarStock" type="checkbox">
+            Mostrar módulo compras y stock
+          </label>
+          <label class="check">
+            <input id="cfgMostrarPersonal" type="checkbox">
+            Mostrar módulo personal
+          </label>
+        </div>
+      </section>
+
+      <section id="secNotificaciones" class="section hidden">
+        <h3 class="section-title">Notificaciones</h3>
+        <p class="section-sub">Base para avisos en cualquier dispositivo.</p>
+
+        <div class="grid">
+          <label class="check">
+            <input id="cfgNotificaciones" type="checkbox">
+            Activar notificaciones
+          </label>
+          <label class="check">
+            <input id="cfgSonido" type="checkbox">
+            Activar sonido
+          </label>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Canal preferido</label>
+            <select id="cfgCanalAviso">
+              <option value="app">App</option>
+              <option value="push">Push</option>
+              <option value="email">Email</option>
+              <option value="todos">Todos</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Antelación por defecto</label>
+            <select id="cfgAntelacion">
+              <option value="0">Exacta</option>
+              <option value="5">5 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="60">1 hora</option>
+              <option value="1440">1 día</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="actions">
+          <button class="btn btn-main" onclick="guardarTodo()">Guardar todo</button>
+          <button class="btn btn-sec" onclick="volver()">Volver</button>
+        </div>
+        <div id="msg" class="msg"></div>
+      </div>
+    </main>
+
+    <aside class="preview">
+      <h3 class="preview-title">Vista previa</h3>
+
+      <div id="previewShell" class="preview-shell">
+        <div class="preview-top">
+          <div>
+            <h2 id="prevName" class="preview-brand-name">ALLCALOR</h2>
+            <div id="prevSub" class="preview-brand-sub">Centro de control</div>
+          </div>
+
+          <div id="prevClock" class="preview-clock">
+            <div id="prevTime" class="preview-time">00:00:00</div>
+            <div id="prevDate" class="preview-date">lunes, 1 de enero de 2026</div>
+          </div>
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-card">
+            <h4>Clientes</h4>
+            <p>Listado general, fichas y acceso rápido.</p>
+          </div>
+          <div class="preview-card">
+            <h4>Obras</h4>
+            <p>Trabajos, estado, materiales y seguimiento.</p>
+          </div>
+          <div id="prevNotes" class="preview-notes">📝</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+function getSession(){
+  try{
+    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+  }catch(e){
+    return null;
+  }
+}
+const currentSession = getSession();
+if(!currentSession){
+  window.location.href = "login.html";
+}
+
+function getConfig(){
+  try{
+    return JSON.parse(localStorage.getItem("configAllcalor")) || {};
+  }catch(e){
+    return {};
+  }
+}
+function setConfig(cfg){
+  localStorage.setItem("configAllcalor", JSON.stringify(cfg));
+}
+
+function getUsers(){
+  try{
+    const users = JSON.parse(localStorage.getItem("allcalor_users"));
+    if(Array.isArray(users) && users.length) return users;
+  }catch(e){}
+  return [{
+    username:"admin",
+    password:"1234",
+    nombre:"Administrador",
+    role:"administrador",
+    active:true,
+    permissions:["clientes","obras","planos","usuarios","personal","stock","configuracion","presupuestos","facturas"]
+  }];
+}
+function setUsers(users){
+  localStorage.setItem("allcalor_users", JSON.stringify(users));
+}
+
+function defaults(){
+  return {
+    nombre:"ALLCALOR",
+    subtitulo:"Centro de control",
+    empresa:"ALLCALOR",
+    razonSocial:"",
+    cif:"",
+    telefono:"",
+    email:"",
+    direccion:"",
+    logo:"",
+    color:"#f39b2f",
+    colorFondo:"#0b0b0b",
+    colorPanel:"#151515",
+    colorLinea:"#2b2b2b",
+    colorTexto:"#ffffff",
+    colorBotonTexto:"#111111",
+    fuente:"Arial, sans-serif",
+    tamNombre:30,
+    pesoNombre:800,
+    espacioLetras:0,
+    sombraNombre:0,
+    mayusculas:false,
+    cursiva:false,
+    mostrarReloj:true,
+    mostrarFecha:true,
+    mostrarNotas:true,
+    mostrarUsuarios:true,
+    mostrarStock:true,
+    mostrarPersonal:true,
+    notificaciones:true,
+    sonido:true,
+    canalAviso:"app",
+    antelacion:"15"
+  };
+}
+
+function mostrarSeccion(id, btn){
+  const ids = ["secVisual","secEmpresa","secSeguridad","secSistema","secNotificaciones"];
+  ids.forEach(secId => {
+    const el = document.getElementById(secId);
+    if(el) el.classList.toggle("hidden", secId !== id);
+  });
+  document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+}
+
+function cargar(){
+  const cfg = Object.assign(defaults(), getConfig());
+
+  setValue("cfgNombre", cfg.nombre);
+  setValue("cfgSubtitulo", cfg.subtitulo);
+  setValue("cfgEmpresa", cfg.empresa);
+  setValue("cfgRazonSocial", cfg.razonSocial);
+  setValue("cfgCif", cfg.cif);
+  setValue("cfgTelefono", cfg.telefono);
+  setValue("cfgEmail", cfg.email);
+  setValue("cfgDireccion", cfg.direccion);
+  setValue("cfgLogo", cfg.logo);
+
+  setValue("cfgColor", cfg.color);
+  setValue("cfgBg", cfg.colorFondo);
+  setValue("cfgPanel", cfg.colorPanel);
+  setValue("cfgLine", cfg.colorLinea);
+  setValue("cfgText", cfg.colorTexto);
+  setValue("cfgBtnText", cfg.colorBotonTexto);
+
+  setValue("cfgFuente", cfg.fuente);
+  setValue("cfgTamNombre", cfg.tamNombre);
+  setValue("cfgPesoNombre", cfg.pesoNombre);
+  setValue("cfgEspacioLetras", cfg.espacioLetras);
+  setValue("cfgSombraNombre", cfg.sombraNombre);
+
+  setChecked("cfgMayusculas", !!cfg.mayusculas);
+  setChecked("cfgCursiva", !!cfg.cursiva);
+  setChecked("cfgMostrarReloj", !!cfg.mostrarReloj);
+  setChecked("cfgMostrarFecha", !!cfg.mostrarFecha);
+  setChecked("cfgMostrarNotas", !!cfg.mostrarNotas);
+  setChecked("cfgMostrarUsuarios", !!cfg.mostrarUsuarios);
+  setChecked("cfgMostrarStock", !!cfg.mostrarStock);
+  setChecked("cfgMostrarPersonal", !!cfg.mostrarPersonal);
+  setChecked("cfgNotificaciones", !!cfg.notificaciones);
+  setChecked("cfgSonido", !!cfg.sonido);
+
+  setValue("cfgCanalAviso", cfg.canalAviso);
+  setValue("cfgAntelacion", String(cfg.antelacion));
+
+  setValue("cfgClaveNueva", "");
+  setValue("cfgClaveNueva2", "");
+
+  const infoUsuario = document.getElementById("infoUsuario");
+  if(infoUsuario){
+    infoUsuario.textContent = "Usuario actual: " + (currentSession.username || "-") + " · Rol: " + (currentSession.role || "-");
+  }
+
+  aplicarPreview();
+}
+
+function setValue(id, value){
+  const el = document.getElementById(id);
+  if(el) el.value = value ?? "";
+}
+function setChecked(id, value){
+  const el = document.getElementById(id);
+  if(el) el.checked = !!value;
+}
+function getValue(id){
+  const el = document.getElementById(id);
+  return el ? el.value : "";
+}
+function getChecked(id){
+  const el = document.getElementById(id);
+  return !!(el && el.checked);
+}
+
+function recoger(){
+  return {
+    ...getConfig(),
+    nombre: getValue("cfgNombre").trim() || "ALLCALOR",
+    subtitulo: getValue("cfgSubtitulo").trim() || "Centro de control",
+    empresa: getValue("cfgEmpresa").trim(),
+    razonSocial: getValue("cfgRazonSocial").trim(),
+    cif: getValue("cfgCif").trim(),
+    telefono: getValue("cfgTelefono").trim(),
+    email: getValue("cfgEmail").trim(),
+    direccion: getValue("cfgDireccion").trim(),
+    logo: getValue("cfgLogo").trim(),
+    color: getValue("cfgColor") || "#f39b2f",
+    colorFondo: getValue("cfgBg") || "#0b0b0b",
+    colorPanel: getValue("cfgPanel") || "#151515",
+    colorLinea: getValue("cfgLine") || "#2b2b2b",
+    colorTexto: getValue("cfgText") || "#ffffff",
+    colorBotonTexto: getValue("cfgBtnText") || "#111111",
+    fuente: getValue("cfgFuente") || "Arial, sans-serif",
+    tamNombre: Number(getValue("cfgTamNombre") || 30),
+    pesoNombre: Number(getValue("cfgPesoNombre") || 800),
+    espacioLetras: Number(getValue("cfgEspacioLetras") || 0),
+    sombraNombre: Number(getValue("cfgSombraNombre") || 0),
+    mayusculas: getChecked("cfgMayusculas"),
+    cursiva: getChecked("cfgCursiva"),
+    mostrarReloj: getChecked("cfgMostrarReloj"),
+    mostrarFecha: getChecked("cfgMostrarFecha"),
+    mostrarNotas: getChecked("cfgMostrarNotas"),
+    mostrarUsuarios: getChecked("cfgMostrarUsuarios"),
+    mostrarStock: getChecked("cfgMostrarStock"),
+    mostrarPersonal: getChecked("cfgMostrarPersonal"),
+    notificaciones: getChecked("cfgNotificaciones"),
+    sonido: getChecked("cfgSonido"),
+    canalAviso: getValue("cfgCanalAviso") || "app",
+    antelacion: getValue("cfgAntelacion") || "15"
+  };
+}
+
+function aplicarPreview(){
+  const cfg = recoger();
+  document.documentElement.style.setProperty("--accent", cfg.color);
+
+  const nombreFinal = cfg.mayusculas ? cfg.nombre.toUpperCase() : cfg.nombre;
+
+  const prevName = document.getElementById("prevName");
+  const prevSub = document.getElementById("prevSub");
+  const previewShell = document.getElementById("previewShell");
+  const prevClock = document.getElementById("prevClock");
+  const prevTime = document.getElementById("prevTime");
+  const prevDate = document.getElementById("prevDate");
+  const prevNotes = document.getElementById("prevNotes");
+
+  if(prevName){
+    prevName.textContent = nombreFinal;
+    prevName.style.fontFamily = cfg.fuente;
+    prevName.style.fontSize = cfg.tamNombre + "px";
+    prevName.style.fontWeight = cfg.pesoNombre;
+    prevName.style.letterSpacing = cfg.espacioLetras + "px";
+    prevName.style.textShadow = "0 0 " + cfg.sombraNombre + "px #000";
+    prevName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+    prevName.style.color = cfg.color;
+  }
+  if(prevSub){
+    prevSub.textContent = cfg.subtitulo;
+    prevSub.style.color = cfg.colorTexto;
+  }
+  if(previewShell){
+    previewShell.style.background = cfg.colorFondo;
+    previewShell.style.borderColor = cfg.colorLinea;
+    previewShell.style.color = cfg.colorTexto;
+  }
+
+  document.querySelectorAll(".preview-card").forEach(card => {
+    card.style.background = cfg.colorPanel;
+    card.style.borderColor = cfg.colorLinea;
+    card.style.color = cfg.colorTexto;
+  });
+  document.querySelectorAll(".preview-card h4").forEach(h4 => {
+    h4.style.color = cfg.color;
+  });
+
+  if(prevClock){
+    prevClock.style.background = cfg.colorPanel;
+    prevClock.style.borderColor = cfg.colorLinea;
+    prevClock.classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+  }
+  if(prevTime){
+    prevTime.style.color = cfg.color;
+    prevTime.classList.toggle("hidden", !cfg.mostrarReloj);
+  }
+  if(prevDate){
+    prevDate.style.color = cfg.colorTexto;
+    prevDate.classList.toggle("hidden", !cfg.mostrarFecha);
+  }
+  if(prevNotes){
+    prevNotes.style.background = cfg.color;
+    prevNotes.style.color = cfg.colorBotonTexto;
+    prevNotes.classList.toggle("hidden", !cfg.mostrarNotas);
+  }
+}
+
+function cambiarClaveUsuarioActual(){
+  const c1 = getValue("cfgClaveNueva").trim();
+  const c2 = getValue("cfgClaveNueva2").trim();
+
+  if(!c1 && !c2) return {ok:true};
+
+  if(c1.length < 4){
+    return {ok:false, msg:"La nueva clave debe tener al menos 4 caracteres."};
+  }
+  if(c1 !== c2){
+    return {ok:false, msg:"Las dos claves no coinciden."};
+  }
+
+  const users = getUsers();
+  const idx = users.findIndex(u => (u.username || "") === currentSession.username);
+
+  if(idx === -1){
+    return {ok:false, msg:"No se encontró el usuario actual."};
+  }
+
+  users[idx].password = c1;
+  setUsers(users);
+  return {ok:true};
+}
+
+function guardarTodo(){
+  const res = cambiarClaveUsuarioActual();
+  const msg = document.getElementById("msg");
+  if(!res.ok){
+    if(msg) msg.textContent = res.msg;
+    return;
+  }
+
+  setConfig(recoger());
+  if(msg) msg.textContent = "Configuración guardada correctamente.";
+}
+
+function volver(){
+  window.location.href = "app.html";
+}
+
+function pad(n){
+  return String(n).padStart(2,"0");
+}
+function relojPreview(){
+  const now = new Date();
+  const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  const prevTime = document.getElementById("prevTime");
+  const prevDate = document.getElementById("prevDate");
+  if(prevTime){
+    prevTime.textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+  }
+  if(prevDate){
+    prevDate.textContent = dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
+  }
+}
+
+[
+  "cfgNombre","cfgSubtitulo","cfgEmpresa","cfgRazonSocial","cfgCif","cfgTelefono","cfgEmail","cfgDireccion","cfgLogo",
+  "cfgColor","cfgBg","cfgPanel","cfgLine","cfgText","cfgBtnText","cfgFuente","cfgTamNombre","cfgPesoNombre",
+  "cfgEspacioLetras","cfgSombraNombre","cfgMayusculas","cfgCursiva","cfgMostrarReloj","cfgMostrarFecha",
+  "cfgMostrarNotas","cfgMostrarUsuarios","cfgMostrarStock","cfgMostrarPersonal","cfgNotificaciones","cfgSonido",
+  "cfgCanalAviso","cfgAntelacion","cfgClaveNueva","cfgClaveNueva2"
+].forEach(id => {
+  const el = document.getElementById(id);
+  if(el){
+    el.addEventListener("input", aplicarPreview);
+    el.addEventListener("change", aplicarPreview);
+  }
+});
+
+cargar();
+relojPreview();
+setInterval(relojPreview, 1000);
+</script>
+</body>
+</html>
