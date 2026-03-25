@@ -15,16 +15,19 @@
   --accent:#f39b2f;
   --btnText:#111111;
   --shadow:0 10px 24px rgba(0,0,0,.28);
+  --fontMain:Arial,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:var(--fontMain);
   background:var(--bg);
   color:var(--text);
+  position:relative;
+  overflow-x:hidden;
 }
-button,input{
+button,input,textarea,select{
   font:inherit;
 }
 button{
@@ -33,6 +36,27 @@ button{
 }
 .hidden{
   display:none !important;
+}
+
+/* Logo de fondo / marca de agua */
+#logoLayer{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:280px auto;
+}
+#logoLayer.visible{
+  opacity:1;
+}
+
+/* Estructura */
+.app-shell{
+  position:relative;
+  z-index:1;
 }
 .topbar{
   position:sticky;
@@ -43,7 +67,7 @@ button{
   align-items:center;
   gap:14px;
   padding:14px 16px;
-  background:rgba(11,11,11,.96);
+  background:color-mix(in srgb, var(--bg) 94%, transparent);
   border-bottom:1px solid var(--line);
   backdrop-filter:blur(8px);
 }
@@ -51,6 +75,19 @@ button{
   display:flex;
   align-items:center;
   gap:12px;
+  min-width:0;
+}
+.brand-logo{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#fff;
+  padding:4px;
+  flex:0 0 auto;
+}
+.brand-text{
   min-width:0;
 }
 .brand-name{
@@ -101,6 +138,7 @@ button{
   background:var(--accent);
   color:var(--btnText);
 }
+
 .wrap{
   max-width:1500px;
   margin:0 auto;
@@ -115,7 +153,7 @@ button{
 .search{
   width:100%;
   background:#101010;
-  color:#fff;
+  color:var(--text);
   border:1px solid var(--line);
   border-radius:16px;
   padding:16px 18px;
@@ -135,8 +173,9 @@ button{
   color:var(--text);
   border:1px solid var(--line);
 }
+
 .hero{
-  background:linear-gradient(135deg, rgba(243,155,47,.16), rgba(243,155,47,.04));
+  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
   border:1px solid var(--line);
   border-radius:22px;
   padding:18px;
@@ -150,8 +189,8 @@ button{
 }
 .hero-box,
 .stats-box{
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.06);
+  background:color-mix(in srgb, var(--panel) 88%, transparent);
+  border:1px solid color-mix(in srgb, var(--line) 80%, transparent);
   border-radius:18px;
   padding:18px;
 }
@@ -184,6 +223,7 @@ button{
   color:var(--text);
   border:1px solid var(--line);
 }
+
 .stats-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -205,6 +245,7 @@ button{
   font-weight:800;
   color:var(--accent);
 }
+
 .section-head{
   display:flex;
   justify-content:space-between;
@@ -221,6 +262,7 @@ button{
   color:var(--muted);
   font-size:12px;
 }
+
 .modules{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -249,7 +291,7 @@ button{
   align-items:center;
   justify-content:center;
   border-radius:14px;
-  background:rgba(243,155,47,.12);
+  background:color-mix(in srgb, var(--accent) 12%, transparent);
   font-size:28px;
 }
 .card-tag{
@@ -263,6 +305,7 @@ button{
 .card h3{
   margin:0;
   font-size:18px;
+  color:var(--text);
 }
 .card p{
   margin:0;
@@ -289,6 +332,7 @@ button{
   color:var(--text);
   border:1px solid var(--line);
 }
+
 .userbar{
   margin-top:18px;
   display:flex;
@@ -302,6 +346,7 @@ button{
   padding:10px 14px;
   color:var(--muted);
 }
+
 .toast{
   position:fixed;
   left:50%;
@@ -320,6 +365,7 @@ button{
 .toast.show{
   display:block;
 }
+
 #btnNotas{
   position:fixed;
   right:18px;
@@ -334,6 +380,7 @@ button{
   z-index:120;
   box-shadow:var(--shadow);
 }
+
 @media (max-width:980px){
   .hero-grid{grid-template-columns:1fr}
   .search-row{grid-template-columns:1fr}
@@ -359,397 +406,542 @@ button{
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="brand">
-    <div>
-      <h1 id="brandName" class="brand-name">ALLCALOR</h1>
-      <div id="brandSub" class="brand-sub">Centro de control</div>
+<div id="logoLayer"></div>
+
+<div class="app-shell">
+  <div class="topbar">
+    <div class="brand">
+      <img id="brandLogo" class="brand-logo hidden" alt="Logo">
+      <div class="brand-text">
+        <h1 id="brandName" class="brand-name">ALLCALOR</h1>
+        <div id="brandSub" class="brand-sub">Centro de control</div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div id="clockBox" class="clock-box">
+        <div id="clockTime" class="clock-time">00:00:00</div>
+        <div id="clockDate" class="clock-date">Cargando fecha…</div>
+      </div>
+      <button id="btnConfig" class="btn-top" onclick="goConfig()">Configuración</button>
+      <button class="btn-top" onclick="logout()">Salir</button>
     </div>
   </div>
 
-  <div class="topbar-right">
-    <div id="clockBox" class="clock-box">
-      <div id="clockTime" class="clock-time">00:00:00</div>
-      <div id="clockDate" class="clock-date">Cargando fecha…</div>
+  <div class="wrap">
+    <div class="search-row">
+      <input id="globalSearch" class="search" type="text" placeholder="Buscar módulo, cliente, obra, plano, personal o stock">
+      <div class="quick-actions">
+        <button id="qaClientes" class="quick-btn" onclick="goClientes()">+ Cliente</button>
+        <button id="qaObras" class="quick-btn" onclick="goObras()">+ Obra</button>
+        <button id="qaPlanos" class="quick-btn" onclick="goPlanos()">+ Plano</button>
+        <button id="qaUsuarios" class="quick-btn" onclick="goUsuarios()">+ Usuario</button>
+      </div>
     </div>
-    <button id="btnConfig" class="btn-top" onclick="goConfig()">Configuración</button>
-    <button class="btn-top" onclick="logout()">Salir</button>
-  </div>
-</div>
 
-<div class="wrap">
-  <div class="search-row">
-    <input id="globalSearch" class="search" type="text" placeholder="Buscar módulo, cliente, obra, plano, personal o stock">
-    <div class="quick-actions">
-      <button id="qaClientes" class="quick-btn" onclick="goClientes()">+ Cliente</button>
-      <button id="qaObras" class="quick-btn" onclick="goObras()">+ Obra</button>
-      <button id="qaPlanos" class="quick-btn" onclick="goPlanos()">+ Plano</button>
-      <button id="qaUsuarios" class="quick-btn" onclick="goUsuarios()">+ Usuario</button>
+    <div class="hero">
+      <div class="hero-grid">
+        <div class="hero-box">
+          <h2 class="hero-title">Centro principal de trabajo</h2>
+          <p class="hero-text">
+            Base lista para clientes, obras, planos, personal, stock, compras y permisos.
+          </p>
+          <div class="hero-actions">
+            <button id="heroClientes" class="hero-btn" onclick="goClientes()">Clientes</button>
+            <button id="heroObras" class="hero-btn" onclick="goObras()">Obras</button>
+            <button id="heroPlanos" class="hero-btn" onclick="goPlanos()">Planos</button>
+            <button id="heroConfig" class="hero-btn sec" onclick="goConfig()">Ajustes</button>
+          </div>
+        </div>
+
+        <div class="stats-box">
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="stat-label">Clientes</div>
+              <div id="statClientes" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Obras</div>
+              <div id="statObras" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Planos</div>
+              <div id="statPlanos" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Hoy</div>
+              <div id="statHoy" class="stat-value">--/--</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="hero">
-    <div class="hero-grid">
-      <div class="hero-box">
-        <h2 class="hero-title">Centro principal de trabajo</h2>
-        <p class="hero-text">
-          Base lista para clientes, obras, planos, personal, stock, compras y permisos.
-        </p>
-        <div class="hero-actions">
-          <button id="heroClientes" class="hero-btn" onclick="goClientes()">Clientes</button>
-          <button id="heroObras" class="hero-btn" onclick="goObras()">Obras</button>
-          <button id="heroPlanos" class="hero-btn" onclick="goPlanos()">Planos</button>
-          <button id="heroConfig" class="hero-btn sec" onclick="goConfig()">Ajustes</button>
+    <div class="userbar">
+      <div id="userName" class="userpill">Usuario: -</div>
+      <div id="userRole" class="userpill">Rol: -</div>
+    </div>
+
+    <div class="section-head">
+      <h2 class="section-title">Módulos</h2>
+      <div class="section-note">Accesos directos del sistema</div>
+    </div>
+
+    <div id="modulesGrid" class="modules">
+      <div class="card" data-module="clientes" data-configflag="" data-search="clientes fichas teléfonos emails">
+        <div class="card-top">
+          <div class="card-icon">👤</div>
+          <div class="card-tag">Activo</div>
+        </div>
+        <h3>Clientes</h3>
+        <p>Listado general, fichas y acceso a cada cliente.</p>
+        <div class="card-btns">
+          <button class="card-btn" onclick="goClientes()">Abrir</button>
         </div>
       </div>
 
-      <div class="stats-box">
-        <div class="stats-grid">
-          <div class="stat">
-            <div class="stat-label">Clientes</div>
-            <div id="statClientes" class="stat-value">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Obras</div>
-            <div id="statObras" class="stat-value">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Planos</div>
-            <div id="statPlanos" class="stat-value">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Hoy</div>
-            <div id="statHoy" class="stat-value">--/--</div>
-          </div>
+      <div class="card" data-module="obras" data-configflag="" data-search="obras trabajos instalaciones">
+        <div class="card-top">
+          <div class="card-icon">🏗️</div>
+          <div class="card-tag">Activo</div>
+        </div>
+        <h3>Obras</h3>
+        <p>Vista general de trabajos y acceso a cada obra.</p>
+        <div class="card-btns">
+          <button class="card-btn" onclick="goObras()">Abrir</button>
+        </div>
+      </div>
+
+      <div class="card" data-module="planos" data-configflag="" data-search="planos plano dibujo estancias">
+        <div class="card-top">
+          <div class="card-icon">📐</div>
+          <div class="card-tag">Base</div>
+        </div>
+        <h3>Planos</h3>
+        <p>Editor y siguiente paso para vista global de planos.</p>
+        <div class="card-btns">
+          <button class="card-btn" onclick="goPlanos()">Abrir</button>
+        </div>
+      </div>
+
+      <div class="card" data-module="usuarios" data-configflag="mostrarUsuarios" data-search="usuarios permisos claves seguridad">
+        <div class="card-top">
+          <div class="card-icon">🔐</div>
+          <div class="card-tag">Activo</div>
+        </div>
+        <h3>Usuarios y permisos</h3>
+        <p>Usuarios, roles y permisos por módulo.</p>
+        <div class="card-btns">
+          <button class="card-btn" onclick="goUsuarios()">Abrir</button>
+        </div>
+      </div>
+
+      <div class="card" data-module="personal" data-configflag="mostrarPersonal" data-search="personal trabajadores vacaciones ausencias">
+        <div class="card-top">
+          <div class="card-icon">👷</div>
+          <div class="card-tag">Pendiente</div>
+        </div>
+        <h3>Personal</h3>
+        <p>Trabajadores, vacaciones, ausencias y datos internos.</p>
+        <div class="card-btns">
+          <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Preparar</button>
+        </div>
+      </div>
+
+      <div class="card" data-module="stock" data-configflag="mostrarStock" data-search="stock compras materiales proveedor saltoki">
+        <div class="card-top">
+          <div class="card-icon">📦</div>
+          <div class="card-tag">Pendiente</div>
+        </div>
+        <h3>Compras y stock</h3>
+        <p>Material previsto, almacén, faltas y pedido a proveedor.</p>
+        <div class="card-btns">
+          <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Preparar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="userbar">
-    <div id="userName" class="userpill">Usuario: -</div>
-    <div id="userRole" class="userpill">Rol: -</div>
-  </div>
-
-  <div class="section-head">
-    <h2 class="section-title">Módulos</h2>
-    <div class="section-note">Accesos directos del sistema</div>
-  </div>
-
-  <div id="modulesGrid" class="modules">
-    <div class="card" data-module="clientes" data-search="clientes fichas teléfonos emails">
-      <div class="card-top">
-        <div class="card-icon">👤</div>
-        <div class="card-tag">Activo</div>
-      </div>
-      <h3>Clientes</h3>
-      <p>Listado general, fichas y acceso a cada cliente.</p>
-      <div class="card-btns">
-        <button class="card-btn" onclick="goClientes()">Abrir</button>
-      </div>
-    </div>
-
-    <div class="card" data-module="obras" data-search="obras trabajos instalaciones">
-      <div class="card-top">
-        <div class="card-icon">🏗️</div>
-        <div class="card-tag">Activo</div>
-      </div>
-      <h3>Obras</h3>
-      <p>Vista general de trabajos y acceso a cada obra.</p>
-      <div class="card-btns">
-        <button class="card-btn" onclick="goObras()">Abrir</button>
-      </div>
-    </div>
-
-    <div class="card" data-module="planos" data-search="planos plano dibujo estancias">
-      <div class="card-top">
-        <div class="card-icon">📐</div>
-        <div class="card-tag">Base</div>
-      </div>
-      <h3>Planos</h3>
-      <p>Editor y siguiente paso para vista global de planos.</p>
-      <div class="card-btns">
-        <button class="card-btn" onclick="goPlanos()">Abrir</button>
-      </div>
-    </div>
-
-    <div class="card" data-module="usuarios" data-search="usuarios permisos claves seguridad">
-      <div class="card-top">
-        <div class="card-icon">🔐</div>
-        <div class="card-tag">Activo</div>
-      </div>
-      <h3>Usuarios y permisos</h3>
-      <p>Usuarios, roles y permisos por módulo.</p>
-      <div class="card-btns">
-        <button class="card-btn" onclick="goUsuarios()">Abrir</button>
-      </div>
-    </div>
-
-    <div class="card" data-module="personal" data-search="personal trabajadores vacaciones ausencias">
-      <div class="card-top">
-        <div class="card-icon">👷</div>
-        <div class="card-tag">Pendiente</div>
-      </div>
-      <h3>Personal</h3>
-      <p>Trabajadores, vacaciones, ausencias y datos internos.</p>
-      <div class="card-btns">
-        <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Preparar</button>
-      </div>
-    </div>
-
-    <div class="card" data-module="stock" data-search="stock compras materiales proveedor saltoki">
-      <div class="card-top">
-        <div class="card-icon">📦</div>
-        <div class="card-tag">Pendiente</div>
-      </div>
-      <h3>Compras y stock</h3>
-      <p>Material previsto, almacén, faltas y pedido a proveedor.</p>
-      <div class="card-btns">
-        <button class="card-btn sec" onclick="showToast('Este módulo será el siguiente')">Preparar</button>
-      </div>
-    </div>
-  </div>
+  <button id="btnNotas" title="Notas rápidas" onclick="goNotas()">📝</button>
 </div>
-
-<button id="btnNotas" title="Notas rápidas" onclick="goNotas()">📝</button>
 
 <div id="toast" class="toast"></div>
 
 <script>
-function getSession(){
-  try{
-    return JSON.parse(localStorage.getItem("allcalor_session")) || null;
-  }catch(e){
-    return null;
-  }
-}
+(function(){
+  "use strict";
 
-const currentSession = getSession();
+  const $ = (id) => document.getElementById(id);
 
-function getUsers(){
-  try{
-    const users = JSON.parse(localStorage.getItem("allcalor_users"));
-    if(Array.isArray(users) && users.length) return users;
-  }catch(e){}
-  return [];
-}
+  const currentSession = getSession();
 
-function normalizarUsername(v){
-  return String(v || "").trim().toLowerCase();
-}
-
-if(!currentSession || !currentSession.username){
-  localStorage.removeItem("allcalor_session");
-  window.location.href = "login.html";
-}
-
-function validarSesionReal(){
-  const users = getUsers();
-  const existe = users.find(u =>
-    normalizarUsername(u.username) === normalizarUsername(currentSession.username)
-  );
-
-  if(!existe || existe.active === false){
+  if(!currentSession || !currentSession.username){
     localStorage.removeItem("allcalor_session");
     window.location.href = "login.html";
+    return;
   }
-}
 
-validarSesionReal();
+  validarSesionReal();
 
-function getCurrentUserRecord(){
-  const users = getUsers();
-  return users.find(u => normalizarUsername(u.username) === normalizarUsername(currentSession?.username)) || null;
-}
+  const currentUser = getCurrentUserRecord();
+  const cfg = getMergedConfig();
 
-const currentUser = getCurrentUserRecord();
-
-function hasAccess(module){
-  if(!currentUser) return false;
-  if((currentUser.role || "") === "administrador") return true;
-  const perms = Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
-  return perms.includes(module);
-}
-
-function getConfig(){
-  try{
-    return JSON.parse(localStorage.getItem("configAllcalor")) || {};
-  }catch(e){
-    return {};
+  function getSession(){
+    try{
+      return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+    }catch(e){
+      return null;
+    }
   }
-}
 
-function applyConfig(){
-  const cfg = Object.assign({
-    nombre:"ALLCALOR",
-    subtitulo:"Centro de control",
-    color:"#f39b2f",
-    mostrarReloj:true,
-    mostrarFecha:true,
-    mostrarNotas:true
-  }, getConfig());
-
-  document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
-  document.getElementById("brandName").textContent = cfg.nombre || "ALLCALOR";
-  document.getElementById("brandSub").textContent = cfg.subtitulo || "Centro de control";
-
-  document.getElementById("clockBox").classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
-  document.getElementById("clockTime").classList.toggle("hidden", !cfg.mostrarReloj);
-  document.getElementById("clockDate").classList.toggle("hidden", !cfg.mostrarFecha);
-  document.getElementById("btnNotas").classList.toggle("hidden", !cfg.mostrarNotas);
-}
-
-function pad(n){
-  return String(n).padStart(2,"0");
-}
-
-function updateClock(){
-  const now = new Date();
-  const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
-  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-
-  document.getElementById("clockTime").textContent =
-    pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
-
-  document.getElementById("clockDate").textContent =
-    dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
-
-  document.getElementById("statHoy").textContent = pad(now.getDate()) + "/" + pad(now.getMonth()+1);
-}
-
-function getClientes(){
-  try{
-    return JSON.parse(localStorage.getItem("clientes")) || [];
-  }catch(e){
+  function getUsers(){
+    try{
+      const users = JSON.parse(localStorage.getItem("allcalor_users"));
+      if(Array.isArray(users) && users.length) return users;
+    }catch(e){}
     return [];
   }
-}
 
-function getAllObrasCount(){
-  const clientes = getClientes();
-  let total = 0;
-  clientes.forEach(c => {
-    try{
-      const obras = JSON.parse(localStorage.getItem("obras_" + c.id)) || [];
-      total += obras.length;
-    }catch(e){}
-  });
-  return total;
-}
+  function normalizarUsername(v){
+    return String(v || "").trim().toLowerCase();
+  }
 
-function getAllPlanosCount(){
-  const clientes = getClientes();
-  let total = 0;
-  clientes.forEach(c => {
-    try{
-      const obras = JSON.parse(localStorage.getItem("obras_" + c.id)) || [];
-      obras.forEach(o => {
-        if(o && o.plano && Array.isArray(o.plano.estancias) && o.plano.estancias.length){
-          total += 1;
-        }
-      });
-    }catch(e){}
-  });
-  return total;
-}
-
-function updateStats(){
-  document.getElementById("statClientes").textContent = getClientes().length;
-  document.getElementById("statObras").textContent = getAllObrasCount();
-  document.getElementById("statPlanos").textContent = getAllPlanosCount();
-}
-
-function updateUserInfo(){
-  const nombre = currentUser?.nombre || currentSession?.nombre || currentSession?.username || "-";
-  const role = currentUser?.role || currentSession?.role || "-";
-  document.getElementById("userName").textContent = "Usuario: " + nombre;
-  document.getElementById("userRole").textContent = "Rol: " + role;
-}
-
-function applyPermissionsToUI(){
-  document.querySelectorAll("[data-module]").forEach(el => {
-    const mod = el.getAttribute("data-module");
-    el.classList.toggle("hidden", !hasAccess(mod));
-  });
-
-  document.getElementById("btnConfig").classList.toggle("hidden", !hasAccess("configuracion"));
-  document.getElementById("heroConfig").classList.toggle("hidden", !hasAccess("configuracion"));
-  document.getElementById("qaUsuarios").classList.toggle("hidden", !hasAccess("usuarios"));
-  document.getElementById("qaClientes").classList.toggle("hidden", !hasAccess("clientes"));
-  document.getElementById("qaObras").classList.toggle("hidden", !hasAccess("obras"));
-  document.getElementById("qaPlanos").classList.toggle("hidden", !hasAccess("planos"));
-  document.getElementById("heroClientes").classList.toggle("hidden", !hasAccess("clientes"));
-  document.getElementById("heroObras").classList.toggle("hidden", !hasAccess("obras"));
-  document.getElementById("heroPlanos").classList.toggle("hidden", !hasAccess("planos"));
-}
-
-function goClientes(){
-  if(!hasAccess("clientes")) return showToast("No tienes acceso a Clientes");
-  window.location.href = "clientes.html";
-}
-
-function goObras(){
-  if(!hasAccess("obras")) return showToast("No tienes acceso a Obras");
-  window.location.href = "obras.html";
-}
-
-function goPlanos(){
-  if(!hasAccess("planos")) return showToast("No tienes acceso a Planos");
-  showToast("La vista global de planos será el siguiente paso");
-}
-
-function goUsuarios(){
-  if(!hasAccess("usuarios")) return showToast("No tienes acceso a Usuarios");
-  window.location.href = "usuarios.html";
-}
-
-function goConfig(){
-  if(!hasAccess("configuracion")) return showToast("No tienes acceso a Configuración");
-  window.location.href = "configuracion.html";
-}
-
-function goNotas(){
-  window.location.href = "notas.html";
-}
-
-function logout(){
-  localStorage.removeItem("allcalor_session");
-  window.location.href = "login.html";
-}
-
-function showToast(text){
-  const toast = document.getElementById("toast");
-  toast.textContent = text;
-  toast.classList.add("show");
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => toast.classList.remove("show"), 1800);
-}
-
-document.getElementById("globalSearch").addEventListener("input", function(){
-  const txt = this.value.trim().toLowerCase();
-  document.querySelectorAll("#modulesGrid .card").forEach(card => {
-    if(card.classList.contains("hidden")){
-      card.style.display = "none";
-      return;
+  function validarSesionReal(){
+    const users = getUsers();
+    const existe = users.find(u =>
+      normalizarUsername(u.username) === normalizarUsername(currentSession.username)
+    );
+    if(!existe || existe.active === false){
+      localStorage.removeItem("allcalor_session");
+      window.location.href = "login.html";
     }
-    const raw = ((card.dataset.search || "") + " " + card.textContent).toLowerCase();
-    card.style.display = raw.indexOf(txt) !== -1 ? "" : "none";
+  }
+
+  function getCurrentUserRecord(){
+    const users = getUsers();
+    return users.find(u => normalizarUsername(u.username) === normalizarUsername(currentSession.username)) || null;
+  }
+
+  function defaults(){
+    return {
+      nombre:"ALLCALOR",
+      subtitulo:"Centro de control",
+      logo:"",
+      color:"#f39b2f",
+      colorFondo:"#0b0b0b",
+      colorPanel:"#151515",
+      colorLinea:"#2b2b2b",
+      colorTexto:"#ffffff",
+      colorBotonTexto:"#111111",
+      fuente:"Arial, sans-serif",
+      tamNombre:30,
+      pesoNombre:800,
+      espacioLetras:0,
+      sombraNombre:0,
+      mayusculas:false,
+      cursiva:false,
+      mostrarReloj:true,
+      mostrarFecha:true,
+      mostrarNotas:true,
+      mostrarUsuarios:true,
+      mostrarStock:true,
+      mostrarPersonal:true,
+      logoModo:"cabecera",
+      logoTam:260,
+      logoOpacidad:0.08,
+      logoPosicion:"center"
+    };
+  }
+
+  function getMergedConfig(){
+    let raw = {};
+    try{
+      raw = JSON.parse(localStorage.getItem("configAllcalor")) || {};
+    }catch(e){}
+    return {...defaults(), ...raw};
+  }
+
+  function hasAccess(module){
+    if(!currentUser) return false;
+    if((currentUser.role || "") === "administrador") return true;
+    const perms = Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
+    return perms.includes(module);
+  }
+
+  function applyConfig(){
+    document.documentElement.style.setProperty("--bg", cfg.colorFondo || "#0b0b0b");
+    document.documentElement.style.setProperty("--panel", cfg.colorPanel || "#151515");
+    document.documentElement.style.setProperty("--panel2", colorMixFallback(cfg.colorPanel || "#151515", "#000000", 0.15));
+    document.documentElement.style.setProperty("--line", cfg.colorLinea || "#2b2b2b");
+    document.documentElement.style.setProperty("--text", cfg.colorTexto || "#ffffff");
+    document.documentElement.style.setProperty("--muted", colorMixFallback(cfg.colorTexto || "#ffffff", "#000000", 0.35));
+    document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
+    document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || "#111111");
+    document.documentElement.style.setProperty("--fontMain", cfg.fuente || "Arial, sans-serif");
+
+    const brandName = $("brandName");
+    const brandSub = $("brandSub");
+    const finalName = cfg.mayusculas ? String(cfg.nombre || "ALLCALOR").toUpperCase() : String(cfg.nombre || "ALLCALOR");
+
+    brandName.textContent = finalName;
+    brandSub.textContent = cfg.subtitulo || "Centro de control";
+
+    brandName.style.fontFamily = cfg.fuente || "Arial, sans-serif";
+    brandName.style.fontSize = Number(cfg.tamNombre || 30) + "px";
+    brandName.style.fontWeight = Number(cfg.pesoNombre || 800);
+    brandName.style.letterSpacing = Number(cfg.espacioLetras || 0) + "px";
+    brandName.style.textShadow = "0 0 " + Number(cfg.sombraNombre || 0) + "px rgba(0,0,0,.9)";
+    brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+    brandName.style.color = cfg.color || "#f39b2f";
+
+    brandSub.style.color = cfg.colorTexto || "#ffffff";
+
+    const clockBox = $("clockBox");
+    $("clockTime").classList.toggle("hidden", !cfg.mostrarReloj);
+    $("clockDate").classList.toggle("hidden", !cfg.mostrarFecha);
+    clockBox.classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+
+    $("btnNotas").classList.toggle("hidden", !cfg.mostrarNotas);
+
+    applyLogo();
+    applyConfigGates();
+  }
+
+  function applyLogo(){
+    const brandLogo = $("brandLogo");
+    const logoLayer = $("logoLayer");
+    const logo = cfg.logo || "";
+    const mode = cfg.logoModo || "cabecera";
+    const size = Number(cfg.logoTam || 260);
+    const opacity = Number(cfg.logoOpacidad || 0.08);
+    const pos = cfg.logoPosicion || "center";
+
+    brandLogo.classList.add("hidden");
+    logoLayer.classList.remove("visible");
+    logoLayer.style.backgroundImage = "";
+    logoLayer.style.opacity = "0";
+    logoLayer.style.backgroundSize = size + "px auto";
+    logoLayer.style.backgroundPosition = pos;
+
+    if(!logo) return;
+
+    const usesHeader = ["cabecera","cabecera+marcaagua","cabecera+fondo"].includes(mode);
+    const usesMark = ["marcaagua","cabecera+marcaagua"].includes(mode);
+    const usesBg = ["fondo","cabecera+fondo"].includes(mode);
+
+    if(usesHeader){
+      brandLogo.src = logo;
+      brandLogo.classList.remove("hidden");
+    }
+
+    if(usesMark || usesBg){
+      logoLayer.style.backgroundImage = `url("${logo}")`;
+      logoLayer.style.opacity = String(opacity);
+      logoLayer.style.backgroundRepeat = usesBg ? "no-repeat" : "no-repeat";
+      logoLayer.style.backgroundSize = usesBg ? "cover" : size + "px auto";
+      logoLayer.style.backgroundPosition = pos;
+      logoLayer.classList.add("visible");
+    }
+  }
+
+  function applyConfigGates(){
+    // Configuración manda sobre módulos opcionales
+    document.querySelectorAll("[data-configflag]").forEach(card => {
+      const flag = card.getAttribute("data-configflag");
+      if(!flag) return;
+      if(cfg[flag] === false){
+        card.classList.add("hidden");
+      }
+    });
+  }
+
+  function colorMixFallback(hex1, hex2, ratio){
+    const c1 = hexToRgb(hex1);
+    const c2 = hexToRgb(hex2);
+    if(!c1 || !c2) return hex1;
+    const r = Math.round(c1.r * (1 - ratio) + c2.r * ratio);
+    const g = Math.round(c1.g * (1 - ratio) + c2.g * ratio);
+    const b = Math.round(c1.b * (1 - ratio) + c2.b * ratio);
+    return rgbToHex(r,g,b);
+  }
+
+  function hexToRgb(hex){
+    const clean = String(hex || "").replace("#","");
+    if(clean.length !== 6) return null;
+    return {
+      r: parseInt(clean.slice(0,2),16),
+      g: parseInt(clean.slice(2,4),16),
+      b: parseInt(clean.slice(4,6),16)
+    };
+  }
+
+  function rgbToHex(r,g,b){
+    return "#" + [r,g,b].map(x => {
+      const h = x.toString(16);
+      return h.length === 1 ? "0" + h : h;
+    }).join("");
+  }
+
+  function pad(n){
+    return String(n).padStart(2,"0");
+  }
+
+  function updateClock(){
+    const now = new Date();
+    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+    $("clockTime").textContent =
+      pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+
+    $("clockDate").textContent =
+      dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
+
+    $("statHoy").textContent = pad(now.getDate()) + "/" + pad(now.getMonth()+1);
+  }
+
+  function getClientes(){
+    try{
+      return JSON.parse(localStorage.getItem("clientes")) || [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function getAllObrasCount(){
+    const clientes = getClientes();
+    let total = 0;
+    clientes.forEach(c => {
+      try{
+        const obras = JSON.parse(localStorage.getItem("obras_" + c.id)) || [];
+        total += obras.length;
+      }catch(e){}
+    });
+    return total;
+  }
+
+  function getAllPlanosCount(){
+    const clientes = getClientes();
+    let total = 0;
+    clientes.forEach(c => {
+      try{
+        const obras = JSON.parse(localStorage.getItem("obras_" + c.id)) || [];
+        obras.forEach(o => {
+          if(o && o.plano && Array.isArray(o.plano.estancias) && o.plano.estancias.length){
+            total += 1;
+          }
+        });
+      }catch(e){}
+    });
+    return total;
+  }
+
+  function updateStats(){
+    $("statClientes").textContent = getClientes().length;
+    $("statObras").textContent = getAllObrasCount();
+    $("statPlanos").textContent = getAllPlanosCount();
+  }
+
+  function updateUserInfo(){
+    const nombre = currentUser?.nombre || currentSession?.nombre || currentSession?.username || "-";
+    const role = currentUser?.role || currentSession?.role || "-";
+    $("userName").textContent = "Usuario: " + nombre;
+    $("userRole").textContent = "Rol: " + role;
+  }
+
+  function applyPermissionsToUI(){
+    document.querySelectorAll("[data-module]").forEach(el => {
+      const mod = el.getAttribute("data-module");
+      let visible = hasAccess(mod);
+
+      if(mod === "usuarios" && cfg.mostrarUsuarios === false) visible = false;
+      if(mod === "stock" && cfg.mostrarStock === false) visible = false;
+      if(mod === "personal" && cfg.mostrarPersonal === false) visible = false;
+
+      el.classList.toggle("hidden", !visible);
+    });
+
+    $("btnConfig").classList.toggle("hidden", !hasAccess("configuracion"));
+    $("heroConfig").classList.toggle("hidden", !hasAccess("configuracion"));
+
+    $("qaUsuarios").classList.toggle("hidden", !hasAccess("usuarios") || cfg.mostrarUsuarios === false);
+    $("qaClientes").classList.toggle("hidden", !hasAccess("clientes"));
+    $("qaObras").classList.toggle("hidden", !hasAccess("obras"));
+    $("qaPlanos").classList.toggle("hidden", !hasAccess("planos"));
+
+    $("heroClientes").classList.toggle("hidden", !hasAccess("clientes"));
+    $("heroObras").classList.toggle("hidden", !hasAccess("obras"));
+    $("heroPlanos").classList.toggle("hidden", !hasAccess("planos"));
+  }
+
+  window.goClientes = function(){
+    if(!hasAccess("clientes")) return showToast("No tienes acceso a Clientes");
+    window.location.href = "clientes.html";
+  };
+
+  window.goObras = function(){
+    if(!hasAccess("obras")) return showToast("No tienes acceso a Obras");
+    window.location.href = "obras.html";
+  };
+
+  window.goPlanos = function(){
+    if(!hasAccess("planos")) return showToast("No tienes acceso a Planos");
+    showToast("La vista global de planos será el siguiente paso");
+  };
+
+  window.goUsuarios = function(){
+    if(!hasAccess("usuarios") || cfg.mostrarUsuarios === false) return showToast("No tienes acceso a Usuarios");
+    window.location.href = "usuarios.html";
+  };
+
+  window.goConfig = function(){
+    if(!hasAccess("configuracion")) return showToast("No tienes acceso a Configuración");
+    window.location.href = "configuracion.html";
+  };
+
+  window.goNotas = function(){
+    window.location.href = "notas.html";
+  };
+
+  window.logout = function(){
+    localStorage.removeItem("allcalor_session");
+    window.location.href = "login.html";
+  };
+
+  function showToast(text){
+    const toast = $("toast");
+    toast.textContent = text;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove("show"), 1800);
+  }
+  window.showToast = showToast;
+
+  $("globalSearch").addEventListener("input", function(){
+    const txt = this.value.trim().toLowerCase();
+    document.querySelectorAll("#modulesGrid .card").forEach(card => {
+      if(card.classList.contains("hidden")){
+        card.style.display = "none";
+        return;
+      }
+      const raw = ((card.dataset.search || "") + " " + card.textContent).toLowerCase();
+      card.style.display = raw.indexOf(txt) !== -1 ? "" : "none";
+    });
   });
-});
 
-window.addEventListener("storage", function(e){
-  if(e.key === "configAllcalor") applyConfig();
-});
+  window.addEventListener("storage", function(e){
+    if(e.key === "configAllcalor"){
+      location.reload();
+    }
+  });
 
-window.addEventListener("pageshow", applyConfig);
-window.addEventListener("focus", applyConfig);
-
-applyConfig();
-updateClock();
-setInterval(updateClock, 1000);
-updateStats();
-updateUserInfo();
-applyPermissionsToUI();
+  applyConfig();
+  updateClock();
+  setInterval(updateClock, 1000);
+  updateStats();
+  updateUserInfo();
+  applyPermissionsToUI();
+})();
 </script>
 </body>
 </html>
