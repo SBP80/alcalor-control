@@ -391,7 +391,6 @@ input[type="file"]{
   font-size:26px;
   font-weight:800;
 }
-
 @media (max-width:1200px){
   .layout{
     grid-template-columns:280px 1fr;
@@ -554,7 +553,7 @@ input[type="file"]{
             <img id="cfgLogoPreview" class="logo-preview hidden" alt="Logo">
             <button type="button" class="btn btn-sec hidden" id="btnQuitarLogo">Quitar logo</button>
           </div>
-          <div class="help">Puedes subir una foto o un archivo de imagen desde el móvil o el PC.</div>
+          <div class="help">Puedes subir una foto o una imagen desde el móvil o el PC.</div>
         </div>
       </section>
 
@@ -739,84 +738,15 @@ input[type="file"]{
 
   const $ = (id) => document.getElementById(id);
 
+  let logoData = "";
+
   const currentSession = getSession();
   if(!currentSession){
     window.location.href = "login.html";
     return;
   }
 
-  let logoData = "";
-
-  const els = {
-    menuBtns: Array.from(document.querySelectorAll(".menu-btn")),
-    secVisual: $("secVisual"),
-    secEmpresa: $("secEmpresa"),
-    secSeguridad: $("secSeguridad"),
-    secSistema: $("secSistema"),
-    secNotificaciones: $("secNotificaciones"),
-
-    cfgNombre: $("cfgNombre"),
-    cfgSubtitulo: $("cfgSubtitulo"),
-    cfgEmpresa: $("cfgEmpresa"),
-    cfgRazonSocial: $("cfgRazonSocial"),
-    cfgCif: $("cfgCif"),
-    cfgTelefono: $("cfgTelefono"),
-    cfgEmail: $("cfgEmail"),
-    cfgDireccion: $("cfgDireccion"),
-
-    cfgFuente: $("cfgFuente"),
-    cfgTamNombre: $("cfgTamNombre"),
-    cfgPesoNombre: $("cfgPesoNombre"),
-    cfgEspacioLetras: $("cfgEspacioLetras"),
-    cfgSombraNombre: $("cfgSombraNombre"),
-    cfgMayusculas: $("cfgMayusculas"),
-    cfgCursiva: $("cfgCursiva"),
-
-    cfgColor: $("cfgColor"),
-    cfgBg: $("cfgBg"),
-    cfgPanel: $("cfgPanel"),
-    cfgLine: $("cfgLine"),
-    cfgText: $("cfgText"),
-    cfgBtnText: $("cfgBtnText"),
-
-    cfgLogoFile: $("cfgLogoFile"),
-    cfgLogoPreview: $("cfgLogoPreview"),
-    btnQuitarLogo: $("btnQuitarLogo"),
-
-    cfgClaveNueva: $("cfgClaveNueva"),
-    cfgClaveNueva2: $("cfgClaveNueva2"),
-
-    cfgMostrarReloj: $("cfgMostrarReloj"),
-    cfgMostrarFecha: $("cfgMostrarFecha"),
-    cfgMostrarNotas: $("cfgMostrarNotas"),
-    cfgMostrarUsuarios: $("cfgMostrarUsuarios"),
-    cfgMostrarStock: $("cfgMostrarStock"),
-    cfgMostrarPersonal: $("cfgMostrarPersonal"),
-
-    cfgNotificaciones: $("cfgNotificaciones"),
-    cfgSonido: $("cfgSonido"),
-    cfgCanalAviso: $("cfgCanalAviso"),
-    cfgAntelacion: $("cfgAntelacion"),
-
-    infoUsuario: $("infoUsuario"),
-    msg: $("msg"),
-
-    previewShell: $("previewShell"),
-    prevLogo: $("prevLogo"),
-    prevName: $("prevName"),
-    prevSub: $("prevSub"),
-    prevClock: $("prevClock"),
-    prevTime: $("prevTime"),
-    prevDate: $("prevDate"),
-    prevNotes: $("prevNotes"),
-    prevBtn1: $("prevBtn1"),
-    prevBtn2: $("prevBtn2"),
-
-    btnGuardarTop: $("btnGuardarTop"),
-    btnVolverTop: $("btnVolverTop"),
-    btnGuardarBottom: $("btnGuardarBottom"),
-    btnVolverBottom: $("btnVolverBottom")
-  };
+  const menuBtns = Array.from(document.querySelectorAll(".menu-btn"));
 
   function getSession(){
     try{
@@ -843,7 +773,7 @@ input[type="file"]{
       const users = JSON.parse(localStorage.getItem("allcalor_users"));
       if(Array.isArray(users) && users.length) return users;
     }catch(e){}
-    const inicial = [{
+    return [{
       username:"admin",
       password:"1234",
       nombre:"Administrador",
@@ -851,8 +781,6 @@ input[type="file"]{
       active:true,
       permissions:["clientes","obras","planos","usuarios","personal","stock","configuracion","presupuestos","facturas"]
     }];
-    localStorage.setItem("allcalor_users", JSON.stringify(inicial));
-    return inicial;
   }
 
   function setUsers(users){
@@ -898,205 +826,219 @@ input[type="file"]{
 
   function showSection(id, btn){
     ["secVisual","secEmpresa","secSeguridad","secSistema","secNotificaciones"].forEach(secId => {
-      const el = $(secId);
-      if(el) el.classList.toggle("hidden", secId !== id);
+      const sec = $(secId);
+      if(sec) sec.classList.toggle("hidden", secId !== id);
     });
-    els.menuBtns.forEach(b => b.classList.remove("active"));
+    menuBtns.forEach(b => b.classList.remove("active"));
     if(btn) btn.classList.add("active");
   }
 
   function loadConfig(){
-    const cfg = Object.assign(defaults(), getConfig());
+    const cfg = { ...defaults(), ...getConfig() };
 
-    els.cfgNombre.value = cfg.nombre;
-    els.cfgSubtitulo.value = cfg.subtitulo;
-    els.cfgEmpresa.value = cfg.empresa || "";
-    els.cfgRazonSocial.value = cfg.razonSocial || "";
-    els.cfgCif.value = cfg.cif || "";
-    els.cfgTelefono.value = cfg.telefono || "";
-    els.cfgEmail.value = cfg.email || "";
-    els.cfgDireccion.value = cfg.direccion || "";
+    $("cfgNombre").value = cfg.nombre;
+    $("cfgSubtitulo").value = cfg.subtitulo;
+    $("cfgEmpresa").value = cfg.empresa || "";
+    $("cfgRazonSocial").value = cfg.razonSocial || "";
+    $("cfgCif").value = cfg.cif || "";
+    $("cfgTelefono").value = cfg.telefono || "";
+    $("cfgEmail").value = cfg.email || "";
+    $("cfgDireccion").value = cfg.direccion || "";
 
-    els.cfgFuente.value = cfg.fuente || "Arial, sans-serif";
-    els.cfgTamNombre.value = cfg.tamNombre;
-    els.cfgPesoNombre.value = cfg.pesoNombre;
-    els.cfgEspacioLetras.value = cfg.espacioLetras;
-    els.cfgSombraNombre.value = cfg.sombraNombre;
-    els.cfgMayusculas.checked = !!cfg.mayusculas;
-    els.cfgCursiva.checked = !!cfg.cursiva;
+    $("cfgFuente").value = cfg.fuente || "Arial, sans-serif";
+    $("cfgTamNombre").value = cfg.tamNombre;
+    $("cfgPesoNombre").value = cfg.pesoNombre;
+    $("cfgEspacioLetras").value = cfg.espacioLetras;
+    $("cfgSombraNombre").value = cfg.sombraNombre;
+    $("cfgMayusculas").checked = !!cfg.mayusculas;
+    $("cfgCursiva").checked = !!cfg.cursiva;
 
-    els.cfgColor.value = cfg.color;
-    els.cfgBg.value = cfg.colorFondo;
-    els.cfgPanel.value = cfg.colorPanel;
-    els.cfgLine.value = cfg.colorLinea;
-    els.cfgText.value = cfg.colorTexto;
-    els.cfgBtnText.value = cfg.colorBotonTexto;
+    $("cfgColor").value = cfg.color;
+    $("cfgBg").value = cfg.colorFondo;
+    $("cfgPanel").value = cfg.colorPanel;
+    $("cfgLine").value = cfg.colorLinea;
+    $("cfgText").value = cfg.colorTexto;
+    $("cfgBtnText").value = cfg.colorBotonTexto;
 
-    els.cfgClaveNueva.value = "";
-    els.cfgClaveNueva2.value = "";
+    $("cfgClaveNueva").value = "";
+    $("cfgClaveNueva2").value = "";
 
-    els.cfgMostrarReloj.checked = !!cfg.mostrarReloj;
-    els.cfgMostrarFecha.checked = !!cfg.mostrarFecha;
-    els.cfgMostrarNotas.checked = !!cfg.mostrarNotas;
-    els.cfgMostrarUsuarios.checked = !!cfg.mostrarUsuarios;
-    els.cfgMostrarStock.checked = !!cfg.mostrarStock;
-    els.cfgMostrarPersonal.checked = !!cfg.mostrarPersonal;
+    $("cfgMostrarReloj").checked = !!cfg.mostrarReloj;
+    $("cfgMostrarFecha").checked = !!cfg.mostrarFecha;
+    $("cfgMostrarNotas").checked = !!cfg.mostrarNotas;
+    $("cfgMostrarUsuarios").checked = !!cfg.mostrarUsuarios;
+    $("cfgMostrarStock").checked = !!cfg.mostrarStock;
+    $("cfgMostrarPersonal").checked = !!cfg.mostrarPersonal;
 
-    els.cfgNotificaciones.checked = !!cfg.notificaciones;
-    els.cfgSonido.checked = !!cfg.sonido;
-    els.cfgCanalAviso.value = cfg.canalAviso || "app";
-    els.cfgAntelacion.value = String(cfg.antelacion || "15");
+    $("cfgNotificaciones").checked = !!cfg.notificaciones;
+    $("cfgSonido").checked = !!cfg.sonido;
+    $("cfgCanalAviso").value = cfg.canalAviso || "app";
+    $("cfgAntelacion").value = String(cfg.antelacion || "15");
 
     logoData = cfg.logo || "";
-    refreshLogoPreview();
-
-    els.infoUsuario.textContent = "Usuario actual: " + (currentSession.username || "-") + " · Rol: " + (currentSession.role || "-");
+    refreshLogo();
+    $("infoUsuario").textContent = "Usuario actual: " + (currentSession.username || "-");
 
     applyPreview();
   }
 
-  function refreshLogoPreview(){
+  function refreshLogo(){
+    const cfgLogoPreview = $("cfgLogoPreview");
+    const btnQuitarLogo = $("btnQuitarLogo");
+    const prevLogo = $("prevLogo");
+
     if(logoData){
-      els.cfgLogoPreview.src = logoData;
-      els.cfgLogoPreview.classList.remove("hidden");
-      els.btnQuitarLogo.classList.remove("hidden");
+      cfgLogoPreview.src = logoData;
+      cfgLogoPreview.classList.remove("hidden");
+      btnQuitarLogo.classList.remove("hidden");
 
-      els.prevLogo.src = logoData;
-      els.prevLogo.classList.remove("hidden");
+      prevLogo.src = logoData;
+      prevLogo.classList.remove("hidden");
     }else{
-      els.cfgLogoPreview.src = "";
-      els.cfgLogoPreview.classList.add("hidden");
-      els.btnQuitarLogo.classList.add("hidden");
+      cfgLogoPreview.src = "";
+      cfgLogoPreview.classList.add("hidden");
+      btnQuitarLogo.classList.add("hidden");
 
-      els.prevLogo.src = "";
-      els.prevLogo.classList.add("hidden");
+      prevLogo.src = "";
+      prevLogo.classList.add("hidden");
     }
   }
 
-  function pickData(){
+  function readForm(){
     return {
       ...getConfig(),
-      nombre: els.cfgNombre.value.trim() || "ALLCALOR",
-      subtitulo: els.cfgSubtitulo.value.trim() || "Centro de control",
-      empresa: els.cfgEmpresa.value.trim(),
-      razonSocial: els.cfgRazonSocial.value.trim(),
-      cif: els.cfgCif.value.trim(),
-      telefono: els.cfgTelefono.value.trim(),
-      email: els.cfgEmail.value.trim(),
-      direccion: els.cfgDireccion.value.trim(),
+      nombre: $("cfgNombre").value.trim() || "ALLCALOR",
+      subtitulo: $("cfgSubtitulo").value.trim() || "Centro de control",
+      empresa: $("cfgEmpresa").value.trim(),
+      razonSocial: $("cfgRazonSocial").value.trim(),
+      cif: $("cfgCif").value.trim(),
+      telefono: $("cfgTelefono").value.trim(),
+      email: $("cfgEmail").value.trim(),
+      direccion: $("cfgDireccion").value.trim(),
       logo: logoData,
-      color: els.cfgColor.value || "#f39b2f",
-      colorFondo: els.cfgBg.value || "#0b0b0b",
-      colorPanel: els.cfgPanel.value || "#151515",
-      colorLinea: els.cfgLine.value || "#2b2b2b",
-      colorTexto: els.cfgText.value || "#ffffff",
-      colorBotonTexto: els.cfgBtnText.value || "#111111",
-      fuente: els.cfgFuente.value || "Arial, sans-serif",
-      tamNombre: Number(els.cfgTamNombre.value || 30),
-      pesoNombre: Number(els.cfgPesoNombre.value || 800),
-      espacioLetras: Number(els.cfgEspacioLetras.value || 0),
-      sombraNombre: Number(els.cfgSombraNombre.value || 0),
-      mayusculas: !!els.cfgMayusculas.checked,
-      cursiva: !!els.cfgCursiva.checked,
-      mostrarReloj: !!els.cfgMostrarReloj.checked,
-      mostrarFecha: !!els.cfgMostrarFecha.checked,
-      mostrarNotas: !!els.cfgMostrarNotas.checked,
-      mostrarUsuarios: !!els.cfgMostrarUsuarios.checked,
-      mostrarStock: !!els.cfgMostrarStock.checked,
-      mostrarPersonal: !!els.cfgMostrarPersonal.checked,
-      notificaciones: !!els.cfgNotificaciones.checked,
-      sonido: !!els.cfgSonido.checked,
-      canalAviso: els.cfgCanalAviso.value || "app",
-      antelacion: els.cfgAntelacion.value || "15"
+      color: $("cfgColor").value || "#f39b2f",
+      colorFondo: $("cfgBg").value || "#0b0b0b",
+      colorPanel: $("cfgPanel").value || "#151515",
+      colorLinea: $("cfgLine").value || "#2b2b2b",
+      colorTexto: $("cfgText").value || "#ffffff",
+      colorBotonTexto: $("cfgBtnText").value || "#111111",
+      fuente: $("cfgFuente").value || "Arial, sans-serif",
+      tamNombre: Number($("cfgTamNombre").value || 30),
+      pesoNombre: Number($("cfgPesoNombre").value || 800),
+      espacioLetras: Number($("cfgEspacioLetras").value || 0),
+      sombraNombre: Number($("cfgSombraNombre").value || 0),
+      mayusculas: !!$("cfgMayusculas").checked,
+      cursiva: !!$("cfgCursiva").checked,
+      mostrarReloj: !!$("cfgMostrarReloj").checked,
+      mostrarFecha: !!$("cfgMostrarFecha").checked,
+      mostrarNotas: !!$("cfgMostrarNotas").checked,
+      mostrarUsuarios: !!$("cfgMostrarUsuarios").checked,
+      mostrarStock: !!$("cfgMostrarStock").checked,
+      mostrarPersonal: !!$("cfgMostrarPersonal").checked,
+      notificaciones: !!$("cfgNotificaciones").checked,
+      sonido: !!$("cfgSonido").checked,
+      canalAviso: $("cfgCanalAviso").value || "app",
+      antelacion: $("cfgAntelacion").value || "15"
     };
   }
 
   function applyPreview(){
-    const cfg = pickData();
-
-    document.documentElement.style.setProperty("--accent", cfg.color);
-
+    const cfg = readForm();
     const finalName = cfg.mayusculas ? cfg.nombre.toUpperCase() : cfg.nombre;
 
-    els.previewShell.style.background = cfg.colorFondo;
-    els.previewShell.style.borderColor = cfg.colorLinea;
-    els.previewShell.style.color = cfg.colorTexto;
+    $("previewShell").style.background = cfg.colorFondo;
+    $("previewShell").style.borderColor = cfg.colorLinea;
+    $("previewShell").style.color = cfg.colorTexto;
 
-    els.prevName.textContent = finalName;
-    els.prevName.style.color = cfg.color;
-    els.prevName.style.fontFamily = cfg.fuente;
-    els.prevName.style.fontSize = cfg.tamNombre + "px";
-    els.prevName.style.fontWeight = cfg.pesoNombre;
-    els.prevName.style.letterSpacing = cfg.espacioLetras + "px";
-    els.prevName.style.textShadow = "0 0 " + cfg.sombraNombre + "px rgba(0,0,0,.9)";
-    els.prevName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+    $("prevName").textContent = finalName;
+    $("prevName").style.color = cfg.color;
+    $("prevName").style.fontFamily = cfg.fuente;
+    $("prevName").style.fontSize = cfg.tamNombre + "px";
+    $("prevName").style.fontWeight = cfg.pesoNombre;
+    $("prevName").style.letterSpacing = cfg.espacioLetras + "px";
+    $("prevName").style.textShadow = "0 0 " + cfg.sombraNombre + "px rgba(0,0,0,.9)";
+    $("prevName").style.fontStyle = cfg.cursiva ? "italic" : "normal";
 
-    els.prevSub.textContent = cfg.subtitulo;
-    els.prevSub.style.color = cfg.colorTexto;
+    $("prevSub").textContent = cfg.subtitulo;
+    $("prevSub").style.color = cfg.colorTexto;
 
-    els.prevClock.style.background = cfg.colorPanel;
-    els.prevClock.style.borderColor = cfg.colorLinea;
-    els.prevTime.style.color = cfg.color;
-    els.prevDate.style.color = cfg.colorTexto;
-    els.prevClock.classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
-    els.prevTime.classList.toggle("hidden", !cfg.mostrarReloj);
-    els.prevDate.classList.toggle("hidden", !cfg.mostrarFecha);
+    $("prevClock").style.background = cfg.colorPanel;
+    $("prevClock").style.borderColor = cfg.colorLinea;
+    $("prevTime").style.color = cfg.color;
+    $("prevDate").style.color = cfg.colorTexto;
+
+    $("prevClock").classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+    $("prevTime").classList.toggle("hidden", !cfg.mostrarReloj);
+    $("prevDate").classList.toggle("hidden", !cfg.mostrarFecha);
 
     document.querySelectorAll(".preview-card").forEach(card => {
       card.style.background = cfg.colorPanel;
       card.style.borderColor = cfg.colorLinea;
       card.style.color = cfg.colorTexto;
     });
+
     document.querySelectorAll(".preview-card h4").forEach(h4 => {
       h4.style.color = cfg.color;
     });
 
-    [els.prevBtn1, els.prevBtn2].forEach(btn => {
-      btn.style.background = cfg.color;
-      btn.style.color = cfg.colorBotonTexto;
-      btn.style.border = "none";
-    });
+    $("prevBtn1").style.background = cfg.color;
+    $("prevBtn1").style.color = cfg.colorBotonTexto;
+    $("prevBtn2").style.background = cfg.color;
+    $("prevBtn2").style.color = cfg.colorBotonTexto;
 
-    els.prevNotes.style.background = cfg.color;
-    els.prevNotes.style.color = cfg.colorBotonTexto;
-    els.prevNotes.classList.toggle("hidden", !cfg.mostrarNotas);
+    $("prevNotes").style.background = cfg.color;
+    $("prevNotes").style.color = cfg.colorBotonTexto;
+    $("prevNotes").classList.toggle("hidden", !cfg.mostrarNotas);
 
-    refreshLogoPreview();
+    refreshLogo();
   }
 
   function changeCurrentPassword(){
-    const p1 = els.cfgClaveNueva.value.trim();
-    const p2 = els.cfgClaveNueva2.value.trim();
+    const p1 = $("cfgClaveNueva").value.trim();
+    const p2 = $("cfgClaveNueva2").value.trim();
 
-    if(!p1 && !p2) return {ok:true};
+    if(!p1 && !p2) return { ok:true };
 
     if(p1.length < 4){
-      return {ok:false, msg:"La nueva clave debe tener al menos 4 caracteres."};
+      return { ok:false, msg:"La nueva clave debe tener al menos 4 caracteres." };
     }
     if(p1 !== p2){
-      return {ok:false, msg:"Las dos claves no coinciden."};
+      return { ok:false, msg:"Las dos claves no coinciden." };
     }
 
     const users = getUsers();
     const idx = users.findIndex(u => String(u.username || "") === String(currentSession.username || ""));
     if(idx === -1){
-      return {ok:false, msg:"No se encontró el usuario actual."};
+      return { ok:false, msg:"No se encontró el usuario actual." };
     }
 
     users[idx].password = p1;
     setUsers(users);
-    return {ok:true};
+    return { ok:true };
   }
 
   function saveAll(){
-    const result = changeCurrentPassword();
-    if(!result.ok){
-      els.msg.textContent = result.msg;
+    const pwd = changeCurrentPassword();
+    if(!pwd.ok){
+      $("msg").textContent = pwd.msg;
       return;
     }
 
-    setConfig(pickData());
-    els.msg.textContent = "Configuración guardada correctamente.";
+    const cfg = readForm();
+    setConfig(cfg);
+
+    try{
+      const comprobacion = JSON.parse(localStorage.getItem("configAllcalor")) || {};
+      if((comprobacion.nombre || "") !== cfg.nombre){
+        $("msg").textContent = "No se pudo guardar correctamente.";
+        return;
+      }
+    }catch(e){
+      $("msg").textContent = "No se pudo guardar correctamente.";
+      return;
+    }
+
+    $("msg").textContent = "Configuración guardada correctamente.";
   }
 
   function goBack(){
@@ -1104,60 +1046,64 @@ input[type="file"]{
   }
 
   function pad(n){
-    return String(n).padStart(2, "0");
+    return String(n).padStart(2,"0");
   }
 
-  function previewClock(){
+  function updatePreviewClock(){
     const now = new Date();
     const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
     const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-    els.prevTime.textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
-    els.prevDate.textContent = dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
+
+    $("prevTime").textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+    $("prevDate").textContent = dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
   }
 
-  els.menuBtns.forEach(btn => {
-    btn.addEventListener("click", () => showSection(btn.dataset.target, btn));
+  menuBtns.forEach(btn => {
+    btn.addEventListener("click", function(){
+      showSection(btn.dataset.target, btn);
+    });
   });
 
   [
-    els.cfgNombre, els.cfgSubtitulo, els.cfgEmpresa, els.cfgRazonSocial, els.cfgCif, els.cfgTelefono, els.cfgEmail, els.cfgDireccion,
-    els.cfgFuente, els.cfgTamNombre, els.cfgPesoNombre, els.cfgEspacioLetras, els.cfgSombraNombre,
-    els.cfgMayusculas, els.cfgCursiva, els.cfgColor, els.cfgBg, els.cfgPanel, els.cfgLine, els.cfgText, els.cfgBtnText,
-    els.cfgMostrarReloj, els.cfgMostrarFecha, els.cfgMostrarNotas, els.cfgMostrarUsuarios, els.cfgMostrarStock, els.cfgMostrarPersonal,
-    els.cfgNotificaciones, els.cfgSonido, els.cfgCanalAviso, els.cfgAntelacion
-  ].forEach(el => {
+    "cfgNombre","cfgSubtitulo","cfgEmpresa","cfgRazonSocial","cfgCif","cfgTelefono","cfgEmail","cfgDireccion",
+    "cfgFuente","cfgTamNombre","cfgPesoNombre","cfgEspacioLetras","cfgSombraNombre",
+    "cfgMayusculas","cfgCursiva","cfgColor","cfgBg","cfgPanel","cfgLine","cfgText","cfgBtnText",
+    "cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas","cfgMostrarUsuarios","cfgMostrarStock","cfgMostrarPersonal",
+    "cfgNotificaciones","cfgSonido","cfgCanalAviso","cfgAntelacion"
+  ].forEach(id => {
+    const el = $(id);
     el.addEventListener("input", applyPreview);
     el.addEventListener("change", applyPreview);
   });
 
-  els.cfgLogoFile.addEventListener("change", (e) => {
+  $("cfgLogoFile").addEventListener("change", function(e){
     const file = e.target.files && e.target.files[0];
     if(!file) return;
 
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = function(ev){
       logoData = String(ev.target.result || "");
-      refreshLogoPreview();
+      refreshLogo();
       applyPreview();
     };
     reader.readAsDataURL(file);
   });
 
-  els.btnQuitarLogo.addEventListener("click", () => {
+  $("btnQuitarLogo").addEventListener("click", function(){
     logoData = "";
-    els.cfgLogoFile.value = "";
-    refreshLogoPreview();
+    $("cfgLogoFile").value = "";
+    refreshLogo();
     applyPreview();
   });
 
-  els.btnGuardarTop.addEventListener("click", saveAll);
-  els.btnGuardarBottom.addEventListener("click", saveAll);
-  els.btnVolverTop.addEventListener("click", goBack);
-  els.btnVolverBottom.addEventListener("click", goBack);
+  $("btnGuardarTop").addEventListener("click", saveAll);
+  $("btnGuardarBottom").addEventListener("click", saveAll);
+  $("btnVolverTop").addEventListener("click", goBack);
+  $("btnVolverBottom").addEventListener("click", goBack);
 
   loadConfig();
-  previewClock();
-  setInterval(previewClock, 1000);
+  updatePreviewClock();
+  setInterval(updatePreviewClock, 1000);
 })();
 </script>
 </body>
