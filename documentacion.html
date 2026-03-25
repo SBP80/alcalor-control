@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Documentación técnica</title>
+<style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+  --danger:#c94b4b;
+  --shadow:0 10px 24px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+button,input,select,textarea{
+  font:inherit;
+}
+button{
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.hidden{display:none!important}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:rgba(11,11,11,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
+}
+.brand-name{
+  margin:0;
+  line-height:1;
+  color:var(--accent);
+  font-size:30px;
+  font-weight:800;
+}
+.brand-sub{
+  margin:6px 0 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.topbar-right{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn-top{
+  border:none;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
+}
+
+.wrap{
+  max-width:1280px;
+  margin:0 auto;
+  padding:16px;
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.panel-title{
+  margin:0 0 14px 0;
+  color:var(--accent);
+  font-size:24px;
+}
+.panel-sub{
+  margin:0 0 14px 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+}
+.field label{
+  font-size:13px;
+  color:var(--muted);
+}
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select,
+textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
+}
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:800;
+}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  background:#2b2b2b;
+  color:#fff;
+}
+.btn-danger{
+  background:var(--danger);
+  color:#fff;
+}
+.search{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:14px;
+  padding:15px 16px;
+  margin-bottom:12px;
+}
+.cards{
+  display:grid;
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.card-title{
+  margin:0;
+  font-size:22px;
+}
+.card-sub{
+  margin:6px 0 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.badge{
+  display:inline-block;
+  padding:7px 10px;
+  border-radius:999px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+.card-text{
+  margin-top:12px;
+  color:var(--text);
+  line-height:1.45;
+  white-space:pre-wrap;
+}
+.card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.msg{
+  min-height:20px;
+  color:#c7ffd5;
+  font-size:13px;
+  margin-top:8px;
+}
+.file-preview{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.file-box{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#101010;
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:13px;
+}
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:24px 12px;
+  border:1px dashed var(--line);
+  border-radius:16px;
+}
+@media (max-width:900px){
+  .grid,.grid-3{
+    grid-template-columns:1fr;
+  }
+}
+@media (max-width:760px){
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .topbar-right{
+    justify-content:space-between;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1 class="brand-name">Documentación técnica</h1>
+    <div class="brand-sub">Biblioteca técnica de equipos y fichas</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-top" onclick="volver()">Volver</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="panel">
+    <h2 class="panel-title" id="tituloFormulario">Nueva ficha</h2>
+    <p class="panel-sub">Guarda aquí manuales, fichas técnicas, fotos de placas y datos de equipos.</p>
+
+    <div class="grid">
+      <div class="field">
+        <label for="marca">Marca</label>
+        <input id="marca" type="text" placeholder="Daikin">
+      </div>
+      <div class="field">
+        <label for="modelo">Modelo</label>
+        <input id="modelo" type="text" placeholder="RXM35R">
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="field">
+        <label for="categoria">Categoría</label>
+        <select id="categoria">
+          <option value="Aire acondicionado">Aire acondicionado</option>
+          <option value="Aerotermia">Aerotermia</option>
+          <option value="Caldera">Caldera</option>
+          <option value="Hidroestufa">Hidroestufa</option>
+          <option value="Fancoil">Fancoil</option>
+          <option value="Suelo radiante">Suelo radiante</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="refrigerante">Refrigerante</label>
+        <input id="refrigerante" type="text" placeholder="R32">
+      </div>
+      <div class="field">
+        <label for="potencia">Potencia</label>
+        <input id="potencia" type="text" placeholder="3,5 kW">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="palabrasClave">Palabras clave</label>
+      <input id="palabrasClave" type="text" placeholder="gas, carga, tubería, manual, instalación">
+    </div>
+
+    <div class="field">
+      <label for="notas">Notas</label>
+      <textarea id="notas" placeholder="Observaciones, datos útiles, carga adicional por metro, etc."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="archivo">Archivo o imagen</label>
+      <input id="archivo" type="file" accept=".pdf,image/*">
+      <div id="archivoPreview" class="file-preview"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-main" onclick="guardarFicha()">Guardar ficha</button>
+      <button class="btn btn-sec hidden" id="btnCancelarEdicion" onclick="cancelarEdicion()">Cancelar edición</button>
+    </div>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Buscador</h2>
+    <input id="busqueda" class="search" type="text" placeholder="Buscar por marca, modelo, categoría, refrigerante, notas o palabras clave">
+    <div id="lista" class="cards"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const STORAGE_KEY = "allcalor_documentacion";
+  let editId = null;
+  let archivoData = null;
+  let archivoNombre = "";
+  let archivoTipo = "";
+
+  const $ = (id) => document.getElementById(id);
+
+  function getDocs(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function setDocs(data){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function limpiarFormulario(){
+    $("marca").value = "";
+    $("modelo").value = "";
+    $("categoria").value = "Aire acondicionado";
+    $("refrigerante").value = "";
+    $("potencia").value = "";
+    $("palabrasClave").value = "";
+    $("notas").value = "";
+    $("archivo").value = "";
+    $("msg").textContent = "";
+    $("tituloFormulario").textContent = "Nueva ficha";
+    $("btnCancelarEdicion").classList.add("hidden");
+    archivoData = null;
+    archivoNombre = "";
+    archivoTipo = "";
+    renderArchivoPreview();
+    editId = null;
+  }
+
+  function renderArchivoPreview(){
+    const box = $("archivoPreview");
+    box.innerHTML = "";
+    if(!archivoData) return;
+
+    const item = document.createElement("div");
+    item.className = "file-box";
+    item.textContent = archivoNombre || "Archivo cargado";
+    box.appendChild(item);
+  }
+
+  $("archivo").addEventListener("change", function(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    archivoNombre = file.name;
+    archivoTipo = file.type || "";
+
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      archivoData = String(ev.target.result || "");
+      renderArchivoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function leerFormulario(){
+    return {
+      marca: $("marca").value.trim(),
+      modelo: $("modelo").value.trim(),
+      categoria: $("categoria").value,
+      refrigerante: $("refrigerante").value.trim(),
+      potencia: $("potencia").value.trim(),
+      palabrasClave: $("palabrasClave").value.trim(),
+      notas: $("notas").value.trim(),
+      archivoData,
+      archivoNombre,
+      archivoTipo
+    };
+  }
+
+  function guardarFicha(){
+    const msg = $("msg");
+    msg.textContent = "";
+
+    const data = leerFormulario();
+
+    if(!data.marca && !data.modelo){
+      msg.textContent = "Introduce al menos marca o modelo.";
+      return;
+    }
+
+    const docs = getDocs();
+
+    if(editId === null){
+      docs.unshift({
+        id: Date.now(),
+        ...data,
+        createdAt: new Date().toISOString()
+      });
+    }else{
+      const idx = docs.findIndex(d => String(d.id) === String(editId));
+      if(idx === -1){
+        msg.textContent = "No se encontró la ficha.";
+        return;
+      }
+      docs[idx] = {
+        ...docs[idx],
+        ...data
+      };
+    }
+
+    setDocs(docs);
+    limpiarFormulario();
+    pintarLista();
+    msg.textContent = "Ficha guardada correctamente.";
+  }
+
+  function editarFicha(id){
+    const doc = getDocs().find(d => String(d.id) === String(id));
+    if(!doc) return;
+
+    editId = doc.id;
+    $("tituloFormulario").textContent = "Editar ficha";
+    $("btnCancelarEdicion").classList.remove("hidden");
+
+    $("marca").value = doc.marca || "";
+    $("modelo").value = doc.modelo || "";
+    $("categoria").value = doc.categoria || "Aire acondicionado";
+    $("refrigerante").value = doc.refrigerante || "";
+    $("potencia").value = doc.potencia || "";
+    $("palabrasClave").value = doc.palabrasClave || "";
+    $("notas").value = doc.notas || "";
+    $("archivo").value = "";
+
+    archivoData = doc.archivoData || null;
+    archivoNombre = doc.archivoNombre || "";
+    archivoTipo = doc.archivoTipo || "";
+    renderArchivoPreview();
+
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function borrarFicha(id){
+    const docs = getDocs().filter(d => String(d.id) !== String(id));
+    setDocs(docs);
+    pintarLista();
+  }
+
+  function cancelarEdicion(){
+    limpiarFormulario();
+  }
+
+  function abrirArchivo(id){
+    const doc = getDocs().find(d => String(d.id) === String(id));
+    if(!doc || !doc.archivoData) return;
+    window.open(doc.archivoData, "_blank");
+  }
+
+  function pintarLista(){
+    const lista = $("lista");
+    const txt = $("busqueda").value.trim().toLowerCase();
+    const docs = getDocs();
+
+    const filtrados = docs.filter(d => {
+      const bolsa = [
+        d.marca,
+        d.modelo,
+        d.categoria,
+        d.refrigerante,
+        d.potencia,
+        d.palabrasClave,
+        d.notas,
+        d.archivoNombre
+      ].join(" ").toLowerCase();
+      return bolsa.includes(txt);
+    });
+
+    if(!filtrados.length){
+      lista.innerHTML = '<div class="empty">No hay fichas guardadas.</div>';
+      return;
+    }
+
+    lista.innerHTML = filtrados.map(d => `
+      <div class="card">
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">${escapeHtml((d.marca || "") + (d.modelo ? " · " + d.modelo : "")) || "Ficha sin nombre"}</h3>
+            <div class="card-sub">${escapeHtml(d.categoria || "Sin categoría")}</div>
+          </div>
+        </div>
+
+        <div class="badges">
+          ${d.refrigerante ? `<span class="badge">${escapeHtml(d.refrigerante)}</span>` : ""}
+          ${d.potencia ? `<span class="badge">${escapeHtml(d.potencia)}</span>` : ""}
+          ${d.archivoNombre ? `<span class="badge">${escapeHtml(d.archivoNombre)}</span>` : ""}
+        </div>
+
+        ${d.palabrasClave ? `<div class="card-text"><strong>Palabras clave:</strong> ${escapeHtml(d.palabrasClave)}</div>` : ""}
+        ${d.notas ? `<div class="card-text"><strong>Notas:</strong>\n${escapeHtml(d.notas)}</div>` : ""}
+
+        <div class="card-actions">
+          ${d.archivoData ? `<button class="btn btn-main" onclick="abrirArchivoPublic('${d.id}')">Abrir archivo</button>` : ""}
+          <button class="btn btn-sec" onclick="editarFichaPublic('${d.id}')">Editar</button>
+          <button class="btn btn-danger" onclick="borrarFichaPublic('${d.id}')">Borrar</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(str){
+    return String(str || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
+  $("busqueda").addEventListener("input", pintarLista);
+
+  window.editarFichaPublic = editarFicha;
+  window.borrarFichaPublic = borrarFicha;
+  window.abrirArchivoPublic = abrirArchivo;
+  window.guardarFicha = guardarFicha;
+  window.cancelarEdicion = cancelarEdicion;
+  window.volver = function(){
+    window.location.href = "app.html";
+  };
+
+  limpiarFormulario();
+  pintarLista();
+})();
+</script>
+
+</body>
+</html>
