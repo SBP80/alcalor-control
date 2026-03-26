@@ -11,12 +11,13 @@
   --panel:#151515;
   --line:#2b2b2b;
   --text:#ffffff;
-  --muted:#9f9f9f;
+  --muted:#8f8f8f;
   --accent:#f39b2f;
   --danger:#c94b4b;
   --fontMain:Arial;
 }
 
+/* BASE */
 body{
   margin:0;
   background:var(--bg);
@@ -25,17 +26,71 @@ body{
 }
 
 /* HEADER */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px;
+.header{
+  padding:18px;
   border-bottom:1px solid var(--line);
 }
-.title{
-  font-weight:900;
+.header h1{
+  margin:0;
+  font-size:26px;
   color:var(--accent);
-  font-size:18px;
+}
+.header small{
+  color:var(--muted);
+}
+
+/* CONTENIDO */
+.container{
+  padding:16px;
+  max-width:900px;
+  margin:auto;
+}
+
+/* BUSCADOR */
+.search{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#111;
+  color:#fff;
+  margin-bottom:16px;
+}
+
+/* BOTÓN NUEVO */
+.new-btn{
+  width:100%;
+  padding:16px;
+  border-radius:16px;
+  border:none;
+  font-weight:900;
+  font-size:16px;
+  background:var(--accent);
+  color:#000;
+  margin-bottom:20px;
+}
+
+/* TARJETAS */
+.card{
+  background:var(--panel);
+  padding:16px;
+  border-radius:16px;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+}
+.card-title{
+  font-weight:900;
+  font-size:16px;
+}
+.card-info{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+.card-actions{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
 }
 
 /* BOTONES */
@@ -45,46 +100,8 @@ button{
   padding:10px 12px;
   font-weight:800;
 }
-.btn-main{background:var(--accent);color:#000;}
 .btn-danger{background:var(--danger);color:#fff;}
-.btn-sec{background:#2a2a2a;color:#fff;}
-
-/* CONTENIDO */
-.wrap{padding:12px;max-width:900px;margin:auto;}
-
-.search{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#111;
-  color:#fff;
-  margin-bottom:12px;
-}
-
-/* TARJETAS */
-.card{
-  background:var(--panel);
-  padding:14px;
-  border-radius:14px;
-  margin-bottom:10px;
-  border:1px solid var(--line);
-}
-.card-title{font-weight:900;}
-.card-sub{font-size:12px;color:var(--muted);}
-.card-actions{margin-top:10px;display:flex;gap:6px;}
-
-/* BOTÓN + */
-.fab{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  background:var(--accent);
-  font-size:28px;
-}
+.btn-sec{background:#2b2b2b;color:#fff;}
 
 /* MODAL */
 .modal{
@@ -94,13 +111,14 @@ button{
   display:none;
   align-items:flex-end;
 }
-.modal-content{
+.modal-box{
   width:100%;
   background:#111;
   padding:16px;
   border-radius:20px 20px 0 0;
 }
 
+/* INPUTS */
 input,select,textarea{
   width:100%;
   padding:12px;
@@ -115,20 +133,23 @@ input,select,textarea{
 
 <body>
 
-<div class="topbar">
-  <div class="title" id="appName">OBRAS</div>
-  <button class="btn-sec" onclick="volver()">Salir</button>
+<div class="header">
+  <h1 id="titulo">Obras</h1>
+  <small>Gestión rápida de trabajos</small>
 </div>
 
-<div class="wrap">
-  <input id="buscar" class="search" placeholder="Buscar obra">
-  <div id="lista"></div>
-</div>
+<div class="container">
 
-<button class="fab" onclick="abrir()">+</button>
+<input id="buscar" class="search" placeholder="Buscar obra...">
+
+<button class="new-btn" onclick="abrir()">+ Nueva obra</button>
+
+<div id="lista"></div>
+
+</div>
 
 <div class="modal" id="modal">
-  <div class="modal-content">
+  <div class="modal-box">
 
     <input id="nombre" placeholder="Nombre obra">
     <input id="cliente" placeholder="Cliente">
@@ -148,7 +169,7 @@ input,select,textarea{
 
     <textarea id="notas" placeholder="Notas"></textarea>
 
-    <button class="btn-main" onclick="guardar()">Guardar</button>
+    <button class="new-btn" onclick="guardar()">Guardar</button>
     <button class="btn-sec" onclick="cerrar()">Cancelar</button>
 
   </div>
@@ -157,6 +178,7 @@ input,select,textarea{
 <script>
 let edit=null;
 
+/* CONFIG */
 function aplicarConfig(){
   let c=JSON.parse(localStorage.getItem("configAllcalor")||"{}");
 
@@ -167,10 +189,11 @@ function aplicarConfig(){
   if(c.fuente) document.documentElement.style.setProperty("--fontMain",c.fuente);
 
   if(c.nombre){
-    document.getElementById("appName").innerText=c.nombre+" · Obras";
+    document.getElementById("titulo").innerText=c.nombre+" · Obras";
   }
 }
 
+/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("obras")||"[]");
 }
@@ -178,9 +201,8 @@ function setData(d){
   localStorage.setItem("obras",JSON.stringify(d));
 }
 
-function abrir(){
-  modal.style.display="flex";
-}
+/* UI */
+function abrir(){modal.style.display="flex";}
 function cerrar(){
   modal.style.display="none";
   edit=null;
@@ -190,6 +212,7 @@ function cerrar(){
   notas.value="";
 }
 
+/* CRUD */
 function guardar(){
   let d=getData();
 
@@ -235,6 +258,7 @@ function borrar(id){
   pintar();
 }
 
+/* LISTA */
 function pintar(){
   let lista=document.getElementById("lista");
   let txt=buscar.value.toLowerCase();
@@ -249,7 +273,7 @@ function pintar(){
     lista.innerHTML+=`
       <div class="card">
         <div class="card-title">${o.nombre}</div>
-        <div class="card-sub">${o.cliente} · ${o.estado}</div>
+        <div class="card-info">${o.cliente} · ${o.estado}</div>
         <div class="card-actions">
           <button onclick="editar(${o.id})">Editar</button>
           <button class="btn-danger" onclick="borrar(${o.id})">Borrar</button>
@@ -257,10 +281,10 @@ function pintar(){
       </div>
     `;
   });
-}
 
-function volver(){
-  location.href="app.html";
+  if(!data.length){
+    lista.innerHTML="<div style='color:#777'>Sin obras</div>";
+  }
 }
 
 buscar.oninput=pintar;
