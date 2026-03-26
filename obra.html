@@ -2,554 +2,211 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ficha de obra</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Obras · ALLCALOR</title>
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0b0b;
-    color: white;
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+  --danger:#c94b4b;
+  --fontMain:Arial,sans-serif;
 }
-
-.header {
-    padding: 12px 15px;
-    border-bottom: 2px solid orange;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.header-titulo {
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.header-btn {
-    background: orange;
-    border: none;
-    color: #111;
-    font-weight: bold;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.wrap {
-    padding: 10px;
-    position: relative;
-}
-
-.tools {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 210px;
-    max-height: 75vh;
-    overflow-y: auto;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    padding: 8px;
-    display: none;
-    z-index: 30;
-    box-shadow: 0 8px 24px rgba(0,0,0,.45);
-}
-
-.tools.abierto {
-    display: block;
-}
-
-.subtitulo {
-    margin: 4px 0 6px 0;
-    font-size: 12px;
-    color: orange;
-    font-weight: bold;
-}
-
-.btn {
-    width: 100%;
-    padding: 11px;
-    background: orange;
-    border: none;
-    margin-top: 7px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #111;
-    font-weight: bold;
-    border-radius: 8px;
-}
-
-.btn-sec {
-    background: #d6a13b;
-}
-
-.campo {
-    margin-bottom: 14px;
-}
-
-.label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: bold;
-    color: orange;
-}
-
-.input, .textarea, .select {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.textarea {
-    min-height: 100px;
-    resize: vertical;
-    font-family: Arial, sans-serif;
-}
-
-.bloque-calculo {
-    margin-top: 18px;
-    margin-bottom: 18px;
-    padding: 12px;
-    background: #141414;
-    border-radius: 8px;
-    border: 1px solid #2a2a2a;
-}
-
-.foto, .doc {
-    position: relative;
-    margin-bottom: 10px;
-    background: #1a1a1a;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-.foto img {
-    width: 100%;
-    border-radius: 8px;
-    display: block;
-}
-
-.doc a {
-    color: white;
-    text-decoration: underline;
-    word-break: break-word;
-    display: inline-block;
-    padding-right: 50px;
-}
-
-.borrar {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: red;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 6px;
-    font-weight: bold;
-}
-
-.mensaje {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    font-size: 14px;
-    display: none;
-}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--fontMain);}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);}
+h1{margin:0;color:var(--accent);}
+.btn-top{padding:10px 14px;border:none;border-radius:10px;background:var(--accent);color:#000;font-weight:800;}
+.wrap{padding:16px;max-width:1200px;margin:auto;}
+.panel{background:var(--panel);padding:16px;border-radius:16px;margin-bottom:16px;border:1px solid var(--line);}
+input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#111;color:#fff;margin-bottom:10px;}
+textarea{min-height:100px;}
+button{padding:10px 14px;border:none;border-radius:10px;font-weight:800;}
+.btn-main{background:var(--accent);color:#000;}
+.btn-sec{background:#333;color:#fff;}
+.btn-danger{background:var(--danger);color:#fff;}
+.card{background:#111;padding:14px;border-radius:14px;margin-bottom:10px;border:1px solid var(--line);}
+.small{color:var(--muted);font-size:12px;}
+.search{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#111;color:#fff;margin-bottom:10px;}
 </style>
 </head>
+
 <body>
 
-<div class="header">
-    <button class="header-btn" onclick="volver()">Volver</button>
-    <div class="header-titulo">Ficha de obra</div>
-    <button class="header-btn" onclick="toggleTools()">Menú</button>
+<div class="topbar">
+  <h1 id="tituloApp">OBRAS</h1>
+  <button class="btn-top" onclick="volver()">Volver</button>
 </div>
 
 <div class="wrap">
 
-    <div id="mensaje" class="mensaje"></div>
+<div class="panel">
+  <input id="nombre" placeholder="Nombre de la obra">
+  <input id="cliente" placeholder="Cliente">
+  <input id="direccion" placeholder="Dirección">
 
-    <div class="tools" id="tools">
-        <div class="subtitulo">Acciones</div>
-        <button class="btn" onclick="guardar()">Guardar datos</button>
-        <button class="btn" onclick="irPlano()">Plano</button>
+  <select id="tipo">
+    <option>Aerotermia</option>
+    <option>Aire acondicionado</option>
+    <option>Suelo radiante</option>
+    <option>Caldera</option>
+    <option>Otro</option>
+  </select>
 
-        <div class="subtitulo">Archivos</div>
-        <button class="btn btn-sec" onclick="activarFoto()">Subir foto</button>
-        <button class="btn btn-sec" onclick="activarDoc()">Subir documento</button>
-    </div>
+  <select id="estado">
+    <option>Pendiente</option>
+    <option>En curso</option>
+    <option>Terminada</option>
+  </select>
 
-    <div class="campo">
-        <label class="label" for="nombre">Nombre de obra</label>
-        <input class="input" id="nombre">
-    </div>
+  <textarea id="notas" placeholder="Notas"></textarea>
 
-    <div class="campo">
-        <label class="label" for="direccion">Dirección</label>
-        <input class="input" id="direccion">
-    </div>
+  <button class="btn-main" onclick="guardar()">Guardar</button>
+  <button class="btn-sec" onclick="cancelar()" id="cancelarBtn" style="display:none;">Cancelar</button>
+</div>
 
-    <div class="campo">
-        <label class="label" for="tipo">Tipo de obra</label>
-        <select class="select" id="tipo">
-            <option value="">Seleccionar</option>
-            <option>Suelo radiante</option>
-            <option>Aerotermia</option>
-            <option>Radiadores</option>
-            <option>Fancoils</option>
-            <option>Híbrido</option>
-            <option>Otro</option>
-        </select>
-    </div>
-
-    <div class="campo">
-        <label class="label" for="estado">Estado</label>
-        <select class="select" id="estado">
-            <option value="">Seleccionar</option>
-            <option>Presupuesto</option>
-            <option>Aceptado</option>
-            <option>En ejecución</option>
-            <option>Parado</option>
-            <option>Terminado</option>
-        </select>
-    </div>
-
-    <div class="campo">
-        <label class="label" for="inicio">Fecha inicio</label>
-        <input class="input" id="inicio">
-    </div>
-
-    <div class="campo">
-        <label class="label" for="fin">Fecha fin</label>
-        <input class="input" id="fin">
-    </div>
-
-    <div class="campo">
-        <label class="label" for="tecnicos">Técnicos</label>
-        <input class="input" id="tecnicos">
-    </div>
-
-    <div class="campo">
-        <label class="label" for="responsable">Responsable</label>
-        <input class="input" id="responsable">
-    </div>
-
-    <div class="bloque-calculo">
-        <div class="campo">
-            <label class="label" for="superficie">Superficie (m²)</label>
-            <input class="input" id="superficie" type="number" step="0.01" oninput="calcular()">
-        </div>
-
-        <div class="campo">
-            <label class="label" for="paso">Paso tubo (cm)</label>
-            <select class="select" id="paso" onchange="calcular()">
-                <option value="10">10</option>
-                <option value="15" selected>15</option>
-                <option value="20">20</option>
-            </select>
-        </div>
-
-        <div class="campo">
-            <label class="label" for="metros">Metros de tubo</label>
-            <input class="input" id="metros" readonly>
-        </div>
-
-        <div class="campo">
-            <label class="label" for="circuitos">Nº de circuitos</label>
-            <input class="input" id="circuitos" readonly>
-        </div>
-
-        <div class="campo">
-            <label class="label" for="mCircuito">Metros por circuito</label>
-            <input class="input" id="mCircuito" readonly>
-        </div>
-    </div>
-
-    <div class="campo">
-        <label class="label" for="notas">Notas</label>
-        <textarea class="textarea" id="notas"></textarea>
-    </div>
-
-    <div class="campo">
-        <label class="label" for="inputFoto">Subir foto</label>
-        <input id="inputFoto" type="file" accept="image/*" onchange="subirFoto(event)">
-    </div>
-
-    <div id="fotos"></div>
-
-    <div class="campo">
-        <label class="label" for="inputDoc">Subir documento</label>
-        <input id="inputDoc" type="file" onchange="subirDoc(event)">
-    </div>
-
-    <div id="docs"></div>
+<div class="panel">
+  <input id="buscar" class="search" placeholder="Buscar obras">
+  <div id="lista"></div>
+</div>
 
 </div>
 
 <script>
-const PIN = "1234";
+let editando = null;
 
-const tools = document.getElementById("tools");
-const mensaje = document.getElementById("mensaje");
+function aplicarConfig(){
+  let c = JSON.parse(localStorage.getItem("configAllcalor") || "{}");
 
-let clienteId = localStorage.getItem("clienteActivo");
-let obraId = localStorage.getItem("obraActiva");
+  if(c.color) document.documentElement.style.setProperty("--accent", c.color);
+  if(c.colorFondo) document.documentElement.style.setProperty("--bg", c.colorFondo);
+  if(c.colorPanel) document.documentElement.style.setProperty("--panel", c.colorPanel);
+  if(c.colorTexto) document.documentElement.style.setProperty("--text", c.colorTexto);
+  if(c.fuente) document.documentElement.style.setProperty("--fontMain", c.fuente);
 
-let obras = JSON.parse(localStorage.getItem("obras_" + clienteId)) || [];
-let obra = obras.find(o => o.id == obraId);
-
-if (!obra) {
-    alert("Obra no encontrada");
+  if(c.nombre){
+    document.getElementById("tituloApp").innerText = c.nombre;
+  }
 }
 
-if (obra && !obra.fotos) obra.fotos = [];
-if (obra && !obra.docs) obra.docs = [];
-
-function toggleTools() {
-    tools.classList.toggle("abierto");
+function getObras(){
+  return JSON.parse(localStorage.getItem("obras") || "[]");
 }
 
-function mostrarMensaje(texto) {
-    mensaje.textContent = texto;
-    mensaje.style.display = "block";
-    setTimeout(() => {
-        mensaje.style.display = "none";
-    }, 2000);
+function setObras(data){
+  localStorage.setItem("obras", JSON.stringify(data));
 }
 
-function guardar() {
-    if (!obra) return;
+function guardar(){
+  let obras = getObras();
 
-    obra.nombre = document.getElementById("nombre").value;
-    obra.direccion = document.getElementById("direccion").value;
-    obra.tipo = document.getElementById("tipo").value;
-    obra.estado = document.getElementById("estado").value;
-    obra.inicio = document.getElementById("inicio").value;
-    obra.fin = document.getElementById("fin").value;
-    obra.tecnicos = document.getElementById("tecnicos").value;
-    obra.responsable = document.getElementById("responsable").value;
-    obra.notas = document.getElementById("notas").value;
-    obra.superficie = parseFloat(document.getElementById("superficie").value) || 0;
-    obra.paso = parseFloat(document.getElementById("paso").value) || 15;
+  let obj = {
+    id: editando || Date.now(),
+    nombre:nombre.value,
+    cliente:cliente.value,
+    direccion:direccion.value,
+    tipo:tipo.value,
+    estado:estado.value,
+    notas:notas.value
+  };
 
-    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-    mostrarMensaje("Datos guardados");
-    tools.classList.remove("abierto");
+  if(!obj.nombre){
+    alert("Nombre obligatorio");
+    return;
+  }
+
+  if(editando){
+    obras = obras.map(o => o.id === editando ? obj : o);
+  }else{
+    obras.unshift(obj);
+  }
+
+  setObras(obras);
+  limpiar();
+  pintar();
 }
 
-function calcular() {
-    if (!obra) return;
+function editar(id){
+  let o = getObras().find(x => x.id === id);
+  if(!o) return;
 
-    let superficie = parseFloat(document.getElementById("superficie").value);
-    let paso = parseFloat(document.getElementById("paso").value);
+  editando = id;
 
-    if (!superficie || !paso) {
-        document.getElementById("metros").value = "";
-        document.getElementById("circuitos").value = "";
-        document.getElementById("mCircuito").value = "";
-        obra.superficie = superficie || 0;
-        obra.paso = paso || 15;
-        obra.metros = 0;
-        obra.circuitos = 0;
-        obra.mCircuito = 0;
-        localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-        return;
-    }
+  nombre.value = o.nombre;
+  cliente.value = o.cliente;
+  direccion.value = o.direccion;
+  tipo.value = o.tipo;
+  estado.value = o.estado;
+  notas.value = o.notas;
 
-    let metros = superficie * (100 / paso);
-    let maxCircuito = 100;
-    let circuitos = Math.ceil(metros / maxCircuito);
-    let mCircuito = metros / circuitos;
-
-    document.getElementById("metros").value = metros.toFixed(0);
-    document.getElementById("circuitos").value = circuitos;
-    document.getElementById("mCircuito").value = mCircuito.toFixed(1);
-
-    obra.superficie = superficie;
-    obra.paso = paso;
-    obra.metros = metros;
-    obra.circuitos = circuitos;
-    obra.mCircuito = mCircuito;
-
-    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
+  cancelarBtn.style.display="inline-block";
+  window.scrollTo(0,0);
 }
 
-function cargar() {
-    if (!obra) return;
-
-    document.getElementById("nombre").value = obra.nombre || "";
-    document.getElementById("direccion").value = obra.direccion || "";
-    document.getElementById("tipo").value = obra.tipo || "";
-    document.getElementById("estado").value = obra.estado || "";
-    document.getElementById("inicio").value = obra.inicio || "";
-    document.getElementById("fin").value = obra.fin || "";
-    document.getElementById("tecnicos").value = obra.tecnicos || "";
-    document.getElementById("responsable").value = obra.responsable || "";
-    document.getElementById("notas").value = obra.notas || "";
-    document.getElementById("superficie").value = obra.superficie || "";
-    document.getElementById("paso").value = obra.paso || "15";
-
-    if (obra.metros) {
-        document.getElementById("metros").value = obra.metros.toFixed(0);
-        document.getElementById("circuitos").value = obra.circuitos;
-        document.getElementById("mCircuito").value = obra.mCircuito.toFixed(1);
-    } else {
-        document.getElementById("metros").value = "";
-        document.getElementById("circuitos").value = "";
-        document.getElementById("mCircuito").value = "";
-    }
-
-    mostrarFotos();
-    mostrarDocs();
+function borrar(id){
+  if(!confirm("Borrar obra?")) return;
+  let obras = getObras().filter(o => o.id !== id);
+  setObras(obras);
+  pintar();
 }
 
-function activarFoto() {
-    document.getElementById("inputFoto").click();
-    tools.classList.remove("abierto");
+function cancelar(){
+  limpiar();
 }
 
-function activarDoc() {
-    document.getElementById("inputDoc").click();
-    tools.classList.remove("abierto");
+function limpiar(){
+  editando = null;
+  nombre.value="";
+  cliente.value="";
+  direccion.value="";
+  notas.value="";
+  cancelarBtn.style.display="none";
 }
 
-function subirFoto(e) {
-    if (!obra) return;
+function pintar(){
+  let lista = document.getElementById("lista");
+  let txt = buscar.value.toLowerCase();
 
-    const input = e.target;
-    const file = input.files[0];
-    if (!file) return;
+  let obras = getObras().filter(o =>
+    (o.nombre + o.cliente + o.direccion + o.notas).toLowerCase().includes(txt)
+  );
 
-    const reader = new FileReader();
+  lista.innerHTML = "";
 
-    reader.onload = function(evt) {
-        obra.fotos.push(evt.target.result);
-        localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-        mostrarFotos();
-        input.value = "";
-        mostrarMensaje("Foto subida");
-    };
+  obras.forEach(o=>{
+    let div = document.createElement("div");
+    div.className="card";
 
-    reader.readAsDataURL(file);
+    div.innerHTML = `
+      <b>${o.nombre}</b><br>
+      <span class="small">${o.cliente} · ${o.direccion}</span><br>
+      <span class="small">${o.tipo} · ${o.estado}</span><br>
+      <div style="margin-top:10px;">
+        <button onclick="editar(${o.id})">Editar</button>
+        <button class="btn-danger" onclick="borrar(${o.id})">Borrar</button>
+      </div>
+    `;
+
+    lista.appendChild(div);
+  });
+
+  if(!obras.length){
+    lista.innerHTML = "<div class='small'>No hay obras</div>";
+  }
 }
 
-function mostrarFotos() {
-    const contenedor = document.getElementById("fotos");
-    contenedor.innerHTML = "";
-
-    if (!obra || !obra.fotos) return;
-
-    obra.fotos.forEach((f, i) => {
-        let div = document.createElement("div");
-        div.className = "foto";
-
-        div.innerHTML = `
-            <img src="${f}">
-            <button class="borrar">X</button>
-        `;
-
-        div.querySelector(".borrar").onclick = () => borrarFoto(i);
-
-        contenedor.appendChild(div);
-    });
+function volver(){
+  location.href="app.html";
 }
 
-function borrarFoto(i) {
-    if (!confirm("Eliminar foto?")) return;
+buscar.oninput = pintar;
 
-    let pin = prompt("PIN:");
-    if (pin !== PIN) {
-        alert("PIN incorrecto");
-        return;
-    }
-
-    obra.fotos.splice(i, 1);
-    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-    mostrarFotos();
-    document.getElementById("inputFoto").value = "";
-}
-
-function subirDoc(e) {
-    if (!obra) return;
-
-    const input = e.target;
-    const file = input.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(evt) {
-        obra.docs.push({
-            nombre: file.name,
-            data: evt.target.result
-        });
-
-        localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-        mostrarDocs();
-        input.value = "";
-        mostrarMensaje("Documento subido");
-    };
-
-    reader.readAsDataURL(file);
-}
-
-function mostrarDocs() {
-    const contenedor = document.getElementById("docs");
-    contenedor.innerHTML = "";
-
-    if (!obra || !obra.docs) return;
-
-    obra.docs.forEach((d, i) => {
-        let div = document.createElement("div");
-        div.className = "doc";
-
-        div.innerHTML = `
-            <a href="${d.data}" target="_blank">${d.nombre}</a>
-            <button class="borrar">X</button>
-        `;
-
-        div.querySelector(".borrar").onclick = () => borrarDoc(i);
-
-        contenedor.appendChild(div);
-    });
-}
-
-function borrarDoc(i) {
-    if (!confirm("Eliminar documento?")) return;
-
-    let pin = prompt("PIN:");
-    if (pin !== PIN) {
-        alert("PIN incorrecto");
-        return;
-    }
-
-    obra.docs.splice(i, 1);
-    localStorage.setItem("obras_" + clienteId, JSON.stringify(obras));
-    mostrarDocs();
-    document.getElementById("inputDoc").value = "";
-}
-
-function irPlano() {
-    window.location.href = "plano.html";
-}
-
-function volver() {
-    window.location.replace("index.html");
-}
-
-cargar();
+aplicarConfig();
+pintar();
 </script>
 
 </body>
