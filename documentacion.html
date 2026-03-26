@@ -16,12 +16,13 @@
   --btnText:#111111;
   --danger:#c94b4b;
   --shadow:0 10px 24px rgba(0,0,0,.28);
+  --fontMain:Arial,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:var(--fontMain);
   background:var(--bg);
   color:var(--text);
 }
@@ -47,12 +48,28 @@ button{
   border-bottom:1px solid var(--line);
   backdrop-filter:blur(8px);
 }
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.brand-logo{
+  width:56px;
+  height:56px;
+  object-fit:contain;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  padding:4px;
+}
 .brand-name{
   margin:0;
   line-height:1;
   color:var(--accent);
   font-size:30px;
   font-weight:800;
+  word-break:break-word;
 }
 .brand-sub{
   margin:6px 0 0 0;
@@ -251,6 +268,11 @@ textarea{
   border:1px dashed var(--line);
   border-radius:16px;
 }
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
 @media (max-width:900px){
   .grid,.grid-3{
     grid-template-columns:1fr;
@@ -270,9 +292,12 @@ textarea{
 <body>
 
 <div class="topbar">
-  <div>
-    <h1 class="brand-name">Documentación técnica</h1>
-    <div class="brand-sub">Biblioteca técnica de equipos y fichas</div>
+  <div class="brand">
+    <img id="brandLogo" class="brand-logo hidden" alt="Logo">
+    <div>
+      <h1 id="brandName" class="brand-name">Documentación técnica</h1>
+      <div id="brandSub" class="brand-sub">Biblioteca técnica de equipos y fichas</div>
+    </div>
   </div>
   <div class="topbar-right">
     <button class="btn-top" onclick="volver()">Volver</button>
@@ -331,6 +356,7 @@ textarea{
     <div class="field">
       <label for="archivo">Archivo o imagen</label>
       <input id="archivo" type="file" accept=".pdf,image/*">
+      <div class="help">Primero prueba con una imagen o PDF pequeño.</div>
       <div id="archivoPreview" class="file-preview"></div>
     </div>
 
@@ -354,15 +380,53 @@ textarea{
 
   const DB_NAME = "allcalorDocumentacionDB";
   const STORE_NAME = "fichas";
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
 
   let db = null;
   let editId = null;
-  let archivoBlob = null;
+  let archivoDataUrl = "";
   let archivoNombre = "";
   let archivoTipo = "";
 
   const $ = (id) => document.getElementById(id);
+
+  function aplicarConfig(){
+    let c = {};
+    try{
+      c = JSON.parse(localStorage.getItem("configAllcalor")) || {};
+    }catch(e){}
+
+    if(c.colorFondo) document.documentElement.style.setProperty("--bg", c.colorFondo);
+    if(c.colorPanel) document.documentElement.style.setProperty("--panel", c.colorPanel);
+    if(c.colorLinea) document.documentElement.style.setProperty("--line", c.colorLinea);
+    if(c.colorTexto) document.documentElement.style.setProperty("--text", c.colorTexto);
+    if(c.color) document.documentElement.style.setProperty("--accent", c.color);
+    if(c.colorBotonTexto) document.documentElement.style.setProperty("--btnText", c.colorBotonTexto);
+    if(c.fuente) document.documentElement.style.setProperty("--fontMain", c.fuente);
+
+    const name = $("brandName");
+    const sub = $("brandSub");
+    const logo = $("brandLogo");
+
+    if(name && c.nombre){
+      const txt = c.mayusculas ? String(c.nombre).toUpperCase() : String(c.nombre);
+      name.textContent = txt;
+      if(c.tamNombre) name.style.fontSize = Number(c.tamNombre) + "px";
+      if(c.pesoNombre) name.style.fontWeight = Number(c.pesoNombre);
+      if(c.espacioLetras != null) name.style.letterSpacing = Number(c.espacioLetras) + "px";
+      if(c.sombraNombre != null) name.style.textShadow = "0 0 " + Number(c.sombraNombre) + "px rgba(0,0,0,.9)";
+      name.style.fontStyle = c.cursiva ? "italic" : "normal";
+    }
+
+    if(sub && c.subtitulo){
+      sub.textContent = c.subtitulo;
+    }
+
+    if(logo && c.logo){
+      logo.src = c.logo;
+      logo.classList.remove("hidden");
+    }
+  }
 
   async function initDB(){
     db = await new Promise((resolve, reject) => {
@@ -370,12 +434,15 @@ textarea{
 
       req.onupgradeneeded = function(e){
         const database = e.target.result;
-        if(!database.objectStoreNames.contains(STORE_NAME)){
-          const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
-          store.createIndex("marca", "marca", { unique:false });
-          store.createIndex("modelo", "modelo", { unique:false });
-          store.createIndex("categoria", "categoria", { unique:false });
+
+        if(database.objectStoreNames.contains(STORE_NAME)){
+          database.deleteObjectStore(STORE_NAME);
         }
+
+        const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
+        store.createIndex("marca", "marca", { unique:false });
+        store.createIndex("modelo", "modelo", { unique:false });
+        store.createIndex("categoria", "categoria", { unique:false });
       };
 
       req.onsuccess = function(){
@@ -441,7 +508,7 @@ textarea{
     $("archivo").value = "";
     $("tituloFormulario").textContent = "Nueva ficha";
     $("btnCancelarEdicion").classList.add("hidden");
-    archivoBlob = null;
+    archivoDataUrl = "";
     archivoNombre = "";
     archivoTipo = "";
     editId = null;
@@ -459,14 +526,33 @@ textarea{
     box.appendChild(item);
   }
 
-  $("archivo").addEventListener("change", function(e){
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
+  function fileToDataUrl(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        resolve(String(ev.target.result || ""));
+      };
+      reader.onerror = function(){
+        reject(new Error("No se pudo leer el archivo"));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
-    archivoBlob = file;
-    archivoNombre = file.name || "";
-    archivoTipo = file.type || "";
-    renderArchivoPreview();
+  $("archivo").addEventListener("change", async function(e){
+    try{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+
+      archivoNombre = file.name || "";
+      archivoTipo = file.type || "";
+      archivoDataUrl = await fileToDataUrl(file);
+      renderArchivoPreview();
+      setMsg("");
+    }catch(err){
+      console.error(err);
+      setMsg("No se pudo leer el archivo.", true);
+    }
   });
 
   function leerFormulario(){
@@ -478,7 +564,7 @@ textarea{
       potencia: $("potencia").value.trim(),
       palabrasClave: $("palabrasClave").value.trim(),
       notas: $("notas").value.trim(),
-      archivoBlob,
+      archivoDataUrl,
       archivoNombre,
       archivoTipo
     };
@@ -512,7 +598,7 @@ textarea{
           ...anterior,
           ...data,
           id: editId,
-          archivoBlob: data.archivoBlob || anterior.archivoBlob || null,
+          archivoDataUrl: data.archivoDataUrl || anterior.archivoDataUrl || "",
           archivoNombre: data.archivoNombre || anterior.archivoNombre || "",
           archivoTipo: data.archivoTipo || anterior.archivoTipo || ""
         };
@@ -546,7 +632,7 @@ textarea{
       $("notas").value = doc.notas || "";
       $("archivo").value = "";
 
-      archivoBlob = doc.archivoBlob || null;
+      archivoDataUrl = doc.archivoDataUrl || "";
       archivoNombre = doc.archivoNombre || "";
       archivoTipo = doc.archivoTipo || "";
       renderArchivoPreview();
@@ -577,16 +663,95 @@ textarea{
   }
 
   async function abrirArchivo(id){
+    let popup = null;
+
     try{
+      popup = window.open("", "_blank");
+
       const doc = await getDocById(Number(id));
-      if(!doc || !doc.archivoBlob) return;
+      if(!doc || !doc.archivoDataUrl){
+        if(popup) popup.close();
+        return;
+      }
 
-      const url = URL.createObjectURL(doc.archivoBlob);
-      window.open(url, "_blank");
+      const tipo = doc.archivoTipo || "";
+      const nombre = doc.archivoNombre || "archivo";
+      const safeNombre = escapeHtml(nombre);
+      const safeUrl = doc.archivoDataUrl;
 
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      if(!popup){
+        window.location.href = safeUrl;
+        return;
+      }
+
+      const esImagen = tipo.startsWith("image/");
+      const esPdf = tipo === "application/pdf" || nombre.toLowerCase().endsWith(".pdf");
+
+      if(esImagen){
+        popup.document.open();
+        popup.document.write(`
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+            <meta charset="UTF-8">
+            <title>${safeNombre}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              html,body{margin:0;padding:0;background:#111;min-height:100%}
+              body{display:flex;align-items:center;justify-content:center}
+              img{max-width:100vw;max-height:100vh;object-fit:contain}
+            </style>
+          </head>
+          <body>
+            <img src="${safeUrl}" alt="${safeNombre}">
+          </body>
+          </html>
+        `);
+        popup.document.close();
+        return;
+      }
+
+      if(esPdf){
+        popup.document.open();
+        popup.document.write(`
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+            <meta charset="UTF-8">
+            <title>${safeNombre}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              html,body{margin:0;height:100%}
+              iframe{width:100%;height:100%;border:none}
+              .bar{
+                position:fixed;
+                top:10px;
+                left:10px;
+                z-index:10;
+                background:#fff;
+                color:#111;
+                padding:10px 12px;
+                border-radius:10px;
+                font-family:Arial,sans-serif;
+                font-size:14px;
+              }
+              .bar a{color:#111;text-decoration:none;font-weight:700}
+            </style>
+          </head>
+          <body>
+            <div class="bar"><a href="${safeUrl}" download="${safeNombre}">Descargar PDF</a></div>
+            <iframe src="${safeUrl}"></iframe>
+          </body>
+          </html>
+        `);
+        popup.document.close();
+        return;
+      }
+
+      popup.location.href = safeUrl;
     }catch(err){
       console.error(err);
+      if(popup) popup.close();
       setMsg("No se pudo abrir el archivo.", true);
     }
   }
@@ -622,7 +787,7 @@ textarea{
         <div class="card">
           <div class="card-top">
             <div>
-              <h3 class="card-title">${escapeHtml((d.marca || "") + (d.modelo ? " · " + d.modelo : "")) || "Ficha sin nombre"}</h3>
+              <h3 class="card-title">${escapeHtml(((d.marca || "") + (d.modelo ? " · " + d.modelo : "")).trim() || "Ficha sin nombre")}</h3>
               <div class="card-sub">${escapeHtml(d.categoria || "Sin categoría")}</div>
             </div>
           </div>
@@ -637,7 +802,7 @@ textarea{
           ${d.notas ? `<div class="card-text"><strong>Notas:</strong>\n${escapeHtml(d.notas)}</div>` : ""}
 
           <div class="card-actions">
-            ${d.archivoBlob ? `<button class="btn btn-main" onclick="abrirArchivoPublic('${d.id}')">Abrir archivo</button>` : ""}
+            ${d.archivoDataUrl ? `<button class="btn btn-main" onclick="abrirArchivoPublic('${d.id}')">Abrir archivo</button>` : ""}
             <button class="btn btn-sec" onclick="editarFichaPublic('${d.id}')">Editar</button>
             <button class="btn btn-danger" onclick="borrarFichaPublic('${d.id}')">Borrar</button>
           </div>
@@ -669,6 +834,7 @@ textarea{
     window.location.href = "app.html";
   };
 
+  aplicarConfig();
   initDB()
     .then(() => {
       limpiarFormulario();
