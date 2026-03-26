@@ -4,108 +4,201 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Obras · ALLCALOR</title>
+
 <style>
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
   --line:#2b2b2b;
   --text:#ffffff;
-  --muted:#bdbdbd;
+  --muted:#9f9f9f;
   --accent:#f39b2f;
-  --btnText:#111111;
   --danger:#c94b4b;
   --fontMain:Arial,sans-serif;
 }
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:var(--fontMain);}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);}
-h1{margin:0;color:var(--accent);}
-.btn-top{padding:10px 14px;border:none;border-radius:10px;background:var(--accent);color:#000;font-weight:800;}
-.wrap{padding:16px;max-width:1200px;margin:auto;}
-.panel{background:var(--panel);padding:16px;border-radius:16px;margin-bottom:16px;border:1px solid var(--line);}
-input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#111;color:#fff;margin-bottom:10px;}
-textarea{min-height:100px;}
-button{padding:10px 14px;border:none;border-radius:10px;font-weight:800;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--fontMain);
+}
+
+/* HEADER */
+.topbar{
+  position:sticky;
+  top:0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  background:#0b0b0b;
+  z-index:10;
+}
+.title{
+  font-size:20px;
+  font-weight:800;
+  color:var(--accent);
+}
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:10px 12px;
+  font-weight:800;
+}
 .btn-main{background:var(--accent);color:#000;}
-.btn-sec{background:#333;color:#fff;}
 .btn-danger{background:var(--danger);color:#fff;}
-.card{background:#111;padding:14px;border-radius:14px;margin-bottom:10px;border:1px solid var(--line);}
-.small{color:var(--muted);font-size:12px;}
-.search{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#111;color:#fff;margin-bottom:10px;}
+.btn-sec{background:#2a2a2a;color:#fff;}
+
+/* CONTENT */
+.wrap{padding:12px;max-width:900px;margin:auto;}
+
+.search{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#111;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+/* CARD */
+.card{
+  background:var(--panel);
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:10px;
+  border:1px solid var(--line);
+}
+.card-title{font-size:16px;font-weight:800;}
+.card-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.card-actions{margin-top:10px;display:flex;gap:6px;}
+
+/* FLOAT BUTTON */
+.fab{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#000;
+  font-size:30px;
+  border:none;
+  font-weight:900;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:flex-end;
+}
+.modal-content{
+  width:100%;
+  background:#111;
+  padding:16px;
+  border-radius:20px 20px 0 0;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#000;
+  color:#fff;
+}
+textarea{min-height:80px;}
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-  <h1 id="tituloApp">OBRAS</h1>
-  <button class="btn-top" onclick="volver()">Volver</button>
+  <div class="title" id="appName">OBRAS</div>
+  <button class="btn btn-sec" onclick="volver()">Salir</button>
 </div>
 
 <div class="wrap">
 
-<div class="panel">
-  <input id="nombre" placeholder="Nombre de la obra">
-  <input id="cliente" placeholder="Cliente">
-  <input id="direccion" placeholder="Dirección">
+<input id="buscar" class="search" placeholder="Buscar obra...">
 
-  <select id="tipo">
-    <option>Aerotermia</option>
-    <option>Aire acondicionado</option>
-    <option>Suelo radiante</option>
-    <option>Caldera</option>
-    <option>Otro</option>
-  </select>
+<div id="lista"></div>
 
-  <select id="estado">
-    <option>Pendiente</option>
-    <option>En curso</option>
-    <option>Terminada</option>
-  </select>
-
-  <textarea id="notas" placeholder="Notas"></textarea>
-
-  <button class="btn-main" onclick="guardar()">Guardar</button>
-  <button class="btn-sec" onclick="cancelar()" id="cancelarBtn" style="display:none;">Cancelar</button>
 </div>
 
-<div class="panel">
-  <input id="buscar" class="search" placeholder="Buscar obras">
-  <div id="lista"></div>
-</div>
+<button class="fab" onclick="abrirModal()">+</button>
 
+<div class="modal" id="modal">
+  <div class="modal-content">
+
+    <input id="nombre" placeholder="Nombre obra">
+    <input id="cliente" placeholder="Cliente">
+    <input id="direccion" placeholder="Dirección">
+
+    <select id="tipo">
+      <option>Aerotermia</option>
+      <option>Aire acondicionado</option>
+      <option>Suelo radiante</option>
+      <option>Caldera</option>
+    </select>
+
+    <select id="estado">
+      <option>Pendiente</option>
+      <option>En curso</option>
+      <option>Terminada</option>
+    </select>
+
+    <textarea id="notas" placeholder="Notas"></textarea>
+
+    <button class="btn btn-main" onclick="guardar()">Guardar</button>
+    <button class="btn btn-sec" onclick="cerrarModal()">Cancelar</button>
+
+  </div>
 </div>
 
 <script>
-let editando = null;
+let edit = null;
 
 function aplicarConfig(){
-  let c = JSON.parse(localStorage.getItem("configAllcalor") || "{}");
-
-  if(c.color) document.documentElement.style.setProperty("--accent", c.color);
-  if(c.colorFondo) document.documentElement.style.setProperty("--bg", c.colorFondo);
-  if(c.colorPanel) document.documentElement.style.setProperty("--panel", c.colorPanel);
-  if(c.colorTexto) document.documentElement.style.setProperty("--text", c.colorTexto);
-  if(c.fuente) document.documentElement.style.setProperty("--fontMain", c.fuente);
-
-  if(c.nombre){
-    document.getElementById("tituloApp").innerText = c.nombre;
-  }
+  let c = JSON.parse(localStorage.getItem("configAllcalor")||"{}");
+  if(c.nombre) document.getElementById("appName").innerText=c.nombre;
+  if(c.color) document.documentElement.style.setProperty("--accent",c.color);
 }
 
-function getObras(){
-  return JSON.parse(localStorage.getItem("obras") || "[]");
+function getData(){
+  return JSON.parse(localStorage.getItem("obras")||"[]");
+}
+function setData(d){
+  localStorage.setItem("obras",JSON.stringify(d));
 }
 
-function setObras(data){
-  localStorage.setItem("obras", JSON.stringify(data));
+function abrirModal(){
+  document.getElementById("modal").style.display="flex";
+}
+
+function cerrarModal(){
+  edit=null;
+  modal.style.display="none";
+  nombre.value="";
+  cliente.value="";
+  direccion.value="";
+  notas.value="";
 }
 
 function guardar(){
-  let obras = getObras();
+  let d=getData();
 
-  let obj = {
-    id: editando || Date.now(),
+  let obj={
+    id:edit||Date.now(),
     nombre:nombre.value,
     cliente:cliente.value,
     direccion:direccion.value,
@@ -114,78 +207,58 @@ function guardar(){
     notas:notas.value
   };
 
-  if(!obj.nombre){
-    alert("Nombre obligatorio");
-    return;
-  }
+  if(!obj.nombre){alert("Nombre obligatorio");return;}
 
-  if(editando){
-    obras = obras.map(o => o.id === editando ? obj : o);
+  if(edit){
+    d=d.map(x=>x.id===edit?obj:x);
   }else{
-    obras.unshift(obj);
+    d.unshift(obj);
   }
 
-  setObras(obras);
-  limpiar();
+  setData(d);
+  cerrarModal();
   pintar();
 }
 
 function editar(id){
-  let o = getObras().find(x => x.id === id);
-  if(!o) return;
+  let o=getData().find(x=>x.id===id);
+  if(!o)return;
 
-  editando = id;
+  edit=id;
+  abrirModal();
 
-  nombre.value = o.nombre;
-  cliente.value = o.cliente;
-  direccion.value = o.direccion;
-  tipo.value = o.tipo;
-  estado.value = o.estado;
-  notas.value = o.notas;
-
-  cancelarBtn.style.display="inline-block";
-  window.scrollTo(0,0);
+  nombre.value=o.nombre;
+  cliente.value=o.cliente;
+  direccion.value=o.direccion;
+  tipo.value=o.tipo;
+  estado.value=o.estado;
+  notas.value=o.notas;
 }
 
 function borrar(id){
-  if(!confirm("Borrar obra?")) return;
-  let obras = getObras().filter(o => o.id !== id);
-  setObras(obras);
+  if(!confirm("Borrar obra?"))return;
+  setData(getData().filter(x=>x.id!==id));
   pintar();
 }
 
-function cancelar(){
-  limpiar();
-}
-
-function limpiar(){
-  editando = null;
-  nombre.value="";
-  cliente.value="";
-  direccion.value="";
-  notas.value="";
-  cancelarBtn.style.display="none";
-}
-
 function pintar(){
-  let lista = document.getElementById("lista");
-  let txt = buscar.value.toLowerCase();
+  let lista=document.getElementById("lista");
+  let txt=buscar.value.toLowerCase();
 
-  let obras = getObras().filter(o =>
-    (o.nombre + o.cliente + o.direccion + o.notas).toLowerCase().includes(txt)
+  let data=getData().filter(o=>
+    (o.nombre+o.cliente+o.direccion+o.notas).toLowerCase().includes(txt)
   );
 
-  lista.innerHTML = "";
+  lista.innerHTML="";
 
-  obras.forEach(o=>{
-    let div = document.createElement("div");
+  data.forEach(o=>{
+    let div=document.createElement("div");
     div.className="card";
 
-    div.innerHTML = `
-      <b>${o.nombre}</b><br>
-      <span class="small">${o.cliente} · ${o.direccion}</span><br>
-      <span class="small">${o.tipo} · ${o.estado}</span><br>
-      <div style="margin-top:10px;">
+    div.innerHTML=`
+      <div class="card-title">${o.nombre}</div>
+      <div class="card-sub">${o.cliente} · ${o.estado}</div>
+      <div class="card-actions">
         <button onclick="editar(${o.id})">Editar</button>
         <button class="btn-danger" onclick="borrar(${o.id})">Borrar</button>
       </div>
@@ -194,8 +267,8 @@ function pintar(){
     lista.appendChild(div);
   });
 
-  if(!obras.length){
-    lista.innerHTML = "<div class='small'>No hay obras</div>";
+  if(!data.length){
+    lista.innerHTML="<div style='color:#777'>Sin obras</div>";
   }
 }
 
@@ -203,7 +276,7 @@ function volver(){
   location.href="app.html";
 }
 
-buscar.oninput = pintar;
+buscar.oninput=pintar;
 
 aplicarConfig();
 pintar();
