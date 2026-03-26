@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Obras · ALLCALOR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obras</title>
 
 <style>
 :root{
@@ -14,10 +14,9 @@
   --muted:#9f9f9f;
   --accent:#f39b2f;
   --danger:#c94b4b;
-  --fontMain:Arial,sans-serif;
+  --fontMain:Arial;
 }
 
-*{box-sizing:border-box}
 body{
   margin:0;
   background:var(--bg);
@@ -27,22 +26,20 @@ body{
 
 /* HEADER */
 .topbar{
-  position:sticky;
-  top:0;
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:14px;
   border-bottom:1px solid var(--line);
-  background:#0b0b0b;
-  z-index:10;
 }
 .title{
-  font-size:20px;
-  font-weight:800;
+  font-weight:900;
   color:var(--accent);
+  font-size:18px;
 }
-.btn{
+
+/* BOTONES */
+button{
   border:none;
   border-radius:10px;
   padding:10px 12px;
@@ -52,7 +49,7 @@ body{
 .btn-danger{background:var(--danger);color:#fff;}
 .btn-sec{background:#2a2a2a;color:#fff;}
 
-/* CONTENT */
+/* CONTENIDO */
 .wrap{padding:12px;max-width:900px;margin:auto;}
 
 .search{
@@ -65,7 +62,7 @@ body{
   margin-bottom:12px;
 }
 
-/* CARD */
+/* TARJETAS */
 .card{
   background:var(--panel);
   padding:14px;
@@ -73,11 +70,11 @@ body{
   margin-bottom:10px;
   border:1px solid var(--line);
 }
-.card-title{font-size:16px;font-weight:800;}
-.card-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.card-title{font-weight:900;}
+.card-sub{font-size:12px;color:var(--muted);}
 .card-actions{margin-top:10px;display:flex;gap:6px;}
 
-/* FLOAT BUTTON */
+/* BOTÓN + */
 .fab{
   position:fixed;
   bottom:20px;
@@ -86,17 +83,14 @@ body{
   height:60px;
   border-radius:50%;
   background:var(--accent);
-  color:#000;
-  font-size:30px;
-  border:none;
-  font-weight:900;
+  font-size:28px;
 }
 
 /* MODAL */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.8);
+  background:rgba(0,0,0,.85);
   display:none;
   align-items:flex-end;
 }
@@ -116,7 +110,6 @@ input,select,textarea{
   background:#000;
   color:#fff;
 }
-textarea{min-height:80px;}
 </style>
 </head>
 
@@ -124,18 +117,15 @@ textarea{min-height:80px;}
 
 <div class="topbar">
   <div class="title" id="appName">OBRAS</div>
-  <button class="btn btn-sec" onclick="volver()">Salir</button>
+  <button class="btn-sec" onclick="volver()">Salir</button>
 </div>
 
 <div class="wrap">
-
-<input id="buscar" class="search" placeholder="Buscar obra...">
-
-<div id="lista"></div>
-
+  <input id="buscar" class="search" placeholder="Buscar obra">
+  <div id="lista"></div>
 </div>
 
-<button class="fab" onclick="abrirModal()">+</button>
+<button class="fab" onclick="abrir()">+</button>
 
 <div class="modal" id="modal">
   <div class="modal-content">
@@ -148,7 +138,6 @@ textarea{min-height:80px;}
       <option>Aerotermia</option>
       <option>Aire acondicionado</option>
       <option>Suelo radiante</option>
-      <option>Caldera</option>
     </select>
 
     <select id="estado">
@@ -159,19 +148,27 @@ textarea{min-height:80px;}
 
     <textarea id="notas" placeholder="Notas"></textarea>
 
-    <button class="btn btn-main" onclick="guardar()">Guardar</button>
-    <button class="btn btn-sec" onclick="cerrarModal()">Cancelar</button>
+    <button class="btn-main" onclick="guardar()">Guardar</button>
+    <button class="btn-sec" onclick="cerrar()">Cancelar</button>
 
   </div>
 </div>
 
 <script>
-let edit = null;
+let edit=null;
 
 function aplicarConfig(){
-  let c = JSON.parse(localStorage.getItem("configAllcalor")||"{}");
-  if(c.nombre) document.getElementById("appName").innerText=c.nombre;
+  let c=JSON.parse(localStorage.getItem("configAllcalor")||"{}");
+
   if(c.color) document.documentElement.style.setProperty("--accent",c.color);
+  if(c.colorFondo) document.documentElement.style.setProperty("--bg",c.colorFondo);
+  if(c.colorPanel) document.documentElement.style.setProperty("--panel",c.colorPanel);
+  if(c.colorTexto) document.documentElement.style.setProperty("--text",c.colorTexto);
+  if(c.fuente) document.documentElement.style.setProperty("--fontMain",c.fuente);
+
+  if(c.nombre){
+    document.getElementById("appName").innerText=c.nombre+" · Obras";
+  }
 }
 
 function getData(){
@@ -181,13 +178,12 @@ function setData(d){
   localStorage.setItem("obras",JSON.stringify(d));
 }
 
-function abrirModal(){
-  document.getElementById("modal").style.display="flex";
+function abrir(){
+  modal.style.display="flex";
 }
-
-function cerrarModal(){
-  edit=null;
+function cerrar(){
   modal.style.display="none";
+  edit=null;
   nombre.value="";
   cliente.value="";
   direccion.value="";
@@ -216,16 +212,14 @@ function guardar(){
   }
 
   setData(d);
-  cerrarModal();
+  cerrar();
   pintar();
 }
 
 function editar(id){
   let o=getData().find(x=>x.id===id);
-  if(!o)return;
-
   edit=id;
-  abrirModal();
+  abrir();
 
   nombre.value=o.nombre;
   cliente.value=o.cliente;
@@ -252,24 +246,17 @@ function pintar(){
   lista.innerHTML="";
 
   data.forEach(o=>{
-    let div=document.createElement("div");
-    div.className="card";
-
-    div.innerHTML=`
-      <div class="card-title">${o.nombre}</div>
-      <div class="card-sub">${o.cliente} · ${o.estado}</div>
-      <div class="card-actions">
-        <button onclick="editar(${o.id})">Editar</button>
-        <button class="btn-danger" onclick="borrar(${o.id})">Borrar</button>
+    lista.innerHTML+=`
+      <div class="card">
+        <div class="card-title">${o.nombre}</div>
+        <div class="card-sub">${o.cliente} · ${o.estado}</div>
+        <div class="card-actions">
+          <button onclick="editar(${o.id})">Editar</button>
+          <button class="btn-danger" onclick="borrar(${o.id})">Borrar</button>
+        </div>
       </div>
     `;
-
-    lista.appendChild(div);
   });
-
-  if(!data.length){
-    lista.innerHTML="<div style='color:#777'>Sin obras</div>";
-  }
 }
 
 function volver(){
