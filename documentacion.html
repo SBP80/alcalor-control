@@ -223,6 +223,9 @@ textarea{
   font-size:13px;
   margin-top:8px;
 }
+.msg.error{
+  color:#ffd1d1;
+}
 .file-preview{
   display:flex;
   align-items:center;
@@ -349,24 +352,82 @@ textarea{
 (function(){
   "use strict";
 
-  const STORAGE_KEY = "allcalor_documentacion";
+  const DB_NAME = "allcalorDocumentacionDB";
+  const STORE_NAME = "fichas";
+  const DB_VERSION = 1;
+
+  let db = null;
   let editId = null;
-  let archivoData = null;
+  let archivoBlob = null;
   let archivoNombre = "";
   let archivoTipo = "";
 
   const $ = (id) => document.getElementById(id);
 
-  function getDocs(){
-    try{
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    }catch(e){
-      return [];
-    }
+  async function initDB(){
+    db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = function(e){
+        const database = e.target.result;
+        if(!database.objectStoreNames.contains(STORE_NAME)){
+          const store = database.createObjectStore(STORE_NAME, { keyPath: "id" });
+          store.createIndex("marca", "marca", { unique:false });
+          store.createIndex("modelo", "modelo", { unique:false });
+          store.createIndex("categoria", "categoria", { unique:false });
+        }
+      };
+
+      req.onsuccess = function(){
+        resolve(req.result);
+      };
+
+      req.onerror = function(){
+        reject(req.error || new Error("No se pudo abrir la base de datos"));
+      };
+    });
   }
 
-  function setDocs(data){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  function tx(mode){
+    return db.transaction(STORE_NAME, mode).objectStore(STORE_NAME);
+  }
+
+  async function getAllDocs(){
+    return await new Promise((resolve, reject) => {
+      const req = tx("readonly").getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error || new Error("No se pudieron leer las fichas"));
+    });
+  }
+
+  async function getDocById(id){
+    return await new Promise((resolve, reject) => {
+      const req = tx("readonly").get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error || new Error("No se pudo leer la ficha"));
+    });
+  }
+
+  async function putDoc(doc){
+    return await new Promise((resolve, reject) => {
+      const req = tx("readwrite").put(doc);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error || new Error("No se pudo guardar la ficha"));
+    });
+  }
+
+  async function deleteDoc(id){
+    return await new Promise((resolve, reject) => {
+      const req = tx("readwrite").delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error || new Error("No se pudo borrar la ficha"));
+    });
+  }
+
+  function setMsg(text, isError=false){
+    const msg = $("msg");
+    msg.textContent = text || "";
+    msg.classList.toggle("error", !!isError);
   }
 
   function limpiarFormulario(){
@@ -378,24 +439,23 @@ textarea{
     $("palabrasClave").value = "";
     $("notas").value = "";
     $("archivo").value = "";
-    $("msg").textContent = "";
     $("tituloFormulario").textContent = "Nueva ficha";
     $("btnCancelarEdicion").classList.add("hidden");
-    archivoData = null;
+    archivoBlob = null;
     archivoNombre = "";
     archivoTipo = "";
-    renderArchivoPreview();
     editId = null;
+    renderArchivoPreview();
   }
 
   function renderArchivoPreview(){
     const box = $("archivoPreview");
     box.innerHTML = "";
-    if(!archivoData) return;
+    if(!archivoNombre) return;
 
     const item = document.createElement("div");
     item.className = "file-box";
-    item.textContent = archivoNombre || "Archivo cargado";
+    item.textContent = archivoNombre;
     box.appendChild(item);
   }
 
@@ -403,15 +463,10 @@ textarea{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
 
-    archivoNombre = file.name;
+    archivoBlob = file;
+    archivoNombre = file.name || "";
     archivoTipo = file.type || "";
-
-    const reader = new FileReader();
-    reader.onload = function(ev){
-      archivoData = String(ev.target.result || "");
-      renderArchivoPreview();
-    };
-    reader.readAsDataURL(file);
+    renderArchivoPreview();
   });
 
   function leerFormulario(){
@@ -423,139 +478,175 @@ textarea{
       potencia: $("potencia").value.trim(),
       palabrasClave: $("palabrasClave").value.trim(),
       notas: $("notas").value.trim(),
-      archivoData,
+      archivoBlob,
       archivoNombre,
       archivoTipo
     };
   }
 
-  function guardarFicha(){
-    const msg = $("msg");
-    msg.textContent = "";
+  async function guardarFicha(){
+    try{
+      setMsg("");
+      const data = leerFormulario();
 
-    const data = leerFormulario();
-
-    if(!data.marca && !data.modelo){
-      msg.textContent = "Introduce al menos marca o modelo.";
-      return;
-    }
-
-    const docs = getDocs();
-
-    if(editId === null){
-      docs.unshift({
-        id: Date.now(),
-        ...data,
-        createdAt: new Date().toISOString()
-      });
-    }else{
-      const idx = docs.findIndex(d => String(d.id) === String(editId));
-      if(idx === -1){
-        msg.textContent = "No se encontró la ficha.";
+      if(!data.marca && !data.modelo){
+        setMsg("Introduce al menos marca o modelo.", true);
         return;
       }
-      docs[idx] = {
-        ...docs[idx],
-        ...data
-      };
+
+      if(editId === null){
+        const doc = {
+          id: Date.now(),
+          ...data,
+          createdAt: new Date().toISOString()
+        };
+        await putDoc(doc);
+      }else{
+        const anterior = await getDocById(editId);
+        if(!anterior){
+          setMsg("No se encontró la ficha.", true);
+          return;
+        }
+
+        const doc = {
+          ...anterior,
+          ...data,
+          id: editId,
+          archivoBlob: data.archivoBlob || anterior.archivoBlob || null,
+          archivoNombre: data.archivoNombre || anterior.archivoNombre || "",
+          archivoTipo: data.archivoTipo || anterior.archivoTipo || ""
+        };
+        await putDoc(doc);
+      }
+
+      limpiarFormulario();
+      await pintarLista();
+      setMsg("Ficha guardada correctamente.");
+    }catch(err){
+      console.error(err);
+      setMsg("No se pudo guardar la ficha.", true);
     }
-
-    setDocs(docs);
-    limpiarFormulario();
-    pintarLista();
-    msg.textContent = "Ficha guardada correctamente.";
   }
 
-  function editarFicha(id){
-    const doc = getDocs().find(d => String(d.id) === String(id));
-    if(!doc) return;
+  async function editarFicha(id){
+    try{
+      const doc = await getDocById(Number(id));
+      if(!doc) return;
 
-    editId = doc.id;
-    $("tituloFormulario").textContent = "Editar ficha";
-    $("btnCancelarEdicion").classList.remove("hidden");
+      editId = doc.id;
+      $("tituloFormulario").textContent = "Editar ficha";
+      $("btnCancelarEdicion").classList.remove("hidden");
 
-    $("marca").value = doc.marca || "";
-    $("modelo").value = doc.modelo || "";
-    $("categoria").value = doc.categoria || "Aire acondicionado";
-    $("refrigerante").value = doc.refrigerante || "";
-    $("potencia").value = doc.potencia || "";
-    $("palabrasClave").value = doc.palabrasClave || "";
-    $("notas").value = doc.notas || "";
-    $("archivo").value = "";
+      $("marca").value = doc.marca || "";
+      $("modelo").value = doc.modelo || "";
+      $("categoria").value = doc.categoria || "Aire acondicionado";
+      $("refrigerante").value = doc.refrigerante || "";
+      $("potencia").value = doc.potencia || "";
+      $("palabrasClave").value = doc.palabrasClave || "";
+      $("notas").value = doc.notas || "";
+      $("archivo").value = "";
 
-    archivoData = doc.archivoData || null;
-    archivoNombre = doc.archivoNombre || "";
-    archivoTipo = doc.archivoTipo || "";
-    renderArchivoPreview();
+      archivoBlob = doc.archivoBlob || null;
+      archivoNombre = doc.archivoNombre || "";
+      archivoTipo = doc.archivoTipo || "";
+      renderArchivoPreview();
 
-    window.scrollTo({top:0, behavior:"smooth"});
+      window.scrollTo({top:0, behavior:"smooth"});
+    }catch(err){
+      console.error(err);
+      setMsg("No se pudo abrir la ficha.", true);
+    }
   }
 
-  function borrarFicha(id){
-    const docs = getDocs().filter(d => String(d.id) !== String(id));
-    setDocs(docs);
-    pintarLista();
+  async function borrarFicha(id){
+    try{
+      await deleteDoc(Number(id));
+      await pintarLista();
+      if(String(editId) === String(id)){
+        limpiarFormulario();
+      }
+    }catch(err){
+      console.error(err);
+      setMsg("No se pudo borrar la ficha.", true);
+    }
   }
 
   function cancelarEdicion(){
     limpiarFormulario();
+    setMsg("");
   }
 
-  function abrirArchivo(id){
-    const doc = getDocs().find(d => String(d.id) === String(id));
-    if(!doc || !doc.archivoData) return;
-    window.open(doc.archivoData, "_blank");
-  }
+  async function abrirArchivo(id){
+    try{
+      const doc = await getDocById(Number(id));
+      if(!doc || !doc.archivoBlob) return;
 
-  function pintarLista(){
-    const lista = $("lista");
-    const txt = $("busqueda").value.trim().toLowerCase();
-    const docs = getDocs();
+      const url = URL.createObjectURL(doc.archivoBlob);
+      window.open(url, "_blank");
 
-    const filtrados = docs.filter(d => {
-      const bolsa = [
-        d.marca,
-        d.modelo,
-        d.categoria,
-        d.refrigerante,
-        d.potencia,
-        d.palabrasClave,
-        d.notas,
-        d.archivoNombre
-      ].join(" ").toLowerCase();
-      return bolsa.includes(txt);
-    });
-
-    if(!filtrados.length){
-      lista.innerHTML = '<div class="empty">No hay fichas guardadas.</div>';
-      return;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }catch(err){
+      console.error(err);
+      setMsg("No se pudo abrir el archivo.", true);
     }
+  }
 
-    lista.innerHTML = filtrados.map(d => `
-      <div class="card">
-        <div class="card-top">
-          <div>
-            <h3 class="card-title">${escapeHtml((d.marca || "") + (d.modelo ? " · " + d.modelo : "")) || "Ficha sin nombre"}</h3>
-            <div class="card-sub">${escapeHtml(d.categoria || "Sin categoría")}</div>
+  async function pintarLista(){
+    try{
+      const lista = $("lista");
+      const txt = $("busqueda").value.trim().toLowerCase();
+      const docs = await getAllDocs();
+
+      docs.sort((a,b) => Number(b.id) - Number(a.id));
+
+      const filtrados = docs.filter(d => {
+        const bolsa = [
+          d.marca,
+          d.modelo,
+          d.categoria,
+          d.refrigerante,
+          d.potencia,
+          d.palabrasClave,
+          d.notas,
+          d.archivoNombre
+        ].join(" ").toLowerCase();
+        return bolsa.includes(txt);
+      });
+
+      if(!filtrados.length){
+        lista.innerHTML = '<div class="empty">No hay fichas guardadas.</div>';
+        return;
+      }
+
+      lista.innerHTML = filtrados.map(d => `
+        <div class="card">
+          <div class="card-top">
+            <div>
+              <h3 class="card-title">${escapeHtml((d.marca || "") + (d.modelo ? " · " + d.modelo : "")) || "Ficha sin nombre"}</h3>
+              <div class="card-sub">${escapeHtml(d.categoria || "Sin categoría")}</div>
+            </div>
+          </div>
+
+          <div class="badges">
+            ${d.refrigerante ? `<span class="badge">${escapeHtml(d.refrigerante)}</span>` : ""}
+            ${d.potencia ? `<span class="badge">${escapeHtml(d.potencia)}</span>` : ""}
+            ${d.archivoNombre ? `<span class="badge">${escapeHtml(d.archivoNombre)}</span>` : ""}
+          </div>
+
+          ${d.palabrasClave ? `<div class="card-text"><strong>Palabras clave:</strong> ${escapeHtml(d.palabrasClave)}</div>` : ""}
+          ${d.notas ? `<div class="card-text"><strong>Notas:</strong>\n${escapeHtml(d.notas)}</div>` : ""}
+
+          <div class="card-actions">
+            ${d.archivoBlob ? `<button class="btn btn-main" onclick="abrirArchivoPublic('${d.id}')">Abrir archivo</button>` : ""}
+            <button class="btn btn-sec" onclick="editarFichaPublic('${d.id}')">Editar</button>
+            <button class="btn btn-danger" onclick="borrarFichaPublic('${d.id}')">Borrar</button>
           </div>
         </div>
-
-        <div class="badges">
-          ${d.refrigerante ? `<span class="badge">${escapeHtml(d.refrigerante)}</span>` : ""}
-          ${d.potencia ? `<span class="badge">${escapeHtml(d.potencia)}</span>` : ""}
-          ${d.archivoNombre ? `<span class="badge">${escapeHtml(d.archivoNombre)}</span>` : ""}
-        </div>
-
-        ${d.palabrasClave ? `<div class="card-text"><strong>Palabras clave:</strong> ${escapeHtml(d.palabrasClave)}</div>` : ""}
-        ${d.notas ? `<div class="card-text"><strong>Notas:</strong>\n${escapeHtml(d.notas)}</div>` : ""}
-
-        <div class="card-actions">
-          ${d.archivoData ? `<button class="btn btn-main" onclick="abrirArchivoPublic('${d.id}')">Abrir archivo</button>` : ""}
-          <button class="btn btn-sec" onclick="editarFichaPublic('${d.id}')">Editar</button>
-          <button class="btn btn-danger" onclick="borrarFichaPublic('${d.id}')">Borrar</button>
-        </div>
-      </div>
-    `).join("");
+      `).join("");
+    }catch(err){
+      console.error(err);
+      setMsg("No se pudo cargar la lista.", true);
+    }
   }
 
   function escapeHtml(str){
@@ -578,8 +669,15 @@ textarea{
     window.location.href = "app.html";
   };
 
-  limpiarFormulario();
-  pintarLista();
+  initDB()
+    .then(() => {
+      limpiarFormulario();
+      pintarLista();
+    })
+    .catch(err => {
+      console.error(err);
+      setMsg("No se pudo iniciar la base de datos del navegador.", true);
+    });
 })();
 </script>
 
