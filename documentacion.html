@@ -2,172 +2,619 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Documentación técnica</title>
-
 <style>
+:root{
+  --bg:#0b0b0b;
+  --panel:#151515;
+  --panel2:#1d1d1d;
+  --line:#2b2b2b;
+  --text:#ffffff;
+  --muted:#bdbdbd;
+  --accent:#f39b2f;
+  --btnText:#111111;
+  --danger:#c94b4b;
+  --shadow:0 10px 24px rgba(0,0,0,.28);
+  --fontMain:Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
 body{
   margin:0;
-  font-family:Arial;
-  background:#0b0b0b;
-  color:#fff;
+  font-family:var(--fontMain);
+  background:var(--bg);
+  color:var(--text);
 }
+button,input,select,textarea{
+  font:inherit;
+}
+button{
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.hidden{display:none!important}
 
-.top{
-  padding:15px;
-  background:#111;
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
   display:flex;
   justify-content:space-between;
   align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:rgba(11,11,11,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
 }
-
-h1{
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.brand-logo{
+  width:56px;
+  height:56px;
+  object-fit:contain;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  padding:4px;
+}
+.brand-name{
   margin:0;
-  font-size:22px;
-  color:#f39b2f;
+  line-height:1;
+  color:var(--accent);
+  font-size:30px;
+  font-weight:800;
+  word-break:break-word;
 }
-
-button{
-  padding:10px;
+.brand-sub{
+  margin:6px 0 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.topbar-right{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn-top{
   border:none;
-  border-radius:10px;
-  font-weight:bold;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
 }
 
-.main{
-  padding:15px;
+.wrap{
+  max-width:1280px;
+  margin:0 auto;
+  padding:16px;
 }
-
-input,textarea,select{
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.panel-title{
+  margin:0 0 14px 0;
+  color:var(--accent);
+  font-size:24px;
+}
+.panel-sub{
+  margin:0 0 14px 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+}
+.field label{
+  font-size:13px;
+  color:var(--muted);
+}
+input[type="text"],
+input[type="url"],
+select,
+textarea{
   width:100%;
-  margin-bottom:10px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#111;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
+}
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:800;
+}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  background:#2b2b2b;
   color:#fff;
 }
-
-.card{
-  background:#111;
-  padding:15px;
-  border-radius:15px;
-  margin-bottom:10px;
+.btn-danger{
+  background:var(--danger);
+  color:#fff;
 }
-
-a.btn{
+.search{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:14px;
+  padding:15px 16px;
+  margin-bottom:12px;
+}
+.cards{
+  display:grid;
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+}
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.card-title{
+  margin:0;
+  font-size:22px;
+}
+.card-sub{
+  margin:6px 0 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.badge{
   display:inline-block;
-  padding:10px;
-  background:#f39b2f;
-  color:#000;
-  border-radius:10px;
-  text-decoration:none;
-  font-weight:bold;
-  margin-top:10px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+.card-text{
+  margin-top:12px;
+  color:var(--text);
+  line-height:1.45;
+  white-space:pre-wrap;
+}
+.card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.msg{
+  min-height:20px;
+  color:#c7ffd5;
+  font-size:13px;
+  margin-top:8px;
+}
+.msg.error{
+  color:#ffd1d1;
+}
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:24px 12px;
+  border:1px dashed var(--line);
+  border-radius:16px;
+}
+.link-box{
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#101010;
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:13px;
+  word-break:break-all;
+}
+@media (max-width:900px){
+  .grid,.grid-3{
+    grid-template-columns:1fr;
+  }
+}
+@media (max-width:760px){
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .topbar-right{
+    justify-content:space-between;
+  }
 }
 </style>
 </head>
-
 <body>
 
-<div class="top">
-  <h1>Documentación</h1>
-  <button onclick="volver()">Volver</button>
+<div class="topbar">
+  <div class="brand">
+    <img id="brandLogo" class="brand-logo hidden" alt="Logo">
+    <div>
+      <h1 id="brandName" class="brand-name">Documentación técnica</h1>
+      <div id="brandSub" class="brand-sub">Biblioteca técnica de equipos y fichas</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-top" onclick="volver()">Volver</button>
+  </div>
 </div>
 
-<div class="main">
+<div class="wrap">
+  <div class="panel">
+    <h2 class="panel-title" id="tituloFormulario">Nueva ficha</h2>
+    <p class="panel-sub">Base estable. Aquí guardas los datos técnicos y la ruta real del archivo.</p>
 
-<input id="marca" placeholder="Marca">
-<input id="modelo" placeholder="Modelo">
-<textarea id="notas" placeholder="Notas"></textarea>
-<input id="archivo" type="file">
+    <div class="grid">
+      <div class="field">
+        <label for="marca">Marca</label>
+        <input id="marca" type="text" placeholder="Daikin">
+      </div>
+      <div class="field">
+        <label for="modelo">Modelo</label>
+        <input id="modelo" type="text" placeholder="RXM35R">
+      </div>
+    </div>
 
-<button onclick="guardar()">Guardar</button>
+    <div class="grid-3">
+      <div class="field">
+        <label for="categoria">Categoría</label>
+        <select id="categoria">
+          <option value="Aire acondicionado">Aire acondicionado</option>
+          <option value="Aerotermia">Aerotermia</option>
+          <option value="Caldera">Caldera</option>
+          <option value="Hidroestufa">Hidroestufa</option>
+          <option value="Fancoil">Fancoil</option>
+          <option value="Suelo radiante">Suelo radiante</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="refrigerante">Refrigerante</label>
+        <input id="refrigerante" type="text" placeholder="R32">
+      </div>
+      <div class="field">
+        <label for="potencia">Potencia</label>
+        <input id="potencia" type="text" placeholder="3,5 kW">
+      </div>
+    </div>
 
-<hr>
+    <div class="field">
+      <label for="palabrasClave">Palabras clave</label>
+      <input id="palabrasClave" type="text" placeholder="gas, carga, tubería, manual, instalación">
+    </div>
 
-<div id="lista"></div>
+    <div class="field">
+      <label for="enlaceArchivo">Enlace del archivo</label>
+      <input id="enlaceArchivo" type="url" placeholder="https://... o enlace compartido del archivo">
+      <div class="help">Aquí pega la ruta real del PDF, imagen, Drive, Dropbox, iCloud compartido o servidor.</div>
+    </div>
 
+    <div class="field">
+      <label for="notas">Notas</label>
+      <textarea id="notas" placeholder="Observaciones, datos útiles, carga adicional por metro, etc."></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-main" onclick="guardarFicha()">Guardar ficha</button>
+      <button class="btn btn-sec hidden" id="btnCancelarEdicion" onclick="cancelarEdicion()">Cancelar edición</button>
+    </div>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">Buscador</h2>
+    <input id="busqueda" class="search" type="text" placeholder="Buscar por marca, modelo, categoría, refrigerante, notas o palabras clave">
+    <div id="lista" class="cards"></div>
+  </div>
 </div>
 
 <script>
+(function(){
+  "use strict";
 
-let db;
+  const STORAGE_KEY = "allcalor_documentacion_links";
+  let editId = null;
 
-const req = indexedDB.open("DOC_DB",1);
+  const $ = (id) => document.getElementById(id);
 
-req.onupgradeneeded = e=>{
-  db = e.target.result;
-  db.createObjectStore("docs",{keyPath:"id"});
-};
+  function aplicarConfig(){
+    let c = {};
+    try{
+      c = JSON.parse(localStorage.getItem("configAllcalor")) || {};
+    }catch(e){}
 
-req.onsuccess = e=>{
-  db = e.target.result;
-  cargar();
-};
+    if(c.colorFondo) document.documentElement.style.setProperty("--bg", c.colorFondo);
+    if(c.colorPanel) document.documentElement.style.setProperty("--panel", c.colorPanel);
+    if(c.colorLinea) document.documentElement.style.setProperty("--line", c.colorLinea);
+    if(c.colorTexto) document.documentElement.style.setProperty("--text", c.colorTexto);
+    if(c.color) document.documentElement.style.setProperty("--accent", c.color);
+    if(c.colorBotonTexto) document.documentElement.style.setProperty("--btnText", c.colorBotonTexto);
+    if(c.fuente) document.documentElement.style.setProperty("--fontMain", c.fuente);
 
-function guardar(){
+    const name = $("brandName");
+    const sub = $("brandSub");
+    const logo = $("brandLogo");
 
-  const file = document.getElementById("archivo").files[0];
+    if(name && c.nombre){
+      const txt = c.mayusculas ? String(c.nombre).toUpperCase() : String(c.nombre);
+      name.textContent = txt;
+      if(c.tamNombre) name.style.fontSize = Number(c.tamNombre) + "px";
+      if(c.pesoNombre) name.style.fontWeight = Number(c.pesoNombre);
+      if(c.espacioLetras != null) name.style.letterSpacing = Number(c.espacioLetras) + "px";
+      if(c.sombraNombre != null) name.style.textShadow = "0 0 " + Number(c.sombraNombre) + "px rgba(0,0,0,.9)";
+      name.style.fontStyle = c.cursiva ? "italic" : "normal";
+    }
 
-  if(!file){
-    alert("Selecciona archivo");
-    return;
+    if(sub && c.subtitulo){
+      sub.textContent = c.subtitulo;
+    }
+
+    if(logo && c.logo){
+      logo.src = c.logo;
+      logo.classList.remove("hidden");
+    }
   }
 
-  const reader = new FileReader();
+  function getDocs(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    }catch(e){
+      return [];
+    }
+  }
 
-  reader.onload = function(){
+  function setDocs(data){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
 
-    const doc = {
-      id: Date.now(),
-      marca:marca.value,
-      modelo:modelo.value,
-      notas:notas.value,
-      data:reader.result,
-      nombre:file.name
+  function setMsg(text, isError=false){
+    const msg = $("msg");
+    msg.textContent = text || "";
+    msg.classList.toggle("error", !!isError);
+  }
+
+  function limpiarFormulario(){
+    $("marca").value = "";
+    $("modelo").value = "";
+    $("categoria").value = "Aire acondicionado";
+    $("refrigerante").value = "";
+    $("potencia").value = "";
+    $("palabrasClave").value = "";
+    $("enlaceArchivo").value = "";
+    $("notas").value = "";
+    $("tituloFormulario").textContent = "Nueva ficha";
+    $("btnCancelarEdicion").classList.add("hidden");
+    editId = null;
+  }
+
+  function leerFormulario(){
+    return {
+      marca: $("marca").value.trim(),
+      modelo: $("modelo").value.trim(),
+      categoria: $("categoria").value,
+      refrigerante: $("refrigerante").value.trim(),
+      potencia: $("potencia").value.trim(),
+      palabrasClave: $("palabrasClave").value.trim(),
+      enlaceArchivo: $("enlaceArchivo").value.trim(),
+      notas: $("notas").value.trim()
     };
+  }
 
-    const tx = db.transaction("docs","readwrite");
-    tx.objectStore("docs").put(doc);
+  function validarEnlace(url){
+    if(!url) return true;
+    return /^https?:\/\//i.test(url);
+  }
 
-    cargar();
-  };
+  function guardarFicha(){
+    setMsg("");
+    const data = leerFormulario();
 
-  reader.readAsDataURL(file);
-}
+    if(!data.marca && !data.modelo){
+      setMsg("Introduce al menos marca o modelo.", true);
+      return;
+    }
 
-function cargar(){
+    if(!validarEnlace(data.enlaceArchivo)){
+      setMsg("El enlace debe empezar por http:// o https://", true);
+      return;
+    }
 
-  const tx = db.transaction("docs","readonly");
-  const store = tx.objectStore("docs");
+    const docs = getDocs();
 
-  const req = store.getAll();
+    if(editId === null){
+      docs.unshift({
+        id: Date.now(),
+        ...data,
+        createdAt: new Date().toISOString()
+      });
+    }else{
+      const idx = docs.findIndex(d => String(d.id) === String(editId));
+      if(idx === -1){
+        setMsg("No se encontró la ficha.", true);
+        return;
+      }
+      docs[idx] = {
+        ...docs[idx],
+        ...data
+      };
+    }
 
-  req.onsuccess = ()=>{
-    const lista = document.getElementById("lista");
-    lista.innerHTML="";
+    setDocs(docs);
+    limpiarFormulario();
+    pintarLista();
+    setMsg("Ficha guardada correctamente.");
+  }
 
-    req.result.reverse().forEach(d=>{
+  function editarFicha(id){
+    const doc = getDocs().find(d => String(d.id) === String(id));
+    if(!doc) return;
 
-      const div = document.createElement("div");
-      div.className="card";
+    editId = doc.id;
+    $("tituloFormulario").textContent = "Editar ficha";
+    $("btnCancelarEdicion").classList.remove("hidden");
 
-      div.innerHTML = `
-        <b>${d.marca} ${d.modelo}</b><br>
-        ${d.notas}<br>
-        <a class="btn" href="${d.data}" target="_blank">Abrir archivo</a>
-      `;
+    $("marca").value = doc.marca || "";
+    $("modelo").value = doc.modelo || "";
+    $("categoria").value = doc.categoria || "Aire acondicionado";
+    $("refrigerante").value = doc.refrigerante || "";
+    $("potencia").value = doc.potencia || "";
+    $("palabrasClave").value = doc.palabrasClave || "";
+    $("enlaceArchivo").value = doc.enlaceArchivo || "";
+    $("notas").value = doc.notas || "";
 
-      lista.appendChild(div);
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function borrarFicha(id){
+    const docs = getDocs().filter(d => String(d.id) !== String(id));
+    setDocs(docs);
+    if(String(editId) === String(id)){
+      limpiarFormulario();
+    }
+    pintarLista();
+  }
+
+  function cancelarEdicion(){
+    limpiarFormulario();
+    setMsg("");
+  }
+
+  function pintarLista(){
+    const lista = $("lista");
+    const txt = $("busqueda").value.trim().toLowerCase();
+    const docs = getDocs();
+
+    const filtrados = docs.filter(d => {
+      const bolsa = [
+        d.marca,
+        d.modelo,
+        d.categoria,
+        d.refrigerante,
+        d.potencia,
+        d.palabrasClave,
+        d.notas,
+        d.enlaceArchivo
+      ].join(" ").toLowerCase();
+      return bolsa.includes(txt);
     });
+
+    if(!filtrados.length){
+      lista.innerHTML = '<div class="empty">No hay fichas guardadas.</div>';
+      return;
+    }
+
+    lista.innerHTML = filtrados.map(d => `
+      <div class="card">
+        <div class="card-top">
+          <div>
+            <h3 class="card-title">${escapeHtml(((d.marca || "") + (d.modelo ? " · " + d.modelo : "")).trim() || "Ficha sin nombre")}</h3>
+            <div class="card-sub">${escapeHtml(d.categoria || "Sin categoría")}</div>
+          </div>
+        </div>
+
+        <div class="badges">
+          ${d.refrigerante ? `<span class="badge">${escapeHtml(d.refrigerante)}</span>` : ""}
+          ${d.potencia ? `<span class="badge">${escapeHtml(d.potencia)}</span>` : ""}
+          ${d.enlaceArchivo ? `<span class="badge">Con enlace</span>` : ""}
+        </div>
+
+        ${d.palabrasClave ? `<div class="card-text"><strong>Palabras clave:</strong> ${escapeHtml(d.palabrasClave)}</div>` : ""}
+        ${d.notas ? `<div class="card-text"><strong>Notas:</strong>\n${escapeHtml(d.notas)}</div>` : ""}
+        ${d.enlaceArchivo ? `<div class="link-box">${escapeHtml(d.enlaceArchivo)}</div>` : ""}
+
+        <div class="card-actions">
+          ${d.enlaceArchivo ? `<a class="btn btn-main" style="text-decoration:none" href="${escapeAttr(d.enlaceArchivo)}" target="_blank" rel="noopener noreferrer">Abrir archivo</a>` : ""}
+          <button class="btn btn-sec" onclick="editarFichaPublic('${d.id}')">Editar</button>
+          <button class="btn btn-danger" onclick="borrarFichaPublic('${d.id}')">Borrar</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(str){
+    return String(str || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
+  function escapeAttr(str){
+    return String(str || "")
+      .replace(/"/g, "&quot;");
+  }
+
+  $("busqueda").addEventListener("input", pintarLista);
+
+  window.editarFichaPublic = editarFicha;
+  window.borrarFichaPublic = borrarFicha;
+  window.guardarFicha = guardarFicha;
+  window.cancelarEdicion = cancelarEdicion;
+  window.volver = function(){
+    window.location.href = "app.html";
   };
-}
 
-function volver(){
-  window.location="app.html";
-}
-
+  aplicarConfig();
+  limpiarFormulario();
+  pintarLista();
+})();
 </script>
 
 </body>
