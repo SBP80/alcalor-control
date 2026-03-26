@@ -380,7 +380,7 @@ textarea{
 
   const DB_NAME = "allcalorDocumentacionDB";
   const STORE_NAME = "fichas";
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
 
   let db = null;
   let editId = null;
@@ -663,39 +663,30 @@ textarea{
   }
 
   async function abrirArchivo(id){
-    let popup = null;
-
     try{
-      popup = window.open("", "_blank");
-
       const doc = await getDocById(Number(id));
-      if(!doc || !doc.archivoDataUrl){
-        if(popup) popup.close();
-        return;
-      }
+      if(!doc || !doc.archivoDataUrl) return;
 
-      const tipo = doc.archivoTipo || "";
       const nombre = doc.archivoNombre || "archivo";
-      const safeNombre = escapeHtml(nombre);
-      const safeUrl = doc.archivoDataUrl;
-
-      if(!popup){
-        window.location.href = safeUrl;
-        return;
-      }
-
+      const tipo = doc.archivoTipo || "";
       const esImagen = tipo.startsWith("image/");
       const esPdf = tipo === "application/pdf" || nombre.toLowerCase().endsWith(".pdf");
 
       if(esImagen){
-        popup.document.open();
-        popup.document.write(`
+        const win = window.open("", "_blank");
+        if(!win){
+          window.location.href = doc.archivoDataUrl;
+          return;
+        }
+
+        win.document.open();
+        win.document.write(`
           <!DOCTYPE html>
           <html lang="es">
           <head>
             <meta charset="UTF-8">
-            <title>${safeNombre}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${escapeHtml(nombre)}</title>
             <style>
               html,body{margin:0;padding:0;background:#111;min-height:100%}
               body{display:flex;align-items:center;justify-content:center}
@@ -703,55 +694,23 @@ textarea{
             </style>
           </head>
           <body>
-            <img src="${safeUrl}" alt="${safeNombre}">
+            <img src="${doc.archivoDataUrl}" alt="${escapeHtml(nombre)}">
           </body>
           </html>
         `);
-        popup.document.close();
+        win.document.close();
         return;
       }
 
       if(esPdf){
-        popup.document.open();
-        popup.document.write(`
-          <!DOCTYPE html>
-          <html lang="es">
-          <head>
-            <meta charset="UTF-8">
-            <title>${safeNombre}</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-              html,body{margin:0;height:100%}
-              iframe{width:100%;height:100%;border:none}
-              .bar{
-                position:fixed;
-                top:10px;
-                left:10px;
-                z-index:10;
-                background:#fff;
-                color:#111;
-                padding:10px 12px;
-                border-radius:10px;
-                font-family:Arial,sans-serif;
-                font-size:14px;
-              }
-              .bar a{color:#111;text-decoration:none;font-weight:700}
-            </style>
-          </head>
-          <body>
-            <div class="bar"><a href="${safeUrl}" download="${safeNombre}">Descargar PDF</a></div>
-            <iframe src="${safeUrl}"></iframe>
-          </body>
-          </html>
-        `);
-        popup.document.close();
+        // En iPhone es más fiable abrir directamente el DataURL en el visor nativo
+        window.location.href = doc.archivoDataUrl;
         return;
       }
 
-      popup.location.href = safeUrl;
+      window.location.href = doc.archivoDataUrl;
     }catch(err){
       console.error(err);
-      if(popup) popup.close();
       setMsg("No se pudo abrir el archivo.", true);
     }
   }
