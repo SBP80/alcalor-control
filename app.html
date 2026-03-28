@@ -406,22 +406,17 @@ button{
 </style>
 <script>
 (function(){
-  const config = JSON.parse(localStorage.getItem("allcalor_config")) || {};
+  try{
+    const config = JSON.parse(localStorage.getItem("configAllcalor")) || {};
+    const root = document.documentElement;
 
-  const root = document.documentElement;
-
-  if(config.bg) root.style.setProperty('--bg', config.bg);
-  if(config.panel) root.style.setProperty('--panel', config.panel);
-  if(config.text) root.style.setProperty('--text', config.text);
-  if(config.accent) root.style.setProperty('--accent', config.accent);
-
-  if(config.nombreApp){
-    const t = document.title;
-    document.title = config.nombreApp;
-  }
+    if(config.colorFondo) root.style.setProperty('--bg', config.colorFondo);
+    if(config.colorPanel) root.style.setProperty('--panel', config.colorPanel);
+    if(config.colorTexto) root.style.setProperty('--text', config.colorTexto);
+    if(config.color) root.style.setProperty('--accent', config.color);
+  }catch(e){}
 })();
 </script>
-</head>
 <body>
 <div id="logoLayer"></div>
 
