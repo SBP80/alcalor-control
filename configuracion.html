@@ -832,7 +832,23 @@ input[type="file"]{
     menuBtns.forEach(b => b.classList.remove("active"));
     if(btn) btn.classList.add("active");
   }
+  <script>
+function applyPageTheme(){
+  const cfg = { ...defaults(), ...getConfig() };
+  const root = document.documentElement;
 
+  root.style.setProperty('--bg', cfg.colorFondo);
+  root.style.setProperty('--panel', cfg.colorPanel);
+  root.style.setProperty('--panel2', cfg.colorPanel);
+  root.style.setProperty('--line', cfg.colorLinea);
+  root.style.setProperty('--text', cfg.colorTexto);
+  root.style.setProperty('--muted', cfg.colorTexto);
+  root.style.setProperty('--accent', cfg.color);
+  root.style.setProperty('--btnText', cfg.colorBotonTexto);
+
+  document.body.style.fontFamily = cfg.fuente || 'Arial, sans-serif';
+}
+</script>
   function loadConfig(){
     const cfg = { ...defaults(), ...getConfig() };
 
