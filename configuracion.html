@@ -850,8 +850,11 @@ function applyPageTheme(){
 }
 </script>
   function loadConfig(){
-    const cfg = { ...defaults(), ...getConfig() };
-
+    applyPageTheme();
+    
+    const cfg = readForm();
+    setConfig(cfg);
+    applyPageTheme();
     $("cfgNombre").value = cfg.nombre;
     $("cfgSubtitulo").value = cfg.subtitulo;
     $("cfgEmpresa").value = cfg.empresa || "";
