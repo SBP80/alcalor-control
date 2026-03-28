@@ -2,615 +2,248 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Configuración · ALLCALOR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración</title>
+
 <style>
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
-  --panel2:#1d1d1d;
   --line:#2b2b2b;
   --text:#ffffff;
-  --muted:#bdbdbd;
   --accent:#f39b2f;
-  --btnText:#111111;
-  --shadow:0 10px 24px rgba(0,0,0,.28);
-  --fontMain:Arial, sans-serif;
+  --btnText:#111;
+  --fontMain:Arial;
 }
-*{box-sizing:border-box}
-html,body{height:100%}
+
 body{
   margin:0;
-  font-family:var(--fontMain);
   background:var(--bg);
   color:var(--text);
+  font-family:var(--fontMain);
 }
-button,input,select{
-  font:inherit;
-}
-button{
-  cursor:pointer;
-  touch-action:manipulation;
-}
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:20;
+
+/* HEADER */
+.top{
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  gap:14px;
-  padding:14px 16px;
-  background:rgba(11,11,11,.96);
+  padding:14px;
   border-bottom:1px solid var(--line);
-  backdrop-filter:blur(8px);
 }
-.brand-name{
-  margin:0;
-  line-height:1;
+.title{
+  font-size:22px;
+  font-weight:900;
   color:var(--accent);
-  font-size:30px;
-  font-weight:800;
 }
-.brand-sub{
-  margin:6px 0 0 0;
-  font-size:12px;
-  color:var(--muted);
-}
-.topbar-right{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.btn-top{
-  border:none;
-  border-radius:12px;
-  padding:12px 16px;
-  font-weight:800;
-  background:var(--accent);
-  color:var(--btnText);
-}
+
+/* LAYOUT */
 .wrap{
-  max-width:1200px;
-  margin:0 auto;
-  padding:16px;
-}
-.layout{
   display:grid;
-  grid-template-columns:1fr 380px;
-  gap:16px;
+  grid-template-columns:260px 1fr 350px;
+  gap:12px;
+  padding:12px;
 }
+
+/* MENU */
+.menu button{
+  width:100%;
+  margin-bottom:6px;
+  padding:12px;
+  border:none;
+  background:#222;
+  color:#fff;
+  border-radius:10px;
+  font-weight:800;
+}
+.menu button.active{
+  background:var(--accent);
+  color:#000;
+}
+
+/* SECCIONES */
 .section{
   background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:16px;
-  margin-bottom:16px;
-  box-shadow:var(--shadow);
-}
-.section-title{
-  margin:0 0 14px 0;
-  color:var(--accent);
-  font-size:24px;
-}
-.section-sub{
-  margin:0 0 14px 0;
-  color:var(--muted);
-  font-size:13px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  margin-bottom:12px;
-}
-.field label{
-  font-size:13px;
-  color:var(--muted);
-}
-input[type="text"],
-input[type="number"],
-select{
-  width:100%;
-  border:1px solid var(--line);
-  background:#101010;
-  color:#fff;
+  padding:14px;
   border-radius:12px;
-  padding:12px 14px;
-}
-input[type="color"]{
-  width:100%;
-  height:48px;
-  padding:4px;
-  border:none;
-  background:none;
-}
-.check{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  background:#101010;
   border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px 14px;
 }
-.check input{
-  width:auto;
-  margin:0;
-}
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
-.btn{
-  border:none;
-  border-radius:14px;
-  padding:12px 16px;
-  font-weight:800;
-}
-.btn-main{
-  background:var(--accent);
-  color:var(--btnText);
-}
-.btn-sec{
-  background:#2b2b2b;
+.hidden{display:none;}
+
+input,select{
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  background:#000;
+  border:1px solid var(--line);
   color:#fff;
+  border-radius:8px;
 }
-.msg{
-  min-height:20px;
-  color:#c7ffd5;
-  font-size:13px;
-  margin-top:8px;
-}
+
+/* PREVIEW */
 .preview{
   background:var(--panel);
+  padding:12px;
+  border-radius:12px;
+}
+
+.preview-box{
+  padding:12px;
   border:1px solid var(--line);
-  border-radius:20px;
-  padding:16px;
-  box-shadow:var(--shadow);
-  position:sticky;
-  top:88px;
-  height:fit-content;
-}
-.preview-title{
-  margin:0 0 12px 0;
-  color:var(--accent);
-  font-size:22px;
-}
-.preview-shell{
   background:var(--bg);
-  border:1px solid var(--line);
-  border-radius:18px;
-  overflow:hidden;
 }
-.preview-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:14px;
-  background:rgba(0,0,0,.18);
-  border-bottom:1px solid var(--line);
-}
-.preview-brand-name{
-  margin:0;
-  line-height:1;
-  color:var(--accent);
-  word-break:break-word;
-}
-.preview-brand-sub{
-  margin:6px 0 0 0;
-  color:var(--muted);
-  font-size:12px;
-}
-.preview-clock{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px 12px;
-  min-width:160px;
-  text-align:right;
-}
-.preview-time{
-  color:var(--accent);
-  font-size:22px;
-  font-weight:800;
-}
-.preview-date{
-  margin-top:6px;
-  color:var(--muted);
-  font-size:12px;
-}
-.preview-body{
-  padding:14px;
-}
-.preview-card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:12px;
-}
-.preview-card h4{
-  margin:0 0 8px 0;
-  color:var(--accent);
-}
-.preview-card p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.45;
-}
-.preview-btn{
-  display:inline-block;
-  margin-top:10px;
+
+button{
+  padding:10px;
   border:none;
-  border-radius:12px;
-  padding:10px 14px;
+  border-radius:8px;
   font-weight:800;
 }
-.preview-notes{
-  margin-top:10px;
-  width:58px;
-  height:58px;
-  border-radius:50%;
-  background:var(--accent);
-  color:var(--btnText);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:26px;
-  font-weight:800;
-}
-.hidden{display:none!important}
-@media (max-width:900px){
-  .layout{grid-template-columns:1fr}
-  .grid{grid-template-columns:1fr}
-  .preview{position:static}
-  .topbar{
-    flex-direction:column;
-    align-items:stretch;
-  }
-  .topbar-right{
-    justify-content:space-between;
-  }
-}
+.main{background:var(--accent);color:#000;}
+.sec{background:#333;color:#fff;}
 </style>
 </head>
+
 <body>
-<div class="topbar">
+
+<div class="top">
+  <div class="title">Configuración</div>
   <div>
-    <h1 class="brand-name">Configuración</h1>
-    <div class="brand-sub">Panel estable de ajustes</div>
-  </div>
-  <div class="topbar-right">
-    <button class="btn-top" id="btnGuardarTop">Guardar todo</button>
-    <button class="btn-top" id="btnVolverTop">Volver</button>
+    <button class="main" onclick="guardar()">Guardar</button>
+    <button class="sec" onclick="volver()">Volver</button>
   </div>
 </div>
 
 <div class="wrap">
-  <div class="layout">
-    <main>
-      <section class="section">
-        <h3 class="section-title">Visual</h3>
-        <p class="section-sub">Ajustes principales de la app.</p>
 
-        <div class="grid">
-          <div class="field">
-            <label for="cfgNombre">Nombre de la app</label>
-            <input id="cfgNombre" type="text" placeholder="ALLCALOR">
-          </div>
-          <div class="field">
-            <label for="cfgSubtitulo">Subtítulo</label>
-            <input id="cfgSubtitulo" type="text" placeholder="Centro de control">
-          </div>
-        </div>
+<div class="menu">
+  <button onclick="tab('visual')" class="active">Visual</button>
+  <button onclick="tab('empresa')">Empresa</button>
+</div>
 
-        <div class="grid">
-          <div class="field">
-            <label for="cfgFuente">Fuente principal</label>
-            <select id="cfgFuente">
-              <option value="Arial, sans-serif">Arial</option>
-              <option value="Verdana, sans-serif">Verdana</option>
-              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-              <option value="Tahoma, sans-serif">Tahoma</option>
-              <option value="Georgia, serif">Georgia</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="cfgTamNombre">Tamaño nombre</label>
-            <input id="cfgTamNombre" type="number" min="18" max="52" step="1">
-          </div>
-        </div>
+<div>
 
-        <div class="grid">
-          <div class="field">
-            <label for="cfgPesoNombre">Peso nombre</label>
-            <select id="cfgPesoNombre">
-              <option value="400">400</option>
-              <option value="500">500</option>
-              <option value="600">600</option>
-              <option value="700">700</option>
-              <option value="800">800</option>
-              <option value="900">900</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="cfgEspacioLetras">Espaciado letras</label>
-            <input id="cfgEspacioLetras" type="number" min="0" max="8" step="0.5">
-          </div>
-        </div>
+<div id="visual" class="section">
+  <h3>Visual</h3>
 
-        <div class="grid">
-          <label class="check">
-            <input id="cfgMayusculas" type="checkbox">
-            Nombre en mayúsculas
-          </label>
-          <label class="check">
-            <input id="cfgCursiva" type="checkbox">
-            Nombre en cursiva
-          </label>
-        </div>
+  <input id="nombre" placeholder="Nombre app">
+  <input id="sub" placeholder="Subtitulo">
 
-        <div class="grid" style="margin-top:12px">
-          <div class="field">
-            <label for="cfgColor">Color principal</label>
-            <input id="cfgColor" type="color">
-          </div>
-          <div class="field">
-            <label for="cfgBg">Color fondo</label>
-            <input id="cfgBg" type="color">
-          </div>
-          <div class="field">
-            <label for="cfgPanel">Color panel</label>
-            <input id="cfgPanel" type="color">
-          </div>
-          <div class="field">
-            <label for="cfgLine">Color línea</label>
-            <input id="cfgLine" type="color">
-          </div>
-          <div class="field">
-            <label for="cfgText">Color texto</label>
-            <input id="cfgText" type="color">
-          </div>
-          <div class="field">
-            <label for="cfgBtnText">Color texto botón</label>
-            <input id="cfgBtnText" type="color">
-          </div>
-        </div>
-      </section>
+  <label>Color principal</label>
+  <input type="color" id="color">
 
-      <section class="section">
-        <div class="actions">
-          <button class="btn btn-main" id="btnGuardarBottom">Guardar todo</button>
-          <button class="btn btn-sec" id="btnVolverBottom">Volver</button>
-        </div>
-        <div id="msg" class="msg"></div>
-      </section>
-    </main>
+  <label>Fondo</label>
+  <input type="color" id="bg">
 
-    <aside class="preview">
-      <h3 class="preview-title">Vista previa</h3>
+  <label>Panel</label>
+  <input type="color" id="panel">
 
-      <div id="previewShell" class="preview-shell">
-        <div class="preview-top">
-          <div>
-            <h2 id="prevName" class="preview-brand-name">ALLCALOR</h2>
-            <div id="prevSub" class="preview-brand-sub">Centro de control</div>
-          </div>
+  <label>Texto</label>
+  <input type="color" id="text">
 
-          <div id="prevClock" class="preview-clock">
-            <div id="prevTime" class="preview-time">00:00:00</div>
-            <div id="prevDate" class="preview-date">lunes, 1 de enero de 2026</div>
-          </div>
-        </div>
+  <label>Fuente</label>
+  <select id="fuente">
+    <option>Arial</option>
+    <option>Verdana</option>
+    <option>Tahoma</option>
+  </select>
 
-        <div class="preview-body">
-          <div class="preview-card">
-            <h4>Clientes</h4>
-            <p>Listado general, fichas y acceso rápido.</p>
-            <button id="prevBtn1" class="preview-btn">Abrir</button>
-          </div>
-          <div class="preview-card">
-            <h4>Obras</h4>
-            <p>Trabajos, estado y seguimiento.</p>
-            <button id="prevBtn2" class="preview-btn">Abrir</button>
-          </div>
-          <div id="prevNotes" class="preview-notes">📝</div>
-        </div>
-      </div>
-    </aside>
+</div>
+
+<div id="empresa" class="section hidden">
+  <h3>Empresa</h3>
+  <input placeholder="Nombre empresa">
+  <input placeholder="Teléfono">
+</div>
+
+</div>
+
+<div class="preview">
+  <h3>Vista previa</h3>
+
+  <div class="preview-box">
+    <h2 id="pNombre">ALLCALOR</h2>
+    <p id="pSub">Centro de control</p>
+    <button id="pBtn">Botón</button>
   </div>
+
+</div>
+
 </div>
 
 <script>
-(function(){
-  "use strict";
 
-  const $ = (id) => document.getElementById(id);
+function get(){
+  return JSON.parse(localStorage.getItem("configAllcalor")||"{}");
+}
 
-  function defaults(){
-    return {
-      nombre:"ALLCALOR",
-      subtitulo:"Centro de control",
-      color:"#f39b2f",
-      colorFondo:"#0b0b0b",
-      colorPanel:"#151515",
-      colorLinea:"#2b2b2b",
-      colorTexto:"#ffffff",
-      colorBotonTexto:"#111111",
-      fuente:"Arial, sans-serif",
-      tamNombre:30,
-      pesoNombre:800,
-      espacioLetras:0,
-      mayusculas:false,
-      cursiva:false
-    };
-  }
+function set(c){
+  localStorage.setItem("configAllcalor",JSON.stringify(c));
+}
 
-  function getConfig(){
-    try{
-      return JSON.parse(localStorage.getItem("configAllcalor")) || {};
-    }catch(e){
-      return {};
-    }
-  }
+function aplicar(c){
+  let r=document.documentElement;
 
-  function setConfig(cfg){
-    localStorage.setItem("configAllcalor", JSON.stringify(cfg));
-  }
+  r.style.setProperty("--bg",c.bg||"#0b0b0b");
+  r.style.setProperty("--panel",c.panel||"#151515");
+  r.style.setProperty("--text",c.text||"#fff");
+  r.style.setProperty("--accent",c.color||"#f39b2f");
+  r.style.setProperty("--fontMain",c.fuente||"Arial");
 
-  function applyPageTheme(){
-    const cfg = { ...defaults(), ...getConfig() };
-    const root = document.documentElement;
+  pNombre.innerText=c.nombre||"ALLCALOR";
+  pSub.innerText=c.sub||"Centro de control";
 
-    root.style.setProperty("--bg", cfg.colorFondo);
-    root.style.setProperty("--panel", cfg.colorPanel);
-    root.style.setProperty("--panel2", cfg.colorPanel);
-    root.style.setProperty("--line", cfg.colorLinea);
-    root.style.setProperty("--text", cfg.colorTexto);
-    root.style.setProperty("--muted", cfg.colorTexto);
-    root.style.setProperty("--accent", cfg.color);
-    root.style.setProperty("--btnText", cfg.colorBotonTexto);
-    root.style.setProperty("--fontMain", cfg.fuente);
-  }
+  pBtn.style.background=c.color;
+}
 
-  function loadConfig(){
-    applyPageTheme();
+function cargar(){
+  let c=get();
 
-    const cfg = { ...defaults(), ...getConfig() };
+  nombre.value=c.nombre||"";
+  sub.value=c.sub||"";
+  color.value=c.color||"#f39b2f";
+  bg.value=c.bg||"#0b0b0b";
+  panel.value=c.panel||"#151515";
+  text.value=c.text||"#ffffff";
+  fuente.value=c.fuente||"Arial";
 
-    $("cfgNombre").value = cfg.nombre;
-    $("cfgSubtitulo").value = cfg.subtitulo;
-    $("cfgFuente").value = cfg.fuente;
-    $("cfgTamNombre").value = cfg.tamNombre;
-    $("cfgPesoNombre").value = cfg.pesoNombre;
-    $("cfgEspacioLetras").value = cfg.espacioLetras;
-    $("cfgMayusculas").checked = !!cfg.mayusculas;
-    $("cfgCursiva").checked = !!cfg.cursiva;
-    $("cfgColor").value = cfg.color;
-    $("cfgBg").value = cfg.colorFondo;
-    $("cfgPanel").value = cfg.colorPanel;
-    $("cfgLine").value = cfg.colorLinea;
-    $("cfgText").value = cfg.colorTexto;
-    $("cfgBtnText").value = cfg.colorBotonTexto;
+  aplicar(c);
+}
 
-    applyPreview();
-  }
+function guardar(){
+  let c={
+    nombre:nombre.value,
+    sub:sub.value,
+    color:color.value,
+    bg:bg.value,
+    panel:panel.value,
+    text:text.value,
+    fuente:fuente.value
+  };
 
-  function readForm(){
-    return {
-      ...getConfig(),
-      nombre: $("cfgNombre").value.trim() || "ALLCALOR",
-      subtitulo: $("cfgSubtitulo").value.trim() || "Centro de control",
-      fuente: $("cfgFuente").value || "Arial, sans-serif",
-      tamNombre: Number($("cfgTamNombre").value || 30),
-      pesoNombre: Number($("cfgPesoNombre").value || 800),
-      espacioLetras: Number($("cfgEspacioLetras").value || 0),
-      mayusculas: !!$("cfgMayusculas").checked,
-      cursiva: !!$("cfgCursiva").checked,
-      color: $("cfgColor").value || "#f39b2f",
-      colorFondo: $("cfgBg").value || "#0b0b0b",
-      colorPanel: $("cfgPanel").value || "#151515",
-      colorLinea: $("cfgLine").value || "#2b2b2b",
-      colorTexto: $("cfgText").value || "#ffffff",
-      colorBotonTexto: $("cfgBtnText").value || "#111111"
-    };
-  }
+  set(c);
+  aplicar(c);
+}
 
-  function applyPreview(){
-    const cfg = readForm();
-    const finalName = cfg.mayusculas ? cfg.nombre.toUpperCase() : cfg.nombre;
+function tab(t){
+  visual.classList.add("hidden");
+  empresa.classList.add("hidden");
+  document.getElementById(t).classList.remove("hidden");
+}
 
-    $("previewShell").style.background = cfg.colorFondo;
-    $("previewShell").style.borderColor = cfg.colorLinea;
-    $("previewShell").style.color = cfg.colorTexto;
+function volver(){
+  location.href="app.html";
+}
 
-    $("prevName").textContent = finalName;
-    $("prevName").style.color = cfg.color;
-    $("prevName").style.fontFamily = cfg.fuente;
-    $("prevName").style.fontSize = cfg.tamNombre + "px";
-    $("prevName").style.fontWeight = cfg.pesoNombre;
-    $("prevName").style.letterSpacing = cfg.espacioLetras + "px";
-    $("prevName").style.fontStyle = cfg.cursiva ? "italic" : "normal";
+/* preview en tiempo real */
+document.querySelectorAll("input,select").forEach(el=>{
+  el.oninput=()=>{
+    guardar();
+  };
+});
 
-    $("prevSub").textContent = cfg.subtitulo;
-    $("prevSub").style.color = cfg.colorTexto;
+cargar();
 
-    $("prevClock").style.background = cfg.colorPanel;
-    $("prevClock").style.borderColor = cfg.colorLinea;
-    $("prevTime").style.color = cfg.color;
-    $("prevDate").style.color = cfg.colorTexto;
-
-    document.querySelectorAll(".preview-card").forEach(card => {
-      card.style.background = cfg.colorPanel;
-      card.style.borderColor = cfg.colorLinea;
-      card.style.color = cfg.colorTexto;
-    });
-
-    document.querySelectorAll(".preview-card h4").forEach(h4 => {
-      h4.style.color = cfg.color;
-    });
-
-    $("prevBtn1").style.background = cfg.color;
-    $("prevBtn1").style.color = cfg.colorBotonTexto;
-    $("prevBtn2").style.background = cfg.color;
-    $("prevBtn2").style.color = cfg.colorBotonTexto;
-
-    $("prevNotes").style.background = cfg.color;
-    $("prevNotes").style.color = cfg.colorBotonTexto;
-  }
-
-  function saveAll(){
-    const cfg = readForm();
-    setConfig(cfg);
-    applyPageTheme();
-    applyPreview();
-    $("msg").textContent = "Configuración guardada correctamente.";
-  }
-
-  function goBack(){
-    window.location.href = "app.html";
-  }
-
-  function pad(n){
-    return String(n).padStart(2,"0");
-  }
-
-  function updatePreviewClock(){
-    const now = new Date();
-    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
-    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-
-    $("prevTime").textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
-    $("prevDate").textContent = dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
-  }
-
-  [
-    "cfgNombre","cfgSubtitulo","cfgFuente","cfgTamNombre","cfgPesoNombre","cfgEspacioLetras",
-    "cfgMayusculas","cfgCursiva","cfgColor","cfgBg","cfgPanel","cfgLine","cfgText","cfgBtnText"
-  ].forEach(id => {
-    const el = $(id);
-    el.addEventListener("input", applyPreview);
-    el.addEventListener("change", applyPreview);
-  });
-
-  $("btnGuardarTop").addEventListener("click", saveAll);
-  $("btnGuardarBottom").addEventListener("click", saveAll);
-  $("btnVolverTop").addEventListener("click", goBack);
-  $("btnVolverBottom").addEventListener("click", goBack);
-
-  loadConfig();
-  updatePreviewClock();
-  setInterval(updatePreviewClock, 1000);
-})();
 </script>
+
 </body>
 </html>
