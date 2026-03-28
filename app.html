@@ -404,6 +404,23 @@ button{
   }
 }
 </style>
+<script>
+(function(){
+  const config = JSON.parse(localStorage.getItem("allcalor_config")) || {};
+
+  const root = document.documentElement;
+
+  if(config.bg) root.style.setProperty('--bg', config.bg);
+  if(config.panel) root.style.setProperty('--panel', config.panel);
+  if(config.text) root.style.setProperty('--text', config.text);
+  if(config.accent) root.style.setProperty('--accent', config.accent);
+
+  if(config.nombreApp){
+    const t = document.title;
+    document.title = config.nombreApp;
+  }
+})();
+</script>
 </head>
 <body>
 <div id="logoLayer"></div>
