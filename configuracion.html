@@ -2,248 +2,1109 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Configuración</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Configuración · ALLCALOR</title>
 <style>
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
+  --panel2:#1d1d1d;
   --line:#2b2b2b;
   --text:#ffffff;
+  --muted:#bdbdbd;
   --accent:#f39b2f;
-  --btnText:#111;
-  --fontMain:Arial;
+  --btnText:#111111;
+  --shadow:0 10px 24px rgba(0,0,0,.28);
 }
-
+*{box-sizing:border-box}
+html,body{height:100%}
 body{
   margin:0;
+  font-family:Arial,sans-serif;
   background:var(--bg);
   color:var(--text);
-  font-family:var(--fontMain);
 }
+button,input,select,textarea{
+  font:inherit;
+}
+button{
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.hidden{display:none!important}
 
-/* HEADER */
-.top{
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
   display:flex;
   justify-content:space-between;
-  padding:14px;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:rgba(11,11,11,.96);
   border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
 }
-.title{
-  font-size:22px;
-  font-weight:900;
+.brand-name{
+  margin:0;
+  line-height:1;
   color:var(--accent);
-}
-
-/* LAYOUT */
-.wrap{
-  display:grid;
-  grid-template-columns:260px 1fr 350px;
-  gap:12px;
-  padding:12px;
-}
-
-/* MENU */
-.menu button{
-  width:100%;
-  margin-bottom:6px;
-  padding:12px;
-  border:none;
-  background:#222;
-  color:#fff;
-  border-radius:10px;
+  font-size:30px;
   font-weight:800;
 }
-.menu button.active{
+.brand-sub{
+  margin:6px 0 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.topbar-right{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.btn-top{
+  border:none;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:800;
   background:var(--accent);
-  color:#000;
+  color:var(--btnText);
 }
 
-/* SECCIONES */
+.wrap{
+  max-width:1500px;
+  margin:0 auto;
+  padding:16px;
+}
+.layout{
+  display:grid;
+  grid-template-columns:300px 1fr 390px;
+  gap:16px;
+}
+
+.sidebar{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:14px;
+  box-shadow:var(--shadow);
+  height:fit-content;
+  position:sticky;
+  top:88px;
+}
+.side-title{
+  margin:0 0 12px 0;
+  color:var(--accent);
+  font-size:20px;
+}
+.menu{
+  display:grid;
+  gap:8px;
+}
+.menu-btn{
+  width:100%;
+  text-align:left;
+  border:none;
+  border-radius:14px;
+  padding:14px;
+  font-weight:800;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.menu-btn.active{
+  background:var(--accent);
+  color:var(--btnText);
+}
+
+.main{
+  min-width:0;
+}
 .section{
   background:var(--panel);
-  padding:14px;
-  border-radius:12px;
   border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
 }
-.hidden{display:none;}
-
-input,select{
+.section-title{
+  margin:0 0 14px 0;
+  color:var(--accent);
+  font-size:24px;
+}
+.section-sub{
+  margin:0 0 14px 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+}
+.field label{
+  font-size:13px;
+  color:var(--muted);
+}
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea{
   width:100%;
-  margin-bottom:10px;
-  padding:10px;
-  background:#000;
   border:1px solid var(--line);
+  background:#101010;
   color:#fff;
-  border-radius:8px;
-}
-
-/* PREVIEW */
-.preview{
-  background:var(--panel);
-  padding:12px;
   border-radius:12px;
+  padding:12px 14px;
 }
-
-.preview-box{
-  padding:12px;
-  border:1px solid var(--line);
-  background:var(--bg);
+textarea{
+  min-height:100px;
+  resize:vertical;
 }
-
-button{
-  padding:10px;
+input[type="color"]{
+  width:100%;
+  height:48px;
+  padding:4px;
   border:none;
-  border-radius:8px;
+  background:none;
+}
+input[type="file"]{
+  width:100%;
+  border:1px solid var(--line);
+  background:#101010;
+  color:#fff;
+  border-radius:12px;
+  padding:12px 14px;
+}
+.check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+}
+.check input{
+  width:auto;
+  margin:0;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
   font-weight:800;
 }
-.main{background:var(--accent);color:#000;}
-.sec{background:#333;color:#fff;}
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
+}
+.btn-sec{
+  background:#2b2b2b;
+  color:#fff;
+}
+.help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+.msg{
+  min-height:20px;
+  color:#c7ffd5;
+  font-size:13px;
+  margin-top:8px;
+}
+.badge{
+  display:inline-block;
+  padding:8px 12px;
+  border-radius:999px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+.color-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.color-box{
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+}
+.color-box .mini{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+.logo-box{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.logo-preview{
+  width:84px;
+  height:84px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#fff;
+  object-fit:contain;
+  padding:6px;
+}
+
+.preview{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  position:sticky;
+  top:88px;
+  height:fit-content;
+}
+.preview-title{
+  margin:0 0 12px 0;
+  color:var(--accent);
+  font-size:22px;
+}
+.preview-shell{
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+}
+.preview-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:14px;
+  background:rgba(0,0,0,.18);
+  border-bottom:1px solid var(--line);
+}
+.preview-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.preview-logo{
+  width:56px;
+  height:56px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid var(--line);
+  object-fit:contain;
+  padding:4px;
+}
+.preview-brand-name{
+  margin:0;
+  line-height:1;
+  color:var(--accent);
+  word-break:break-word;
+}
+.preview-brand-sub{
+  margin:6px 0 0 0;
+  color:var(--muted);
+  font-size:12px;
+}
+.preview-clock{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+  min-width:160px;
+  text-align:right;
+}
+.preview-time{
+  color:var(--accent);
+  font-size:22px;
+  font-weight:800;
+}
+.preview-date{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+.preview-body{
+  padding:14px;
+}
+.preview-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
+}
+.preview-card h4{
+  margin:0 0 8px 0;
+  color:var(--accent);
+}
+.preview-card p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.45;
+}
+.preview-btn{
+  display:inline-block;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:800;
+}
+.preview-notes{
+  margin-top:10px;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:var(--accent);
+  color:var(--btnText);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  font-weight:800;
+}
+@media (max-width:1200px){
+  .layout{
+    grid-template-columns:280px 1fr;
+  }
+  .preview{
+    grid-column:1 / -1;
+    position:static;
+  }
+}
+@media (max-width:860px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+  .sidebar{
+    position:static;
+  }
+  .grid,.grid-3,.color-grid{
+    grid-template-columns:1fr;
+  }
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .topbar-right{
+    justify-content:space-between;
+  }
+}
 </style>
 </head>
-
 <body>
-
-<div class="top">
-  <div class="title">Configuración</div>
+<div class="topbar">
   <div>
-    <button class="main" onclick="guardar()">Guardar</button>
-    <button class="sec" onclick="volver()">Volver</button>
+    <h1 class="brand-name">Configuración</h1>
+    <div class="brand-sub">Panel profesional de ajustes</div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="btn-top" id="btnGuardarTop">Guardar todo</button>
+    <button class="btn-top" id="btnVolverTop">Volver</button>
   </div>
 </div>
 
 <div class="wrap">
+  <div class="layout">
+    <aside class="sidebar">
+      <h2 class="side-title">Secciones</h2>
+      <div class="menu">
+        <button class="menu-btn active" data-target="secVisual">Visual</button>
+        <button class="menu-btn" data-target="secEmpresa">Empresa</button>
+        <button class="menu-btn" data-target="secSeguridad">Seguridad</button>
+        <button class="menu-btn" data-target="secSistema">Sistema</button>
+        <button class="menu-btn" data-target="secNotificaciones">Notificaciones</button>
+      </div>
+    </aside>
 
-<div class="menu">
-  <button onclick="tab('visual')" class="active">Visual</button>
-  <button onclick="tab('empresa')">Empresa</button>
-</div>
+    <main class="main">
+      <section id="secVisual" class="section">
+        <h3 class="section-title">Visual</h3>
+        <p class="section-sub">Aspecto general de la app.</p>
 
-<div>
+        <div class="grid">
+          <div class="field">
+            <label for="cfgNombre">Nombre de la app</label>
+            <input id="cfgNombre" type="text" placeholder="ALLCALOR">
+          </div>
+          <div class="field">
+            <label for="cfgSubtitulo">Subtítulo</label>
+            <input id="cfgSubtitulo" type="text" placeholder="Centro de control">
+          </div>
+        </div>
 
-<div id="visual" class="section">
-  <h3>Visual</h3>
+        <div class="grid">
+          <div class="field">
+            <label for="cfgFuente">Fuente principal</label>
+            <select id="cfgFuente">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+              <option value="Tahoma, sans-serif">Tahoma</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgTamNombre">Tamaño nombre</label>
+            <input id="cfgTamNombre" type="number" min="18" max="52" step="1">
+          </div>
+        </div>
 
-  <input id="nombre" placeholder="Nombre app">
-  <input id="sub" placeholder="Subtitulo">
+        <div class="grid-3">
+          <div class="field">
+            <label for="cfgPesoNombre">Peso nombre</label>
+            <select id="cfgPesoNombre">
+              <option value="400">400</option>
+              <option value="500">500</option>
+              <option value="600">600</option>
+              <option value="700">700</option>
+              <option value="800">800</option>
+              <option value="900">900</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgEspacioLetras">Espaciado letras</label>
+            <input id="cfgEspacioLetras" type="number" min="0" max="8" step="0.5">
+          </div>
+          <div class="field">
+            <label for="cfgSombraNombre">Sombra nombre</label>
+            <input id="cfgSombraNombre" type="number" min="0" max="20" step="1">
+          </div>
+        </div>
 
-  <label>Color principal</label>
-  <input type="color" id="color">
+        <div class="grid">
+          <label class="check">
+            <input id="cfgMayusculas" type="checkbox">
+            Nombre en mayúsculas
+          </label>
+          <label class="check">
+            <input id="cfgCursiva" type="checkbox">
+            Nombre en cursiva
+          </label>
+        </div>
 
-  <label>Fondo</label>
-  <input type="color" id="bg">
+        <div class="color-grid">
+          <div class="color-box">
+            <label for="cfgColor">Color principal</label>
+            <input id="cfgColor" type="color">
+            <div class="mini">Botones y detalles principales</div>
+          </div>
+          <div class="color-box">
+            <label for="cfgBg">Color fondo</label>
+            <input id="cfgBg" type="color">
+            <div class="mini">Fondo general</div>
+          </div>
+          <div class="color-box">
+            <label for="cfgPanel">Color panel</label>
+            <input id="cfgPanel" type="color">
+            <div class="mini">Tarjetas y cajas</div>
+          </div>
+          <div class="color-box">
+            <label for="cfgLine">Color línea</label>
+            <input id="cfgLine" type="color">
+            <div class="mini">Bordes y separadores</div>
+          </div>
+          <div class="color-box">
+            <label for="cfgText">Color texto</label>
+            <input id="cfgText" type="color">
+            <div class="mini">Texto principal</div>
+          </div>
+          <div class="color-box">
+            <label for="cfgBtnText">Color texto botón</label>
+            <input id="cfgBtnText" type="color">
+            <div class="mini">Texto sobre botones</div>
+          </div>
+        </div>
 
-  <label>Panel</label>
-  <input type="color" id="panel">
+        <div class="field" style="margin-top:12px">
+          <label for="cfgLogoFile">Logo o anagrama</label>
+          <input id="cfgLogoFile" type="file" accept="image/*">
+          <div class="logo-box">
+            <img id="cfgLogoPreview" class="logo-preview hidden" alt="Logo">
+            <button type="button" class="btn btn-sec hidden" id="btnQuitarLogo">Quitar logo</button>
+          </div>
+          <div class="help">Puedes subir una foto o una imagen desde el móvil o el PC.</div>
+        </div>
+      </section>
 
-  <label>Texto</label>
-  <input type="color" id="text">
+      <section id="secEmpresa" class="section hidden">
+        <h3 class="section-title">Empresa</h3>
+        <p class="section-sub">Datos base de la empresa.</p>
 
-  <label>Fuente</label>
-  <select id="fuente">
-    <option>Arial</option>
-    <option>Verdana</option>
-    <option>Tahoma</option>
-  </select>
+        <div class="grid">
+          <div class="field">
+            <label for="cfgEmpresa">Nombre comercial</label>
+            <input id="cfgEmpresa" type="text">
+          </div>
+          <div class="field">
+            <label for="cfgRazonSocial">Razón social</label>
+            <input id="cfgRazonSocial" type="text">
+          </div>
+        </div>
 
-</div>
+        <div class="grid">
+          <div class="field">
+            <label for="cfgCif">CIF</label>
+            <input id="cfgCif" type="text">
+          </div>
+          <div class="field">
+            <label for="cfgTelefono">Teléfono principal</label>
+            <input id="cfgTelefono" type="text">
+          </div>
+        </div>
 
-<div id="empresa" class="section hidden">
-  <h3>Empresa</h3>
-  <input placeholder="Nombre empresa">
-  <input placeholder="Teléfono">
-</div>
+        <div class="grid">
+          <div class="field">
+            <label for="cfgEmail">Email principal</label>
+            <input id="cfgEmail" type="email">
+          </div>
+          <div class="field">
+            <label for="cfgDireccion">Dirección</label>
+            <input id="cfgDireccion" type="text">
+          </div>
+        </div>
+      </section>
 
-</div>
+      <section id="secSeguridad" class="section hidden">
+        <h3 class="section-title">Seguridad</h3>
+        <p class="section-sub">Cambio de clave del usuario actual.</p>
 
-<div class="preview">
-  <h3>Vista previa</h3>
+        <div class="badge" id="infoUsuario">Usuario actual: -</div>
 
-  <div class="preview-box">
-    <h2 id="pNombre">ALLCALOR</h2>
-    <p id="pSub">Centro de control</p>
-    <button id="pBtn">Botón</button>
+        <div class="grid" style="margin-top:14px">
+          <div class="field">
+            <label for="cfgClaveNueva">Nueva clave</label>
+            <input id="cfgClaveNueva" type="password" placeholder="Nueva clave">
+          </div>
+          <div class="field">
+            <label for="cfgClaveNueva2">Repetir nueva clave</label>
+            <input id="cfgClaveNueva2" type="password" placeholder="Repetir nueva clave">
+          </div>
+        </div>
+
+        <div class="help">La entrada de emergencia admin / 1234 sigue activa.</div>
+      </section>
+
+      <section id="secSistema" class="section hidden">
+        <h3 class="section-title">Sistema</h3>
+        <p class="section-sub">Elementos visibles y módulos.</p>
+
+        <div class="grid">
+          <label class="check">
+            <input id="cfgMostrarReloj" type="checkbox">
+            Mostrar reloj
+          </label>
+          <label class="check">
+            <input id="cfgMostrarFecha" type="checkbox">
+            Mostrar fecha
+          </label>
+          <label class="check">
+            <input id="cfgMostrarNotas" type="checkbox">
+            Mostrar botón de notas
+          </label>
+          <label class="check">
+            <input id="cfgMostrarUsuarios" type="checkbox">
+            Mostrar módulo usuarios
+          </label>
+          <label class="check">
+            <input id="cfgMostrarStock" type="checkbox">
+            Mostrar módulo compras y stock
+          </label>
+          <label class="check">
+            <input id="cfgMostrarPersonal" type="checkbox">
+            Mostrar módulo personal
+          </label>
+        </div>
+      </section>
+
+      <section id="secNotificaciones" class="section hidden">
+        <h3 class="section-title">Notificaciones</h3>
+        <p class="section-sub">Base para avisos en cualquier dispositivo.</p>
+
+        <div class="grid">
+          <label class="check">
+            <input id="cfgNotificaciones" type="checkbox">
+            Activar notificaciones
+          </label>
+          <label class="check">
+            <input id="cfgSonido" type="checkbox">
+            Activar sonido
+          </label>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="cfgCanalAviso">Canal preferido</label>
+            <select id="cfgCanalAviso">
+              <option value="app">App</option>
+              <option value="push">Push</option>
+              <option value="email">Email</option>
+              <option value="todos">Todos</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfgAntelacion">Antelación por defecto</label>
+            <select id="cfgAntelacion">
+              <option value="0">Exacta</option>
+              <option value="5">5 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="60">1 hora</option>
+              <option value="1440">1 día</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="actions">
+          <button class="btn btn-main" id="btnGuardarBottom">Guardar todo</button>
+          <button class="btn btn-sec" id="btnVolverBottom">Volver</button>
+        </div>
+        <div id="msg" class="msg"></div>
+      </div>
+    </main>
+
+    <aside class="preview">
+      <h3 class="preview-title">Vista previa</h3>
+
+      <div id="previewShell" class="preview-shell">
+        <div class="preview-top">
+          <div class="preview-brand">
+            <img id="prevLogo" class="preview-logo hidden" alt="Logo">
+            <div>
+              <h2 id="prevName" class="preview-brand-name">ALLCALOR</h2>
+              <div id="prevSub" class="preview-brand-sub">Centro de control</div>
+            </div>
+          </div>
+
+          <div id="prevClock" class="preview-clock">
+            <div id="prevTime" class="preview-time">00:00:00</div>
+            <div id="prevDate" class="preview-date">lunes, 1 de enero de 2026</div>
+          </div>
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-card">
+            <h4>Clientes</h4>
+            <p>Listado general, fichas y acceso rápido.</p>
+            <button id="prevBtn1" class="preview-btn">Abrir</button>
+          </div>
+          <div class="preview-card">
+            <h4>Obras</h4>
+            <p>Trabajos, estado, materiales y seguimiento.</p>
+            <button id="prevBtn2" class="preview-btn">Abrir</button>
+          </div>
+          <div id="prevNotes" class="preview-notes">📝</div>
+        </div>
+      </div>
+    </aside>
   </div>
-
-</div>
-
 </div>
 
 <script>
+(function(){
+  "use strict";
 
-function get(){
-  return JSON.parse(localStorage.getItem("configAllcalor")||"{}");
-}
+  const $ = (id) => document.getElementById(id);
 
-function set(c){
-  localStorage.setItem("configAllcalor",JSON.stringify(c));
-}
+  let logoData = "";
 
-function aplicar(c){
-  let r=document.documentElement;
+  const currentSession = getSession();
+  if(!currentSession){
+    window.location.href = "login.html";
+    return;
+  }
 
-  r.style.setProperty("--bg",c.bg||"#0b0b0b");
-  r.style.setProperty("--panel",c.panel||"#151515");
-  r.style.setProperty("--text",c.text||"#fff");
-  r.style.setProperty("--accent",c.color||"#f39b2f");
-  r.style.setProperty("--fontMain",c.fuente||"Arial");
+  const menuBtns = Array.from(document.querySelectorAll(".menu-btn"));
 
-  pNombre.innerText=c.nombre||"ALLCALOR";
-  pSub.innerText=c.sub||"Centro de control";
+  function getSession(){
+    try{
+      return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+    }catch(e){
+      return null;
+    }
+  }
 
-  pBtn.style.background=c.color;
-}
+  function getConfig(){
+    try{
+      return JSON.parse(localStorage.getItem("configAllcalor")) || {};
+    }catch(e){
+      return {};
+    }
+  }
 
-function cargar(){
-  let c=get();
+  function setConfig(cfg){
+    localStorage.setItem("configAllcalor", JSON.stringify(cfg));
+  }
 
-  nombre.value=c.nombre||"";
-  sub.value=c.sub||"";
-  color.value=c.color||"#f39b2f";
-  bg.value=c.bg||"#0b0b0b";
-  panel.value=c.panel||"#151515";
-  text.value=c.text||"#ffffff";
-  fuente.value=c.fuente||"Arial";
+  function getUsers(){
+    try{
+      const users = JSON.parse(localStorage.getItem("allcalor_users"));
+      if(Array.isArray(users) && users.length) return users;
+    }catch(e){}
+    return [{
+      username:"admin",
+      password:"1234",
+      nombre:"Administrador",
+      role:"administrador",
+      active:true,
+      permissions:["clientes","obras","planos","usuarios","personal","stock","configuracion","presupuestos","facturas"]
+    }];
+  }
 
-  aplicar(c);
-}
+  function setUsers(users){
+    localStorage.setItem("allcalor_users", JSON.stringify(users));
+  }
 
-function guardar(){
-  let c={
-    nombre:nombre.value,
-    sub:sub.value,
-    color:color.value,
-    bg:bg.value,
-    panel:panel.value,
-    text:text.value,
-    fuente:fuente.value
-  };
+  function defaults(){
+    return {
+      nombre:"ALLCALOR",
+      subtitulo:"Centro de control",
+      empresa:"ALLCALOR",
+      razonSocial:"",
+      cif:"",
+      telefono:"",
+      email:"",
+      direccion:"",
+      logo:"",
+      color:"#f39b2f",
+      colorFondo:"#0b0b0b",
+      colorPanel:"#151515",
+      colorLinea:"#2b2b2b",
+      colorTexto:"#ffffff",
+      colorBotonTexto:"#111111",
+      fuente:"Arial, sans-serif",
+      tamNombre:30,
+      pesoNombre:800,
+      espacioLetras:0,
+      sombraNombre:0,
+      mayusculas:false,
+      cursiva:false,
+      mostrarReloj:true,
+      mostrarFecha:true,
+      mostrarNotas:true,
+      mostrarUsuarios:true,
+      mostrarStock:true,
+      mostrarPersonal:true,
+      notificaciones:true,
+      sonido:true,
+      canalAviso:"app",
+      antelacion:"15"
+    };
+  }
 
-  set(c);
-  aplicar(c);
-}
+  function showSection(id, btn){
+    ["secVisual","secEmpresa","secSeguridad","secSistema","secNotificaciones"].forEach(secId => {
+      const sec = $(secId);
+      if(sec) sec.classList.toggle("hidden", secId !== id);
+    });
+    menuBtns.forEach(b => b.classList.remove("active"));
+    if(btn) btn.classList.add("active");
+  }
 
-function tab(t){
-  visual.classList.add("hidden");
-  empresa.classList.add("hidden");
-  document.getElementById(t).classList.remove("hidden");
-}
+  function loadConfig(){
+    const cfg = { ...defaults(), ...getConfig() };
 
-function volver(){
-  location.href="app.html";
-}
+    $("cfgNombre").value = cfg.nombre;
+    $("cfgSubtitulo").value = cfg.subtitulo;
+    $("cfgEmpresa").value = cfg.empresa || "";
+    $("cfgRazonSocial").value = cfg.razonSocial || "";
+    $("cfgCif").value = cfg.cif || "";
+    $("cfgTelefono").value = cfg.telefono || "";
+    $("cfgEmail").value = cfg.email || "";
+    $("cfgDireccion").value = cfg.direccion || "";
 
-/* preview en tiempo real */
-document.querySelectorAll("input,select").forEach(el=>{
-  el.oninput=()=>{
-    guardar();
-  };
-});
+    $("cfgFuente").value = cfg.fuente || "Arial, sans-serif";
+    $("cfgTamNombre").value = cfg.tamNombre;
+    $("cfgPesoNombre").value = cfg.pesoNombre;
+    $("cfgEspacioLetras").value = cfg.espacioLetras;
+    $("cfgSombraNombre").value = cfg.sombraNombre;
+    $("cfgMayusculas").checked = !!cfg.mayusculas;
+    $("cfgCursiva").checked = !!cfg.cursiva;
 
-cargar();
+    $("cfgColor").value = cfg.color;
+    $("cfgBg").value = cfg.colorFondo;
+    $("cfgPanel").value = cfg.colorPanel;
+    $("cfgLine").value = cfg.colorLinea;
+    $("cfgText").value = cfg.colorTexto;
+    $("cfgBtnText").value = cfg.colorBotonTexto;
 
+    $("cfgClaveNueva").value = "";
+    $("cfgClaveNueva2").value = "";
+
+    $("cfgMostrarReloj").checked = !!cfg.mostrarReloj;
+    $("cfgMostrarFecha").checked = !!cfg.mostrarFecha;
+    $("cfgMostrarNotas").checked = !!cfg.mostrarNotas;
+    $("cfgMostrarUsuarios").checked = !!cfg.mostrarUsuarios;
+    $("cfgMostrarStock").checked = !!cfg.mostrarStock;
+    $("cfgMostrarPersonal").checked = !!cfg.mostrarPersonal;
+
+    $("cfgNotificaciones").checked = !!cfg.notificaciones;
+    $("cfgSonido").checked = !!cfg.sonido;
+    $("cfgCanalAviso").value = cfg.canalAviso || "app";
+    $("cfgAntelacion").value = String(cfg.antelacion || "15");
+
+    logoData = cfg.logo || "";
+    refreshLogo();
+    $("infoUsuario").textContent = "Usuario actual: " + (currentSession.username || "-");
+
+    applyPreview();
+  }
+
+  function refreshLogo(){
+    const cfgLogoPreview = $("cfgLogoPreview");
+    const btnQuitarLogo = $("btnQuitarLogo");
+    const prevLogo = $("prevLogo");
+
+    if(logoData){
+      cfgLogoPreview.src = logoData;
+      cfgLogoPreview.classList.remove("hidden");
+      btnQuitarLogo.classList.remove("hidden");
+
+      prevLogo.src = logoData;
+      prevLogo.classList.remove("hidden");
+    }else{
+      cfgLogoPreview.src = "";
+      cfgLogoPreview.classList.add("hidden");
+      btnQuitarLogo.classList.add("hidden");
+
+      prevLogo.src = "";
+      prevLogo.classList.add("hidden");
+    }
+  }
+
+  function readForm(){
+    return {
+      ...getConfig(),
+      nombre: $("cfgNombre").value.trim() || "ALLCALOR",
+      subtitulo: $("cfgSubtitulo").value.trim() || "Centro de control",
+      empresa: $("cfgEmpresa").value.trim(),
+      razonSocial: $("cfgRazonSocial").value.trim(),
+      cif: $("cfgCif").value.trim(),
+      telefono: $("cfgTelefono").value.trim(),
+      email: $("cfgEmail").value.trim(),
+      direccion: $("cfgDireccion").value.trim(),
+      logo: logoData,
+      color: $("cfgColor").value || "#f39b2f",
+      colorFondo: $("cfgBg").value || "#0b0b0b",
+      colorPanel: $("cfgPanel").value || "#151515",
+      colorLinea: $("cfgLine").value || "#2b2b2b",
+      colorTexto: $("cfgText").value || "#ffffff",
+      colorBotonTexto: $("cfgBtnText").value || "#111111",
+      fuente: $("cfgFuente").value || "Arial, sans-serif",
+      tamNombre: Number($("cfgTamNombre").value || 30),
+      pesoNombre: Number($("cfgPesoNombre").value || 800),
+      espacioLetras: Number($("cfgEspacioLetras").value || 0),
+      sombraNombre: Number($("cfgSombraNombre").value || 0),
+      mayusculas: !!$("cfgMayusculas").checked,
+      cursiva: !!$("cfgCursiva").checked,
+      mostrarReloj: !!$("cfgMostrarReloj").checked,
+      mostrarFecha: !!$("cfgMostrarFecha").checked,
+      mostrarNotas: !!$("cfgMostrarNotas").checked,
+      mostrarUsuarios: !!$("cfgMostrarUsuarios").checked,
+      mostrarStock: !!$("cfgMostrarStock").checked,
+      mostrarPersonal: !!$("cfgMostrarPersonal").checked,
+      notificaciones: !!$("cfgNotificaciones").checked,
+      sonido: !!$("cfgSonido").checked,
+      canalAviso: $("cfgCanalAviso").value || "app",
+      antelacion: $("cfgAntelacion").value || "15"
+    };
+  }
+
+  function applyPreview(){
+    const cfg = readForm();
+    const finalName = cfg.mayusculas ? cfg.nombre.toUpperCase() : cfg.nombre;
+
+    $("previewShell").style.background = cfg.colorFondo;
+    $("previewShell").style.borderColor = cfg.colorLinea;
+    $("previewShell").style.color = cfg.colorTexto;
+
+    $("prevName").textContent = finalName;
+    $("prevName").style.color = cfg.color;
+    $("prevName").style.fontFamily = cfg.fuente;
+    $("prevName").style.fontSize = cfg.tamNombre + "px";
+    $("prevName").style.fontWeight = cfg.pesoNombre;
+    $("prevName").style.letterSpacing = cfg.espacioLetras + "px";
+    $("prevName").style.textShadow = "0 0 " + cfg.sombraNombre + "px rgba(0,0,0,.9)";
+    $("prevName").style.fontStyle = cfg.cursiva ? "italic" : "normal";
+
+    $("prevSub").textContent = cfg.subtitulo;
+    $("prevSub").style.color = cfg.colorTexto;
+
+    $("prevClock").style.background = cfg.colorPanel;
+    $("prevClock").style.borderColor = cfg.colorLinea;
+    $("prevTime").style.color = cfg.color;
+    $("prevDate").style.color = cfg.colorTexto;
+
+    $("prevClock").classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+    $("prevTime").classList.toggle("hidden", !cfg.mostrarReloj);
+    $("prevDate").classList.toggle("hidden", !cfg.mostrarFecha);
+
+    document.querySelectorAll(".preview-card").forEach(card => {
+      card.style.background = cfg.colorPanel;
+      card.style.borderColor = cfg.colorLinea;
+      card.style.color = cfg.colorTexto;
+    });
+
+    document.querySelectorAll(".preview-card h4").forEach(h4 => {
+      h4.style.color = cfg.color;
+    });
+
+    $("prevBtn1").style.background = cfg.color;
+    $("prevBtn1").style.color = cfg.colorBotonTexto;
+    $("prevBtn2").style.background = cfg.color;
+    $("prevBtn2").style.color = cfg.colorBotonTexto;
+
+    $("prevNotes").style.background = cfg.color;
+    $("prevNotes").style.color = cfg.colorBotonTexto;
+    $("prevNotes").classList.toggle("hidden", !cfg.mostrarNotas);
+
+    refreshLogo();
+  }
+
+  function changeCurrentPassword(){
+    const p1 = $("cfgClaveNueva").value.trim();
+    const p2 = $("cfgClaveNueva2").value.trim();
+
+    if(!p1 && !p2) return { ok:true };
+
+    if(p1.length < 4){
+      return { ok:false, msg:"La nueva clave debe tener al menos 4 caracteres." };
+    }
+    if(p1 !== p2){
+      return { ok:false, msg:"Las dos claves no coinciden." };
+    }
+
+    const users = getUsers();
+    const idx = users.findIndex(u => String(u.username || "") === String(currentSession.username || ""));
+    if(idx === -1){
+      return { ok:false, msg:"No se encontró el usuario actual." };
+    }
+
+    users[idx].password = p1;
+    setUsers(users);
+    return { ok:true };
+  }
+
+  function saveAll(){
+    const pwd = changeCurrentPassword();
+    if(!pwd.ok){
+      $("msg").textContent = pwd.msg;
+      return;
+    }
+
+    const cfg = readForm();
+    setConfig(cfg);
+
+    try{
+      const comprobacion = JSON.parse(localStorage.getItem("configAllcalor")) || {};
+      if((comprobacion.nombre || "") !== cfg.nombre){
+        $("msg").textContent = "No se pudo guardar correctamente.";
+        return;
+      }
+    }catch(e){
+      $("msg").textContent = "No se pudo guardar correctamente.";
+      return;
+    }
+
+    $("msg").textContent = "Configuración guardada correctamente.";
+  }
+
+  function goBack(){
+    window.location.href = "app.html";
+  }
+
+  function pad(n){
+    return String(n).padStart(2,"0");
+  }
+
+  function updatePreviewClock(){
+    const now = new Date();
+    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+    $("prevTime").textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+    $("prevDate").textContent = dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
+  }
+
+  menuBtns.forEach(btn => {
+    btn.addEventListener("click", function(){
+      showSection(btn.dataset.target, btn);
+    });
+  });
+
+  [
+    "cfgNombre","cfgSubtitulo","cfgEmpresa","cfgRazonSocial","cfgCif","cfgTelefono","cfgEmail","cfgDireccion",
+    "cfgFuente","cfgTamNombre","cfgPesoNombre","cfgEspacioLetras","cfgSombraNombre",
+    "cfgMayusculas","cfgCursiva","cfgColor","cfgBg","cfgPanel","cfgLine","cfgText","cfgBtnText",
+    "cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas","cfgMostrarUsuarios","cfgMostrarStock","cfgMostrarPersonal",
+    "cfgNotificaciones","cfgSonido","cfgCanalAviso","cfgAntelacion"
+  ].forEach(id => {
+    const el = $(id);
+    el.addEventListener("input", applyPreview);
+    el.addEventListener("change", applyPreview);
+  });
+
+  $("cfgLogoFile").addEventListener("change", function(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      logoData = String(ev.target.result || "");
+      refreshLogo();
+      applyPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $("btnQuitarLogo").addEventListener("click", function(){
+    logoData = "";
+    $("cfgLogoFile").value = "";
+    refreshLogo();
+    applyPreview();
+  });
+
+  $("btnGuardarTop").addEventListener("click", saveAll);
+  $("btnGuardarBottom").addEventListener("click", saveAll);
+  $("btnVolverTop").addEventListener("click", goBack);
+  $("btnVolverBottom").addEventListener("click", goBack);
+
+  loadConfig();
+  updatePreviewClock();
+  setInterval(updatePreviewClock, 1000);
+})();
 </script>
-
 </body>
 </html>
