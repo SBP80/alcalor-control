@@ -15,12 +15,13 @@
   --accent:#f39b2f;
   --btnText:#111111;
   --shadow:0 10px 24px rgba(0,0,0,.28);
+  --fontMain:Arial,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:var(--fontMain);
   background:var(--bg);
   color:var(--text);
 }
@@ -112,10 +113,12 @@ button{
   background:var(--panel2);
   color:var(--text);
   border:1px solid var(--line);
+  transition:.18s ease;
 }
 .menu-btn.active{
   background:var(--accent);
   color:var(--btnText);
+  border-color:var(--accent);
 }
 
 .main{
@@ -234,6 +237,9 @@ input[type="file"]{
   color:#c7ffd5;
   font-size:13px;
   margin-top:8px;
+}
+.msg.error{
+  color:#ffb5b5;
 }
 .badge{
   display:inline-block;
