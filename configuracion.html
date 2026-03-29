@@ -2,242 +2,1324 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Configuración · ALLCALOR</title>
-
 <style>
 :root{
   --bg:#0b0b0b;
   --panel:#151515;
+  --panel2:#1d1d1d;
   --line:#2b2b2b;
   --text:#ffffff;
   --muted:#bdbdbd;
   --accent:#f39b2f;
+  --btnText:#111111;
+  --radius:18px;
+  --shadow:0 12px 28px rgba(0,0,0,.28);
+  --fontMain:Arial, sans-serif;
 }
+
+*{box-sizing:border-box}
+html,body{height:100%}
 
 body{
   margin:0;
-  font-family:Arial;
-  background:var(--bg);
+  font-family:var(--fontMain);
+  background:linear-gradient(180deg,#080808 0%, var(--bg) 100%);
   color:var(--text);
 }
 
-/* TOP */
-.top{
-  padding:16px;
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:rgba(10,10,10,.88);
+  backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
-.top h1{
+
+.topbar-left{min-width:0}
+.top-title{
   margin:0;
+  line-height:1;
   color:var(--accent);
+  font-size:30px;
+  font-weight:900;
 }
-.actions{
-  margin-top:10px;
+.top-sub{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.top-actions{
   display:flex;
   gap:10px;
+  flex-wrap:wrap;
 }
-button{
+
+.btn{
   border:none;
+  border-radius:14px;
   padding:12px 16px;
-  border-radius:12px;
-  font-weight:700;
+  font-weight:800;
 }
-.btn-main{background:var(--accent);color:#000}
-.btn-sec{background:#333;color:#fff}
-
-/* LAYOUT */
-.wrap{
-  display:grid;
-  grid-template-columns:260px 1fr 350px;
-  gap:16px;
-  padding:16px;
+.btn-main{
+  background:var(--accent);
+  color:var(--btnText);
 }
-
-/* MENU */
-.menu{
-  background:var(--panel);
-  padding:12px;
-  border-radius:16px;
-  border:1px solid var(--line);
-}
-.menu button{
-  width:100%;
-  margin-bottom:8px;
-  background:#222;
+.btn-sec{
+  background:#2d2d2d;
   color:#fff;
 }
-.menu button.active{
-  background:var(--accent);
-  color:#000;
-}
-
-/* SECTION */
-.section{
-  background:var(--panel);
-  padding:16px;
-  border-radius:16px;
+.btn-soft{
+  background:#101010;
+  color:var(--text);
   border:1px solid var(--line);
 }
+
+.wrap{
+  max-width:1650px;
+  margin:0 auto;
+  padding:16px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr) 420px;
+  gap:16px;
+}
+
+.panel{
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 36%), var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+.sidebar{
+  position:sticky;
+  top:88px;
+  height:fit-content;
+  padding:14px;
+}
+.side-title{
+  margin:0 0 12px 0;
+  font-size:20px;
+  color:var(--accent);
+}
+.menu{
+  display:grid;
+  gap:8px;
+}
+.menu-btn{
+  width:100%;
+  text-align:left;
+  border:none;
+  border-radius:14px;
+  padding:14px;
+  font-weight:800;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--line);
+  transition:.18s ease;
+}
+.menu-btn.active{
+  background:var(--accent);
+  color:var(--btnText);
+  border-color:var(--accent);
+}
+
+.main{min-width:0}
+.section{
+  padding:16px;
+  margin-bottom:16px;
+}
+.section-title{
+  margin:0 0 10px 0;
+  font-size:24px;
+  color:var(--accent);
+}
+.section-sub{
+  margin:0 0 16px 0;
+  font-size:13px;
+  color:var(--muted);
+}
+
+.block{
+  padding:14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.015);
+  margin-bottom:14px;
+}
+.block-title{
+  margin:0 0 10px 0;
+  font-size:15px;
+  color:var(--accent);
+  font-weight:800;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+
 .field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
   margin-bottom:12px;
 }
-input,select{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  background:#101010;
-  color:#fff;
+.field label{
+  font-size:13px;
+  color:var(--muted);
 }
 
-/* PREVIEW */
-.preview{
-  background:var(--panel);
-  padding:16px;
-  border-radius:16px;
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+select,
+textarea{
+  width:100%;
   border:1px solid var(--line);
+  border-radius:14px;
+  background:#101010;
+  color:var(--text);
+  padding:12px 14px;
+  outline:none;
 }
-.card{
-  background:#222;
-  padding:12px;
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus{
+  border-color:var(--accent);
+}
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+input[type="file"]{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#101010;
+  color:var(--text);
+  padding:12px 14px;
+}
+input[type="color"]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:72px;
+  height:46px;
+  border:none;
   border-radius:12px;
-  margin-bottom:10px;
+  background:transparent;
+  padding:0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+input[type="color"]::-webkit-color-swatch{border:none;border-radius:12px}
+input[type="color"]::-moz-color-swatch{border:none;border-radius:12px}
+
+.check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  background:#101010;
+  border:1px solid var(--line);
+  border-radius:14px;
+}
+.check input{
+  width:auto;
+  margin:0;
+}
+
+.color-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.color-card{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#101010;
+}
+.color-row{
+  display:grid;
+  grid-template-columns:72px 1fr;
+  gap:10px;
+  align-items:center;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.msg{
+  min-height:20px;
+  margin-top:10px;
+  font-size:13px;
+  color:#c7ffd5;
+}
+.msg.error{
+  color:#ffc1c1;
+}
+
+.logo-box{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.logo-preview{
+  width:84px;
+  height:84px;
+  object-fit:contain;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:6px;
+}
+
+.preview{
+  position:sticky;
+  top:88px;
+  padding:16px;
+  height:fit-content;
+}
+.preview-title{
+  margin:0 0 12px 0;
+  font-size:22px;
+  color:var(--accent);
+}
+.device{
+  border:1px solid var(--line);
+  border-radius:24px;
+  overflow:hidden;
+  background:var(--bg);
+}
+.device-status{
+  height:28px;
+  border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.02);
+}
+.device-top{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:14px;
+  align-items:center;
+  padding:14px;
+  border-bottom:1px solid var(--line);
+}
+.brand{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:12px;
+  align-items:center;
+  min-width:0;
+}
+.brand-logo{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:4px;
+}
+.brand-text{min-width:0}
+.brand-name{
+  margin:0;
+  line-height:1.02;
+  color:var(--accent);
+  overflow-wrap:anywhere;
+}
+.brand-sub{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.24;
+}
+.clock{
+  min-width:180px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:10px 12px;
+  text-align:right;
+}
+.time{
+  font-size:24px;
+  font-weight:900;
+  color:var(--accent);
+}
+.date{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.2;
+}
+.device-body{
+  padding:14px;
+}
+.preview-card{
+  padding:14px;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  margin-bottom:12px;
+}
+.preview-card h4{
+  margin:0 0 8px 0;
+  color:var(--accent);
+}
+.preview-card p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.45;
+}
+.preview-btn{
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:800;
+  background:var(--accent);
+  color:var(--btnText);
+}
+.preview-fab{
+  width:60px;
+  height:60px;
+  border-radius:999px;
+  background:var(--accent);
+  color:var(--btnText);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  font-weight:900;
+  margin-top:10px;
+}
+.device-bar{
+  padding:12px 14px;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--muted);
+}
+
+@media (max-width:1280px){
+  .layout{
+    grid-template-columns:280px 1fr;
+  }
+  .preview{
+    grid-column:1 / -1;
+    position:static;
+  }
+}
+@media (max-width:900px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+  .sidebar{
+    position:static;
+  }
+  .grid,.grid-3,.color-grid{
+    grid-template-columns:1fr;
+  }
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .top-actions{
+    justify-content:space-between;
+  }
+  .device-top{
+    grid-template-columns:1fr;
+  }
+  .clock{
+    min-width:0;
+    text-align:left;
+  }
 }
 </style>
 </head>
-
 <body>
 
-<div class="top">
-  <h1>Configuración</h1>
-  <div class="actions">
-    <button class="btn-main" onclick="guardar()">Guardar</button>
-    <button class="btn-sec" onclick="volver()">Volver</button>
+<div class="topbar">
+  <div class="topbar-left">
+    <h1 class="top-title">Configuración</h1>
+    <div class="top-sub">Panel profesional de ajustes</div>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn btn-main" id="btnGuardarTop">Guardar todo</button>
+    <button class="btn btn-sec" id="btnVolverTop">Volver</button>
   </div>
 </div>
 
 <div class="wrap">
+  <div class="layout">
+    <aside class="panel sidebar">
+      <h2 class="side-title">Secciones</h2>
+      <div class="menu">
+        <button class="menu-btn active" data-target="secVisual">Visual</button>
+        <button class="menu-btn" data-target="secEmpresa">Empresa</button>
+        <button class="menu-btn" data-target="secSistema">Sistema</button>
+        <button class="menu-btn" data-target="secNotificaciones">Notificaciones</button>
+      </div>
+    </aside>
 
-<!-- MENU -->
-<div class="menu">
-  <button class="active" onclick="mostrar('visual',this)">Visual</button>
-  <button onclick="mostrar('empresa',this)">Empresa</button>
-  <button onclick="mostrar('sistema',this)">Sistema</button>
-</div>
+    <main class="main">
+      <section id="secVisual" class="panel section">
+        <h3 class="section-title">Visual</h3>
+        <p class="section-sub">Aquí ajustas nombre, colores, logo y vista previa.</p>
 
-<!-- CONTENIDO -->
-<div>
+        <div class="block">
+          <h4 class="block-title">Nombre y texto</h4>
 
-<div id="visual" class="section">
-  <h2>Visual</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="cfgNombre">Nombre de la app</label>
+              <input id="cfgNombre" type="text" placeholder="ALLCALOR">
+            </div>
 
-  <div class="field">
-    <label>Nombre</label>
-    <input id="nombre">
+            <div class="field">
+              <label for="cfgSubtitulo">Subtítulo</label>
+              <input id="cfgSubtitulo" type="text" placeholder="Centro de control">
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="cfgFuente">Fuente principal</label>
+              <select id="cfgFuente">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="cfgTamNombre">Tamaño nombre</label>
+              <input id="cfgTamNombre" type="number" min="18" max="60" step="1">
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="field">
+              <label for="cfgPesoNombre">Peso nombre</label>
+              <select id="cfgPesoNombre">
+                <option value="400">400</option>
+                <option value="500">500</option>
+                <option value="600">600</option>
+                <option value="700">700</option>
+                <option value="800">800</option>
+                <option value="900">900</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="cfgEspacioLetras">Espaciado letras</label>
+              <input id="cfgEspacioLetras" type="number" min="0" max="8" step="0.5">
+            </div>
+
+            <div class="field">
+              <label for="cfgSombraNombre">Sombra nombre</label>
+              <input id="cfgSombraNombre" type="number" min="0" max="20" step="1">
+            </div>
+          </div>
+
+          <div class="grid">
+            <label class="check">
+              <input id="cfgMayusculas" type="checkbox">
+              Nombre en mayúsculas
+            </label>
+
+            <label class="check">
+              <input id="cfgCursiva" type="checkbox">
+              Nombre en cursiva
+            </label>
+          </div>
+        </div>
+
+        <div class="block">
+          <h4 class="block-title">Colores</h4>
+
+          <div class="color-grid">
+            <div class="color-card">
+              <label for="cfgColor">Color principal</label>
+              <div class="color-row">
+                <input id="cfgColor" type="color">
+                <input id="cfgColorHex" type="text" maxlength="7">
+              </div>
+            </div>
+
+            <div class="color-card">
+              <label for="cfgBg">Color fondo</label>
+              <div class="color-row">
+                <input id="cfgBg" type="color">
+                <input id="cfgBgHex" type="text" maxlength="7">
+              </div>
+            </div>
+
+            <div class="color-card">
+              <label for="cfgPanel">Color panel</label>
+              <div class="color-row">
+                <input id="cfgPanel" type="color">
+                <input id="cfgPanelHex" type="text" maxlength="7">
+              </div>
+            </div>
+
+            <div class="color-card">
+              <label for="cfgLine">Color línea</label>
+              <div class="color-row">
+                <input id="cfgLine" type="color">
+                <input id="cfgLineHex" type="text" maxlength="7">
+              </div>
+            </div>
+
+            <div class="color-card">
+              <label for="cfgText">Color texto</label>
+              <div class="color-row">
+                <input id="cfgText" type="color">
+                <input id="cfgTextHex" type="text" maxlength="7">
+              </div>
+            </div>
+
+            <div class="color-card">
+              <label for="cfgBtnText">Color texto botón</label>
+              <div class="color-row">
+                <input id="cfgBtnText" type="color">
+                <input id="cfgBtnTextHex" type="text" maxlength="7">
+              </div>
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top:12px">
+            <button type="button" class="btn btn-soft" id="btnColoresDefecto">Colores por defecto</button>
+            <button type="button" class="btn btn-soft" id="btnBtnTextAuto">Texto botón auto</button>
+          </div>
+        </div>
+
+        <div class="block">
+          <h4 class="block-title">Logo</h4>
+
+          <div class="field">
+            <label for="cfgLogoFile">Logo o anagrama</label>
+            <input id="cfgLogoFile" type="file" accept="image/*">
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="cfgLogoTam">Tamaño logo</label>
+              <input id="cfgLogoTam" type="number" min="40" max="120" step="1">
+            </div>
+
+            <div class="field">
+              <label for="cfgLogoRadio">Redondeo logo</label>
+              <input id="cfgLogoRadio" type="number" min="0" max="30" step="1">
+            </div>
+          </div>
+
+          <div class="grid">
+            <label class="check">
+              <input id="cfgLogoFondoClaro" type="checkbox">
+              Fondo claro en logo
+            </label>
+          </div>
+
+          <div class="logo-box">
+            <img id="cfgLogoPreview" class="logo-preview hidden" alt="Logo">
+            <button type="button" class="btn btn-sec hidden" id="btnQuitarLogo">Quitar logo</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="secEmpresa" class="panel section hidden">
+        <h3 class="section-title">Empresa</h3>
+        <p class="section-sub">Datos base de la empresa.</p>
+
+        <div class="block">
+          <div class="grid">
+            <div class="field">
+              <label for="cfgEmpresa">Nombre comercial</label>
+              <input id="cfgEmpresa" type="text">
+            </div>
+
+            <div class="field">
+              <label for="cfgRazonSocial">Razón social</label>
+              <input id="cfgRazonSocial" type="text">
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="cfgCif">CIF</label>
+              <input id="cfgCif" type="text">
+            </div>
+
+            <div class="field">
+              <label for="cfgTelefono">Teléfono principal</label>
+              <input id="cfgTelefono" type="text">
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="cfgEmail">Email principal</label>
+              <input id="cfgEmail" type="email">
+            </div>
+
+            <div class="field">
+              <label for="cfgDireccion">Dirección</label>
+              <input id="cfgDireccion" type="text">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="secSistema" class="panel section hidden">
+        <h3 class="section-title">Sistema</h3>
+        <p class="section-sub">Elementos visibles y módulos.</p>
+
+        <div class="block">
+          <div class="grid">
+            <label class="check">
+              <input id="cfgMostrarReloj" type="checkbox">
+              Mostrar reloj
+            </label>
+
+            <label class="check">
+              <input id="cfgMostrarFecha" type="checkbox">
+              Mostrar fecha
+            </label>
+
+            <label class="check">
+              <input id="cfgMostrarNotas" type="checkbox">
+              Mostrar botón de notas
+            </label>
+
+            <label class="check">
+              <input id="cfgMostrarUsuarios" type="checkbox">
+              Mostrar módulo usuarios
+            </label>
+
+            <label class="check">
+              <input id="cfgMostrarStock" type="checkbox">
+              Mostrar módulo stock
+            </label>
+
+            <label class="check">
+              <input id="cfgMostrarPersonal" type="checkbox">
+              Mostrar módulo personal
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section id="secNotificaciones" class="panel section hidden">
+        <h3 class="section-title">Notificaciones</h3>
+        <p class="section-sub">Base para avisos y recordatorios.</p>
+
+        <div class="block">
+          <div class="grid">
+            <label class="check">
+              <input id="cfgNotificaciones" type="checkbox">
+              Activar notificaciones
+            </label>
+
+            <label class="check">
+              <input id="cfgSonido" type="checkbox">
+              Activar sonido
+            </label>
+          </div>
+
+          <div class="grid" style="margin-top:12px">
+            <div class="field">
+              <label for="cfgCanalAviso">Canal preferido</label>
+              <select id="cfgCanalAviso">
+                <option value="app">App</option>
+                <option value="push">Push</option>
+                <option value="email">Email</option>
+                <option value="todos">Todos</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="cfgAntelacion">Antelación por defecto</label>
+              <select id="cfgAntelacion">
+                <option value="0">Exacta</option>
+                <option value="5">5 min</option>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="60">1 hora</option>
+                <option value="1440">1 día</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="panel section">
+        <div class="actions">
+          <button class="btn btn-main" id="btnGuardarBottom">Guardar todo</button>
+          <button class="btn btn-sec" id="btnVolverBottom">Volver</button>
+        </div>
+        <div id="msg" class="msg"></div>
+      </div>
+    </main>
+
+    <aside class="panel preview">
+      <h3 class="preview-title">Vista previa</h3>
+
+      <div id="previewDevice" class="device">
+        <div class="device-status"></div>
+
+        <div class="device-top">
+          <div class="brand">
+            <img id="prevLogo" class="brand-logo hidden" alt="Logo">
+            <div class="brand-text">
+              <h2 id="prevName" class="brand-name">ALLCALOR</h2>
+              <div id="prevSub" class="brand-sub">Centro de control</div>
+            </div>
+          </div>
+
+          <div id="prevClock" class="clock">
+            <div id="prevTime" class="time">00:00:00</div>
+            <div id="prevDate" class="date">lunes, 1 de enero de 2026</div>
+          </div>
+        </div>
+
+        <div class="device-body">
+          <div class="preview-card">
+            <h4>Clientes</h4>
+            <p>Listado general, fichas y acceso rápido.</p>
+            <button id="prevBtn1" class="preview-btn">Abrir</button>
+          </div>
+
+          <div class="preview-card">
+            <h4>Obras</h4>
+            <p>Trabajos, estado, materiales y seguimiento.</p>
+            <button id="prevBtn2" class="preview-btn">Abrir</button>
+          </div>
+
+          <div id="prevNotes" class="preview-fab">📝</div>
+        </div>
+
+        <div class="device-bar">
+          <span>Panel principal</span>
+          <span>ALLCALOR</span>
+        </div>
+      </div>
+    </aside>
   </div>
-
-  <div class="field">
-    <label>Subtítulo</label>
-    <input id="sub">
-  </div>
-
-  <div class="field">
-    <label>Color principal</label>
-    <input id="color" type="color">
-  </div>
-
-</div>
-
-<div id="empresa" class="section" style="display:none">
-  <h2>Empresa</h2>
-
-  <div class="field">
-    <label>Nombre empresa</label>
-    <input id="empresaNombre">
-  </div>
-
-</div>
-
-<div id="sistema" class="section" style="display:none">
-  <h2>Sistema</h2>
-
-  <div class="field">
-    <label><input type="checkbox" id="reloj"> Mostrar reloj</label>
-  </div>
-
-</div>
-
-</div>
-
-<!-- PREVIEW -->
-<div class="preview">
-  <h3>Vista previa</h3>
-
-  <h2 id="prevNombre">ALLCALOR</h2>
-  <p id="prevSub">Centro de control</p>
-
-  <div class="card">
-    <b>Clientes</b><br>
-    <button>Abrir</button>
-  </div>
-
-</div>
-
 </div>
 
 <script>
+(function(){
+  "use strict";
 
-/* CAMBIAR SECCIÓN */
-function mostrar(id,btn){
-  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
+  const $ = (id) => document.getElementById(id);
+  let logoData = "";
 
-  document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-}
+  function getSession(){
+    try{
+      return JSON.parse(localStorage.getItem("allcalor_session")) || null;
+    }catch(e){
+      return null;
+    }
+  }
 
-/* GUARDAR */
-function guardar(){
-  const cfg={
-    nombre:document.getElementById("nombre").value,
-    sub:document.getElementById("sub").value,
-    color:document.getElementById("color").value
-  };
-  localStorage.setItem("cfg",JSON.stringify(cfg));
-  aplicar();
-}
+  const currentSession = getSession();
+  if(!currentSession){
+    window.location.href = "login.html";
+    return;
+  }
 
-/* CARGAR */
-function cargar(){
-  const cfg=JSON.parse(localStorage.getItem("cfg")||"{}");
-  document.getElementById("nombre").value=cfg.nombre||"ALLCALOR";
-  document.getElementById("sub").value=cfg.sub||"Centro de control";
-  document.getElementById("color").value=cfg.color||"#f39b2f";
-  aplicar();
-}
+  const menuBtns = Array.from(document.querySelectorAll(".menu-btn"));
 
-/* APLICAR */
-function aplicar(){
-  const cfg=JSON.parse(localStorage.getItem("cfg")||"{}");
+  function getConfig(){
+    try{
+      return JSON.parse(localStorage.getItem("configAllcalor")) || {};
+    }catch(e){
+      return {};
+    }
+  }
 
-  document.getElementById("prevNombre").textContent=cfg.nombre||"ALLCALOR";
-  document.getElementById("prevSub").textContent=cfg.sub||"Centro de control";
+  function setConfig(cfg){
+    localStorage.setItem("configAllcalor", JSON.stringify(cfg));
+  }
 
-  document.documentElement.style.setProperty("--accent",cfg.color||"#f39b2f");
-}
+  function defaults(){
+    return {
+      nombre:"ALLCALOR",
+      subtitulo:"Centro de control",
+      empresa:"ALLCALOR",
+      razonSocial:"",
+      cif:"",
+      telefono:"",
+      email:"",
+      direccion:"",
+      logo:"",
+      color:"#F39B2F",
+      colorFondo:"#0B0B0B",
+      colorPanel:"#151515",
+      colorLinea:"#2B2B2B",
+      colorTexto:"#FFFFFF",
+      colorBotonTexto:"#111111",
+      fuente:"Arial, sans-serif",
+      tamNombre:30,
+      pesoNombre:800,
+      espacioLetras:0,
+      sombraNombre:0,
+      logoTam:60,
+      logoRadio:14,
+      logoFondoClaro:true,
+      mayusculas:false,
+      cursiva:false,
+      mostrarReloj:true,
+      mostrarFecha:true,
+      mostrarNotas:true,
+      mostrarUsuarios:true,
+      mostrarStock:true,
+      mostrarPersonal:true,
+      notificaciones:true,
+      sonido:true,
+      canalAviso:"app",
+      antelacion:"15"
+    };
+  }
 
-/* VOLVER */
-function volver(){
-  window.location.href="app.html";
-}
+  function normalizeHex(value, fallback){
+    if(!value) return fallback;
+    let v = String(value).trim().toUpperCase();
+    if(!v.startsWith("#")) v = "#" + v;
+    return /^#[0-9A-F]{6}$/.test(v) ? v : fallback;
+  }
 
-/* LIVE PREVIEW */
-["nombre","sub","color"].forEach(id=>{
-  document.getElementById(id).addEventListener("input",guardar);
-});
+  function bestTextColor(bgHex){
+    const hex = normalizeHex(bgHex, "#000000").replace("#","");
+    const r = parseInt(hex.substring(0,2),16);
+    const g = parseInt(hex.substring(2,4),16);
+    const b = parseInt(hex.substring(4,6),16);
+    const yiq = ((r*299)+(g*587)+(b*114))/1000;
+    return yiq >= 150 ? "#111111" : "#FFFFFF";
+  }
 
-cargar();
+  function getCurrentCfg(){
+    return { ...defaults(), ...getConfig() };
+  }
 
+  function setColorPair(colorId, hexId, value){
+    $(colorId).value = value;
+    $(hexId).value = value.toUpperCase();
+  }
+
+  function syncColorPair(colorId, hexId){
+    const colorEl = $(colorId);
+    const hexEl = $(hexId);
+
+    colorEl.addEventListener("input", function(){
+      hexEl.value = colorEl.value.toUpperCase();
+      applyPreview();
+    });
+
+    hexEl.addEventListener("input", function(){
+      hexEl.value = hexEl.value.toUpperCase();
+    });
+
+    hexEl.addEventListener("blur", function(){
+      const safe = normalizeHex(hexEl.value, colorEl.value);
+      colorEl.value = safe;
+      hexEl.value = safe;
+      applyPreview();
+    });
+  }
+
+  function readFormSafe(){
+    const base = getCurrentCfg();
+    const color = normalizeHex($("cfgColor").value, base.color);
+    const bg = normalizeHex($("cfgBg").value, base.colorFondo);
+    const panel = normalizeHex($("cfgPanel").value, base.colorPanel);
+    const line = normalizeHex($("cfgLine").value, base.colorLinea);
+    const text = normalizeHex($("cfgText").value, base.colorTexto);
+    const btnText = normalizeHex($("cfgBtnText").value, bestTextColor(color));
+
+    return {
+      ...base,
+      nombre: $("cfgNombre").value.trim() || base.nombre,
+      subtitulo: $("cfgSubtitulo").value.trim() || base.subtitulo,
+      empresa: $("cfgEmpresa").value.trim(),
+      razonSocial: $("cfgRazonSocial").value.trim(),
+      cif: $("cfgCif").value.trim(),
+      telefono: $("cfgTelefono").value.trim(),
+      email: $("cfgEmail").value.trim(),
+      direccion: $("cfgDireccion").value.trim(),
+      logo: logoData || base.logo || "",
+      color: color,
+      colorFondo: bg,
+      colorPanel: panel,
+      colorLinea: line,
+      colorTexto: text,
+      colorBotonTexto: btnText,
+      fuente: $("cfgFuente").value || base.fuente,
+      tamNombre: Number($("cfgTamNombre").value || base.tamNombre),
+      pesoNombre: Number($("cfgPesoNombre").value || base.pesoNombre),
+      espacioLetras: Number($("cfgEspacioLetras").value || base.espacioLetras),
+      sombraNombre: Number($("cfgSombraNombre").value || base.sombraNombre),
+      logoTam: Number($("cfgLogoTam").value || base.logoTam),
+      logoRadio: Number($("cfgLogoRadio").value || base.logoRadio),
+      logoFondoClaro: !!$("cfgLogoFondoClaro").checked,
+      mayusculas: !!$("cfgMayusculas").checked,
+      cursiva: !!$("cfgCursiva").checked,
+      mostrarReloj: !!$("cfgMostrarReloj").checked,
+      mostrarFecha: !!$("cfgMostrarFecha").checked,
+      mostrarNotas: !!$("cfgMostrarNotas").checked,
+      mostrarUsuarios: !!$("cfgMostrarUsuarios").checked,
+      mostrarStock: !!$("cfgMostrarStock").checked,
+      mostrarPersonal: !!$("cfgMostrarPersonal").checked,
+      notificaciones: !!$("cfgNotificaciones").checked,
+      sonido: !!$("cfgSonido").checked,
+      canalAviso: $("cfgCanalAviso").value || "app",
+      antelacion: $("cfgAntelacion").value || "15"
+    };
+  }
+
+  function applyThemeToPage(cfg){
+    const root = document.documentElement;
+
+    root.style.setProperty("--bg", cfg.colorFondo);
+    root.style.setProperty("--panel", cfg.colorPanel);
+    root.style.setProperty("--panel2", cfg.colorPanel);
+    root.style.setProperty("--line", cfg.colorLinea);
+    root.style.setProperty("--text", cfg.colorTexto);
+    root.style.setProperty("--muted", cfg.colorTexto);
+    root.style.setProperty("--accent", cfg.color);
+    root.style.setProperty("--btnText", cfg.colorBotonTexto);
+    root.style.setProperty("--fontMain", cfg.fuente);
+
+    document.querySelectorAll(".menu-btn").forEach(btn => {
+      if(btn.classList.contains("active")){
+        btn.style.background = cfg.color;
+        btn.style.color = cfg.colorBotonTexto;
+        btn.style.borderColor = cfg.color;
+      }else{
+        btn.style.background = cfg.colorPanel;
+        btn.style.color = cfg.colorTexto;
+        btn.style.borderColor = cfg.colorLinea;
+      }
+    });
+
+    document.querySelectorAll(".btn-main").forEach(btn => {
+      btn.style.background = cfg.color;
+      btn.style.color = cfg.colorBotonTexto;
+    });
+
+    document.querySelectorAll(".btn-sec").forEach(btn => {
+      btn.style.background = "#2c2c2c";
+      btn.style.color = "#ffffff";
+    });
+
+    document.querySelectorAll(".panel,.block,.color-card,.check").forEach(el => {
+      el.style.borderColor = cfg.colorLinea;
+    });
+
+    document.querySelectorAll(".section-sub,.help,.field label,.top-sub").forEach(el => {
+      el.style.color = cfg.colorTexto;
+      el.style.opacity = ".78";
+    });
+  }
+
+  function fitPreviewNameSize(cfg){
+    const len = (cfg.nombre || "").length;
+    let size = Number(cfg.tamNombre || 30);
+    if(len >= 10) size = Math.min(size, 28);
+    if(len >= 14) size = Math.min(size, 24);
+    if(len >= 18) size = Math.min(size, 20);
+    return size;
+  }
+
+  function refreshLogo(){
+    const cfg = readFormSafe();
+
+    if(logoData){
+      $("cfgLogoPreview").src = logoData;
+      $("cfgLogoPreview").classList.remove("hidden");
+      $("btnQuitarLogo").classList.remove("hidden");
+
+      $("prevLogo").src = logoData;
+      $("prevLogo").classList.remove("hidden");
+      $("prevLogo").style.width = cfg.logoTam + "px";
+      $("prevLogo").style.height = cfg.logoTam + "px";
+      $("prevLogo").style.borderRadius = cfg.logoRadio + "px";
+      $("prevLogo").style.background = cfg.logoFondoClaro ? "#ffffff" : "transparent";
+      $("prevLogo").style.padding = cfg.logoFondoClaro ? "4px" : "0";
+      $("prevLogo").style.borderColor = cfg.colorLinea;
+    }else{
+      $("cfgLogoPreview").src = "";
+      $("cfgLogoPreview").classList.add("hidden");
+      $("btnQuitarLogo").classList.add("hidden");
+
+      $("prevLogo").src = "";
+      $("prevLogo").classList.add("hidden");
+    }
+  }
+
+  function applyPreview(){
+    const cfg = readFormSafe();
+    const finalName = cfg.mayusculas ? cfg.nombre.toUpperCase() : cfg.nombre;
+    const previewNameSize = fitPreviewNameSize(cfg);
+
+    applyThemeToPage(cfg);
+
+    $("cfgBtnTextHex").value = cfg.colorBotonTexto.toUpperCase();
+    $("cfgBtnText").value = cfg.colorBotonTexto;
+
+    $("previewDevice").style.background = cfg.colorFondo;
+    $("previewDevice").style.borderColor = cfg.colorLinea;
+
+    $("prevName").textContent = finalName;
+    $("prevName").style.color = cfg.color;
+    $("prevName").style.fontFamily = cfg.fuente;
+    $("prevName").style.fontSize = previewNameSize + "px";
+    $("prevName").style.fontWeight = cfg.pesoNombre;
+    $("prevName").style.letterSpacing = cfg.espacioLetras + "px";
+    $("prevName").style.textShadow = "0 0 " + cfg.sombraNombre + "px rgba(0,0,0,.9)";
+    $("prevName").style.fontStyle = cfg.cursiva ? "italic" : "normal";
+
+    $("prevSub").textContent = cfg.subtitulo || " ";
+    $("prevSub").style.color = cfg.colorTexto;
+
+    $("prevClock").style.background = cfg.colorPanel;
+    $("prevClock").style.borderColor = cfg.colorLinea;
+    $("prevTime").style.color = cfg.color;
+    $("prevDate").style.color = cfg.colorTexto;
+
+    $("prevClock").classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+    $("prevTime").classList.toggle("hidden", !cfg.mostrarReloj);
+    $("prevDate").classList.toggle("hidden", !cfg.mostrarFecha);
+
+    document.querySelectorAll(".preview-card").forEach(card => {
+      card.style.background = cfg.colorPanel;
+      card.style.borderColor = cfg.colorLinea;
+      card.style.color = cfg.colorTexto;
+    });
+
+    document.querySelectorAll(".preview-card h4").forEach(h4 => {
+      h4.style.color = cfg.color;
+    });
+
+    document.querySelectorAll(".preview-card p").forEach(p => {
+      p.style.color = cfg.colorTexto;
+      p.style.opacity = ".78";
+    });
+
+    $("prevBtn1").style.background = cfg.color;
+    $("prevBtn1").style.color = cfg.colorBotonTexto;
+    $("prevBtn2").style.background = cfg.color;
+    $("prevBtn2").style.color = cfg.colorBotonTexto;
+
+    $("prevNotes").style.background = cfg.color;
+    $("prevNotes").style.color = cfg.colorBotonTexto;
+    $("prevNotes").classList.toggle("hidden", !cfg.mostrarNotas);
+
+    refreshLogo();
+  }
+
+  function showSection(id, btn){
+    ["secVisual","secEmpresa","secSistema","secNotificaciones"].forEach(secId => {
+      const sec = $(secId);
+      if(sec) sec.classList.toggle("hidden", secId !== id);
+    });
+
+    menuBtns.forEach(b => b.classList.remove("active"));
+    if(btn) btn.classList.add("active");
+
+    applyThemeToPage(readFormSafe());
+  }
+
+  function loadConfig(){
+    const cfg = getCurrentCfg();
+
+    $("cfgNombre").value = cfg.nombre;
+    $("cfgSubtitulo").value = cfg.subtitulo;
+    $("cfgEmpresa").value = cfg.empresa || "";
+    $("cfgRazonSocial").value = cfg.razonSocial || "";
+    $("cfgCif").value = cfg.cif || "";
+    $("cfgTelefono").value = cfg.telefono || "";
+    $("cfgEmail").value = cfg.email || "";
+    $("cfgDireccion").value = cfg.direccion || "";
+
+    $("cfgFuente").value = cfg.fuente || "Arial, sans-serif";
+    $("cfgTamNombre").value = cfg.tamNombre;
+    $("cfgPesoNombre").value = cfg.pesoNombre;
+    $("cfgEspacioLetras").value = cfg.espacioLetras;
+    $("cfgSombraNombre").value = cfg.sombraNombre;
+
+    setColorPair("cfgColor","cfgColorHex", normalizeHex(cfg.color, defaults().color));
+    setColorPair("cfgBg","cfgBgHex", normalizeHex(cfg.colorFondo, defaults().colorFondo));
+    setColorPair("cfgPanel","cfgPanelHex", normalizeHex(cfg.colorPanel, defaults().colorPanel));
+    setColorPair("cfgLine","cfgLineHex", normalizeHex(cfg.colorLinea, defaults().colorLinea));
+    setColorPair("cfgText","cfgTextHex", normalizeHex(cfg.colorTexto, defaults().colorTexto));
+    setColorPair("cfgBtnText","cfgBtnTextHex", normalizeHex(cfg.colorBotonTexto, defaults().colorBotonTexto));
+
+    $("cfgLogoTam").value = cfg.logoTam;
+    $("cfgLogoRadio").value = cfg.logoRadio;
+    $("cfgLogoFondoClaro").checked = !!cfg.logoFondoClaro;
+
+    $("cfgMayusculas").checked = !!cfg.mayusculas;
+    $("cfgCursiva").checked = !!cfg.cursiva;
+
+    $("cfgMostrarReloj").checked = !!cfg.mostrarReloj;
+    $("cfgMostrarFecha").checked = !!cfg.mostrarFecha;
+    $("cfgMostrarNotas").checked = !!cfg.mostrarNotas;
+    $("cfgMostrarUsuarios").checked = !!cfgMostrarUsuariosFallback(cfg.mostrarUsuarios);
+    $("cfgMostrarStock").checked = !!cfg.mostrarStock;
+    $("cfgMostrarPersonal").checked = !!cfg.mostrarPersonal;
+
+    $("cfgNotificaciones").checked = !!cfg.notificaciones;
+    $("cfgSonido").checked = !!cfg.sonido;
+    $("cfgCanalAviso").value = cfg.canalAviso || "app";
+    $("cfgAntelacion").value = String(cfg.antelacion || "15");
+
+    logoData = cfg.logo || "";
+    refreshLogo();
+    applyThemeToPage(cfg);
+    applyPreview();
+  }
+
+  function cfgMostrarUsuariosFallback(v){
+    return typeof v === "boolean" ? v : true;
+  }
+
+  function saveAll(){
+    const cfg = readFormSafe();
+    setConfig(cfg);
+    $("msg").classList.remove("error");
+    $("msg").textContent = "Configuración guardada correctamente.";
+    applyPreview();
+  }
+
+  function resetColors(){
+    const base = defaults();
+    setColorPair("cfgColor","cfgColorHex", base.color);
+    setColorPair("cfgBg","cfgBgHex", base.colorFondo);
+    setColorPair("cfgPanel","cfgPanelHex", base.colorPanel);
+    setColorPair("cfgLine","cfgLineHex", base.colorLinea);
+    setColorPair("cfgText","cfgTextHex", base.colorTexto);
+    setColorPair("cfgBtnText","cfgBtnTextHex", base.colorBotonTexto);
+    applyPreview();
+  }
+
+  function autoButtonText(){
+    const accent = normalizeHex($("cfgColor").value, defaults().color);
+    const auto = bestTextColor(accent);
+    setColorPair("cfgBtnText","cfgBtnTextHex", auto);
+    applyPreview();
+  }
+
+  function goBack(){
+    window.location.href = "app.html";
+  }
+
+  function pad(n){
+    return String(n).padStart(2,"0");
+  }
+
+  function updateClock(){
+    const now = new Date();
+    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+    $("prevTime").textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+    $("prevDate").textContent = dias[now.getDay()] + ", " + now.getDate() + " de " + meses[now.getMonth()] + " de " + now.getFullYear();
+  }
+
+  menuBtns.forEach(btn => {
+    btn.addEventListener("click", function(){
+      showSection(btn.dataset.target, btn);
+    });
+  });
+
+  [
+    "cfgNombre","cfgSubtitulo","cfgEmpresa","cfgRazonSocial","cfgCif","cfgTelefono","cfgEmail","cfgDireccion",
+    "cfgFuente","cfgTamNombre","cfgPesoNombre","cfgEspacioLetras","cfgSombraNombre",
+    "cfgLogoTam","cfgLogoRadio","cfgLogoFondoClaro",
+    "cfgMayusculas","cfgCursiva",
+    "cfgMostrarReloj","cfgMostrarFecha","cfgMostrarNotas","cfgMostrarUsuarios","cfgMostrarStock","cfgMostrarPersonal",
+    "cfgNotificaciones","cfgSonido","cfgCanalAviso","cfgAntelacion"
+  ].forEach(id => {
+    const el = $(id);
+    if(!el) return;
+    el.addEventListener("input", applyPreview);
+    el.addEventListener("change", applyPreview);
+  });
+
+  syncColorPair("cfgColor","cfgColorHex");
+  syncColorPair("cfgBg","cfgBgHex");
+  syncColorPair("cfgPanel","cfgPanelHex");
+  syncColorPair("cfgLine","cfgLineHex");
+  syncColorPair("cfgText","cfgTextHex");
+  syncColorPair("cfgBtnText","cfgBtnTextHex");
+
+  $("cfgLogoFile").addEventListener("change", function(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      logoData = String(ev.target.result || "");
+      refreshLogo();
+      applyPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $("btnQuitarLogo").addEventListener("click", function(){
+    logoData = "";
+    $("cfgLogoFile").value = "";
+    refreshLogo();
+    applyPreview();
+  });
+
+  $("btnColoresDefecto").addEventListener("click", resetColors);
+  $("btnBtnTextAuto").addEventListener("click", autoButtonText);
+
+  $("btnGuardarTop").addEventListener("click", saveAll);
+  $("btnGuardarBottom").addEventListener("click", saveAll);
+  $("btnVolverTop").addEventListener("click", goBack);
+  $("btnVolverBottom").addEventListener("click", goBack);
+
+  loadConfig();
+  updateClock();
+  setInterval(updateClock, 1000);
+})();
 </script>
 
 </body>
