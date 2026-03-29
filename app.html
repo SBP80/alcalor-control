@@ -681,44 +681,86 @@ button{
   }
 
   function applyConfig(){
-    document.documentElement.style.setProperty("--bg", cfg.colorFondo || "#0b0b0b");
-    document.documentElement.style.setProperty("--panel", cfg.colorPanel || "#151515");
-    document.documentElement.style.setProperty("--panel2", colorMixFallback(cfg.colorPanel || "#151515", "#000000", 0.15));
-    document.documentElement.style.setProperty("--line", cfg.colorLinea || "#2b2b2b");
-    document.documentElement.style.setProperty("--text", cfg.colorTexto || "#ffffff");
-    document.documentElement.style.setProperty("--muted", colorMixFallback(cfg.colorTexto || "#ffffff", "#000000", 0.35));
-    document.documentElement.style.setProperty("--accent", cfg.color || "#f39b2f");
-    document.documentElement.style.setProperty("--btnText", cfg.colorBotonTexto || "#111111");
-    document.documentElement.style.setProperty("--fontMain", cfg.fuente || "Arial, sans-serif");
 
-    const brandName = $("brandName");
-    const brandSub = $("brandSub");
-    const finalName = cfg.mayusculas ? String(cfg.nombre || "ALLCALOR").toUpperCase() : String(cfg.nombre || "ALLCALOR");
+  const root = document.documentElement;
 
-    brandName.textContent = finalName;
-    brandSub.textContent = cfg.subtitulo || "Centro de control";
+  // 🎨 COLORES GLOBALES COMPLETOS
+  root.style.setProperty("--bg", cfg.colorFondo || "#0b0b0b");
+  root.style.setProperty("--panel", cfg.colorPanel || "#151515");
+  root.style.setProperty("--panel2", shade(cfg.colorPanel || "#151515", -10));
+  root.style.setProperty("--line", cfg.colorLinea || "#2b2b2b");
+  root.style.setProperty("--text", cfg.colorTexto || "#ffffff");
+  root.style.setProperty("--muted", shade(cfg.colorTexto || "#ffffff", -40));
+  root.style.setProperty("--accent", cfg.color || "#f39b2f");
+  root.style.setProperty("--btnText", cfg.colorBotonTexto || "#111111");
+  root.style.setProperty("--fontMain", cfg.fuente || "Arial, sans-serif");
 
-    brandName.style.fontFamily = cfg.fuente || "Arial, sans-serif";
-    brandName.style.fontSize = Number(cfg.tamNombre || 30) + "px";
-    brandName.style.fontWeight = Number(cfg.pesoNombre || 800);
-    brandName.style.letterSpacing = Number(cfg.espacioLetras || 0) + "px";
-    brandName.style.textShadow = "0 0 " + Number(cfg.sombraNombre || 0) + "px rgba(0,0,0,.9)";
-    brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
-    brandName.style.color = cfg.color || "#f39b2f";
+  // 🔠 NOMBRE APP
+  const brandName = $("brandName");
+  const brandSub = $("brandSub");
 
-    brandSub.style.color = cfg.colorTexto || "#ffffff";
+  const finalName = cfg.mayusculas
+    ? (cfg.nombre || "ALLCALOR").toUpperCase()
+    : (cfg.nombre || "ALLCALOR");
 
-    const clockBox = $("clockBox");
-    $("clockTime").classList.toggle("hidden", !cfg.mostrarReloj);
-    $("clockDate").classList.toggle("hidden", !cfg.mostrarFecha);
-    clockBox.classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+  brandName.textContent = finalName;
+  brandSub.textContent = cfg.subtitulo || "";
 
-    $("btnNotas").classList.toggle("hidden", !cfg.mostrarNotas);
+  brandName.style.fontFamily = cfg.fuente || "Arial";
+  brandName.style.fontSize = (cfg.tamNombre || 30) + "px";
+  brandName.style.fontWeight = cfg.pesoNombre || 800;
+  brandName.style.letterSpacing = (cfg.espacioLetras || 0) + "px";
+  brandName.style.textShadow = "0 0 " + (cfg.sombraNombre || 0) + "px rgba(0,0,0,.9)";
+  brandName.style.fontStyle = cfg.cursiva ? "italic" : "normal";
+  brandName.style.color = cfg.color;
 
-    applyLogo();
-    applyConfigGates();
+  brandSub.style.color = cfg.colorTexto;
+
+  // 🕒 RELOJ / FECHA
+  const clockBox = $("clockBox");
+  $("clockTime").classList.toggle("hidden", !cfg.mostrarReloj);
+  $("clockDate").classList.toggle("hidden", !cfg.mostrarFecha);
+  clockBox.classList.toggle("hidden", !cfg.mostrarReloj && !cfg.mostrarFecha);
+
+  // 📝 BOTÓN NOTAS
+  $("btnNotas").classList.toggle("hidden", !cfg.mostrarNotas);
+
+  // 🧱 MÓDULOS VISIBLES SEGÚN CONFIG
+  document.querySelectorAll("[data-configflag]").forEach(card => {
+    const flag = card.getAttribute("data-configflag");
+    if(flag && cfg[flag] === false){
+      card.classList.add("hidden");
+    }else{
+      card.classList.remove("hidden");
+    }
+  });
+
+  // 🖼️ LOGO
+  const brandLogo = $("brandLogo");
+  const logoLayer = $("logoLayer");
+
+  brandLogo.classList.add("hidden");
+  logoLayer.classList.remove("visible");
+  logoLayer.style.backgroundImage = "";
+
+  if(cfg.logo){
+
+    // CABECERA
+    brandLogo.src = cfg.logo;
+    brandLogo.classList.remove("hidden");
+
+    brandLogo.style.width = (cfg.logoTam || 60) + "px";
+    brandLogo.style.height = (cfg.logoTam || 60) + "px";
+    brandLogo.style.borderRadius = (cfg.logoRadio || 14) + "px";
+    brandLogo.style.background = cfg.logoFondoClaro ? "#ffffff" : "transparent";
+
+    // FONDO (marca agua)
+    logoLayer.style.backgroundImage = `url("${cfg.logo}")`;
+    logoLayer.style.backgroundSize = (cfg.logoTam || 260) + "px auto";
+    logoLayer.style.opacity = cfg.logoOpacidad || 0.08;
+    logoLayer.classList.add("visible");
   }
-
+}
   function applyLogo(){
     const brandLogo = $("brandLogo");
     const logoLayer = $("logoLayer");
