@@ -1,222 +1,398 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Configuración · ALLCALOR</title>
-
-<style>
-:root{
-  --bg:#0b0b0b;
-  --panel:#151515;
-  --panel2:#1d1d1d;
-  --line:#2b2b2b;
-  --text:#ffffff;
-  --muted:#bdbdbd;
-  --accent:#f39b2f;
-  --btnText:#111111;
-  --shadow:0 10px 24px rgba(0,0,0,.28);
-}
-
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  display:flex;
-  justify-content:space-between;
-  padding:14px 16px;
-  background:rgba(11,11,11,.96);
-  border-bottom:1px solid var(--line);
-}
-
-.brand-name{
-  margin:0;
-  color:var(--accent);
-  font-size:28px;
-  font-weight:800;
-}
-
-.topbar-right{
-  display:flex;
-  gap:10px;
-}
-
-.btn{
-  border:none;
-  border-radius:12px;
-  padding:12px 16px;
-  font-weight:800;
-  background:var(--accent);
-  color:var(--btnText);
-}
-
-.wrap{
-  padding:16px;
-}
-
-.section{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:16px;
-  margin-bottom:16px;
-}
-
-.section-title{
-  color:var(--accent);
-  font-size:22px;
-}
-
-.field{
-  margin-bottom:12px;
-}
-
-input,select{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#101010;
-  color:#fff;
-}
-
-.check{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-
-.preview{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:16px;
-}
-
-.preview-card{
-  background:var(--panel2);
-  border-radius:14px;
-  padding:12px;
-  margin-top:10px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="topbar">
-  <h1 class="brand-name">Configuración</h1>
-  <div class="topbar-right">
-    <button class="btn" onclick="saveAll()">Guardar</button>
-    <button class="btn" onclick="goBack()">Volver</button>
-  </div>
-</div>
-
-<div class="wrap">
-
-<div class="section">
-  <div class="section-title">Visual</div>
-
-  <div class="field">
-    <label>Nombre</label>
-    <input id="cfgNombre">
-  </div>
-
-  <div class="field">
-    <label>Subtítulo</label>
-    <input id="cfgSubtitulo">
-  </div>
-
-  <div class="field">
-    <label>Color</label>
-    <input type="color" id="cfgColor">
-  </div>
-
-  <div class="check">
-    <input type="checkbox" id="cfgMayus">
-    <label>Mayúsculas</label>
-  </div>
-
-</div>
-
-<div class="preview">
-  <h2 id="prevName">ALLCALOR</h2>
-  <div id="prevSub">Centro de control</div>
-
-  <div class="preview-card">
-    Clientes
-    <br>
-    <button>Abrir</button>
-  </div>
-</div>
-
-</div>
-
 <script>
+/* =========================================================
+   ALLCALOR PRO - CONFIGURACIÓN GENERAL
+   Archivo: configuracion-allcalor.js
+   Cargar ANTES que el resto de scripts de la app
+========================================================= */
 
-let config={};
+(function () {
+  "use strict";
 
-function getConfig(){
-  try{return JSON.parse(localStorage.getItem("configAllcalor"))||{}}
-  catch(e){return {}}
-}
+  const STORAGE_KEY = "allcalor_pro_config_v1";
 
-function setConfig(c){
-  localStorage.setItem("configAllcalor",JSON.stringify(c));
-}
+  const CONFIG_POR_DEFECTO = {
+    app: {
+      nombre: "ALLCALOR PRO",
+      empresa: "Allcalor",
+      version: "1.0.0",
+      idioma: "es",
+      moneda: "EUR",
+      modoTrabajo: "produccion",
+      debug: false
+    },
 
-function load(){
-  config=getConfig();
+    interfaz: {
+      tema: "claro",
+      mostrarGrid: true,
+      mostrarCotas: true,
+      mostrarAngulos: true,
+      mostrarLongitudes: true,
+      mostrarNombresEstancias: true,
+      mostrarExclusiones: true,
+      ajusteSnap: true,
+      snapCm: 10,
+      zoomInicial: 1,
+      unidadPlano: "m"
+    },
 
-  cfgNombre.value=config.nombre||"ALLCALOR";
-  cfgSubtitulo.value=config.sub||"Centro de control";
-  cfgColor.value=config.color||"#f39b2f";
-  cfgMayus.checked=config.mayus||false;
+    proyecto: {
+      nombreProyectoPorDefecto: "Proyecto sin nombre",
+      nombreTecnicoPorDefecto: "",
+      nombreClientePorDefecto: "",
+      direccionPorDefecto: "",
+      telefonoClientePorDefecto: "",
+      emailClientePorDefecto: "",
+      observacionesPorDefecto: ""
+    },
 
-  apply();
-}
+    sueloRadiante: {
+      separacionGeneralCm: 10,
+      separacionBanosCm: 5,
+      separacionPerimetralCm: 10,
+      refuerzoExteriorCm: 5,
+      longitudMaxCircuitoM: 100,
+      longitudObjetivoCircuitoM: 90,
+      minimoCircuitoM: 35,
+      diametroTuboMm: 16,
+      saltoTermicoC: 5,
+      temperaturaImpulsionCalefaccionC: 35,
+      temperaturaImpulsionRefrigeracionC: 18,
+      pasoCurvaPorDefecto: "doble_espiral",
+      incluirBanosEnCalculoEspecial: true,
+      excluirDuchasPorDefecto: true,
+      excluirMueblesFijosPorDefecto: true,
+      excluirIslasCocinaPorDefecto: true,
+      caudalMinLMin: 0.8,
+      caudalMaxLMin: 3.0,
+      maxCircuitosPorColector: 12,
+      longitudExtraConexionColectorM: 2
+    },
 
-function apply(){
-  let name=cfgNombre.value||"ALLCALOR";
+    materiales: {
+      panelSistema: "teton",
+      espesorAislamientoMm: 30,
+      barreraVapor: true,
+      tipoAcabado: "gres",
+      espesorMorteroMm: 50,
+      tuboMaterial: "PE-Xa"
+    },
 
-  if(cfgMayus.checked) name=name.toUpperCase();
+    colectores: {
+      salidasPorDefecto: 12,
+      usarValvulasTermostatizables: true,
+      usarCaudalimetros: true,
+      usarPurgadoresAutomaticos: true,
+      usarLlavesCorte: true,
+      usarBypass: false,
+      aislamientoGeneralesMm: 13
+    },
 
-  prevName.textContent=name;
-  prevSub.textContent=cfgSubtitulo.value;
+    calculo: {
+      redondearLongitudesA: 0.1,
+      redondearCaudalesA: 0.1,
+      toleranciaEquilibradoM: 10,
+      usarCompensacionAutomatica: true,
+      recalculoAutomatico: true
+    },
 
-  prevName.style.color=cfgColor.value;
-}
+    impresion: {
+      formato: "A4",
+      orientacion: "vertical",
+      incluirCabecera: true,
+      incluirPie: true,
+      incluirDatosCliente: true,
+      incluirDatosTecnico: true,
+      incluirLeyenda: true,
+      incluirTablaCircuitos: true,
+      incluirFecha: true,
+      incluirFirma: false
+    },
 
-function saveAll(){
-  config={
-    nombre:cfgNombre.value,
-    sub:cfgSubtitulo.value,
-    color:cfgColor.value,
-    mayus:cfgMayus.checked
+    avisos: {
+      activarAvisos: true,
+      sonidoAvisos: true,
+      vibracionAvisos: true,
+      avisarPuestaEnMarcha: true,
+      avisarMantenimiento: true,
+      avisoRevisionDias: 30
+    },
+
+    notas: {
+      permitirRecordatorios: true,
+      recordatorioSonido: true,
+      recordatorioVibracion: true,
+      recordatorioRepeticion: "ninguna"
+    },
+
+    almacenamiento: {
+      autoGuardar: true,
+      autoGuardarSegundos: 30,
+      mantenerHistorial: true,
+      maxCopiasHistorial: 20,
+      permitirExportacionJSON: true,
+      permitirExportacionPDF: true
+    }
   };
 
-  setConfig(config);
-  alert("Guardado");
-}
-function goBack(){
-  window.location.href="app.html";
-}
+  function esObjeto(valor) {
+    return valor !== null && typeof valor === "object" && !Array.isArray(valor);
+  }
 
-document.querySelectorAll("input").forEach(el=>{
-  el.addEventListener("input",apply);
-  el.addEventListener("change",apply);
-});
+  function clonar(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
 
-load();
+  function mezclarProfundo(destino, origen) {
+    const salida = clonar(destino);
 
+    if (!esObjeto(origen)) {
+      return salida;
+    }
+
+    Object.keys(origen).forEach((clave) => {
+      const valorOrigen = origen[clave];
+      const valorDestino = salida[clave];
+
+      if (esObjeto(valorOrigen) && esObjeto(valorDestino)) {
+        salida[clave] = mezclarProfundo(valorDestino, valorOrigen);
+      } else {
+        salida[clave] = clonar(valorOrigen);
+      }
+    });
+
+    return salida;
+  }
+
+  function obtenerDesdeRuta(obj, ruta) {
+    if (!ruta) return obj;
+    return ruta.split(".").reduce((acc, parte) => {
+      if (acc && Object.prototype.hasOwnProperty.call(acc, parte)) {
+        return acc[parte];
+      }
+      return undefined;
+    }, obj);
+  }
+
+  function asignarEnRuta(obj, ruta, valor) {
+    const partes = ruta.split(".");
+    let actual = obj;
+
+    for (let i = 0; i < partes.length - 1; i++) {
+      const parte = partes[i];
+      if (!esObjeto(actual[parte])) {
+        actual[parte] = {};
+      }
+      actual = actual[parte];
+    }
+
+    actual[partes[partes.length - 1]] = valor;
+  }
+
+  function validarNumero(valor, porDefecto, min = null, max = null) {
+    const n = Number(valor);
+    if (!Number.isFinite(n)) return porDefecto;
+    if (min !== null && n < min) return porDefecto;
+    if (max !== null && n > max) return porDefecto;
+    return n;
+  }
+
+  function validarString(valor, porDefecto) {
+    return typeof valor === "string" && valor.trim() !== "" ? valor : porDefecto;
+  }
+
+  function validarBoolean(valor, porDefecto) {
+    return typeof valor === "boolean" ? valor : porDefecto;
+  }
+
+  function normalizarConfig(config) {
+    const c = mezclarProfundo(CONFIG_POR_DEFECTO, config || {});
+
+    c.app.nombre = validarString(c.app.nombre, CONFIG_POR_DEFECTO.app.nombre);
+    c.app.empresa = validarString(c.app.empresa, CONFIG_POR_DEFECTO.app.empresa);
+    c.app.version = validarString(c.app.version, CONFIG_POR_DEFECTO.app.version);
+    c.app.idioma = validarString(c.app.idioma, "es");
+    c.app.moneda = validarString(c.app.moneda, "EUR");
+    c.app.modoTrabajo = ["produccion", "desarrollo", "demo"].includes(c.app.modoTrabajo)
+      ? c.app.modoTrabajo
+      : "produccion";
+    c.app.debug = validarBoolean(c.app.debug, false);
+
+    c.interfaz.tema = ["claro", "oscuro", "auto"].includes(c.interfaz.tema)
+      ? c.interfaz.tema
+      : "claro";
+    c.interfaz.mostrarGrid = validarBoolean(c.interfaz.mostrarGrid, true);
+    c.interfaz.mostrarCotas = validarBoolean(c.interfaz.mostrarCotas, true);
+    c.interfaz.mostrarAngulos = validarBoolean(c.interfaz.mostrarAngulos, true);
+    c.interfaz.mostrarLongitudes = validarBoolean(c.interfaz.mostrarLongitudes, true);
+    c.interfaz.mostrarNombresEstancias = validarBoolean(c.interfaz.mostrarNombresEstancias, true);
+    c.interfaz.mostrarExclusiones = validarBoolean(c.interfaz.mostrarExclusiones, true);
+    c.interfaz.ajusteSnap = validarBoolean(c.interfaz.ajusteSnap, true);
+    c.interfaz.snapCm = validarNumero(c.interfaz.snapCm, 10, 1, 100);
+    c.interfaz.zoomInicial = validarNumero(c.interfaz.zoomInicial, 1, 0.1, 10);
+    c.interfaz.unidadPlano = ["m", "cm", "mm"].includes(c.interfaz.unidadPlano)
+      ? c.interfaz.unidadPlano
+      : "m";
+
+    c.sueloRadiante.separacionGeneralCm = validarNumero(c.sueloRadiante.separacionGeneralCm, 10, 1, 50);
+    c.sueloRadiante.separacionBanosCm = validarNumero(c.sueloRadiante.separacionBanosCm, 5, 1, 50);
+    c.sueloRadiante.separacionPerimetralCm = validarNumero(c.sueloRadiante.separacionPerimetralCm, 10, 1, 50);
+    c.sueloRadiante.refuerzoExteriorCm = validarNumero(c.sueloRadiante.refuerzoExteriorCm, 5, 1, 50);
+    c.sueloRadiante.longitudMaxCircuitoM = validarNumero(c.sueloRadiante.longitudMaxCircuitoM, 100, 30, 300);
+    c.sueloRadiante.longitudObjetivoCircuitoM = validarNumero(c.sueloRadiante.longitudObjetivoCircuitoM, 90, 20, 300);
+    c.sueloRadiante.minimoCircuitoM = validarNumero(c.sueloRadiante.minimoCircuitoM, 35, 1, 300);
+    c.sueloRadiante.diametroTuboMm = validarNumero(c.sueloRadiante.diametroTuboMm, 16, 8, 25);
+    c.sueloRadiante.saltoTermicoC = validarNumero(c.sueloRadiante.saltoTermicoC, 5, 1, 20);
+    c.sueloRadiante.temperaturaImpulsionCalefaccionC = validarNumero(c.sueloRadiante.temperaturaImpulsionCalefaccionC, 35, 20, 60);
+    c.sueloRadiante.temperaturaImpulsionRefrigeracionC = validarNumero(c.sueloRadiante.temperaturaImpulsionRefrigeracionC, 18, 5, 30);
+    c.sueloRadiante.pasoCurvaPorDefecto = ["doble_espiral", "serpentina"].includes(c.sueloRadiante.pasoCurvaPorDefecto)
+      ? c.sueloRadiante.pasoCurvaPorDefecto
+      : "doble_espiral";
+    c.sueloRadiante.incluirBanosEnCalculoEspecial = validarBoolean(c.sueloRadiante.incluirBanosEnCalculoEspecial, true);
+    c.sueloRadiante.excluirDuchasPorDefecto = validarBoolean(c.sueloRadiante.excluirDuchasPorDefecto, true);
+    c.sueloRadiante.excluirMueblesFijosPorDefecto = validarBoolean(c.sueloRadiante.excluirMueblesFijosPorDefecto, true);
+    c.sueloRadiante.excluirIslasCocinaPorDefecto = validarBoolean(c.sueloRadiante.excluirIslasCocinaPorDefecto, true);
+    c.sueloRadiante.caudalMinLMin = validarNumero(c.sueloRadiante.caudalMinLMin, 0.8, 0.1, 10);
+    c.sueloRadiante.caudalMaxLMin = validarNumero(c.sueloRadiante.caudalMaxLMin, 3.0, 0.1, 10);
+    c.sueloRadiante.maxCircuitosPorColector = validarNumero(c.sueloRadiante.maxCircuitosPorColector, 12, 1, 30);
+    c.sueloRadiante.longitudExtraConexionColectorM = validarNumero(c.sueloRadiante.longitudExtraConexionColectorM, 2, 0, 20);
+
+    c.materiales.panelSistema = validarString(c.materiales.panelSistema, "teton");
+    c.materiales.espesorAislamientoMm = validarNumero(c.materiales.espesorAislamientoMm, 30, 0, 300);
+    c.materiales.barreraVapor = validarBoolean(c.materiales.barreraVapor, true);
+    c.materiales.tipoAcabado = validarString(c.materiales.tipoAcabado, "gres");
+    c.materiales.espesorMorteroMm = validarNumero(c.materiales.espesorMorteroMm, 50, 0, 200);
+    c.materiales.tuboMaterial = validarString(c.materiales.tuboMaterial, "PE-Xa");
+
+    c.colectores.salidasPorDefecto = validarNumero(c.colectores.salidasPorDefecto, 12, 1, 30);
+    c.colectores.usarValvulasTermostatizables = validarBoolean(c.colectores.usarValvulasTermostatizables, true);
+    c.colectores.usarCaudalimetros = validarBoolean(c.colectores.usarCaudalimetros, true);
+    c.colectores.usarPurgadoresAutomaticos = validarBoolean(c.colectores.usarPurgadoresAutomaticos, true);
+    c.colectores.usarLlavesCorte = validarBoolean(c.colectores.usarLlavesCorte, true);
+    c.colectores.usarBypass = validarBoolean(c.colectores.usarBypass, false);
+    c.colectores.aislamientoGeneralesMm = validarNumero(c.colectores.aislamientoGeneralesMm, 13, 0, 100);
+
+    c.calculo.redondearLongitudesA = validarNumero(c.calculo.redondearLongitudesA, 0.1, 0.01, 10);
+    c.calculo.redondearCaudalesA = validarNumero(c.calculo.redondearCaudalesA, 0.1, 0.01, 10);
+    c.calculo.toleranciaEquilibradoM = validarNumero(c.calculo.toleranciaEquilibradoM, 10, 0, 100);
+    c.calculo.usarCompensacionAutomatica = validarBoolean(c.calculo.usarCompensacionAutomatica, true);
+    c.calculo.recalculoAutomatico = validarBoolean(c.calculo.recalculoAutomatico, true);
+
+    c.impresion.formato = ["A4", "A3", "Carta"].includes(c.impresion.formato) ? c.impresion.formato : "A4";
+    c.impresion.orientacion = ["vertical", "horizontal"].includes(c.impresion.orientacion)
+      ? c.impresion.orientacion
+      : "vertical";
+    c.impresion.incluirCabecera = validarBoolean(c.impresion.incluirCabecera, true);
+    c.impresion.incluirPie = validarBoolean(c.impresion.incluirPie, true);
+    c.impresion.incluirDatosCliente = validarBoolean(c.impresion.incluirDatosCliente, true);
+    c.impresion.incluirDatosTecnico = validarBoolean(c.impresion.incluirDatosTecnico, true);
+    c.impresion.incluirLeyenda = validarBoolean(c.impresion.incluirLeyenda, true);
+    c.impresion.incluirTablaCircuitos = validarBoolean(c.impresion.incluirTablaCircuitos, true);
+    c.impresion.incluirFecha = validarBoolean(c.impresion.incluirFecha, true);
+    c.impresion.incluirFirma = validarBoolean(c.impresion.incluirFirma, false);
+
+    c.avisos.activarAvisos = validarBoolean(c.avisos.activarAvisos, true);
+    c.avisos.sonidoAvisos = validarBoolean(c.avisos.sonidoAvisos, true);
+    c.avisos.vibracionAvisos = validarBoolean(c.avisos.vibracionAvisos, true);
+    c.avisos.avisarPuestaEnMarcha = validarBoolean(c.avisos.avisarPuestaEnMarcha, true);
+    c.avisos.avisarMantenimiento = validarBoolean(c.avisos.avisarMantenimiento, true);
+    c.avisos.avisoRevisionDias = validarNumero(c.avisos.avisoRevisionDias, 30, 1, 3650);
+
+    c.notas.permitirRecordatorios = validarBoolean(c.notas.permitirRecordatorios, true);
+    c.notas.recordatorioSonido = validarBoolean(c.notas.recordatorioSonido, true);
+    c.notas.recordatorioVibracion = validarBoolean(c.notas.recordatorioVibracion, true);
+    c.notas.recordatorioRepeticion = ["ninguna", "diaria", "semanal", "mensual"].includes(c.notas.recordatorioRepeticion)
+      ? c.notas.recordatorioRepeticion
+      : "ninguna";
+
+    c.almacenamiento.autoGuardar = validarBoolean(c.almacenamiento.autoGuardar, true);
+    c.almacenamiento.autoGuardarSegundos = validarNumero(c.almacenamiento.autoGuardarSegundos, 30, 5, 3600);
+    c.almacenamiento.mantenerHistorial = validarBoolean(c.almacenamiento.mantenerHistorial, true);
+    c.almacenamiento.maxCopiasHistorial = validarNumero(c.almacenamiento.maxCopiasHistorial, 20, 1, 500);
+    c.almacenamiento.permitirExportacionJSON = validarBoolean(c.almacenamiento.permitirExportacionJSON, true);
+    c.almacenamiento.permitirExportacionPDF = validarBoolean(c.almacenamiento.permitirExportacionPDF, true);
+
+    return c;
+  }
+
+  function cargarConfig() {
+    try {
+      const texto = localStorage.getItem(STORAGE_KEY);
+      if (!texto) return clonar(CONFIG_POR_DEFECTO);
+      const data = JSON.parse(texto);
+      return normalizarConfig(data);
+    } catch (error) {
+      console.warn("No se pudo cargar la configuración guardada. Se usarán valores por defecto.", error);
+      return clonar(CONFIG_POR_DEFECTO);
+    }
+  }
+
+  function guardarConfig(config) {
+    const limpia = normalizarConfig(config);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(limpia));
+    return limpia;
+  }
+
+  let configActual = cargarConfig();
+
+  const ALLCALOR_CONFIG = {
+    STORAGE_KEY,
+
+    getAll() {
+      return clonar(configActual);
+    },
+
+    get(ruta, valorPorDefecto = undefined) {
+      const valor = obtenerDesdeRuta(configActual, ruta);
+      return valor === undefined ? valorPorDefecto : clonar(valor);
+    },
+
+    set(ruta, valor) {
+      const copia = clonar(configActual);
+      asignarEnRuta(copia, ruta, valor);
+      configActual = guardarConfig(copia);
+      return clonar(configActual);
+    },
+
+    update(objParcial) {
+      const nueva = mezclarProfundo(configActual, objParcial || {});
+      configActual = guardarConfig(nueva);
+      return clonar(configActual);
+    },
+
+    reset() {
+      configActual = guardarConfig(clonar(CONFIG_POR_DEFECTO));
+      return clonar(configActual);
+    },
+
+    exportarJSON(pretty = true) {
+      return JSON.stringify(configActual, null, pretty ? 2 : 0);
+    },
+
+    importarJSON(jsonTexto) {
+      const data = JSON.parse(jsonTexto);
+      configActual = guardarConfig(data);
+      return clonar(configActual);
+    },
+
+    existe() {
+      return localStorage.getItem(STORAGE_KEY) !== null;
+    },
+
+    eliminar() {
+      localStorage.removeItem(STORAGE_KEY);
+      configActual = clonar(CONFIG_POR_DEFECTO);
+      return clonar(configActual);
+    },
+
+    obtenerPorDefecto() {
+      return clonar(CONFIG_POR_DEFECTO);
+    }
+  };
+
+  window.ALLCALOR_CONFIG = ALLCALOR_CONFIG;
+
+  document.documentElement.setAttribute("data-tema", ALLCALOR_CONFIG.get("interfaz.tema", "claro"));
+
+  console.log("ALLCALOR PRO configuración cargada:", ALLCALOR_CONFIG.getAll());
+})();
 </script>
-</body>
-</html>
