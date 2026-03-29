@@ -48,7 +48,7 @@ button{
   opacity:0;
   background-repeat:no-repeat;
   background-position:center;
-  background-size:280px auto;
+  background-size:220px auto;
 }
 #logoLayer.visible{
   opacity:1;
@@ -181,9 +181,8 @@ button{
   color:var(--text);
   border:1px solid var(--line);
 }
-
 .hero{
-  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
+  background:linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,0));
   border:1px solid var(--line);
   border-radius:22px;
   padding:18px;
@@ -197,8 +196,8 @@ button{
 }
 .hero-box,
 .stats-box{
-  background:color-mix(in srgb, var(--panel) 88%, transparent);
-  border:1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  background:var(--panel);
+  border:1px solid var(--line);
   border-radius:18px;
   padding:18px;
 }
@@ -238,7 +237,7 @@ button{
   gap:10px;
 }
 .stat{
-  background:var(--panel);
+  background:var(--panel2);
   border:1px solid var(--line);
   border-radius:16px;
   padding:14px;
@@ -299,7 +298,7 @@ button{
   align-items:center;
   justify-content:center;
   border-radius:14px;
-  background:color-mix(in srgb, var(--accent) 12%, transparent);
+  background:rgba(255,255,255,.05);
   font-size:28px;
 }
 .card-tag{
